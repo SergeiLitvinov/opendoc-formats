@@ -145,8 +145,8 @@ main { min-width: 0; padding: 44px 48px 24px; overflow-wrap: anywhere; }
     .docs-brand { font-size: 12px; gap: 6px; white-space: nowrap; }
     .docs-brand img { width: 28px; height: 28px; }
     .docs-brand small { font-size: 9px; }
-    .docs-search-button { padding: 0; width: 28px; height: 30px; font-size: 0; }
-    .docs-search-button::before { content: '⌕'; font-size: 23px; }
+    .docs-search-button { display: grid; place-items: center; padding: 0; width: 28px; height: 30px; font-size: 0; }
+    .docs-search-button::before { content: '⌕'; display: block; font-size: 23px; line-height: 1; }
     .docs-menu-button { padding: 5px 6px; font-size: 11px; }
     .docs-theme-button { flex-shrink: 0; width: 28px; height: 28px; font-size: 21px; }
     .docs-hero { display: block; }
