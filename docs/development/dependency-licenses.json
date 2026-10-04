@@ -709,7 +709,7 @@
         "pptx"
       ],
       "description": "XML/OOXML parser",
-      "license": "BSD-3-Clause + PSF/ElementTree, MIT, Zlib, LGPL-2.1; upstream отмечает unlicensed XSL",
+      "license": "BSD-3-Clause + PSF/ElementTree, MIT, Zlib, LGPL-2.1; два XSL: unresolved license grant (OF16)",
       "metadata_url": "https://pypi.org/project/lxml/6.1.3/",
       "artifacts": [
         {
@@ -742,7 +742,12 @@
             }
           ]
         }
-      ]
+      ],
+      "review_notes": {
+        "xslt_status": "unresolved-license-grant",
+        "evidence": "lxml-xslt-evidence.json",
+        "task": "OF16"
+      }
     },
     {
       "name": "markdown",

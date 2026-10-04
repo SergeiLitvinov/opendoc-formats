@@ -50,3 +50,4 @@ nav:
       - Улучшения версии: development/changelog.md
       - Происхождение и лицензии: development/notice.md
       - Лицензионный аудит: development/licenses.md
+      - Статус XSL lxml: development/lxml-xslt.md

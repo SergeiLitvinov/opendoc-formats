@@ -35,7 +35,7 @@
 | [jinja2](#jinja2-316) | 3.1.6 | docs | BSD-3-Clause | Шаблоны документации |
 | [keyring](#keyring-2570) | 25.7.0 | dev | MIT | Хранилище credentials twine |
 | [librt](#librt-0160) | 0.16.0 | dev | MIT | Runtime mypy |
-| [lxml](#lxml-613) | 6.1.3 | docx, epub, pdf, pptx | BSD-3-Clause + PSF/ElementTree, MIT, Zlib, LGPL-2.1; upstream отмечает unlicensed XSL | XML/OOXML parser |
+| [lxml](#lxml-613) | 6.1.3 | docx, epub, pdf, pptx | BSD-3-Clause + PSF/ElementTree, MIT, Zlib, LGPL-2.1; два XSL: unresolved license grant (OF16) | XML/OOXML parser |
 | [markdown](#markdown-311) | 3.11 | docs | BSD-3-Clause | Markdown документации |
 | [markdown-it-py](#markdown-it-py-420) | 4.2.0 | dev | MIT | Разбор Markdown для CLI |
 | [markupsafe](#markupsafe-304) | 3.0.4 | docs | BSD-3-Clause | Экранирование HTML шаблонов |

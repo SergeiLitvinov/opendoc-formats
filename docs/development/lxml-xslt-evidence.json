@@ -1,0 +1,41 @@
+{
+  "package": "lxml",
+  "version": "6.1.3",
+  "status": "unresolved-license-grant",
+  "license_notice_url": "https://raw.githubusercontent.com/lxml/lxml/lxml-6.1.3/LICENSES.txt",
+  "resources": [
+    {
+      "name": "RNG2Schtrn.xsl",
+      "wheel_member": "lxml/isoschematron/resources/xsl/RNG2Schtrn.xsl",
+      "source_url": "https://raw.githubusercontent.com/lxml/lxml/lxml-6.1.3/src/lxml/isoschematron/resources/xsl/RNG2Schtrn.xsl",
+      "sha256": "832f84eb1476a77e522bdc1715386b68f24423d35da084cd1dde319aacbba316",
+      "source_sha256": "39b79bb01f16b7e777b8803f539354f394e99d0dcfc4f5f7f1374e02aa2c31a7",
+      "matches_source": true,
+      "status": "no-explicit-license-grant",
+      "in_installed_wheel": true
+    },
+    {
+      "name": "XSD2Schtrn.xsl",
+      "wheel_member": "lxml/isoschematron/resources/xsl/XSD2Schtrn.xsl",
+      "source_url": "https://raw.githubusercontent.com/lxml/lxml/lxml-6.1.3/src/lxml/isoschematron/resources/xsl/XSD2Schtrn.xsl",
+      "sha256": "430791ac820cfb315c820f7c19703609a59f21b8151345ca11e6127efbfaec0d",
+      "source_sha256": "430791ac820cfb315c820f7c19703609a59f21b8151345ca11e6127efbfaec0d",
+      "matches_source": true,
+      "status": "no-explicit-license-grant",
+      "in_installed_wheel": true
+    }
+  ],
+  "runtime_use_in_opendoc_formats": false,
+  "copied_into_opendoc_formats_wheel": false,
+  "installed_profile": "Windows x64 / CPython 3.12 / uv sync --frozen",
+  "locked_artifact": {
+    "url": "https://files.pythonhosted.org/packages/3a/5b/6ed903e4e6278a020c8a6f0dbbe78030d041840a6b4a64ea441a1e414077/lxml-6.1.3-cp312-cp312-win_amd64.whl",
+    "expected_sha256": "3e9a00d1c2c30936f7add097c41afc5da6556c580909104aafd382cac92a855c"
+  },
+  "upstream_license_search": {
+    "github_issues": "https://api.github.com/search/issues?q=repo%3Alxml%2Flxml%20license%20is%3Aissue",
+    "relevant_public_grant_found": false,
+    "schematron_tree": "https://api.github.com/repos/Schematron/schematron/git/trees/master?recursive=1",
+    "resources_present_in_schematron_tree": false
+  }
+}
