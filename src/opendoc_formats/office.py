@@ -73,7 +73,7 @@ def _kill_process_tree(process: subprocess.Popen[bytes]) -> None:
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             check=False,
-            creationflags=subprocess.CREATE_NO_WINDOW,
+            creationflags=int(getattr(subprocess, "CREATE_NO_WINDOW", 0)),
         )
         if process.poll() is None:
             process.kill()
@@ -139,7 +139,11 @@ def convert_office_to_pdf(
                 args,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
-                creationflags=subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,
+                creationflags=(
+                    int(getattr(subprocess, "CREATE_NO_WINDOW", 0)) | int(getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0))
+                    if os.name == "nt"
+                    else 0
+                ),
                 start_new_session=os.name != "nt",
             )
         except OSError as error:
