@@ -1,0 +1,42 @@
+site_name: OpenDoc Formats — документация
+site_url: https://SergeiLitvinov.github.io/opendoc-formats/
+repo_url: https://github.com/SergeiLitvinov/opendoc-formats
+site_description: Форматы. Структура. Переход. Импорт и экспорт документов через модель OpenDoc.
+docs_dir: docs
+site_dir: .opendoc-formats/site
+theme:
+  name: mkdocs
+  custom_dir: docs/theme
+  locale: ru
+  highlightjs: false
+plugins:
+  - search:
+      lang: [ru, en]
+extra_css: [assets/documentation.css]
+extra_javascript: [assets/documentation.js]
+markdown_extensions:
+  - tables
+  - fenced_code
+  - toc:
+      slugify: !!python/name:markdown.extensions.toc.slugify_unicode
+validation:
+  links:
+    anchors: warn
+nav:
+  - Главная: index.md
+  - Руководство:
+      - Быстрый старт: guide/index.md
+      - Форматы и ограничения: guide/formats.md
+      - Ресурсы и отмена: guide/resources.md
+      - Свои обработчики: guide/extensions.md
+      - Архитектура и зависимость: guide/architecture.md
+  - Справочник:
+      - Публичный API: reference/api.md
+      - Навигатор по коду: reference/code.md
+  - Разработка:
+      - Результаты аудита: development/audit.md
+      - Сборка и выпуск: development/release.md
+      - Участие в проекте: development/contributing.md
+      - Завершённые вехи: reference/plan.md
+      - История изменений: development/changelog.md
+      - Происхождение и лицензии: development/notice.md

@@ -1,0 +1,83 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "opendoc-formats"
+version = "0.2.0"
+description = "Document format readers and writers built on OpenDoc: formats, structure, transition"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE", "NOTICE.md"]
+authors = [{name = "Sergei Litvinov"}]
+keywords = ["opendoc", "okidoki", "document", "conversion", "docx", "pdf", "pptx", "html"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent",
+    "Typing :: Typed",
+    "Topic :: Text Processing :: General",
+]
+dependencies = ["opendoc==0.1.0"]
+
+[project.optional-dependencies]
+pdf = ["pypdf>=4", "pymupdf>=1.24", "pdf2docx>=0.2", "pdfplumber>=0.11"]
+docx = ["python-docx>=1.1"]
+pptx = ["python-pptx>=1.0.2", "lxml>=5", "Pillow>=10"]
+epub = ["ebooklib>=0.18", "beautifulsoup4>=4.12"]
+fonts = ["fonttools>=4.50"]
+html = ["beautifulsoup4>=4.12", "tinycss2>=1.5"]
+dev = ["pytest>=8", "ruff>=0.9", "mypy>=1.15", "build>=1.2", "twine>=6"]
+docs = ["mkdocs>=1.6,<2"]
+
+[project.urls]
+Homepage = "https://SergeiLitvinov.github.io/opendoc-formats/"
+Documentation = "https://SergeiLitvinov.github.io/opendoc-formats/"
+Repository = "https://github.com/SergeiLitvinov/opendoc-formats"
+Issues = "https://github.com/SergeiLitvinov/opendoc-formats/issues"
+Changelog = "https://github.com/SergeiLitvinov/opendoc-formats/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.uv.sources]
+opendoc = { url = "https://github.com/SergeiLitvinov/opendoc/releases/download/v0.1.0/opendoc-0.1.0-py3-none-any.whl" }
+
+[tool.ruff]
+line-length = 130
+target-version = "py311"
+extend-exclude = [".opendoc-formats", "build", "dist"]
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "BLE", "ANN"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "--basetemp=.opendoc-formats/pytest-temp --import-mode=importlib"
+
+[tool.ruff.lint.per-file-ignores]
+"src/opendoc_formats/writers/pptx_to_html/*" = ["N801", "N802", "N803", "N806", "W293", "E501", "BLE001"]
+"src/opendoc_formats/writers/pdf_to_docx.py" = ["BLE001"]
+
+[tool.setuptools.package-data]
+"opendoc_formats" = ["py.typed"]
+"opendoc_formats.writers.pptx_to_html" = ["assets/css/*", "assets/js/*"]
+
+"opendoc_formats.readers" = ["lua-filters/*.lua"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+follow_imports = "silent"
+ignore_missing_imports = true
+files = ["src/opendoc_formats/api.py", "src/opendoc_formats/export.py", "src/opendoc_formats/types.py"]
+
+[tool.ruff.lint.extend-per-file-ignores]
+"src/opendoc_formats/**/*.py" = ["ANN401"]
+"tests/**/*.py" = ["ANN"]
+"tools/**/*.py" = ["ANN"]

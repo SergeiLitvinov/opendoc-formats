@@ -1,0 +1,7 @@
+include AGENTS.md TODO.md NOTICE.md CHANGELOG.md CONTRIBUTING.md mkdocs.yml uv.lock
+recursive-include .github *.yml
+graft docs
+graft tools
+graft tests
+recursive-include src/opendoc_formats *.css *.js *.lua
+global-exclude __pycache__ *.py[cod]
