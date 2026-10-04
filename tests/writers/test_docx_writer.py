@@ -443,7 +443,12 @@ def test_write_docx_model_recreates_custom_styles_and_continuous_sections(tmp_pa
     assert not [issue for issue in report.issues if issue.feature == "paragraph-style"]
     assert any(style.properties["style_name"] == "Scientific Result" for style in restored.styles.values())
     assert restored.sections[0].blocks[0].plain_text == "Styled content"
-    assert restored.sections[0].blocks[0].content[0].style.font_family == "Arial"
+    resolution = report.metrics["font_resolution"]["resolutions"]["Arial|1|0"]
+    assert resolution["requested"] == "Arial"
+    assert restored.sections[0].blocks[0].content[0].style.font_family == resolution["resolved"]
+    assert model.sections[0].blocks[0].content[0].style.font_family == "Arial"
+    if not resolution["exact"]:
+        assert any(issue.feature == "font-substitution" for issue in report.issues)
     assert restored.sections[0].blocks[0].content[0].style.bold is True
     assert restored.sections[1].properties["start_type"] == "CONTINUOUS"
     assert restored.sections[1].properties["header_linked_to_previous"] is True
