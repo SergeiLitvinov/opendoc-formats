@@ -9,7 +9,7 @@ description = "Document format readers and writers built on OpenDoc: formats, st
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
-license-files = ["LICENSE", "NOTICE.md"]
+license-files = ["docs/development/LICENSE", "docs/development/notice.md"]
 authors = [{name = "Sergei Litvinov"}]
 keywords = ["opendoc", "okidoki", "document", "conversion", "docx", "pdf", "pptx", "html"]
 classifiers = [
@@ -40,7 +40,7 @@ Homepage = "https://SergeiLitvinov.github.io/opendoc-formats/"
 Documentation = "https://SergeiLitvinov.github.io/opendoc-formats/"
 Repository = "https://github.com/SergeiLitvinov/opendoc-formats"
 Issues = "https://github.com/SergeiLitvinov/opendoc-formats/issues"
-Changelog = "https://github.com/SergeiLitvinov/opendoc-formats/blob/main/CHANGELOG.md"
+Changelog = "https://github.com/SergeiLitvinov/opendoc-formats/blob/main/docs/development/changelog.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -58,7 +58,7 @@ select = ["E", "F", "I", "N", "W", "BLE", "ANN"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
-addopts = "--basetemp=.opendoc-formats/pytest-temp --import-mode=importlib"
+addopts = "--import-mode=importlib"
 
 [tool.ruff.lint.per-file-ignores]
 "src/opendoc_formats/writers/pptx_to_html/*" = ["N801", "N802", "N803", "N806", "W293", "E501", "BLE001"]

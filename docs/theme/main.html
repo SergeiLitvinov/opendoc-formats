@@ -32,7 +32,7 @@
   <nav class="docs-top-nav" aria-label="Основные разделы">
     <a href="{{ doc_url('guide/index.md') }}">Руководство</a>
     <a href="{{ doc_url('reference/code.md') }}">Код</a>
-    <a href="{{ doc_url('reference/plan.md') }}">Возможности</a>
+    <a href="{{ doc_url('development/completed.md') }}">Возможности</a>
   </nav>
   <button class="docs-theme-button" type="button" aria-label="Включить тёмную тему" title="Переключить тему">◐</button>
   <button class="docs-menu-button" type="button" aria-expanded="false" aria-controls="docs-navigation">Разделы</button>
@@ -55,7 +55,7 @@
       <a class="docs-card" href="{{ doc_url('guide/index.md') }}"><span class="card-number">02 / ВОЗМОЖНОСТИ</span><h2>Понять границы</h2><p>Поддержка форматов, потери преобразования и политика ресурсов.</p><span class="card-link">Изучить контракт →</span></a>
       <a class="docs-card" href="{{ doc_url('reference/code.md') }}"><span class="card-number">03 / РАЗРАБОТКА</span><h2>Найти реализацию</h2><p>Модули, определения, импорты и тесты, собранные из исходников.</p><span class="card-link">Открыть навигатор →</span></a>
     </section>
-    <div class="docs-home-note"><strong>Отдельный пакет на базе OpenDoc.</strong> Модель и валидация — обязательная зависимость. Руководство и <a href="{{ doc_url('reference/plan.md') }}">завершённые возможности</a> связывают обработчики с проверками.</div>
+    <div class="docs-home-note"><strong>Отдельный пакет на базе OpenDoc.</strong> Модель и валидация — обязательная зависимость. Руководство и <a href="{{ doc_url('development/completed.md') }}">завершённые возможности</a> связывают обработчики с проверками.</div>
     <details class="docs-overview"><summary>О проекте, установке и примерах</summary><article class="docs-prose">{{ page.content }}</article></details>
     {% else %}
     <article class="docs-prose">{{ page.content if page else '<h1>Страница не найдена</h1>' }}</article>

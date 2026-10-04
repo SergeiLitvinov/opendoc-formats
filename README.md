@@ -50,7 +50,7 @@ if result.success:
 
 [Документация](https://SergeiLitvinov.github.io/opendoc-formats/) ·
 [Руководство](docs/guide/index.md) · [API](docs/reference/api.md) ·
-[Аудит](docs/development/audit.md) · [История изменений](CHANGELOG.md)
+[Аудит](docs/development/audit.md) · [История изменений](docs/development/changelog.md)
 
 ## Разработка
 
@@ -62,4 +62,4 @@ if result.success:
 CI проверяет Linux на Python 3.11/3.12/3.13 и Windows на 3.12, базовую установку и wheel из sdist.
 GitHub Pages публикуется после успешного CI. Тег `vX.Y.Z` запускает проверку версии и выпуск пакетов.
 
-MIT; происхождение кода и сохранённые уведомления — в [NOTICE](NOTICE.md).
+MIT; происхождение кода и сохранённые уведомления — в [NOTICE](docs/development/notice.md).

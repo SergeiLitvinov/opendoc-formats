@@ -31,7 +31,7 @@ def check(dist: Path, tag: str | None = None) -> None:
         raise ValueError("Expected a three-part release version")
     if tag is not None and tag != "v" + expected:
         raise ValueError(f"Tag {tag} does not match version {expected}")
-    if f"## {expected} — " not in (ROOT / "CHANGELOG.md").read_text(encoding="utf-8"):
+    if f"## {expected} — " not in (ROOT / "docs/development/changelog.md").read_text(encoding="utf-8"):
         raise ValueError("Missing version in CHANGELOG")
     wheel = dist / f"opendoc_formats-{expected}-py3-none-any.whl"
     sdist = dist / f"opendoc_formats-{expected}.tar.gz"
@@ -49,7 +49,7 @@ def check(dist: Path, tag: str | None = None) -> None:
             raise ValueError("Missing mandatory OpenDoc contract")
         if not REQUIRED <= wheel_names:
             raise ValueError(f"Wheel resources missing: {REQUIRED - wheel_names}")
-        if not {prefix + "licenses/LICENSE", prefix + "licenses/NOTICE.md"} <= wheel_names:
+        if not {prefix + "licenses/docs/development/LICENSE", prefix + "licenses/docs/development/notice.md"} <= wheel_names:
             raise ValueError("Wheel licensing notices missing")
         if any(name.startswith(("tests/", "tools/", "docs/", "build/")) for name in wheel_names):
             raise ValueError("Development content leaked into wheel")
@@ -59,7 +59,17 @@ def check(dist: Path, tag: str | None = None) -> None:
         }
         if not {"src/" + name for name in REQUIRED} <= sdist_names:
             raise ValueError("Source distribution resources missing")
-        if not {"pyproject.toml", "uv.lock", "LICENSE", "NOTICE.md", "tools/docs.py", "tests/test_api.py"} <= sdist_names:
+        if (
+            not {
+                "pyproject.toml",
+                "uv.lock",
+                "docs/development/LICENSE",
+                "docs/development/notice.md",
+                "tools/docs.py",
+                "tests/test_api.py",
+            }
+            <= sdist_names
+        ):
             raise ValueError("Source distribution is incomplete")
         metadata = BytesParser().parsebytes(archive.extractfile(f"opendoc_formats-{expected}/PKG-INFO").read())
         if metadata["Version"] != expected:

@@ -37,6 +37,7 @@ nav:
       - Результаты аудита: development/audit.md
       - Сборка и выпуск: development/release.md
       - Участие в проекте: development/contributing.md
-      - Завершённые вехи: reference/plan.md
+      - Контракт проекта: development/AGENTS.md
+      - Завершённые вехи: development/completed.md
       - История изменений: development/changelog.md
       - Происхождение и лицензии: development/notice.md

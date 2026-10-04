@@ -88,16 +88,11 @@ def api_reference() -> str:
 
 def generated_files() -> dict[Path, str]:
     home = (ROOT / "README.md").read_text(encoding="utf-8")
-    home = home.replace("](docs/", "](").replace("](CHANGELOG.md)", "](development/changelog.md)")
-    home = home.replace("](NOTICE.md)", "](development/notice.md)")
+    home = home.replace("](docs/", "](")
     return {
         ROOT / "docs/reference/code.md": navigator(),
         ROOT / "docs/reference/api.md": api_reference(),
         ROOT / "docs/index.md": home,
-        ROOT / "docs/reference/plan.md": (ROOT / "TODO.md").read_text(encoding="utf-8"),
-        ROOT / "docs/development/changelog.md": (ROOT / "CHANGELOG.md").read_text(encoding="utf-8"),
-        ROOT / "docs/development/contributing.md": (ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8"),
-        ROOT / "docs/development/notice.md": (ROOT / "NOTICE.md").read_text(encoding="utf-8"),
     }
 
 

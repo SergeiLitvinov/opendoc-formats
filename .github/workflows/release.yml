@@ -15,24 +15,24 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.12'
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
         with:
           name: release-packages
           path: .opendoc-formats/dist
       - run: python -m tools.release check --tag "$GITHUB_REF_NAME"
       - name: Create release and upload distributions
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             const fs = require('fs');
             const path = require('path');
             const tag = context.ref.replace('refs/tags/', '');
-            const changelog = fs.readFileSync('CHANGELOG.md', 'utf8');
+            const changelog = fs.readFileSync('docs/development/changelog.md', 'utf8');
             const section = changelog.split(/^## /m).find(s => s.startsWith(tag.slice(1) + ' — '));
             if (!section) throw new Error('Missing release notes for tag');
             const { data: release } = await github.rest.repos.createRelease({

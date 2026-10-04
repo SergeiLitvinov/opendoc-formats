@@ -1,4 +1,4 @@
-include AGENTS.md TODO.md NOTICE.md CHANGELOG.md CONTRIBUTING.md mkdocs.yml uv.lock
+include mkdocs.yml uv.lock
 recursive-include .github *.yml
 graft docs
 graft tools
