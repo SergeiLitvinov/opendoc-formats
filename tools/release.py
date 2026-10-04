@@ -13,6 +13,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED = {
+    "opendoc_formats/docx.py",
+    "opendoc_formats/pdf.py",
+    "opendoc_formats/office.py",
+    "opendoc_formats/package_resources.py",
+    "opendoc_formats/native/docx_package.py",
     "opendoc_formats/py.typed",
     "opendoc_formats/readers/lua-filters/sanitize.lua",
     "opendoc_formats/writers/pptx_to_html/assets/css/main.css",

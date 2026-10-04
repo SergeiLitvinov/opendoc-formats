@@ -61,11 +61,11 @@ def api_reference() -> str:
     rows = [
         "# Публичный API",
         "",
-        "Создан автоматически из AST `api.py` и `export.py`.",
+        "Создан автоматически из AST публичных модулей библиотеки.",
         "Модель и отчёты определены в обязательном пакете OpenDoc.",
         "",
     ]
-    for module in ("api", "export"):
+    for module in ("api", "export", "docx", "pdf", "office", "package_resources", "errors"):
         path = ROOT / f"src/opendoc_formats/{module}.py"
         rows += [f"## opendoc_formats.{module}", ""]
         tree = ast.parse(path.read_text(encoding="utf-8"))

@@ -27,6 +27,42 @@ Format reader registry using the OpenDoc model and validation contract.
 
 Импорты: `__future__`, `collections.abc`, `dataclasses`, `importlib`, `opendoc`, `opendoc_formats.errors`, `opendoc_formats.support.backends`, `pathlib`, `typing`
 
+## src/opendoc_formats/docx.py
+
+Public immutable DOCX snapshots and transactional native text editing.
+
+- `DocxLimits` — [строка 17](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L17)
+- `RunStyle` — [строка 34](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L34)
+- `RunSnapshot` — [строка 44](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L44)
+- `ParagraphSnapshot` — [строка 52](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L52)
+- `in_table(self) -> bool` — [строка 71](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L71)
+- `BodyItem` — [строка 76](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L76)
+- `CellSnapshot` — [строка 85](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L85)
+- `RowSnapshot` — [строка 97](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L97)
+- `TableSnapshot` — [строка 110](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L110)
+- `PackagePartInfo` — [строка 122](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L122)
+- `DocxPackageInfo` — [строка 130](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L130)
+- `ReplaceTextSpan` — [строка 138](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L138)
+- `SetParagraphText` — [строка 146](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L146)
+- `InsertParagraph` — [строка 153](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L153)
+- `InsertTableRow` — [строка 160](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L160)
+- `SetTableRowText` — [строка 167](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L167)
+- `DocxEditResult` — [строка 176](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L176)
+- `DocxPackage` — [строка 183](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L183)
+- `__init__(self, source: Source, *, limits: DocxLimits=DocxLimits(), allow_macros: bool=False, cancelled: Cancellation | None=None) -> None` — [строка 186](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L186)
+- `close(self) -> None` — [строка 211](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L211)
+- `closed(self) -> bool` — [строка 215](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L215)
+- `paragraphs(self) -> tuple[ParagraphSnapshot, ...]` — [строка 219](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L219)
+- `body(self) -> tuple[BodyItem, ...]` — [строка 224](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L224)
+- `tables(self) -> tuple[TableSnapshot, ...]` — [строка 229](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L229)
+- `info(self) -> DocxPackageInfo` — [строка 234](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L234)
+- `to_bytes(self, patches: Sequence[DocxPatch]=()) -> bytes` — [строка 238](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L238)
+- `write(self, output: str | Path, patches: Sequence[DocxPatch]=()) -> DocxEditResult` — [строка 242](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L242)
+
+Импорты: `__future__`, `collections.abc`, `dataclasses`, `hashlib`, `opendoc_formats.native.common`, `opendoc_formats.native.docx_package`, `pathlib`, `typing`
+
+Тесты: [test_docx_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_access.py#L1)
+
 ## src/opendoc_formats/errors.py
 
 Format-specific errors, independent of consumers.
@@ -34,10 +70,21 @@ Format-specific errors, independent of consumers.
 - `FormatError` — [строка 4](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L4)
 - `ExtractError` — [строка 8](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L8)
 - `ConvertError` — [строка 12](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L12)
+- `NativeAccessError` — [строка 16](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L16)
+- `BackendUnavailableError` — [строка 22](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L22)
+- `InvalidDocumentError` — [строка 28](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L28)
+- `EncryptedDocumentError` — [строка 34](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L34)
+- `UnsupportedDocumentError` — [строка 40](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L40)
+- `ResourceLimitError` — [строка 46](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L46)
+- `OperationCancelledError` — [строка 52](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L52)
+- `DocumentClosedError` — [строка 58](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L58)
+- `PageIndexError` — [строка 64](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L64)
+- `PatchConflictError` — [строка 70](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L70)
+- `OfficeTimeoutError` — [строка 76](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L76)
 
 Импорты: отсутствуют
 
-Тесты: [test_fix_encoding.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_fix_encoding.py#L1)
+Тесты: [test_docx_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_access.py#L1), [test_office_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_office_access.py#L1), [test_package_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_package_resources.py#L1), [test_pdf_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_access.py#L1), [test_fix_encoding.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_fix_encoding.py#L1)
 
 ## src/opendoc_formats/export.py
 
@@ -111,6 +158,52 @@ Cross-platform font registry and metric-aware deterministic substitutions.
 
 Импорты: `__future__`, `collections.abc`, `dataclasses`, `fontTools.ttLib`, `functools`, `opendoc.document_model`, `pathlib`, `typing`
 
+## src/opendoc_formats/native/__init__.py
+
+Internal primitives shared by backend-independent native document APIs.
+
+
+Импорты: отсутствуют
+
+## src/opendoc_formats/native/common.py
+
+Bounded inputs, cooperative cancellation and atomic publication.
+
+- `check_cancel(cancelled: Cancellation | None) -> None` — [строка 19](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/common.py#L19)
+- `positive_int(value: int, name: str, *, zero: bool=False) -> None` — [строка 24](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/common.py#L24)
+- `positive_number(value: float, name: str) -> float` — [строка 29](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/common.py#L29)
+- `backend(module: str, extra: str) -> ModuleType` — [строка 35](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/common.py#L35)
+- `read_source(source: Source, maximum: int, cancelled: Cancellation | None) -> bytes` — [строка 42](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/common.py#L42)
+- `publish(data: bytes, output: str | Path, maximum: int, cancelled: Cancellation | None) -> Path` — [строка 60](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/common.py#L60)
+
+Импорты: `__future__`, `collections.abc`, `opendoc_formats.errors`, `pathlib`, `types`, `uuid`
+
+## src/opendoc_formats/native/docx_package.py
+
+Private ZIP/XML implementation of immutable DOCX snapshots and patches.
+
+- `parse_xml(data: bytes, engine: Any) -> Any` — [строка 63](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/docx_package.py#L63)
+- `NativePackage` — [строка 155](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/docx_package.py#L155)
+- `__init__(self, source: Source, limits: DocxLimits, allow_macros: bool, cancelled: Cancellation | None) -> None` — [строка 156](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/docx_package.py#L156)
+- `check_open(self) -> None` — [строка 170](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/docx_package.py#L170)
+- `close(self) -> None` — [строка 175](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/docx_package.py#L175)
+- `edit(self, patches: Sequence[DocxPatch]) -> tuple[bytes, tuple[str, ...]]` — [строка 584](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/docx_package.py#L584)
+
+Импорты: `__future__`, `collections`, `collections.abc`, `opendoc_formats.docx`, `opendoc_formats.errors`, `opendoc_formats.native.common`, `pathlib`, `typing`, `urllib.parse`
+
+## src/opendoc_formats/office.py
+
+Managed LibreOffice conversion into validated PDF with atomic publication.
+
+- `OfficeLimits` — [строка 41](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L41)
+- `OfficeConversionResult` — [строка 52](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L52)
+- `find_libreoffice() -> Path | None` — [строка 59](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L59)
+- `convert_office_to_pdf(source: str | Path, output: str | Path, *, executable: str | Path | None=None, timeout: float=180, limits: OfficeLimits=OfficeLimits(), cancelled: Cancellation | None=None) -> OfficeConversionResult` — [строка 88](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L88)
+
+Импорты: `__future__`, `dataclasses`, `hashlib`, `opendoc_formats.errors`, `opendoc_formats.native.common`, `opendoc_formats.pdf`, `pathlib`
+
+Тесты: [test_office_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_office_access.py#L1)
+
 ## src/opendoc_formats/ooxml/__init__.py
 
 Shared OOXML package, relationship, namespace, and unit helpers.
@@ -140,6 +233,35 @@ Reusable helpers for importing and restoring OOXML package topology.
 
 Тесты: [test_ooxml_package.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_ooxml_package.py#L1)
 
+## src/opendoc_formats/package_resources.py
+
+Attach explicitly selected native DOCX resources to the official OpenDoc package graph.
+
+- `assemble_docx_package_resources(document: DocumentModel, resource_roles: Mapping[str, DocxResourceRole], *, consume_resources: bool=False, max_bytes: int=128 * 1024 * 1024, cancelled: Cancellation | None=None) -> DocumentModel` — [строка 47](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/package_resources.py#L47)
+
+Импорты: `__future__`, `collections.abc`, `opendoc`, `opendoc_formats.errors`, `opendoc_formats.native.common`, `pathlib`, `typing`
+
+Тесты: [test_package_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_package_resources.py#L1)
+
+## src/opendoc_formats/pdf.py
+
+Public, bounded PDF page access without exposing the optional rendering engine.
+
+- `PdfLimits` — [строка 22](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L22)
+- `PdfPageInfo` — [строка 38](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L38)
+- `RenderedPage` — [строка 47](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L47)
+- `PdfDocument` — [строка 55](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L55)
+- `__init__(self, source: Source, *, limits: PdfLimits=PdfLimits(), cancelled: Cancellation | None=None) -> None` — [строка 58](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L58)
+- `close(self) -> None` — [строка 98](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L98)
+- `closed(self) -> bool` — [строка 106](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L106)
+- `page_count(self) -> int` — [строка 115](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L115)
+- `page_info(self, index: int) -> PdfPageInfo` — [строка 130](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L130)
+- `render_page(self, index: int, *, dpi: float | None=None, scale: float | None=None, max_dimension: int | None=None, rotation: float=0) -> RenderedPage` — [строка 142](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L142)
+
+Импорты: `__future__`, `collections`, `dataclasses`, `opendoc_formats.errors`, `opendoc_formats.native.common`, `typing`
+
+Тесты: [test_format_audit.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_format_audit.py#L1), [test_office_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_office_access.py#L1), [test_pdf_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_access.py#L1)
+
 ## src/opendoc_formats/readers/__init__.py
 
 Optional backends are imported only when selected.
@@ -164,7 +286,7 @@ DOCX → Text.
 
 Импорты: `__future__`, `collections.abc`, `docx`, `docx.oxml.ns`, `docx.oxml.table`, `docx.oxml.text.paragraph`, `docx.table`, `docx.text.paragraph`, `lxml`, `opendoc.document_model`, `opendoc.units`, `opendoc_formats.ooxml.package`, `opendoc_formats.readers.docx_features`, `opendoc_formats.readers.docx_section`, `opendoc_formats.readers.docx_style`, `opendoc_formats.readers.docx_table`, `opendoc_formats.readers.docx_text`, `opendoc_formats.support.io`, `opendoc_formats.types`, `pathlib`, `typing`
 
-Тесты: [test_docx_model.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_model.py#L1), [test_full_contract.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_full_contract.py#L1), [test_docx_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_docx_writer.py#L1), [test_html_normalize.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_normalize.py#L1)
+Тесты: [test_format_audit.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_format_audit.py#L1), [test_docx_model.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_model.py#L1), [test_full_contract.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_full_contract.py#L1), [test_docx_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_docx_writer.py#L1), [test_html_normalize.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_normalize.py#L1)
 
 ## src/opendoc_formats/readers/docx_drawing.py
 
@@ -389,7 +511,7 @@ Extract raster images and vector drawings from PDF pages.
 
 Импорты: `__future__`, `dataclasses`, `opendoc.color`, `opendoc_formats.readers.pdf_geometry`, `pathlib`, `typing`
 
-Тесты: [test_pdf_images.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_images.py#L1)
+Тесты: [test_format_audit.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_format_audit.py#L1), [test_pdf_images.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_images.py#L1)
 
 ## src/opendoc_formats/readers/pdf_layout.py
 
@@ -812,7 +934,7 @@ DOCX table exporter for spans, geometry, fills, margins, and styles.
 
 Импорты: `__future__`, `docx`, `docx.enum.section`, `docx.oxml`, `opendoc.diagnostics`, `opendoc.document_model`, `opendoc_formats.fonts.docx_embedding`, `opendoc_formats.ooxml.package`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.io`, `opendoc_formats.writers.color_preflight`, `opendoc_formats.writers.docx_drawing_writer`, `opendoc_formats.writers.docx_section_writer`, `opendoc_formats.writers.docx_style_writer`, `opendoc_formats.writers.docx_table_writer`, `opendoc_formats.writers.docx_text_writer`, `opendoc_formats.writers.font_preflight`, `pathlib`, `typing`
 
-Тесты: [test_docx_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_docx_writer.py#L1), [test_html_normalize.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_normalize.py#L1)
+Тесты: [test_format_audit.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_format_audit.py#L1), [test_docx_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_docx_writer.py#L1), [test_html_normalize.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_normalize.py#L1)
 
 ## src/opendoc_formats/writers/extracted_text.py
 

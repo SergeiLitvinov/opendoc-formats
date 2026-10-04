@@ -257,10 +257,7 @@ def read_pdf_model(
                 blocks=blocks,
                 headers=headers,
                 footers=footers,
-                page=PageSettings(
-                    width=Length(page.width),
-                    height=Length(page.height),
-                ),
+                page=_pdf_page_settings(page.width, page.height),
                 provenance=origin(f"page-{page.number}", detail="created document section from PDF page"),
             )
         )
@@ -280,6 +277,16 @@ def read_pdf_model(
         source_format="pdf",
         mode=ConversionMode.BALANCED,
     )
+
+
+def _pdf_page_settings(width: float, height: float) -> PageSettings:
+    """Use inferred default margins without making small physical PDF pages invalid."""
+    page = PageSettings(width=Length(width), height=Length(height))
+    for field in ("margin_left", "margin_right"):
+        setattr(page, field, Length(min(getattr(page, field).pt, width / 4)))
+    for field in ("margin_top", "margin_bottom"):
+        setattr(page, field, Length(min(getattr(page, field).pt, height / 4)))
+    return page
 
 
 def _pdf_box(value: Any) -> Box | None:

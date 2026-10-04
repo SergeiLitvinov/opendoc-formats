@@ -47,3 +47,34 @@ Regenerate chart references only after reviewing an intentional chart change:
 ```powershell
 uv run python -m tests.corpus.charts
 ```
+
+## Office provenance fixtures
+
+`libreoffice-scientific-slides.pptx` is the reproducible source presentation from
+`tests.corpus.multiformat`, opened and re-saved by LibreOffice 25.8.6.2 on Windows.
+It contains only project-generated content. ZIP timestamps are normalized after
+the office-suite roundtrip; the producer metadata and converted WMF media part are
+left untouched. `manifest.json` records provenance, size, SHA-256 and structural
+expectations.
+
+The fixture is intentionally committed because office-suite serialization cannot
+be reproduced in CI without that exact application and version. Source-first PDF,
+PPTX and EMF fixtures remain generated during tests and require no office suite.
+
+## Нативные fixtures
+
+Каталог: `tests/corpus/native/`.
+
+Созданы для этого проекта, без внешних документов и пользовательских данных.
+
+- `native-edit.docx`: генератор `fixture_bytes` в `tests/native/test_docx_access.py`;
+  split runs, header/footer, объединения, вложенная таблица, собственный PNG, OMML и секции.
+- `zero-opacity.pdf`: PyMuPDF, страница 100×100 points, прямоугольник (10,10,90,90),
+  красная заливка и синяя обводка с alpha=0. Приёмка: alpha сохраняется, raster белый.
+- `vector-export.pdf`: та же геометрия с alpha=1. Приёмка текущего пробела: экспорт
+  векторного ресурса возвращает диагностируемую ошибку, не ложный lossless success.
+- `text-pages.pdf`: собственные две страницы PyMuPDF с текстом Native PDF и второй
+  страницей с поворотом 90°. Проверяет установленный extra pdf-text без PyMuPDF.
+
+Файлы являются тестовыми входами, а не временными сборками. Контрольные SHA-256
+вычисляются тестами для проверки неизменности частей и транзакций.

@@ -29,6 +29,8 @@
 
 Дополнительные инструменты: внедряемый OCR для PDF, шрифты (`fonts`),
 прямой PDF → DOCX и PPTX → HTML-просмотрщик с локальными CSS/JS и браузерным MathML.
+[Нативные правки DOCX, страницы PDF и офисный preview](docs/guide/native-access.md),
+с типизированными снимками и сохранением исходного пакета. OCR и шаблоны принадлежат потребителю.
 Подробные [границы форматов](docs/guide/formats.md) включают потери, непрозрачные объекты и доступ к ресурсам.
 
 ## Установка
@@ -39,10 +41,11 @@
 Из [GitHub Release](https://github.com/SergeiLitvinov/opendoc-formats/releases), без зависимости от публикации на PyPI:
 
 ```sh
-python -m pip install "opendoc @ https://github.com/SergeiLitvinov/opendoc/releases/download/v0.1.0/opendoc-0.1.0-py3-none-any.whl" "opendoc-formats[docx,html] @ https://github.com/SergeiLitvinov/opendoc-formats/releases/download/v0.2.0/opendoc_formats-0.2.0-py3-none-any.whl"
+python -m pip install "opendoc @ https://github.com/SergeiLitvinov/opendoc/releases/download/v0.1.0/opendoc-0.1.0-py3-none-any.whl" "opendoc-formats[docx,html] @ https://github.com/SergeiLitvinov/opendoc-formats/releases/download/v0.3.0/opendoc_formats-0.3.0-py3-none-any.whl"
 ```
 
 Необязательные движки импортируются только при выборе обработчика. TXT/JSON работают с базовой установкой.
+Extra `pdf-text` устанавливает pypdf для извлечения текста; полный `pdf` нужен для геометрии и рендера.
 
 ## Пример
 
@@ -56,7 +59,7 @@ if result.success:
 
 [Документация](https://SergeiLitvinov.github.io/opendoc-formats/) ·
 [Руководство](docs/guide/index.md) · [API](docs/reference/api.md) ·
-[Аудит](docs/development/audit.md) · [История изменений](docs/development/changelog.md)
+[Аудит](docs/development/audit.md) · [Улучшения версии](docs/development/changelog.md)
 
 ## Разработка
 

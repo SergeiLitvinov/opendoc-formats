@@ -13,22 +13,37 @@ from tempfile import TemporaryDirectory
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--all-formats", action="store_true")
+    parser.add_argument("--pdf-text", action="store_true")
     args = parser.parse_args()
     from opendoc import DocumentModel, Paragraph, Section, Table, TableCell, TableRow, TextRun
 
     import opendoc_formats
     from opendoc_formats import default_exporter_registry, default_registry, read_document, write_document
+    from opendoc_formats.docx import DocxPackage, ReplaceTextSpan
+    from opendoc_formats.errors import BackendUnavailableError
+    from opendoc_formats.office import find_libreoffice
+    from opendoc_formats.package_resources import assemble_docx_package_resources
+    from opendoc_formats.pdf import PdfDocument
 
     assert opendoc_formats.__version__ == version("opendoc-formats")
     assert version("opendoc") == "0.1.0"
-    assert all(name not in sys.modules for name in ("bs4", "fitz", "docx", "pptx", "ebooklib", "fontTools"))
+    engines = ("bs4", "fitz", "pymupdf", "lxml", "docx", "pptx", "ebooklib", "fontTools")
+    assert all(name not in sys.modules for name in engines)
     installed = Path(opendoc_formats.__file__).resolve().parent
     assert "site-packages" in installed.parts, installed
     assert (installed / "py.typed").is_file()
     default_registry()
     default_exporter_registry()
     if not args.all_formats:
-        assert all(importlib.util.find_spec(name) is None for name in ("bs4", "fitz", "docx", "pptx", "ebooklib", "fontTools"))
+        assert all(importlib.util.find_spec(name) is None for name in engines)
+        for constructor in (DocxPackage, PdfDocument):
+            try:
+                constructor(b"missing engine")
+            except BackendUnavailableError:
+                pass
+            else:
+                raise AssertionError("Native access should diagnose absent optional backend")
+        find_libreoffice()
     document = DocumentModel(
         sections=[
             Section(
@@ -39,6 +54,12 @@ def main() -> None:
             )
         ]
     )
+    assert assemble_docx_package_resources(document, {}) == document
+    if args.pdf_text:
+        from opendoc_formats.readers.pdf import read_pdf
+
+        text = read_pdf(str(Path(__file__).resolve().parents[1] / "tests/corpus/native/text-pages.pdf"))
+        assert text.engine == "pypdf" and text.pages == 2 and "Native PDF" in text.plain, text
     with TemporaryDirectory(prefix="opendoc-formats-installed-") as directory:
         root = Path(directory)
         formats = ("txt", "json", "html", "docx", "pptx", "pdf", "latex") if args.all_formats else ("txt", "json", "html")
@@ -52,6 +73,17 @@ def main() -> None:
                 assert result.success, result.issues
                 assert result.document.validate() == []
                 assert "Cell" in str(result.document)
+            if args.all_formats and format_id == "docx":
+                with DocxPackage(path) as package:
+                    paragraph = next(p for p in package.paragraphs if p.is_body and p.text)
+                    updated = package.to_bytes([ReplaceTextSpan(paragraph.id, 0, 0, "Native ")])
+                with DocxPackage(updated) as package:
+                    assert package.paragraphs[0].text.startswith("Native ")
+            if args.all_formats and format_id == "pdf":
+                with PdfDocument(path) as pdf:
+                    assert pdf.page_count > 0 and pdf.page_info(0).width > 0
+                    rendered = pdf.render_page(0, max_dimension=512)
+                    assert rendered.png.startswith(b"\x89PNG") and rendered.effective_scale > 0
     print(f"Installed wheel smoke passed: {', '.join(formats)}")
 
 

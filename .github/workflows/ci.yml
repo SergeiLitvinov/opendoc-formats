@@ -32,6 +32,9 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: uv sync --frozen --all-extras
+      - name: Install office converter for real acceptance
+        if: matrix.os == 'ubuntu-latest' && matrix.python == '3.12'
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libreoffice-writer
       - run: uv run --frozen ruff check
       - run: uv run --frozen mypy
       - run: uv run --frozen python -m tools.audit
@@ -59,6 +62,11 @@ jobs:
           uv venv .opendoc-formats/installed
           uv pip install --python .opendoc-formats/installed/bin/python 'opendoc @ https://github.com/SergeiLitvinov/opendoc/releases/download/v0.1.0/opendoc-0.1.0-py3-none-any.whl' .opendoc-formats/from-sdist/*.whl
           .opendoc-formats/installed/bin/python -I tools/package_smoke.py
+      - name: Exercise minimal PDF text extra
+        run: |
+          version=$(python -m tools.release version)
+          uv pip install --python .opendoc-formats/installed/bin/python ".opendoc-formats/from-sdist/opendoc_formats-${version}-py3-none-any.whl[pdf-text]"
+          .opendoc-formats/installed/bin/python -I tools/package_smoke.py --pdf-text
       - name: Install optional engines and exercise installed formats
         run: |
           version=$(python -m tools.release version)

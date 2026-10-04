@@ -1441,7 +1441,7 @@ provides-extras = ["math", "dev", "docs"]
 
 [[package]]
 name = "opendoc-formats"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "opendoc" },
@@ -1459,6 +1459,7 @@ docs = [
     { name = "mkdocs" },
 ]
 docx = [
+    { name = "lxml" },
     { name = "python-docx" },
 ]
 epub = [
@@ -1478,6 +1479,9 @@ pdf = [
     { name = "pymupdf" },
     { name = "pypdf" },
 ]
+pdf-text = [
+    { name = "pypdf" },
+]
 pptx = [
     { name = "lxml" },
     { name = "pillow" },
@@ -1491,6 +1495,7 @@ requires-dist = [
     { name = "build", marker = "extra == 'dev'", specifier = ">=1.2" },
     { name = "ebooklib", marker = "extra == 'epub'", specifier = ">=0.18" },
     { name = "fonttools", marker = "extra == 'fonts'", specifier = ">=4.50" },
+    { name = "lxml", marker = "extra == 'docx'", specifier = ">=5" },
     { name = "lxml", marker = "extra == 'pptx'", specifier = ">=5" },
     { name = "mkdocs", marker = "extra == 'docs'", specifier = ">=1.6,<2" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.15" },
@@ -1500,6 +1505,7 @@ requires-dist = [
     { name = "pillow", marker = "extra == 'pptx'", specifier = ">=10" },
     { name = "pymupdf", marker = "extra == 'pdf'", specifier = ">=1.24" },
     { name = "pypdf", marker = "extra == 'pdf'", specifier = ">=4" },
+    { name = "pypdf", marker = "extra == 'pdf-text'", specifier = ">=4" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8" },
     { name = "python-docx", marker = "extra == 'docx'", specifier = ">=1.1" },
     { name = "python-pptx", marker = "extra == 'pptx'", specifier = ">=1.0.2" },
@@ -1507,7 +1513,7 @@ requires-dist = [
     { name = "tinycss2", marker = "extra == 'html'", specifier = ">=1.5" },
     { name = "twine", marker = "extra == 'dev'", specifier = ">=6" },
 ]
-provides-extras = ["pdf", "docx", "pptx", "epub", "fonts", "html", "dev", "docs"]
+provides-extras = ["pdf-text", "pdf", "docx", "pptx", "epub", "fonts", "html", "dev", "docs"]
 
 [[package]]
 name = "packaging"

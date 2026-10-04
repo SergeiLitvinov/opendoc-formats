@@ -30,14 +30,19 @@ nav:
       - Ресурсы и отмена: guide/resources.md
       - Свои обработчики: guide/extensions.md
       - Архитектура и зависимость: guide/architecture.md
+      - Нативный доступ: guide/native-access.md
+      - Проверенные возможности: guide/format-audit.md
   - Справочник:
       - Публичный API: reference/api.md
       - Навигатор по коду: reference/code.md
   - Разработка:
       - Результаты аудита: development/audit.md
+      - Тестовый корпус: development/corpus.md
+      - Нативный контракт: development/native-access-contract.md
+      - Запросы к библиотеке: development/format-requests.md
+      - Подтверждённые задачи: development/todo.md
+      - Исследования: development/research.md
       - Сборка и выпуск: development/release.md
       - Участие в проекте: development/contributing.md
-      - Контракт проекта: development/AGENTS.md
-      - Завершённые вехи: development/completed.md
-      - История изменений: development/changelog.md
+      - Улучшения версии: development/changelog.md
       - Происхождение и лицензии: development/notice.md

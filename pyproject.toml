@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "opendoc-formats"
-version = "0.2.0"
+version = "0.3.0"
 description = "Document format readers and writers built on OpenDoc: formats, structure, transition"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -26,8 +26,9 @@ classifiers = [
 dependencies = ["opendoc==0.1.0"]
 
 [project.optional-dependencies]
+pdf-text = ["pypdf>=4"]
 pdf = ["pypdf>=4", "pymupdf>=1.24", "pdf2docx>=0.2", "pdfplumber>=0.11"]
-docx = ["python-docx>=1.1"]
+docx = ["python-docx>=1.1", "lxml>=5"]
 pptx = ["python-pptx>=1.0.2", "lxml>=5", "Pillow>=10"]
 epub = ["ebooklib>=0.18", "beautifulsoup4>=4.12"]
 fonts = ["fonttools>=4.50"]
@@ -75,7 +76,7 @@ python_version = "3.11"
 strict = true
 follow_imports = "silent"
 ignore_missing_imports = true
-files = ["src/opendoc_formats/api.py", "src/opendoc_formats/export.py", "src/opendoc_formats/types.py"]
+files = ["src/opendoc_formats/api.py", "src/opendoc_formats/export.py", "src/opendoc_formats/types.py", "src/opendoc_formats/docx.py", "src/opendoc_formats/pdf.py", "src/opendoc_formats/office.py", "src/opendoc_formats/package_resources.py", "src/opendoc_formats/errors.py"]
 
 [tool.ruff.lint.extend-per-file-ignores]
 "src/opendoc_formats/**/*.py" = ["ANN401"]

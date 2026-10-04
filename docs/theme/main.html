@@ -28,11 +28,11 @@
 <a class="skip-link" href="#main-content">Перейти к содержимому</a>
 <header class="docs-header">
   <a class="docs-brand" href="{{ nav.homepage.url|url }}"><img src="{{ 'assets/documentation-logo.svg'|url }}" width="32" height="32" alt=""><span>OpenDoc Formats<small>Документация</small></span></a>
-  <button class="docs-search-button" type="button" data-open-search>Поиск <kbd>Ctrl K</kbd></button>
+  <button class="docs-search-button" type="button" data-open-search aria-label="Поиск в документации">Поиск <kbd>Ctrl K</kbd></button>
   <nav class="docs-top-nav" aria-label="Основные разделы">
     <a href="{{ doc_url('guide/index.md') }}">Руководство</a>
     <a href="{{ doc_url('reference/code.md') }}">Код</a>
-    <a href="{{ doc_url('development/completed.md') }}">Возможности</a>
+    <a href="{{ doc_url('guide/format-audit.md') }}">Возможности</a>
   </nav>
   <button class="docs-theme-button" type="button" aria-label="Включить тёмную тему" title="Переключить тему">◐</button>
   <button class="docs-menu-button" type="button" aria-expanded="false" aria-controls="docs-navigation">Разделы</button>
@@ -46,16 +46,16 @@
     {% if page and page.is_homepage %}
     <section class="docs-hero" aria-labelledby="hero-title">
       <div><p class="eyebrow">Работа с документами</p><h1 id="hero-title"><span>OpenDoc Formats</span><br>Форматы.<br>Структура. Переход.</h1>
-      <p class="hero-description">Импорт и экспорт документов через общую модель OpenDoc. Обработчики, ресурсы и диагностика преобразований.</p>
+      <p class="hero-description">Импорт и экспорт через модель OpenDoc. Правки исходного DOCX, страницы PDF и диагностика преобразований.</p>
       <div class="hero-actions"><a class="docs-button" href="{{ doc_url('guide/index.md') }}">Начать работу <span aria-hidden="true">→</span></a><a class="docs-button secondary" href="{{ doc_url('reference/code.md') }}">Изучить код</a></div></div>
       <div class="hero-art" aria-hidden="true"><div class="art-page back"></div><div class="art-page front"><span class="art-label">OF / FORMATS</span><strong>Aa</strong><i></i><i></i><i></i><div class="art-formula">DOCX → HTML</div><span class="art-check">✓</span></div></div>
     </section>
     <section class="docs-cards" aria-label="Выберите задачу">
       <a class="docs-card" href="{{ doc_url('guide/index.md') }}"><span class="card-number">01 / РУКОВОДСТВО</span><h2>Сделать задачу</h2><p>Чтение файла, выбор движка и запись в нужном формате.</p><span class="card-link">Выбрать действие →</span></a>
-      <a class="docs-card" href="{{ doc_url('guide/index.md') }}"><span class="card-number">02 / ВОЗМОЖНОСТИ</span><h2>Понять границы</h2><p>Поддержка форматов, потери преобразования и политика ресурсов.</p><span class="card-link">Изучить контракт →</span></a>
+      <a class="docs-card" href="{{ doc_url('guide/format-audit.md') }}"><span class="card-number">02 / ВОЗМОЖНОСТИ</span><h2>Понять границы</h2><p>Поддержка форматов, потери преобразования и политика ресурсов.</p><span class="card-link">Изучить контракт →</span></a>
       <a class="docs-card" href="{{ doc_url('reference/code.md') }}"><span class="card-number">03 / РАЗРАБОТКА</span><h2>Найти реализацию</h2><p>Модули, определения, импорты и тесты, собранные из исходников.</p><span class="card-link">Открыть навигатор →</span></a>
     </section>
-    <div class="docs-home-note"><strong>Отдельный пакет на базе OpenDoc.</strong> Модель и валидация — обязательная зависимость. Руководство и <a href="{{ doc_url('development/completed.md') }}">завершённые возможности</a> связывают обработчики с проверками.</div>
+    <div class="docs-home-note"><strong>Отдельный пакет на базе OpenDoc.</strong> Модель и валидация — обязательная зависимость. <a href="{{ doc_url('guide/native-access.md') }}">Нативный доступ</a> сохраняет исходный DOCX и открывает страницы PDF без объектов движков в API.</div>
     <details class="docs-overview"><summary>О проекте, установке и примерах</summary><article class="docs-prose">{{ page.content }}</article></details>
     {% else %}
     <article class="docs-prose">{{ page.content if page else '<h1>Страница не найдена</h1>' }}</article>

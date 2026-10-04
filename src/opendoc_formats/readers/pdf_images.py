@@ -205,8 +205,8 @@ def extract_pdf_vector_drawings(path: str | Path) -> tuple[list[PdfVectorDrawing
                 )
 
                 items = tuple(_drawing_value(command) for command in draw.get("items", []))
-                fill_opacity = float(draw.get("fill_opacity", 1.0) or 1.0)
-                stroke_opacity = float(draw.get("stroke_opacity", 1.0) or 1.0)
+                fill_opacity = float(1.0 if draw.get("fill_opacity") is None else draw["fill_opacity"])
+                stroke_opacity = float(1.0 if draw.get("stroke_opacity") is None else draw["stroke_opacity"])
                 fill_color = _pdf_drawing_color(draw.get("fill"), alpha=fill_opacity)
                 stroke_color = _pdf_drawing_color(draw.get("stroke") or draw.get("color"), alpha=stroke_opacity)
 
