@@ -6,6 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from tools.dependency_licenses import render as dependency_inventory
+
 ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY = "https://github.com/SergeiLitvinov/opendoc-formats"
 
@@ -93,6 +95,7 @@ def generated_files() -> dict[Path, str]:
         ROOT / "docs/reference/code.md": navigator(),
         ROOT / "docs/reference/api.md": api_reference(),
         ROOT / "docs/index.md": home,
+        ROOT / "docs/reference/dependencies.md": dependency_inventory(),
     }
 
 

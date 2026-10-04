@@ -1,0 +1,969 @@
+# Реестр лицензий зависимостей
+
+Создан автоматически из проверенного снимка, привязанного к `uv.lock` и объявлению зависимостей.
+Платформенные markers объединены: это весь граф, а не список одновременно установленных пакетов.
+Версии NumPy могут различаться по Python; обе записи проверены.
+
+Назначение прямых и внешних движков: [руководство](../guide/dependencies.md).
+Условия и границы вывода: [лицензионный аудит](../development/licenses.md).
+
+| Пакет | Версия | Профили | Лицензия и дополнительные условия | Назначение |
+| --- | --- | --- | --- | --- |
+| [ast-serialize](#ast-serialize-0121) | 0.12.1 | dev | MIT | Сериализация AST для mypy |
+| [backports-tarfile](#backports-tarfile-120) | 1.2.0 | dev | MIT | Совместимость архивов tooling |
+| [beautifulsoup4](#beautifulsoup4-4150) | 4.15.0 | epub, html | MIT License | HTML/XHTML parser |
+| [build](#build-161) | 1.6.1 | dev | MIT | Frontend сборки Python |
+| [certifi](#certifi-2026722) | 2026.7.22 | dev | MPL-2.0 | Набор корневых TLS-сертификатов |
+| [cffi](#cffi-211) | 2.1.1 | dev, pdf | MIT-0 | Вызов native кода |
+| [charset-normalizer](#charset-normalizer-352) | 3.5.2 | dev, pdf | MIT | Определение кодировки HTTP |
+| [click](#click-850) | 8.5.0 | docs | BSD-3-Clause | CLI MkDocs/tooling |
+| [colorama](#colorama-046) | 0.4.6 | dev, docs | BSD-3-Clause | Цветной вывод Windows |
+| [cryptography](#cryptography-5002) | 50.0.2 | dev, pdf | Apache-2.0 OR BSD-3-Clause | Криптография PDF и системного credential storage |
+| [docutils](#docutils-023) | 0.23 | dev | Public domain + BSD-2-Clause/BSD-3-Clause; GPL-3.0-or-later для отдельных tooling files | Разбор описаний reStructuredText для twine |
+| [ebooklib](#ebooklib-020) | 0.20 | epub | AGPL-3.0-or-later | Контейнер и spine EPUB |
+| [fire](#fire-071) | 0.7.1 | pdf | Apache-2.0 | CLI прямого PDF-конвертера |
+| [fonttools](#fonttools-4661) | 4.66.1 | fonts, pdf | MIT | Метаданные шрифтов |
+| [ghp-import](#ghp-import-210) | 2.1.0 | docs | Apache Software License | Инструмент публикации MkDocs |
+| [id](#id-161) | 1.6.1 | dev | Apache-2.0 | Идентификация публикации tooling |
+| [idna](#idna-320) | 3.20 | dev | BSD-3-Clause | Международные доменные имена HTTP |
+| [importlib-metadata](#importlib-metadata-901) | 9.0.1 | dev | Apache-2.0 | Метаданные установленных пакетов |
+| [iniconfig](#iniconfig-230) | 2.3.0 | dev | MIT | Конфигурация pytest |
+| [jaraco-classes](#jaraco-classes-340) | 3.4.0 | dev | MIT | Вспомогательные классы credential storage |
+| [jaraco-context](#jaraco-context-612) | 6.1.2 | dev | MIT | Контекстные менеджеры tooling |
+| [jaraco-functools](#jaraco-functools-460) | 4.6.0 | dev | MIT | Вспомогательные функции tooling |
+| [jeepney](#jeepney-090) | 0.9.0 | dev | MIT | D-Bus transport credential storage |
+| [jinja2](#jinja2-316) | 3.1.6 | docs | BSD-3-Clause | Шаблоны документации |
+| [keyring](#keyring-2570) | 25.7.0 | dev | MIT | Хранилище credentials twine |
+| [librt](#librt-0160) | 0.16.0 | dev | MIT | Runtime mypy |
+| [lxml](#lxml-613) | 6.1.3 | docx, epub, pdf, pptx | BSD-3-Clause + PSF/ElementTree, MIT, Zlib, LGPL-2.1; upstream отмечает unlicensed XSL | XML/OOXML parser |
+| [markdown](#markdown-311) | 3.11 | docs | BSD-3-Clause | Markdown документации |
+| [markdown-it-py](#markdown-it-py-420) | 4.2.0 | dev | MIT | Разбор Markdown для CLI |
+| [markupsafe](#markupsafe-304) | 3.0.4 | docs | BSD-3-Clause | Экранирование HTML шаблонов |
+| [mdurl](#mdurl-012) | 0.1.2 | dev | MIT | URL parser Markdown |
+| [mergedeep](#mergedeep-134) | 1.3.4 | docs | MIT | Слияние конфигурации MkDocs |
+| [mkdocs](#mkdocs-161) | 1.6.1 | docs | BSD-2-Clause; поиск: MIT/MPL-1.1 | Генератор документации |
+| [mkdocs-get-deps](#mkdocs-get-deps-022) | 0.2.2 | docs | MIT | Обнаружение плагинов документации |
+| [more-itertools](#more-itertools-1110) | 11.1.0 | dev | MIT | Итераторы tooling |
+| [mypy](#mypy-240) | 2.4.0 | dev | MIT | Проверка типов |
+| [mypy-extensions](#mypy-extensions-110) | 1.1.0 | dev | MIT | Дополнения typing |
+| [nh3](#nh3-037) | 0.3.7 | dev | MIT | Очистка HTML описания пакета |
+| [numpy](#numpy-246) | 2.4.6 | pdf | BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0; wheel: BLAS/GCC runtime exception и bundled notices | Массивы PDF-конвертера |
+| [numpy](#numpy-253) | 2.5.3 | pdf | BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0; wheel: BLAS/GCC runtime exception и bundled notices | Массивы PDF-конвертера |
+| [opencv-python-headless](#opencv-python-headless-50093) | 5.0.0.93 | pdf | MIT wrapper + Apache-2.0 OpenCV; FFmpeg LGPL и прочие bundled условия | Обработка изображений PDF-конвертера |
+| [opendoc](#opendoc-010) | 0.1.0 | base | MIT | Модель документа, ресурсы и валидация |
+| [packaging](#packaging-263) | 26.3 | dev, docs | Apache-2.0 OR BSD-2-Clause | Версии, требования и platform tags |
+| [pathspec](#pathspec-111) | 1.1.1 | dev, docs | MPL-2.0 | Шаблоны файлов mypy |
+| [pdf2docx](#pdf2docx-0513) | 0.5.13 | pdf | MIT | Прямой PDF → DOCX converter |
+| [pdfminer-six](#pdfminer-six-20260107) | 20260107 | pdf | MIT | Текст и layout для pdfplumber |
+| [pdfplumber](#pdfplumber-01110) | 0.11.10 | pdf | MIT | Таблицы и геометрия PDF |
+| [pillow](#pillow-1230) | 12.3.0 | pdf, pptx | MIT-CMU + bundled licenses (см. LICENSE) | Изображения и fallback |
+| [platformdirs](#platformdirs-4122) | 4.12.2 | docs | MIT | Пути кеша tooling |
+| [pluggy](#pluggy-160) | 1.6.0 | dev | MIT | Плагины pytest |
+| [pycparser](#pycparser-30) | 3.0 | dev, pdf | BSD-3-Clause | C declarations для cffi |
+| [pygments](#pygments-2210) | 2.21.0 | dev | BSD-2-Clause | Подсветка кода CLI/описаний |
+| [pymupdf](#pymupdf-1282) | 1.28.2 | pdf | AGPL-3.0 OR Artifex commercial | PDF import/export/render |
+| [pypdf](#pypdf-6190) | 6.19.0 | pdf, pdf-text | BSD-3-Clause | Низкоуровневый PDF text |
+| [pypdfium2](#pypdfium2-5130) | 5.13.0 | pdf | Apache-2.0 OR BSD-3-Clause; PDFium/build licenses; CC-BY-4.0 для документации | PDFium rendering для pdfplumber |
+| [pyproject-hooks](#pyproject-hooks-133) | 1.3.3 | dev | MIT | Вызов backend сборки |
+| [pytest](#pytest-911) | 9.1.1 | dev | MIT | Тестовый runner |
+| [python-dateutil](#python-dateutil-290post0) | 2.9.0.post0 | docs | BSD-3-Clause OR Apache-2.0 | Даты инструментов документации |
+| [python-docx](#python-docx-120) | 1.2.0 | docx, pdf | MIT | DOCX reader/writer |
+| [python-pptx](#python-pptx-102) | 1.0.2 | pptx | MIT | PPTX reader/writer |
+| [pywin32-ctypes](#pywin32-ctypes-023) | 0.2.3 | dev | BSD-3-Clause | Windows credential API tooling |
+| [pyyaml](#pyyaml-603) | 6.0.3 | docs | MIT | YAML конфигурация |
+| [pyyaml-env-tag](#pyyaml-env-tag-11) | 1.1 | docs | MIT | Environment tags YAML MkDocs |
+| [readme-renderer](#readme-renderer-460) | 46.0 | dev | Apache-2.0 | Проверка описания пакета |
+| [requests](#requests-2342) | 2.34.2 | dev | Apache-2.0 | HTTP tooling |
+| [requests-toolbelt](#requests-toolbelt-100) | 1.0.0 | dev | Apache 2.0 | HTTP multipart публикации |
+| [rfc3986](#rfc3986-200) | 2.0.0 | dev | Apache 2.0 | Проверка URL tooling |
+| [rich](#rich-1500) | 15.0.0 | dev | MIT | Форматирование CLI |
+| [ruff](#ruff-01610) | 0.16.10 | dev | MIT | Линтер |
+| [secretstorage](#secretstorage-350) | 3.5.0 | dev | BSD-3-Clause | Linux credential storage |
+| [six](#six-1170) | 1.17.0 | docs, epub | MIT | Совместимость Python EPUB/dateutil |
+| [soupsieve](#soupsieve-210) | 2.10 | epub, html | MIT | CSS selectors BeautifulSoup |
+| [termcolor](#termcolor-330) | 3.3.0 | pdf | MIT | Цвет CLI конвертера |
+| [tinycss2](#tinycss2-151) | 1.5.1 | html | BSD-3-Clause | CSS parser HTML |
+| [twine](#twine-700) | 7.0.0 | dev | Apache-2.0 | Проверка/публикация метаданных Python |
+| [typing-extensions](#typing-extensions-4160) | 4.16.0 | dev, docx, epub, html, pdf, pptx | PSF-2.0 | Совместимость аннотаций типов |
+| [urllib3](#urllib3-280) | 2.8.0 | dev | MIT | HTTP transport tooling |
+| [watchdog](#watchdog-600) | 6.0.0 | docs | Apache-2.0 | Отслеживание файлов документации |
+| [webencodings](#webencodings-061) | 0.6.1 | html | BSD-3-Clause | Кодировки CSS |
+| [xlsxwriter](#xlsxwriter-329) | 3.2.9 | pptx | BSD-2-Clause | Встроенные книги chart data PPTX |
+| [zipp](#zipp-411) | 4.1.1 | dev | MIT | Совместимость ZIP metadata |
+
+## Первичные доказательства
+
+Для небольших wheels проверен полный SHA-256. В больших wheels лицензионные файлы прочитаны
+HTTP Range: их SHA-256 вычислен, SHA-256 всего архива указан из lockfile и не перепроверен.
+Это проверка лицензионного состава, а не проверка целостности скачанного большого архива.
+
+### ast-serialize 0.12.1
+
+[Метаданные выпуска](https://pypi.org/project/ast-serialize/0.12.1/)
+
+- [ast_serialize-0.12.1-cp315-abi3.abi3t-win_amd64.whl](https://files.pythonhosted.org/packages/80/1e/6074cf29dca8ceff27d50e845c88e7a2eaaa7f0b6f3972909e878d844737/ast_serialize-0.12.1-cp315-abi3.abi3t-win_amd64.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `a9cd24a26126088693ca054547ea0a391398a29cf1a3a2bec1009b4b6acc8b82`.
+  - `ast_serialize-0.12.1.dist-info/licenses/LICENSE` — `91e1749165651f2ad405f1533a921fc8d5cb0de2fd88a4b82090a8b571b5598d`.
+  - `ast_serialize-0.12.1.dist-info/licenses/crates/LICENSE` — `f798046f335b4c84dc851224aeeb8a96b6a1eb70f02f058e860bb00d9d7551cc`.
+- [ast_serialize-0.12.1-cp315-abi3.abi3t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl](https://files.pythonhosted.org/packages/3f/69/e9cae837bd766a66db6953ffb5fc7f04b1945e02b0a9e4c6a0b6acb08f17/ast_serialize-0.12.1-cp315-abi3.abi3t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `9e855adfa5bb982b2e6fe09056b2d584f6dd4fce085d91a07d1155683751b6b5`.
+  - `ast_serialize-0.12.1.dist-info/licenses/LICENSE` — `db90b8fd0ae1748117ab467680a5193bfd057a3119846cb53ee3b64f16577b3b`.
+  - `ast_serialize-0.12.1.dist-info/licenses/crates/LICENSE` — `2597d854122b77ddc71971564ca2350a37608575ce324adc5650a2b2051c8f18`.
+
+### backports-tarfile 1.2.0
+
+[Метаданные выпуска](https://pypi.org/project/backports-tarfile/1.2.0/)
+
+- [backports.tarfile-1.2.0-py3-none-any.whl](https://files.pythonhosted.org/packages/b9/fa/123043af240e49752f1c4bd24da5053b6bd00cad78c2be53c0d1e8b975bc/backports.tarfile-1.2.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `77e284d754527b01fb1e6fa8a1afe577858ebe4e9dad8919e34c862cb399bc34`.
+  - `backports.tarfile-1.2.0.dist-info/LICENSE` — `86da0f01aeae46348a3c3d465195dc1ceccde79f79e87769a64b8da04b2a4741`.
+
+### beautifulsoup4 4.15.0
+
+[Метаданные выпуска](https://pypi.org/project/beautifulsoup4/4.15.0/)
+
+- [beautifulsoup4-4.15.0-py3-none-any.whl](https://files.pythonhosted.org/packages/88/c6/92fcd42f1ba33e1184263f25bfabf3d27c383410470f169e4b8163bf9c17/beautifulsoup4-4.15.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `d6f88de62e1d4e38ecb1077eb9724cd0eff29d2a08ca16a401e9b9e93f117cf9`.
+  - `beautifulsoup4-4.15.0.dist-info/licenses/AUTHORS` — `b989238918e1fdac1e46717cb405b63e92497a272413af0d989c1df6c8abcb6f`.
+  - `beautifulsoup4-4.15.0.dist-info/licenses/LICENSE` — `55b4d8d4b1e5bc86d10efac91b74c87bcb77526b0f5b9edaf8b9cd2adc7397b2`.
+
+### build 1.6.1
+
+[Метаданные выпуска](https://pypi.org/project/build/1.6.1/)
+
+- [build-1.6.1-py3-none-any.whl](https://files.pythonhosted.org/packages/ad/9b/9fb3585dabcd73a1b2a6267f63f62649347c9e6d072c9fde365b105abb2c/build-1.6.1-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `ecd351a4be9d35a9eaaba244a7687143c9c7d4aea6ac964e7e7ddab20cbcf4e7`.
+  - `build-1.6.1.dist-info/licenses/LICENSE` — `aaf9a29ca5907971ccf07de025375db34539a8d5eeebce20b46099805722106f`.
+
+### certifi 2026.7.22
+
+[Метаданные выпуска](https://pypi.org/project/certifi/2026.7.22/)
+
+- [certifi-2026.7.22-py3-none-any.whl](https://files.pythonhosted.org/packages/0b/a7/71ac2cff56fec219ed242bb11b8efb69fcc4bec75db06fb7bfe35de520e6/certifi-2026.7.22-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775`.
+  - `certifi-2026.7.22.dist-info/licenses/LICENSE` — `e93716da6b9c0d5a4a1df60fe695b370f0695603d21f6f83f053e42cfc10caf7`.
+
+### cffi 2.1.1
+
+[Метаданные выпуска](https://pypi.org/project/cffi/2.1.1/)
+
+- [cffi-2.1.1-cp312-cp312-win_amd64.whl](https://files.pythonhosted.org/packages/d9/79/615cc094e2fb508cade7de88d3b4f6c4ec2bab695c97bce9153dc65aadf5/cffi-2.1.1-cp312-cp312-win_amd64.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `f53e442b08449d42821fa4a4fba000095af9f62742a500f978a9f557ec44339a`.
+  - `cffi-2.1.1.dist-info/licenses/LICENSE` — `5ba24ddc57067f9249add644c3afc41a5d6dc37e23433ef759d95df370b0af63`.
+- [cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl](https://files.pythonhosted.org/packages/b1/db/dceb9dd5b231e1da801793f8acc9f3c52a7e1afe40bb1aae37e02b0faad5/cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `c1453022f490d2459a11819d83ad1d586e9ff65a12ac3e705ffebd46d3685dcf`.
+  - `cffi-2.1.1.dist-info/licenses/LICENSE` — `5ba24ddc57067f9249add644c3afc41a5d6dc37e23433ef759d95df370b0af63`.
+
+### charset-normalizer 3.5.2
+
+[Метаданные выпуска](https://pypi.org/project/charset-normalizer/3.5.2/)
+
+- [charset_normalizer-3.5.2-py3-none-any.whl](https://files.pythonhosted.org/packages/fc/ad/d07d7862a62ffa6d79d68074d14823243dd235a77c45262acbf6adeb28bf/charset_normalizer-3.5.2-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `b6b751274acb69d77b3323d6b7dbaa3c7fdfc1eb829b7eb61d262f32e1af9685`.
+  - `charset_normalizer-3.5.2.dist-info/licenses/LICENSE` — `6d0d41bfe170ac6c7dc248c9a63e254d0fb45a60d50a8257d0af92c6e249b887`.
+
+### click 8.5.0
+
+[Метаданные выпуска](https://pypi.org/project/click/8.5.0/)
+
+- [click-8.5.0-py3-none-any.whl](https://files.pythonhosted.org/packages/58/50/6c0d534c5f134586a8e1ba4e330569e32f057e33372ae556463212fb4cd3/click-8.5.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360`.
+  - `click-8.5.0.dist-info/licenses/LICENSE.txt` — `9a8ad106a394e853bfe21f42f4e72d592819a22805d991b5f3275029292b658d`.
+
+### colorama 0.4.6
+
+[Метаданные выпуска](https://pypi.org/project/colorama/0.4.6/)
+
+- [colorama-0.4.6-py2.py3-none-any.whl](https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6`.
+  - `colorama-0.4.6.dist-info/licenses/LICENSE.txt` — `cac35c02686e5d04a5a7140bfb3b36e73aed496656e891102e428886d7930318`.
+
+### cryptography 50.0.2
+
+[Метаданные выпуска](https://pypi.org/project/cryptography/50.0.2/)
+
+- [cryptography-50.0.2-cp311-abi3-win_amd64.whl](https://files.pythonhosted.org/packages/9a/4f/adfc442765721292fff86d314ce385d3249d22db42295c0dd057727b60f3/cryptography-50.0.2-cp311-abi3-win_amd64.whl) — license members через Range.
+  SHA-256 архива по lockfile: `7afa5a6602a9f29af1f3a2965f831bae7c9d5d597b7cbb716d41ab3b7d89879c`.
+  - `cryptography-50.0.2.dist-info/licenses/LICENSE` — `3e0c7c091a948b82533ba98fd7cbb40432d6f1a9acbf85f5922d2f99a93ae6bb`.
+  - `cryptography-50.0.2.dist-info/licenses/LICENSE.APACHE` — `aac73b3148f6d1d7111dbca32099f68d26c644c6813ae1e4f05f6579aa2663fe`.
+  - `cryptography-50.0.2.dist-info/licenses/LICENSE.BSD` — `602c4c7482de6479dd2e9793cda275e5e63d773dacd1eca689232ab7008fb4fb`.
+- [cryptography-50.0.2-cp311-abi3-manylinux_2_28_x86_64.whl](https://files.pythonhosted.org/packages/1a/f1/b474e930c4d910328780e3940da76f5aa5cbc48ce1fc14e44d239d9ea9db/cryptography-50.0.2-cp311-abi3-manylinux_2_28_x86_64.whl) — license members через Range.
+  SHA-256 архива по lockfile: `4061c0079120205fb760c58acab6443e217307dcf05e3702cf970e0689972856`.
+  - `cryptography-50.0.2.dist-info/licenses/LICENSE` — `3e0c7c091a948b82533ba98fd7cbb40432d6f1a9acbf85f5922d2f99a93ae6bb`.
+  - `cryptography-50.0.2.dist-info/licenses/LICENSE.APACHE` — `aac73b3148f6d1d7111dbca32099f68d26c644c6813ae1e4f05f6579aa2663fe`.
+  - `cryptography-50.0.2.dist-info/licenses/LICENSE.BSD` — `602c4c7482de6479dd2e9793cda275e5e63d773dacd1eca689232ab7008fb4fb`.
+
+### docutils 0.23
+
+[Метаданные выпуска](https://pypi.org/project/docutils/0.23/)
+
+- [docutils-0.23-py3-none-any.whl](https://files.pythonhosted.org/packages/32/91/30151a39f7570f448ed84529390628a651d7f27c87d73c9b887f8189695e/docutils-0.23-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `25d013af9bf23bc1c7b2b093dff4208166c53a94786c9e447808335ef1185fea`.
+  - `docutils-0.23.dist-info/licenses/COPYING.rst` — `6ab4f27c76c74f96e5e692da5944a6f82968f3bddaac5660a4aa723e70eb5d8f`.
+  - `docutils-0.23.dist-info/licenses/licenses/BSD-0-Clause.rst` — `42ac50251ab8a6738f77d5707f2a788dbf3446a6ed68edecb6ac17489a78e163`.
+  - `docutils-0.23.dist-info/licenses/licenses/BSD-2-Clause.rst` — `b8f3b31a2f4312401fe4122fe932a333ec0d7e47d849c02da0404e8048fe74d0`.
+  - `docutils-0.23.dist-info/licenses/licenses/gpl-3-0.txt` — `e6037104443f9a7829b2aa7c5370d0789a7bda3ca65a0b904cdc0c2e285d9195`.
+
+### ebooklib 0.20
+
+[Метаданные выпуска](https://pypi.org/project/ebooklib/0.20/)
+
+- [ebooklib-0.20-py3-none-any.whl](https://files.pythonhosted.org/packages/bf/ee/aa015c5de8b0dc42a8e507eae8c2de5d1c0e068c896858fec6d502402ed6/ebooklib-0.20-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `fff5322517a37e31c972d27be7d982cc3928c16b3dcc5fd7e8f7c0f5d7bcf42b`.
+  - `ebooklib-0.20.dist-info/licenses/AUTHORS.txt` — `5f39f9f20994d500d1e79598b1fe9b21b5e439566b8508ee9c00021fbd5c675c`.
+  - `ebooklib-0.20.dist-info/licenses/LICENSE.txt` — `57c8ff33c9c0cfc3ef00e650a1cc910d7ee479a8bc509f6c9209a7c2a11399d6`.
+
+### fire 0.7.1
+
+[Метаданные выпуска](https://pypi.org/project/fire/0.7.1/)
+
+- [fire-0.7.1-py3-none-any.whl](https://files.pythonhosted.org/packages/e5/4c/93d0f85318da65923e4b91c1c2ff03d8a458cbefebe3bc612a6693c7906d/fire-0.7.1-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `e43fd8a5033a9001e7e2973bab96070694b9f12f2e0ecf96d4683971b5ab1882`.
+  - `fire-0.7.1.dist-info/licenses/LICENSE` — `a5de77b62266bca0bb97bf058992f0b0f308a83a8ca55ee10fbf6bd8ed8f7ed0`.
+
+### fonttools 4.66.1
+
+[Метаданные выпуска](https://pypi.org/project/fonttools/4.66.1/)
+
+- [fonttools-4.66.1-py3-none-any.whl](https://files.pythonhosted.org/packages/f6/10/d45b74135d5d642cb3a4fb0a957c1613ef93de4c8548671dfc3a5bf38299/fonttools-4.66.1-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `7234ae9e28db64273fbbfa72caebd0a97e3bdba6b05064114741b9539ef339d0`.
+  - `fonttools-4.66.1.dist-info/licenses/LICENSE` — `6787208f83f659ccbc2223b2fde952ffa6f7e8aca62f1a8a2bf5bc51bb1b2383`.
+  - `fonttools-4.66.1.dist-info/licenses/LICENSE.external` — `94a83aaee0729a0f302d34acc4acecbd9d58366f262429075fe557e4a54b2e69`.
+
+### ghp-import 2.1.0
+
+[Метаданные выпуска](https://pypi.org/project/ghp-import/2.1.0/)
+
+- [ghp_import-2.1.0-py3-none-any.whl](https://files.pythonhosted.org/packages/f7/ec/67fbef5d497f86283db54c22eec6f6140243aae73265799baaaa19cd17fb/ghp_import-2.1.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `8337dd7b50877f163d4c0289bc1f1c7f127550241988d568c1db512c4324a619`.
+  - `ghp_import-2.1.0.dist-info/LICENSE` — `0bc8ffb45f26edd1cd0de4f50425ae2cb46c58c6d8ac113984d4120be355afa9`.
+
+### id 1.6.1
+
+[Метаданные выпуска](https://pypi.org/project/id/1.6.1/)
+
+- [id-1.6.1-py3-none-any.whl](https://files.pythonhosted.org/packages/42/77/de194443bf38daed9452139e960c632b0ef9f9a5dd9ce605fdf18ca9f1b1/id-1.6.1-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `f5ec41ed2629a508f5d0988eda142e190c9c6da971100612c4de9ad9f9b237ca`.
+  - `id-1.6.1.dist-info/licenses/LICENSE` — `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`.
+
+### idna 3.20
+
+[Метаданные выпуска](https://pypi.org/project/idna/3.20/)
+
+- [idna-3.20-py3-none-any.whl](https://files.pythonhosted.org/packages/58/a2/bb081bab032533a855d44de1d56f8e8426114ff1ba5d1f07a438a0a654f8/idna-3.20-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c`.
+  - `idna-3.20.dist-info/licenses/LICENSE.md` — `1a9a4f0e3d479a27240ddd59a9137a66ab4a0f9dfdc8ca6188cc0bfd85187f04`.
+
+### importlib-metadata 9.0.1
+
+[Метаданные выпуска](https://pypi.org/project/importlib-metadata/9.0.1/)
+
+- [importlib_metadata-9.0.1-py3-none-any.whl](https://files.pythonhosted.org/packages/b3/55/ecca97ae19075f1fac62def77731e7f535e6c1fb8f92ff08160c5e6dade8/importlib_metadata-9.0.1-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `bba5600596a7e21f3eef53281cf28d6a5195634d2f2b78ff9501a3272c6eaab0`.
+  - `importlib_metadata-9.0.1.dist-info/licenses/LICENSE` — `e2f7bb0557e7a381499f15baa7c1d776d83d6616599179d71d3109b8e39f7b25`.
+
+### iniconfig 2.3.0
+
+[Метаданные выпуска](https://pypi.org/project/iniconfig/2.3.0/)
+
+- [iniconfig-2.3.0-py3-none-any.whl](https://files.pythonhosted.org/packages/cb/b1/3846dd7f199d53cb17f49cba7e651e9ce294d8497c8c150530ed11865bb8/iniconfig-2.3.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `f631c04d2c48c52b84d0d0549c99ff3859c98df65b3101406327ecc7d53fbf12`.
+  - `iniconfig-2.3.0.dist-info/licenses/LICENSE` — `3409fa91f7ace557894632676656e32264fe5ef7581535725dc9a23774551bd4`.
+
+### jaraco-classes 3.4.0
+
+[Метаданные выпуска](https://pypi.org/project/jaraco-classes/3.4.0/)
+
+- [jaraco.classes-3.4.0-py3-none-any.whl](https://files.pythonhosted.org/packages/7f/66/b15ce62552d84bbfcec9a4873ab79d993a1dd4edb922cbfccae192bd5b5f/jaraco.classes-3.4.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `f662826b6bed8cace05e7ff873ce0f9283b5c924470fe664fff1c2f00f581790`.
+  - `jaraco.classes-3.4.0.dist-info/LICENSE` — `86da0f01aeae46348a3c3d465195dc1ceccde79f79e87769a64b8da04b2a4741`.
+
+### jaraco-context 6.1.2
+
+[Метаданные выпуска](https://pypi.org/project/jaraco-context/6.1.2/)
+
+- [jaraco_context-6.1.2-py3-none-any.whl](https://files.pythonhosted.org/packages/f2/58/bc8954bda5fcda97bd7c19be11b85f91973d67a706ed4a3aec33e7de22db/jaraco_context-6.1.2-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `bf8150b79a2d5d91ae48629d8b427a8f7ba0e1097dd6202a9059f29a36379535`.
+  - `jaraco_context-6.1.2.dist-info/licenses/LICENSE` — `9755a18519666e5f0f4cae3daad3d7012bcae48a600b31237d75e9fe134e6683`.
+
+### jaraco-functools 4.6.0
+
+[Метаданные выпуска](https://pypi.org/project/jaraco-functools/4.6.0/)
+
+- [jaraco_functools-4.6.0-py3-none-any.whl](https://files.pythonhosted.org/packages/02/36/ecc85bc96c273dc8a11273ed4782272975e6338d4a3e9228621175edf0e3/jaraco_functools-4.6.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `99e3dc0060c5cbe8fcd1cdb36258e2a65ca40f1566b2033b12abb1bb44dd3c30`.
+  - `jaraco_functools-4.6.0.dist-info/licenses/LICENSE` — `9755a18519666e5f0f4cae3daad3d7012bcae48a600b31237d75e9fe134e6683`.
+
+### jeepney 0.9.0
+
+[Метаданные выпуска](https://pypi.org/project/jeepney/0.9.0/)
+
+- [jeepney-0.9.0-py3-none-any.whl](https://files.pythonhosted.org/packages/b2/a3/e137168c9c44d18eff0376253da9f1e9234d0239e0ee230d2fee6cea8e55/jeepney-0.9.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `97e5714520c16fc0a45695e5365a2e11b81ea79bba796e26f9f1d178cb182683`.
+  - `jeepney-0.9.0.dist-info/licenses/LICENSE` — `1b22b049b5267d6dfc23a67bf4a84d8ec04b9fdfb1a51d360e42b4342c8b4154`.
+
+### jinja2 3.1.6
+
+[Метаданные выпуска](https://pypi.org/project/jinja2/3.1.6/)
+
+- [jinja2-3.1.6-py3-none-any.whl](https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67`.
+  - `jinja2-3.1.6.dist-info/licenses/LICENSE.txt` — `3b49dcee4105eb37bac10faf1be260408fe85d252b8e9df2e0979fc1e094437b`.
+
+### keyring 25.7.0
+
+[Метаданные выпуска](https://pypi.org/project/keyring/25.7.0/)
+
+- [keyring-25.7.0-py3-none-any.whl](https://files.pythonhosted.org/packages/81/db/e655086b7f3a705df045bf0933bdd9c2f79bb3c97bfef1384598bb79a217/keyring-25.7.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `be4a0b195f149690c166e850609a477c532ddbfbaed96a404d4e43f8d5e2689f`.
+  - `keyring-25.7.0.dist-info/licenses/LICENSE` — `5a57cb4db85e2a2dd88c290628908add57e3451449e0a9a71fdfb38776fd759d`.
+
+### librt 0.16.0
+
+[Метаданные выпуска](https://pypi.org/project/librt/0.16.0/)
+
+- [librt-0.16.0-cp312-cp312-win_amd64.whl](https://files.pythonhosted.org/packages/f0/2c/5193dc81127cd5ddfad031391b046bf32dda219b38463ab872407ca30646/librt-0.16.0-cp312-cp312-win_amd64.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `25a58a19ea8d83b68209f04912df765e9260635ef77646542ed4b4abe6bc7940`.
+  - `librt-0.16.0.dist-info/licenses/LICENSE` — `81b7ac7e5dc9410dd4aa4c8f8c5884b43cb821137904dc247b381132389b6aa8`.
+- [librt-0.16.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl](https://files.pythonhosted.org/packages/ad/f7/7ce72cbf19d0addd05090b339152fd0548a02562c2866a603e6e3b3da2df/librt-0.16.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `36e53948e99bbe3ffea257124cfcae1cfb01831555c9a9c903c9f9a72db7fd07`.
+  - `librt-0.16.0.dist-info/licenses/LICENSE` — `88f9e379c684580053c58e75e296ca2eb243b6edcc6e5357f247310e96eeef8a`.
+
+### lxml 6.1.3
+
+[Метаданные выпуска](https://pypi.org/project/lxml/6.1.3/)
+
+- [lxml-6.1.3-cp312-cp312-win_amd64.whl](https://files.pythonhosted.org/packages/3a/5b/6ed903e4e6278a020c8a6f0dbbe78030d041840a6b4a64ea441a1e414077/lxml-6.1.3-cp312-cp312-win_amd64.whl) — license members через Range.
+  SHA-256 архива по lockfile: `3e9a00d1c2c30936f7add097c41afc5da6556c580909104aafd382cac92a855c`.
+  - `lxml-6.1.3.dist-info/licenses/LICENSE.txt` — `e7c3ce8d76331b0101cc46790ab43958ea90a364bcf962ed8763d5a818340e69`.
+  - `lxml-6.1.3.dist-info/licenses/LICENSES.txt` — `df682c668de65321677b5e4861dca4128a8bad8067f230956e9da3f985b3d398`.
+- [lxml-6.1.3-cp312-cp312-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl](https://files.pythonhosted.org/packages/0a/20/e022dbc6b4753a9bc9fc5fb28a27163430c1731b9913997f6544c1b2518c/lxml-6.1.3-cp312-cp312-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl) — license members через Range.
+  SHA-256 архива по lockfile: `909f4e927bb051f7740d6367285fc60cdcfdaf0258c2dba4ff5ba7eadadc250c`.
+  - `lxml-6.1.3.dist-info/licenses/LICENSE.txt` — `8fc2b568133516e46845d2147917adeee1648e70ae9ab5ed6c5417afef4ce855`.
+  - `lxml-6.1.3.dist-info/licenses/LICENSES.txt` — `388fa99f3bde4447cd5a4cbb114037be026854db6cfe89e112691c1d8abdcf3c`.
+
+### markdown 3.11
+
+[Метаданные выпуска](https://pypi.org/project/markdown/3.11/)
+
+- [markdown-3.11-py3-none-any.whl](https://files.pythonhosted.org/packages/ec/1e/32971905a7ab47f8b66866ed949fa48b104ba1c4a6fa57794c4f2c4b2cb8/markdown-3.11-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `cd6c89e7eb308c8b332ed673215a52d208a43f8bacc030b1419376129408719e`.
+  - `markdown-3.11.dist-info/licenses/LICENSE.md` — `7ba4eb6d10b32b2d11dce13821340351cdbbb30ba8ccc67841db2ffd86e79aca`.
+
+### markdown-it-py 4.2.0
+
+[Метаданные выпуска](https://pypi.org/project/markdown-it-py/4.2.0/)
+
+- [markdown_it_py-4.2.0-py3-none-any.whl](https://files.pythonhosted.org/packages/b3/81/4da04ced5a082363ecfa159c010d200ecbd959ae410c10c0264a38cac0f5/markdown_it_py-4.2.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `9f7ebbcd14fe59494226453aed97c1070d83f8d24b6fc3a3bcf9a38092641c4a`.
+  - `markdown_it_py-4.2.0.dist-info/licenses/LICENSE` — `4a2260d6e2cd0f5a151a1e86dbfe7d3ed552b1e2beabf9941c1ba5c49cbce484`.
+  - `markdown_it_py-4.2.0.dist-info/licenses/LICENSE.markdown-it` — `792c48c5a849a15fdf9e37e8bcf9e6d1dd13b32b46c642a748a0a46a9919d473`.
+
+### markupsafe 3.0.4
+
+[Метаданные выпуска](https://pypi.org/project/markupsafe/3.0.4/)
+
+- [markupsafe-3.0.4-cp312-cp312-win_amd64.whl](https://files.pythonhosted.org/packages/3f/bf/62495e180b7000aaf30000fff849e933f74264638057176cf46852500adc/markupsafe-3.0.4-cp312-cp312-win_amd64.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `11935df9bf455ed0c04eb87bcd720f02b1fe5e02128a9430f23aed6f93336fc7`.
+  - `markupsafe-3.0.4.dist-info/licenses/LICENSE.txt` — `4631ec0db5fd90a547e336817264c6798214338146f8ac94b4a57f96ee8c9ec4`.
+- [markupsafe-3.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl](https://files.pythonhosted.org/packages/4f/a7/aeedb5140afa41fc74c225e9184ab96723a6e873b6ee1c9fede7283456d8/markupsafe-3.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `8e124f974786f831d6043728e38296969d3579db8896fe004682f5758e613581`.
+  - `markupsafe-3.0.4.dist-info/licenses/LICENSE.txt` — `489a8e1108509ed98a37bb983e11e0f7e1d31f0bd8f99a79c8448e7ff37d07ea`.
+
+### mdurl 0.1.2
+
+[Метаданные выпуска](https://pypi.org/project/mdurl/0.1.2/)
+
+- [mdurl-0.1.2-py3-none-any.whl](https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8`.
+  - `mdurl-0.1.2.dist-info/LICENSE` — `7c605df6e28667a9603118e98274f64a49ce3eed0d26fccce9534a345e0ef955`.
+
+### mergedeep 1.3.4
+
+[Метаданные выпуска](https://pypi.org/project/mergedeep/1.3.4/)
+
+- [mergedeep-1.3.4-py3-none-any.whl](https://files.pythonhosted.org/packages/2c/19/04f9b178c2d8a15b076c8b5140708fa6ffc5601fb6f1e975537072df5b2a/mergedeep-1.3.4-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `70775750742b25c0d8f36c55aed03d24c3384d17c951b3175d898bd778ef0307`.
+  - `mergedeep-1.3.4.dist-info/LICENSE` — `11592bd9d56693c987da849c075d636690916d01a47ca234a14bbcf0fe176b37`.
+
+### mkdocs 1.6.1
+
+[Метаданные выпуска](https://pypi.org/project/mkdocs/1.6.1/)
+
+- [mkdocs-1.6.1-py3-none-any.whl](https://files.pythonhosted.org/packages/22/5b/dbc6a8cddc9cfa9c4971d59fb12bb8d42e161b7e7f8cc89e49137c5b279c/mkdocs-1.6.1-py3-none-any.whl) — license members через Range.
+  SHA-256 архива по lockfile: `db91759624d1647f3f34aa0c3f327dd2601beae39a366d6e064c03468d35c20e`.
+  - `mkdocs/contrib/search/lunr-language/lunr.ar.js` — `e5714ae52505d3b57b636ba55f2ec5ede7783b665b453ebd5bf81377d14ef7f7`.
+  - `mkdocs/contrib/search/lunr-language/lunr.da.js` — `b3ce18ae5d9804214a90588ae5dbd0040aa7f5d95d26bd2464ce0e704e816777`.
+  - `mkdocs/contrib/search/lunr-language/lunr.de.js` — `69ebe4ca1354e9c6a3bade2f2a267102837aa9c7a5a0d49ca2ddf75fb5a2149e`.
+  - `mkdocs/contrib/search/lunr-language/lunr.du.js` — `68b4e42a29783d38a6580b74e93711a5046f3931281bde1f72b7c88f3e6147f5`.
+  - `mkdocs/contrib/search/lunr-language/lunr.es.js` — `64595a693de6028a6ec6f4d63866b8a0269cb67c1adad19e7964ce9eb4d2b3d6`.
+  - `mkdocs/contrib/search/lunr-language/lunr.fi.js` — `3ff6b6554be970db4559b01ddb2013ef8401d143f585d9452537866e71e40797`.
+  - `mkdocs/contrib/search/lunr-language/lunr.fr.js` — `3eb7c29a8ed7223880d86e98d7d17edf14c8560dbf1a3e6650763670eabf0b34`.
+  - `mkdocs/contrib/search/lunr-language/lunr.hi.js` — `0ed85ffe9c6b352b022d587cbde4620a4e76205a79d44405d4c2ed0fb0afa4f5`.
+  - `mkdocs/contrib/search/lunr-language/lunr.hu.js` — `e37d458d1f9f2f88d97fc8b95a287f777ce01995387ae84024b1c1ae285fc348`.
+  - `mkdocs/contrib/search/lunr-language/lunr.hy.js` — `79b32d2f6ed20046ee7c3cba8a27f862ed96a2022fb444541ce4177e7e5b29c5`.
+  - `mkdocs/contrib/search/lunr-language/lunr.it.js` — `a59771db892ca062128a49f0b3febf9e71dcb8a608cc43932ce426eb49b8840d`.
+  - `mkdocs/contrib/search/lunr-language/lunr.ja.js` — `831a1d6a665bc83ac23fbd7ee6886e9f2b679972594a007e962f40e6b7fcda91`.
+  - `mkdocs/contrib/search/lunr-language/lunr.jp.js` — `e9ef588985a8c6c14828ad0a137bde0c5084c98b7946c6e5460c10cc2bb3a0eb`.
+  - `mkdocs/contrib/search/lunr-language/lunr.kn.js` — `bfa70ad46489efd813962cd2fa5c52dc2e024d4a54025a8868921d3dadcc3564`.
+  - `mkdocs/contrib/search/lunr-language/lunr.ko.js` — `7d6e2a5e5ea22384b9923097b93c538727249a9dac3f99e15907899fc14741e2`.
+  - `mkdocs/contrib/search/lunr-language/lunr.multi.js` — `b096a0e82b79c55dc83b9d7506eb871c0c4ef95324e24b1d985833dda2e0fb39`.
+  - `mkdocs/contrib/search/lunr-language/lunr.nl.js` — `72f0cd46480beb723a4580a6c03f1908bdd76d7b2fc1630352ff3006a622e6c5`.
+  - `mkdocs/contrib/search/lunr-language/lunr.no.js` — `7ce0ab207f7ab0efa28ff0aa6baf19848227b63642a0cfc2e5cdae553c01caf8`.
+  - `mkdocs/contrib/search/lunr-language/lunr.pt.js` — `f360ba47ff7f214341ce0df20584104889e7fadcfd1939390213ad390731b58e`.
+  - `mkdocs/contrib/search/lunr-language/lunr.ro.js` — `af24457f99bea45a4a9307908adf5a688ad04066b0d15571f3050aee69bcf38b`.
+  - `mkdocs/contrib/search/lunr-language/lunr.ru.js` — `dcb5bbee18f742928488115c549cbbee30cef7ae04cd4c1b7f635fd97cf1244d`.
+  - `mkdocs/contrib/search/lunr-language/lunr.sa.js` — `308e41770e92cefd6a0814e96028933468072e3f5d1fe1f6bf93a8f1c5c04cca`.
+  - `mkdocs/contrib/search/lunr-language/lunr.stemmer.support.js` — `9acfb121aae107828dc54f15cf779ef4a151cdaaade158be705a26e6e96ec618`.
+  - `mkdocs/contrib/search/lunr-language/lunr.sv.js` — `7c9a798bea88c09d92347b7a6cd215e630537cdf823f1afcefbd3751b298b187`.
+  - `mkdocs/contrib/search/lunr-language/lunr.ta.js` — `c49ebd52d2892b9a49e11cb3df9b3652b3d963e776cce016921944c55087b8e7`.
+  - `mkdocs/contrib/search/lunr-language/lunr.te.js` — `0b96ad083d949efebcf45478cf4dab2039c99d24ae0cfcb2fc0ac007aa192458`.
+  - `mkdocs/contrib/search/lunr-language/lunr.th.js` — `a9f8db40eb4df650ea65e9af2c5a5e595a1dc63db94fc2c4cd200341437349f6`.
+  - `mkdocs/contrib/search/lunr-language/lunr.tr.js` — `4e40c7aed25b026f2186bf168389d2d07429ee19c0334797da60922532f66b35`.
+  - `mkdocs/contrib/search/lunr-language/lunr.vi.js` — `73d3de80225946b6fe15f183054118d6a1205cf9356ae58cf089a3f6ab9ee52d`.
+  - `mkdocs/contrib/search/lunr-language/lunr.zh.js` — `c84164930f3288c37c0858a2d26bf147d57ffecbd5d8b40fdca9ec1aca4d4b3d`.
+  - `mkdocs/contrib/search/lunr-language/tinyseg.js` — `1b044c239610ef65fceff6039567442bb1692d413f5ee8686fee81b1a3067761`.
+  - `mkdocs/contrib/search/templates/search/lunr.js` — `c1a28d9e95163292fbcc07ff794f1f0e1ade8741c513afe96d5b1046a18110bc`.
+  - `mkdocs-1.6.1.dist-info/licenses/LICENSE` — `26041bd625fc39411dc4b32748216236931c904adb90c2b3e0ba697090a5d54e`.
+
+### mkdocs-get-deps 0.2.2
+
+[Метаданные выпуска](https://pypi.org/project/mkdocs-get-deps/0.2.2/)
+
+- [mkdocs_get_deps-0.2.2-py3-none-any.whl](https://files.pythonhosted.org/packages/88/29/744136411e785c4b0b744d5413e56555265939ab3a104c6a4b719dad33fd/mkdocs_get_deps-0.2.2-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `e7878cbeac04860b8b5e0ca31d3abad3df9411a75a32cde82f8e44b6c16ff650`.
+  - `mkdocs_get_deps-0.2.2.dist-info/licenses/LICENSE.md` — `e5024bae9b4ecadda35184e20282a81cb25164620d2ffb0261e6da3249aab7b2`.
+
+### more-itertools 11.1.0
+
+[Метаданные выпуска](https://pypi.org/project/more-itertools/11.1.0/)
+
+- [more_itertools-11.1.0-py3-none-any.whl](https://files.pythonhosted.org/packages/e8/3d/1087453384dbde46a8c7f9356eead2c58be8a7bf156bca40243377c85715/more_itertools-11.1.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `4b65538ae22f6fed0ce4874efd317463a7489796a0939fa66824dd542125a192`.
+  - `more_itertools-11.1.0.dist-info/licenses/LICENSE` — `09f1c8c9e941af3e584d59641ea9b87d83c0cb0fd007eb5ef391a7e2643c1a46`.
+
+### mypy 2.4.0
+
+[Метаданные выпуска](https://pypi.org/project/mypy/2.4.0/)
+
+- [mypy-2.4.0-py3-none-any.whl](https://files.pythonhosted.org/packages/81/12/46ae8670c98a3cd0286ca5645c2f918f8f6be65edfed81b916010619f668/mypy-2.4.0-py3-none-any.whl) — license members через Range.
+  SHA-256 архива по lockfile: `d01c5d26a352acc6d5cf3128225477e1e8465e8d3029d4c345807fbf7f3cf093`.
+  - `mypy/typeshed/LICENSE` — `295f8538c94ae5c3043301cf7cff1c852dab6a786a8ddee471e061b40d5ecabe`.
+  - `mypy-2.4.0.dist-info/licenses/LICENSE` — `fdf1cd17f50e1305ed8cfd37467312d27a984648dba622cef70573b5512e4e1b`.
+  - `mypy-2.4.0.dist-info/licenses/mypy/typeshed/LICENSE` — `295f8538c94ae5c3043301cf7cff1c852dab6a786a8ddee471e061b40d5ecabe`.
+
+### mypy-extensions 1.1.0
+
+[Метаданные выпуска](https://pypi.org/project/mypy-extensions/1.1.0/)
+
+- [mypy_extensions-1.1.0-py3-none-any.whl](https://files.pythonhosted.org/packages/79/7b/2c79738432f5c924bef5071f933bcc9efd0473bac3b4aa584a6f7c1c8df8/mypy_extensions-1.1.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505`.
+  - `mypy_extensions-1.1.0.dist-info/licenses/LICENSE` — `a50450da1d53cd777b80ced77c58ff96abe0ccd879706bd142c3ec20e245f0b4`.
+
+### nh3 0.3.7
+
+[Метаданные выпуска](https://pypi.org/project/nh3/0.3.7/)
+
+- [nh3-0.3.7-cp38-abi3-win_amd64.whl](https://files.pythonhosted.org/packages/b4/b9/34433ccb1f0fe6968dabbb7d4bf5721c6221878ef07832748c06655a6a80/nh3-0.3.7-cp38-abi3-win_amd64.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `618e3059caf41ccdf5dcccb3fa9df4cf6e4efe23d1382a8bbfca272a8a4f8bfc`.
+  - `nh3-0.3.7.dist-info/licenses/LICENSE` — `f9eea85b1d71c435d30d476ff2c107a306bc8e0274b7652f24cc3d78f10ad30f`.
+- [nh3-0.3.7-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl](https://files.pythonhosted.org/packages/a6/ed/c5510c615dce55b6fcc364aa1838142f938beed64f5e4927490dfcaf4405/nh3-0.3.7-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `70f5ac8626e899a4bab0ef74ca2f5bd602f49c7b739e6e5026b4afc6d63dac42`.
+  - `nh3-0.3.7.dist-info/licenses/LICENSE` — `1c5bbd459c8f73e10e39602ac595e8981fb3dd3e895ecfc62e57410f9fbfd47b`.
+
+### numpy 2.4.6
+
+[Метаданные выпуска](https://pypi.org/project/numpy/2.4.6/)
+
+- [numpy-2.4.6-cp312-cp312-win_amd64.whl](https://files.pythonhosted.org/packages/ab/ca/feab00bd44aa5fe1ad2c18f08b4d3bb92e26484b0b1d1443897809ed528c/numpy-2.4.6-cp312-cp312-win_amd64.whl) — license members через Range.
+  SHA-256 архива по lockfile: `d8e8286dd7cea7895157318d1b91cdacac64c479f3cbc8dce548331728484751`.
+  - `numpy/ma/LICENSE` — `d78dbb208b80d92b4d333e41a4baae50d12444f46e53199fa7726a91de6e2da7`.
+  - `numpy/random/LICENSE.md` — `b4bc2f4fa1c95778f1ed3dd8f14706bece399475b978f9f34b5d3cd72521b48a`.
+  - `numpy/_core/include/numpy/random/LICENSE.txt` — `d544761558b510866c21f7e8a2d5716fca76e0b98117e3b6b86314db7244d150`.
+  - `numpy-2.4.6.dist-info/licenses/LICENSE.txt` — `a804dff0ead9fadc5293456410bcbfc32bf024be9c4513459663fb7b442d2341`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/fft/pocketfft/LICENSE.md` — `8db000e158c162e7249787852d8c69764706502ccee725c06641b31c1e95c8af`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/linalg/lapack_lite/LICENSE.txt` — `19060ef465e1797d682ee0fc3081bd25ab1395e995e43d25c9d13c95d9a3cd6b`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/ma/LICENSE` — `d78dbb208b80d92b4d333e41a4baae50d12444f46e53199fa7726a91de6e2da7`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/random/LICENSE.md` — `b4bc2f4fa1c95778f1ed3dd8f14706bece399475b978f9f34b5d3cd72521b48a`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/random/src/distributions/LICENSE.md` — `cf5619f25b112d5ce7c896efffc8e610bcb345dfadcc19f2c1460aa48fff2c9e`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/random/src/mt19937/LICENSE.md` — `92c10699884321f1c2947fe2a70ab23b0fbf1507f756d89dd08f38c61fc3d4fa`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/random/src/pcg64/LICENSE.md` — `41190663b77bee5302386495a07b7eabfbfa571aa0ae2f11da6764162062fc4f`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/random/src/philox/LICENSE.md` — `322ac46d870c8aeead6c53adcccc839296fb3c8e456eae155081297daf7f8013`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/random/src/sfc64/LICENSE.md` — `28cad82ce1379dc529df30da78ec012d7d0d1d576b03ddcb93388aee53659f59`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/random/src/splitmix64/LICENSE.md` — `454ec7350e478e037061850b67395753b425b1cb0a34bbc26290b020bf89d763`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/_core/include/numpy/libdivide/LICENSE.txt` — `d544761558b510866c21f7e8a2d5716fca76e0b98117e3b6b86314db7244d150`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/_core/src/common/pythoncapi-compat/COPYING` — `aea41976c720f91bd19725c16916a1ace40eb1ea42620d340e587a5de4bbcea0`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/_core/src/highway/LICENSE` — `d208152e2777ffd0126eacc1bd21c0320d69e4e6b622d21a2a12a47e8ef73763`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/_core/src/multiarray/dragon4_LICENSE.txt` — `b0fd592d4ead563148e3977e7b589169d46a5ef2ff133c755a81af880a3fc919`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/_core/src/npysort/x86-simd-sort/LICENSE.md` — `a732977853530066790c42817087f4829b518dd98d340c916acbfd227e39d3cb`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/_core/src/umath/svml/LICENSE` — `585483905b13d4b42f800c55ba99e89d6e2e33ccd5f503e201c07531d148ff41`.
+- [numpy-2.4.6-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl](https://files.pythonhosted.org/packages/99/60/14115e6364fa676c5397c2ad3004e527e9aa487abf5d0706ec81bbd08529/numpy-2.4.6-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl) — license members через Range.
+  SHA-256 архива по lockfile: `90f9849678c75fe7afa2d348ac842c168b0a4d3d61919687216dfc547976d853`.
+  - `numpy/_core/include/numpy/random/LICENSE.txt` — `fbc539f47d0cf83bc61378080fb873d5c14630126cacbfe754035c3926daa5ec`.
+  - `numpy/ma/LICENSE` — `05f3b88351988ecfad10abe92c0c50e5875c6452d5009a0084cc291551ffcca6`.
+  - `numpy/random/LICENSE.md` — `103166b62b80443afb9eb3488e052ea06be0cff566b908f199e561fde49af19f`.
+  - `numpy-2.4.6.dist-info/licenses/LICENSE.txt` — `4860083caa0de2ac3292ca98bd074bd8f45d8b32624e37b1e70a240bff61e488`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/_core/include/numpy/libdivide/LICENSE.txt` — `fbc539f47d0cf83bc61378080fb873d5c14630126cacbfe754035c3926daa5ec`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/_core/src/common/pythoncapi-compat/COPYING` — `3f2c1ffa76383a55ae0aac01c9737cd70050dff63e1f026694fbe9d662573c98`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/_core/src/highway/LICENSE` — `e340270d4f64384569a91d546acb5b094d69ce47f0c015db77abb74dc6f815af`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/_core/src/multiarray/dragon4_LICENSE.txt` — `f7b14309e5f54e5022b26448eefd419988ada2aec01d3c1162d84a0ea8f21f2c`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/_core/src/npysort/x86-simd-sort/LICENSE.md` — `211e7d737d6179a08f791ebb0a99897ce7cd2457410c542876d125576edfe910`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/_core/src/umath/svml/LICENSE` — `c17011467b4fe6e20fbfbeda4df09e58c2bca5480a063e55735a4000a379aad9`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/fft/pocketfft/LICENSE.md` — `a85ca13fdf90160b64a0698215868c13b74d835ad0a4e2ba44713b8c5058a056`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/linalg/lapack_lite/LICENSE.txt` — `a14cc25e10d40a3aa705b7de2fb764a6535d8ee9b2db4e1724900585457dfd55`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/ma/LICENSE` — `05f3b88351988ecfad10abe92c0c50e5875c6452d5009a0084cc291551ffcca6`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/random/LICENSE.md` — `103166b62b80443afb9eb3488e052ea06be0cff566b908f199e561fde49af19f`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/random/src/distributions/LICENSE.md` — `469778be8f33d54e1bcaab28c281cc472916d2d273f835e55bc487d30503face`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/random/src/mt19937/LICENSE.md` — `0e111337b25494a773106695f0e799f642b8567aaacca4f116a74a8177179156`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/random/src/pcg64/LICENSE.md` — `e7d4f4fb20358f314210a892ae17351e04993813646f697ec387385ca2a36918`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/random/src/philox/LICENSE.md` — `6f5828a57223d4cc7f8ea505a2623e7b978b242752c1515e355f46ba2cec1800`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/random/src/sfc64/LICENSE.md` — `9d4098846018319cd68e228ee6220361787f73bccbf00237a85e4fc9621b998f`.
+  - `numpy-2.4.6.dist-info/licenses/numpy/random/src/splitmix64/LICENSE.md` — `268b0ca06759d31ea3ca68dd35f20e877916e927b1c2a835e4592a3c4354b1f9`.
+
+### numpy 2.5.3
+
+[Метаданные выпуска](https://pypi.org/project/numpy/2.5.3/)
+
+- [numpy-2.5.3-cp312-cp312-win_amd64.whl](https://files.pythonhosted.org/packages/3c/a1/accf6d4f0c80c5d9ba9735d6b1550e444180599f34dec69ca01360f717ad/numpy-2.5.3-cp312-cp312-win_amd64.whl) — license members через Range.
+  SHA-256 архива по lockfile: `0a59a421a32580a009e8a1751345bf829631b990dc1794b80514ab722b435def`.
+  - `numpy/ma/LICENSE` — `d78dbb208b80d92b4d333e41a4baae50d12444f46e53199fa7726a91de6e2da7`.
+  - `numpy/random/LICENSE.md` — `b4bc2f4fa1c95778f1ed3dd8f14706bece399475b978f9f34b5d3cd72521b48a`.
+  - `numpy/_core/include/numpy/random/LICENSE.txt` — `d544761558b510866c21f7e8a2d5716fca76e0b98117e3b6b86314db7244d150`.
+  - `numpy-2.5.3.dist-info/licenses/LICENSE.txt` — `a804dff0ead9fadc5293456410bcbfc32bf024be9c4513459663fb7b442d2341`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/fft/pocketfft/LICENSE.md` — `8db000e158c162e7249787852d8c69764706502ccee725c06641b31c1e95c8af`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/linalg/lapack_lite/LICENSE.txt` — `19060ef465e1797d682ee0fc3081bd25ab1395e995e43d25c9d13c95d9a3cd6b`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/ma/LICENSE` — `d78dbb208b80d92b4d333e41a4baae50d12444f46e53199fa7726a91de6e2da7`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/random/LICENSE.md` — `b4bc2f4fa1c95778f1ed3dd8f14706bece399475b978f9f34b5d3cd72521b48a`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/random/src/distributions/LICENSE.md` — `cf5619f25b112d5ce7c896efffc8e610bcb345dfadcc19f2c1460aa48fff2c9e`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/random/src/mt19937/LICENSE.md` — `92c10699884321f1c2947fe2a70ab23b0fbf1507f756d89dd08f38c61fc3d4fa`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/random/src/pcg64/LICENSE.md` — `41190663b77bee5302386495a07b7eabfbfa571aa0ae2f11da6764162062fc4f`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/random/src/philox/LICENSE.md` — `322ac46d870c8aeead6c53adcccc839296fb3c8e456eae155081297daf7f8013`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/random/src/sfc64/LICENSE.md` — `28cad82ce1379dc529df30da78ec012d7d0d1d576b03ddcb93388aee53659f59`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/random/src/splitmix64/LICENSE.md` — `454ec7350e478e037061850b67395753b425b1cb0a34bbc26290b020bf89d763`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/_core/include/numpy/libdivide/LICENSE.txt` — `d544761558b510866c21f7e8a2d5716fca76e0b98117e3b6b86314db7244d150`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/_core/src/common/pythoncapi-compat/COPYING` — `aea41976c720f91bd19725c16916a1ace40eb1ea42620d340e587a5de4bbcea0`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/_core/src/highway/LICENSE` — `d208152e2777ffd0126eacc1bd21c0320d69e4e6b622d21a2a12a47e8ef73763`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/_core/src/multiarray/dragon4_LICENSE.txt` — `b0fd592d4ead563148e3977e7b589169d46a5ef2ff133c755a81af880a3fc919`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/_core/src/npysort/x86-simd-sort/LICENSE.md` — `a732977853530066790c42817087f4829b518dd98d340c916acbfd227e39d3cb`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/_core/src/umath/svml/LICENSE` — `585483905b13d4b42f800c55ba99e89d6e2e33ccd5f503e201c07531d148ff41`.
+- [numpy-2.5.3-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl](https://files.pythonhosted.org/packages/65/af/aa78d1a88805456e212b65461354cd943197fb9acecc4c90fd12295123a3/numpy-2.5.3-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl) — license members через Range.
+  SHA-256 архива по lockfile: `b7e18c623bb5c95acb3b3328861272816ba199fb531921c5d6d0b675f1fde9e3`.
+  - `numpy/_core/include/numpy/random/LICENSE.txt` — `fbc539f47d0cf83bc61378080fb873d5c14630126cacbfe754035c3926daa5ec`.
+  - `numpy/ma/LICENSE` — `05f3b88351988ecfad10abe92c0c50e5875c6452d5009a0084cc291551ffcca6`.
+  - `numpy/random/LICENSE.md` — `103166b62b80443afb9eb3488e052ea06be0cff566b908f199e561fde49af19f`.
+  - `numpy-2.5.3.dist-info/licenses/LICENSE.txt` — `4860083caa0de2ac3292ca98bd074bd8f45d8b32624e37b1e70a240bff61e488`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/_core/include/numpy/libdivide/LICENSE.txt` — `fbc539f47d0cf83bc61378080fb873d5c14630126cacbfe754035c3926daa5ec`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/_core/src/common/pythoncapi-compat/COPYING` — `3f2c1ffa76383a55ae0aac01c9737cd70050dff63e1f026694fbe9d662573c98`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/_core/src/highway/LICENSE` — `e340270d4f64384569a91d546acb5b094d69ce47f0c015db77abb74dc6f815af`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/_core/src/multiarray/dragon4_LICENSE.txt` — `f7b14309e5f54e5022b26448eefd419988ada2aec01d3c1162d84a0ea8f21f2c`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/_core/src/npysort/x86-simd-sort/LICENSE.md` — `211e7d737d6179a08f791ebb0a99897ce7cd2457410c542876d125576edfe910`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/_core/src/umath/svml/LICENSE` — `c17011467b4fe6e20fbfbeda4df09e58c2bca5480a063e55735a4000a379aad9`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/fft/pocketfft/LICENSE.md` — `a85ca13fdf90160b64a0698215868c13b74d835ad0a4e2ba44713b8c5058a056`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/linalg/lapack_lite/LICENSE.txt` — `a14cc25e10d40a3aa705b7de2fb764a6535d8ee9b2db4e1724900585457dfd55`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/ma/LICENSE` — `05f3b88351988ecfad10abe92c0c50e5875c6452d5009a0084cc291551ffcca6`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/random/LICENSE.md` — `103166b62b80443afb9eb3488e052ea06be0cff566b908f199e561fde49af19f`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/random/src/distributions/LICENSE.md` — `469778be8f33d54e1bcaab28c281cc472916d2d273f835e55bc487d30503face`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/random/src/mt19937/LICENSE.md` — `0e111337b25494a773106695f0e799f642b8567aaacca4f116a74a8177179156`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/random/src/pcg64/LICENSE.md` — `e7d4f4fb20358f314210a892ae17351e04993813646f697ec387385ca2a36918`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/random/src/philox/LICENSE.md` — `6f5828a57223d4cc7f8ea505a2623e7b978b242752c1515e355f46ba2cec1800`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/random/src/sfc64/LICENSE.md` — `9d4098846018319cd68e228ee6220361787f73bccbf00237a85e4fc9621b998f`.
+  - `numpy-2.5.3.dist-info/licenses/numpy/random/src/splitmix64/LICENSE.md` — `268b0ca06759d31ea3ca68dd35f20e877916e927b1c2a835e4592a3c4354b1f9`.
+
+### opencv-python-headless 5.0.0.93
+
+[Метаданные выпуска](https://pypi.org/project/opencv-python-headless/5.0.0.93/)
+
+- [opencv_python_headless-5.0.0.93-cp37-abi3-win_amd64.whl](https://files.pythonhosted.org/packages/b8/88/763b967f7efd7226b82c9fae16d560cba049b1f0c036647e65c610fd636e/opencv_python_headless-5.0.0.93-cp37-abi3-win_amd64.whl) — license members через Range.
+  SHA-256 архива по lockfile: `829717b6a95554f273e49e357cee3b3a2a26b6f4842fbc1bed2b45bdd8f87e0e`.
+  - `cv2/LICENSE-3RD-PARTY.txt` — `c1d60169b55cee56452b227c2fd2a7b9ddda3dd3741065f1c6201072be73fadb`.
+  - `cv2/LICENSE.txt` — `edef0fac1eb08d29d34563f724742e078da2513e196133a12c6ad9ff01e26107`.
+  - `opencv_python_headless-5.0.0.93.dist-info/LICENSE-3RD-PARTY.txt` — `c1d60169b55cee56452b227c2fd2a7b9ddda3dd3741065f1c6201072be73fadb`.
+  - `opencv_python_headless-5.0.0.93.dist-info/LICENSE.txt` — `edef0fac1eb08d29d34563f724742e078da2513e196133a12c6ad9ff01e26107`.
+- [opencv_python_headless-5.0.0.93-cp37-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl](https://files.pythonhosted.org/packages/2b/97/8170e9819764c47e436c130d3ff6cfb73b58f923eae9d3a03d8982b04aec/opencv_python_headless-5.0.0.93-cp37-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl) — license members через Range.
+  SHA-256 архива по lockfile: `09a872a157c1376ab922a69bbf22f9a95bcc7b658a9d8b436a60212b02b2eeb4`.
+  - `cv2/LICENSE-3RD-PARTY.txt` — `2537f5653345db7231ff12f307bcfa4c89807d45ed1c4bb8ebfb6f26f61b160a`.
+  - `cv2/LICENSE.txt` — `09d719058e782ac7bc71ba21c944e1136cde2bb957c0e888121f0218d6b5f02c`.
+  - `opencv_python_headless-5.0.0.93.dist-info/LICENSE-3RD-PARTY.txt` — `2537f5653345db7231ff12f307bcfa4c89807d45ed1c4bb8ebfb6f26f61b160a`.
+  - `opencv_python_headless-5.0.0.93.dist-info/LICENSE.txt` — `09d719058e782ac7bc71ba21c944e1136cde2bb957c0e888121f0218d6b5f02c`.
+
+### opendoc 0.1.0
+
+[Метаданные выпуска](https://github.com/SergeiLitvinov/opendoc/releases/download/v0.1.0/opendoc-0.1.0-py3-none-any.whl)
+
+- [opendoc-0.1.0-py3-none-any.whl](https://github.com/SergeiLitvinov/opendoc/releases/download/v0.1.0/opendoc-0.1.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `1e1e70905bbe0d75706325fefbb24281c55784be8b1e53ce39f6bb2b2d6068f1`.
+  - `opendoc-0.1.0.dist-info/licenses/docs/LICENSE` — `3ed05eb4b11d122a12b6d37eb1f695bfbd303b542f067658a1dc43d8f81dcf59`.
+
+### packaging 26.3
+
+[Метаданные выпуска](https://pypi.org/project/packaging/26.3/)
+
+- [packaging-26.3-py3-none-any.whl](https://files.pythonhosted.org/packages/63/34/ba1c580383c9eada3711951fef0795c80b829a078d72188184bcab9dd527/packaging-26.3-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c`.
+  - `packaging/licenses/__init__.py` — `590d12eee73ddbec53b4e9ee5bfc64d9cb3aacb4940e8ebcba260757ce56740b`.
+  - `packaging/licenses/_spdx.py` — `596ec35e2ca0ebcba9fd8343ff0a51625af548786257815f24b41f7e08613314`.
+  - `packaging-26.3.dist-info/licenses/LICENSE` — `cad1ef5bd340d73e074ba614d26f7deaca5c7940c3d8c34852e65c4909686c48`.
+  - `packaging-26.3.dist-info/licenses/LICENSE.APACHE` — `0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594`.
+  - `packaging-26.3.dist-info/licenses/LICENSE.BSD` — `b70e7e9b742f1cc6f948b34c16aa39ffece94196364bc88ff0d2180f0028fac5`.
+
+### pathspec 1.1.1
+
+[Метаданные выпуска](https://pypi.org/project/pathspec/1.1.1/)
+
+- [pathspec-1.1.1-py3-none-any.whl](https://files.pythonhosted.org/packages/f1/d9/7fb5aa316bc299258e68c73ba3bddbc499654a07f151cba08f6153988714/pathspec-1.1.1-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `a00ce642f577bf7f473932318056212bc4f8bfdf53128c78bbd5af0b9b20b189`.
+  - `pathspec-1.1.1.dist-info/licenses/LICENSE` — `fab3dd6bdab226f1c08630b1dd917e11fcb4ec5e1e020e2c16f83a0a13863e85`.
+
+### pdf2docx 0.5.13
+
+[Метаданные выпуска](https://pypi.org/project/pdf2docx/0.5.13/)
+
+- [pdf2docx-0.5.13-py3-none-any.whl](https://files.pythonhosted.org/packages/71/4d/4041fddff079a2cd0c87612afe74a16d2cf032b2aa73ecddbc6bca2a04fe/pdf2docx-0.5.13-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `a293e9e78d89b12a4a43fcefba1346de220681c3daf20b8a7d3e1fce77f0fe97`.
+  - `pdf2docx-0.5.13.dist-info/licenses/LICENSE` — `13cfa77d0fa4267bd428ec5d852ef28ab6342b5a264e84831ba965327b374cdd`.
+
+### pdfminer-six 20260107
+
+[Метаданные выпуска](https://pypi.org/project/pdfminer-six/20260107/)
+
+- [pdfminer_six-20260107-py3-none-any.whl](https://files.pythonhosted.org/packages/20/8b/28c4eaec9d6b036a52cb44720408f26b1a143ca9bce76cc19e8f5de00ab4/pdfminer_six-20260107-py3-none-any.whl) — license members через Range.
+  SHA-256 архива по lockfile: `366585ba97e80dffa8f00cebe303d2f381884d8637af4ce422f1df3ef38111a9`.
+  - `pdfminer_six-20260107.dist-info/licenses/LICENSE` — `f01e5d699a33766b5caf4a5099f2856aba4f3f75ea1df05dc0572b34b4bea8f2`.
+
+### pdfplumber 0.11.10
+
+[Метаданные выпуска](https://pypi.org/project/pdfplumber/0.11.10/)
+
+- [pdfplumber-0.11.10-py3-none-any.whl](https://files.pythonhosted.org/packages/a2/9a/07d658e1e7fad860f1c541ab941348125dbdab773be3a0afaf32361866c7/pdfplumber-0.11.10-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `7741ea81bf165b474b153e6789d10d18e06b6ddcf3ec84289c3ef2fed6802580`.
+  - `pdfplumber-0.11.10.dist-info/licenses/LICENSE.txt` — `0d48994da4d1321e395b5e64a724ed4dec63fb96b88ac5b88fc014771e690821`.
+
+### pillow 12.3.0
+
+[Метаданные выпуска](https://pypi.org/project/pillow/12.3.0/)
+
+- [pillow-12.3.0-cp312-cp312-win_amd64.whl](https://files.pythonhosted.org/packages/45/89/da2f7971a317f83d807fdd4065c0af40208e59e692cc43d315a71a0e96d1/pillow-12.3.0-cp312-cp312-win_amd64.whl) — license members через Range.
+  SHA-256 архива по lockfile: `a2b55dd6b2a4c4b7d87ffa56bdb33fdc5fdb9a462173861a7bc097f17d91cb09`.
+  - `pillow-12.3.0.dist-info/licenses/LICENSE` — `4f7866a74802c6326f81faff59a56546b6aec2b10b91973e0e9308de95e79857`.
+- [pillow-12.3.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl](https://files.pythonhosted.org/packages/84/21/a35af28dcc61f37ed850a2d64c65c701321dfbf25085e469d5559360cbbf/pillow-12.3.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl) — license members через Range.
+  SHA-256 архива по lockfile: `78cb2c6865a35ab8ff8b75fd122f6033b92a62c82801110e48ddd6c936a45d91`.
+  - `pillow-12.3.0.dist-info/licenses/LICENSE` — `dda12a98c1979cf3d94df1cff45d27a4cb3f04a60c76f76902ac54cac03ec0ce`.
+
+### platformdirs 4.12.2
+
+[Метаданные выпуска](https://pypi.org/project/platformdirs/4.12.2/)
+
+- [platformdirs-4.12.2-py3-none-any.whl](https://files.pythonhosted.org/packages/d0/89/446044f33aba0348d35e433f56d12206d010a5281a1df54054d4cfb82388/platformdirs-4.12.2-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `29dbf06d96c500bc6bdbce75fb0a14d63279c93b1842f97e72a135b33e856983`.
+  - `platformdirs-4.12.2.dist-info/licenses/LICENSE` — `29e0fd62e929850e86eb28c3fdccf0cefdf4fa94879011cffb3d0d4bed6d4db6`.
+
+### pluggy 1.6.0
+
+[Метаданные выпуска](https://pypi.org/project/pluggy/1.6.0/)
+
+- [pluggy-1.6.0-py3-none-any.whl](https://files.pythonhosted.org/packages/54/20/4d324d65cc6d9205fabedc306948156824eb9f0ee1633355a8f7ec5c66bf/pluggy-1.6.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746`.
+  - `pluggy-1.6.0.dist-info/licenses/LICENSE` — `d6b65e6c213a5d0b577911d34d6e5949b9f59d76c238c5071a2f3fc16cfb2606`.
+
+### pycparser 3.0
+
+[Метаданные выпуска](https://pypi.org/project/pycparser/3.0/)
+
+- [pycparser-3.0-py3-none-any.whl](https://files.pythonhosted.org/packages/0c/c3/44f3fbbfa403ea2a7c779186dc20772604442dde72947e7d01069cbe98e3/pycparser-3.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992`.
+  - `pycparser-3.0.dist-info/licenses/LICENSE` — `0c846399369ea76ddd7b5c44fe6d16497415fcf015f5cbb508c24bf98b81c5b1`.
+
+### pygments 2.21.0
+
+[Метаданные выпуска](https://pypi.org/project/pygments/2.21.0/)
+
+- [pygments-2.21.0-py3-none-any.whl](https://files.pythonhosted.org/packages/71/46/17f022dd3e953bf20a04a028a21ec746d942f8d2af30fa0f124fa0e6a684/pygments-2.21.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9`.
+  - `pygments-2.21.0.dist-info/licenses/AUTHORS` — `71a83872ad82f57be692cf827e048e2cd51d45169cfa1ea3f28706d97a872c0f`.
+  - `pygments-2.21.0.dist-info/licenses/LICENSE` — `a9d66f1d526df02e29dce73436d34e56e8632f46c275bbdffc70569e882f9f17`.
+
+### pymupdf 1.28.2
+
+[Метаданные выпуска](https://pypi.org/project/pymupdf/1.28.2/)
+
+- [pymupdf-1.28.2-cp310-abi3-win_amd64.whl](https://files.pythonhosted.org/packages/4a/61/d563bbccba262f9dd6d2d35ccb72593648184d886188efb12d9ce8f34dd6/pymupdf-1.28.2-cp310-abi3-win_amd64.whl) — license members через Range.
+  SHA-256 архива по lockfile: `ebd244918798502d7b4504c90410d1711a4d7675a32584ca30f1bab419ecbffe`.
+  - `pymupdf-1.28.2.dist-info/COPYING` — `40e60697600535eabfb5ae05f72829d88cfe8d02dd4792f5a754f6f51dabe55b`.
+- [pymupdf-1.28.2-cp310-abi3-manylinux_2_28_x86_64.whl](https://files.pythonhosted.org/packages/c7/06/dace3e27af26690cb20bead80dbac42941b0841eb689b8aabbd67dde16f0/pymupdf-1.28.2-cp310-abi3-manylinux_2_28_x86_64.whl) — license members через Range.
+  SHA-256 архива по lockfile: `397d6715c1f0df7548a92d0afd8ce370fc48fa47aeefac16be2bc04a16a8227f`.
+  - `pymupdf-1.28.2.dist-info/COPYING` — `40e60697600535eabfb5ae05f72829d88cfe8d02dd4792f5a754f6f51dabe55b`.
+
+### pypdf 6.19.0
+
+[Метаданные выпуска](https://pypi.org/project/pypdf/6.19.0/)
+
+- [pypdf-6.19.0-py3-none-any.whl](https://files.pythonhosted.org/packages/3c/2c/c43c03eaf630435f023f1dc61ec4a4a78951ad5530a62c71cc89bde307b7/pypdf-6.19.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `7e5d6e730e7dae87d560a2cee218b852f6498c8be61966f3cd02ead971e48d14`.
+  - `pypdf-6.19.0.dist-info/licenses/LICENSE` — `a97ac230e5f33ef10a5367a850eb01f91f1a0b064e34742c7794d2294557f524`.
+
+### pypdfium2 5.13.0
+
+[Метаданные выпуска](https://pypi.org/project/pypdfium2/5.13.0/)
+
+- [pypdfium2-5.13.0-py3-none-win_amd64.whl](https://files.pythonhosted.org/packages/5d/99/a37b6b902457569468ed5908c94e56cb6c4032541f02cf89f723d42a9148/pypdfium2-5.13.0-py3-none-win_amd64.whl) — license members через Range.
+  SHA-256 архива по lockfile: `47dcca2a8d507b5fd24f94c3c9d48fb379430f097bc20f01beff6c963ffbcedb`.
+  - `pypdfium2-5.13.0.dist-info/licenses/LICENSES/Apache-2.0.txt` — `3ddf9be5c28fe27dad143a5dc76eea25222ad1dd68934a047064e56ed2fa40c5`.
+  - `pypdfium2-5.13.0.dist-info/licenses/LICENSES/BSD-3-Clause.txt` — `ad9a9e823df025f42389c1812eae28019f657d1ed7b3a4ebfd5010b0736a0da4`.
+  - `pypdfium2-5.13.0.dist-info/licenses/LICENSES/CC-BY-4.0.txt` — `f1b1748301cd4274f46733c218d510929661b4990855de5fc645dacd69c4371c`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/abseil.txt` — `f54fff0b905df5b3464527c652a30e903b172d6dcab4d89b5e6f105d5e4a4603`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/agg23.txt` — `c110d3ea2ad77467ce0dcff7d3337e6c8be8049a5103f4b9bd5fd911a77972e5`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/fast_float.txt` — `bf1b57355feca8fce77ee95f48002f8d4789fb71b30ec7599c06cda4901fbb2b`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/freetype.txt` — `f4b133e25df1f86ad3ffea453aa0e613f0474f34778dbbb3e437e7b2724937d8`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/icu.txt` — `93679f4389d53b6835d89843f251844fb9bc455b35bab036d3c8e7abe497a47a`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/lcms.txt` — `7312b68c5b25e9bf2b828706fb4e29588f22705112f411fd42e1f7d84c3d139a`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/libjpeg_turbo.ijg` — `db16a04128171879c60708d171b88d97345a2dd20f9bfc173680a4497c73f704`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/libjpeg_turbo.md` — `be2b2b5ab168bce87bc3e31f2a5c5adba4b7f6e9e51d618e958d1d46972ebd95`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/libopenjpeg.txt` — `c5ab0890a737c2dfa7ba675036554f6d17741d98629b0c2a145354d00617e6b2`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/libpng.txt` — `452390433ba0f88aa3e2b122c647741b72a0c117cd6ed7a329b49785aecb5511`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/libtiff.txt` — `92b72ba97e6c2749c2a94bc0ef646b47080217f1e772a482b33cf5a5f98a6506`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/llvm-libc.txt` — `3b6226c32e168c83b891d8d6f0d3c29c2116dc3ef93dc93c307b54f279ecf383`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/pdfium-binaries.txt` — `8854f4388f1ca13b3ad9baa42e95f5546b4c0b17109c159256d3eca7be39b09b`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/pdfium.txt` — `961eacd9633fff6d051db7208b755e9210e30efac7adec3e6a6d52798f0ccf0e`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/simdutf.txt` — `c172a0ba936ff31230febb5dad869e25cb7c1a07480c7a381be8cf011bb52719`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/windows_x64/BUILD_LICENSES/zlib.txt` — `33fd641c9f3b0e0be64bc78fea9e94807674cdd70c48477599226cb8956565fe`.
+- [pypdfium2-5.13.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl](https://files.pythonhosted.org/packages/d3/7c/74a2fb48e5b0d2402d9ca64b39074c722d67e9a8a2c58449a843a8c2329a/pypdfium2-5.13.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl) — license members через Range.
+  SHA-256 архива по lockfile: `81df25c1ab4c13ff773102d3cbea1967511d079123b067fc077bd0c4d57d91d8`.
+  - `pypdfium2-5.13.0.dist-info/licenses/LICENSES/Apache-2.0.txt` — `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`.
+  - `pypdfium2-5.13.0.dist-info/licenses/LICENSES/BSD-3-Clause.txt` — `a6d11f0694c0137e9b02924b9d33a159f6c72f220fa4655bb2e1ea3654377d39`.
+  - `pypdfium2-5.13.0.dist-info/licenses/LICENSES/CC-BY-4.0.txt` — `419896aea50c15d6e40c5b4baf4bd346f78223b9a354c7357ad00262afdc08ec`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/linux_x64/BUILD_LICENSES/abseil.txt` — `c79a7fea0e3cac04cd43f20e7b648e5a0ff8fa5344e644b0ee09ca1162b62747`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/linux_x64/BUILD_LICENSES/agg23.txt` — `c110d3ea2ad77467ce0dcff7d3337e6c8be8049a5103f4b9bd5fd911a77972e5`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/linux_x64/BUILD_LICENSES/fast_float.txt` — `e562f3f974ced7e69dd1db77b820b36bcf8f30377f1aa105723fba449c53c4e6`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/linux_x64/BUILD_LICENSES/freetype.txt` — `f4b133e25df1f86ad3ffea453aa0e613f0474f34778dbbb3e437e7b2724937d8`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/linux_x64/BUILD_LICENSES/icu.txt` — `e55522d81edc687a341a4411e0776e54ca654e90147f354a90458aaced4116af`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/linux_x64/BUILD_LICENSES/lcms.txt` — `7312b68c5b25e9bf2b828706fb4e29588f22705112f411fd42e1f7d84c3d139a`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/linux_x64/BUILD_LICENSES/libjpeg_turbo.ijg` — `75815e3bf6484201a3c3d17a1bbf10f2e8e3237f84df10a2357ea896db2a81d6`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/linux_x64/BUILD_LICENSES/libjpeg_turbo.md` — `96f5b328adbb78eeaaec6980d73fd558cb1e4d62560ed615646bc3cf5e532430`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/linux_x64/BUILD_LICENSES/libopenjpeg.txt` — `c5ab0890a737c2dfa7ba675036554f6d17741d98629b0c2a145354d00617e6b2`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/linux_x64/BUILD_LICENSES/libpng.txt` — `bdb0a645ea18c60507d0368379b1ac5474b92255fcc2d115e07486a7672ba526`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/linux_x64/BUILD_LICENSES/libtiff.txt` — `92b72ba97e6c2749c2a94bc0ef646b47080217f1e772a482b33cf5a5f98a6506`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/linux_x64/BUILD_LICENSES/llvm-libc.txt` — `ebcd9bbf783a73d05c53ba4d586b8d5813dcdf3bbec50265860ccc885e606f47`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/linux_x64/BUILD_LICENSES/pdfium-binaries.txt` — `ba26c1263131696b86c10496b5066b918a20b7161822a80c274d0080105f6c93`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/linux_x64/BUILD_LICENSES/pdfium.txt` — `961eacd9633fff6d051db7208b755e9210e30efac7adec3e6a6d52798f0ccf0e`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/linux_x64/BUILD_LICENSES/simdutf.txt` — `fc8dbc04e03ad4efc08a647ffe7f995b811a95bc04c0e85a56d5277c6593fa5f`.
+  - `pypdfium2-5.13.0.dist-info/licenses/data/linux_x64/BUILD_LICENSES/zlib.txt` — `33fd641c9f3b0e0be64bc78fea9e94807674cdd70c48477599226cb8956565fe`.
+
+### pyproject-hooks 1.3.3
+
+[Метаданные выпуска](https://pypi.org/project/pyproject-hooks/1.3.3/)
+
+- [pyproject_hooks-1.3.3-py3-none-any.whl](https://files.pythonhosted.org/packages/85/11/044d1ae1b4ec0d7af88ee5bc91e081be1022533032b906a7bdabdbb60977/pyproject_hooks-1.3.3-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `5fc53fdac9f7bd63fbcdc868fb5f90b4784d78a53a3d3388cd738b807441a20b`.
+  - `pyproject_hooks-1.3.3.dist-info/licenses/LICENSE` — `1b22b049b5267d6dfc23a67bf4a84d8ec04b9fdfb1a51d360e42b4342c8b4154`.
+
+### pytest 9.1.1
+
+[Метаданные выпуска](https://pypi.org/project/pytest/9.1.1/)
+
+- [pytest-9.1.1-py3-none-any.whl](https://files.pythonhosted.org/packages/24/25/1de2678b631f5a49215c6c96fff41ba892b0a34df68d6d80292b1b48aa7f/pytest-9.1.1-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `37a86b45efb9a47a61a36449063e8e18d0cab3161329fc099eb21783169c4f0c`.
+  - `pytest-9.1.1.dist-info/licenses/LICENSE` — `ca836a5f9ecca3b2f350230faa20a48fb8b145653b5568d784862df864706b9b`.
+
+### python-dateutil 2.9.0.post0
+
+[Метаданные выпуска](https://pypi.org/project/python-dateutil/2.9.0.post0/)
+
+- [python_dateutil-2.9.0.post0-py2.py3-none-any.whl](https://files.pythonhosted.org/packages/ec/57/56b9bcc3c9c6a792fcbaf139543cee77261f3651ca9da0c93f5c1221264b/python_dateutil-2.9.0.post0-py2.py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427`.
+  - `python_dateutil-2.9.0.post0.dist-info/LICENSE` — `ba00f51a0d92823b5a1cde27d8b5b9d2321e67ed8da9bc163eff96d5e17e577e`.
+
+### python-docx 1.2.0
+
+[Метаданные выпуска](https://pypi.org/project/python-docx/1.2.0/)
+
+- [python_docx-1.2.0-py3-none-any.whl](https://files.pythonhosted.org/packages/d0/00/1e03a4989fa5795da308cd774f05b704ace555a70f9bf9d3be057b680bcf/python_docx-1.2.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `3fd478f3250fbbbfd3b94fe1e985955737c145627498896a8a6bf81f4baf66c7`.
+  - `python_docx-1.2.0.dist-info/licenses/LICENSE` — `7652f271e46d0d533e9dc463f3b5fcbdcacf4d6a9c8d6b554d15efd0f37f6132`.
+
+### python-pptx 1.0.2
+
+[Метаданные выпуска](https://pypi.org/project/python-pptx/1.0.2/)
+
+- [python_pptx-1.0.2-py3-none-any.whl](https://files.pythonhosted.org/packages/d9/4f/00be2196329ebbff56ce564aa94efb0fbc828d00de250b1980de1a34ab49/python_pptx-1.0.2-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `160838e0b8565a8b1f67947675886e9fea18aa5e795db7ae531606d68e785cba`.
+  - `python_pptx-1.0.2.dist-info/LICENSE` — `7652f271e46d0d533e9dc463f3b5fcbdcacf4d6a9c8d6b554d15efd0f37f6132`.
+
+### pywin32-ctypes 0.2.3
+
+[Метаданные выпуска](https://pypi.org/project/pywin32-ctypes/0.2.3/)
+
+- [pywin32_ctypes-0.2.3-py3-none-any.whl](https://files.pythonhosted.org/packages/de/3d/8161f7711c017e01ac9f008dfddd9410dff3674334c233bde66e7ba65bbf/pywin32_ctypes-0.2.3-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `8a1513379d709975552d202d942d9837758905c8d01eb82b8bcc30918929e7b8`.
+  - `pywin32_ctypes-0.2.3.dist-info/LICENSE.txt` — `dfa83b3e2709adfcdb838d9ad55823ca674abb780e60563d9dd9544ccbf785e9`.
+
+### pyyaml 6.0.3
+
+[Метаданные выпуска](https://pypi.org/project/pyyaml/6.0.3/)
+
+- [pyyaml-6.0.3-cp312-cp312-win_amd64.whl](https://files.pythonhosted.org/packages/86/bf/899e81e4cce32febab4fb42bb97dcdf66bc135272882d1987881a4b519e9/pyyaml-6.0.3-cp312-cp312-win_amd64.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `5fcd34e47f6e0b794d17de1b4ff496c00986e1c83f7ab2fb8fcfe9616ff7477b`.
+  - `pyyaml-6.0.3.dist-info/licenses/LICENSE` — `8d3928f9dc4490fd635707cb88eb26bd764102a7282954307d3e5167a577e8a4`.
+- [pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl](https://files.pythonhosted.org/packages/8b/9d/b3589d3877982d4f2329302ef98a8026e7f4443c765c46cfecc8858c6b4b/pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `ba1cc08a7ccde2d2ec775841541641e4548226580ab850948cbfda66a1befcdc`.
+  - `pyyaml-6.0.3.dist-info/licenses/LICENSE` — `8d3928f9dc4490fd635707cb88eb26bd764102a7282954307d3e5167a577e8a4`.
+
+### pyyaml-env-tag 1.1
+
+[Метаданные выпуска](https://pypi.org/project/pyyaml-env-tag/1.1/)
+
+- [pyyaml_env_tag-1.1-py3-none-any.whl](https://files.pythonhosted.org/packages/04/11/432f32f8097b03e3cd5fe57e88efb685d964e2e5178a48ed61e841f7fdce/pyyaml_env_tag-1.1-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `17109e1a528561e32f026364712fee1264bc2ea6715120891174ed1b980d2e04`.
+  - `pyyaml_env_tag-1.1.dist-info/licenses/LICENSE` — `75a5994afa284b67e6e66d7f83d2d39e729736511491b3d309ea7a064cbde3ce`.
+
+### readme-renderer 46.0
+
+[Метаданные выпуска](https://pypi.org/project/readme-renderer/46.0/)
+
+- [readme_renderer-46.0-py3-none-any.whl](https://files.pythonhosted.org/packages/4b/72/ac5ca81fe9121fcaa9d828d21017cba00a16a98e4ea5fb60c878f93dda4f/readme_renderer-46.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `d0dae1f74bb273b534770cb4cccb6bb78735540afdb03c2146f4e19dcd412560`.
+  - `readme_renderer-46.0.dist-info/licenses/LICENSE` — `d3174ad63e721d4c9dccb8ad4320848992d314369bc46319720b5802c9153fe9`.
+
+### requests 2.34.2
+
+[Метаданные выпуска](https://pypi.org/project/requests/2.34.2/)
+
+- [requests-2.34.2-py3-none-any.whl](https://files.pythonhosted.org/packages/a0/f4/c67b0b3f1b9245e8d266f0f112c500d50e5b4e83cb6f3b71b6528104182a/requests-2.34.2-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0`.
+  - `requests-2.34.2.dist-info/licenses/LICENSE` — `09e8a9bcec8067104652c168685ab0931e7868f9c8284b66f5ae6edae5f1130b`.
+  - `requests-2.34.2.dist-info/licenses/NOTICE` — `f5110972dedad2b4e9d314518daf3b7d72d6e02e499acd802181de6f74571dcc`.
+
+### requests-toolbelt 1.0.0
+
+[Метаданные выпуска](https://pypi.org/project/requests-toolbelt/1.0.0/)
+
+- [requests_toolbelt-1.0.0-py2.py3-none-any.whl](https://files.pythonhosted.org/packages/3f/51/d4db610ef29373b879047326cbf6fa98b6c1969d6f6dc423279de2b1be2c/requests_toolbelt-1.0.0-py2.py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `cccfdd665f0a24fcf4726e690f65639d272bb0637b9b92dfd91a5568ccf6bd06`.
+  - `requests_toolbelt-1.0.0.dist-info/LICENSE` — `1f8cf8bdacd98ed6d36d0fec0c07f7765acebd6e81205962ab5146023b3c858d`.
+
+### rfc3986 2.0.0
+
+[Метаданные выпуска](https://pypi.org/project/rfc3986/2.0.0/)
+
+- [rfc3986-2.0.0-py2.py3-none-any.whl](https://files.pythonhosted.org/packages/ff/9a/9afaade874b2fa6c752c36f1548f718b5b83af81ed9b76628329dab81c1b/rfc3986-2.0.0-py2.py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `50b1502b60e289cb37883f3dfd34532b8873c7de9f49bb546641ce9cbd256ebd`.
+  - `rfc3986-2.0.0.dist-info/LICENSE` — `c0ddce33bfac480a66bde40c590ede2647a4c8a729dcb0d2ce46c014473d5dd8`.
+
+### rich 15.0.0
+
+[Метаданные выпуска](https://pypi.org/project/rich/15.0.0/)
+
+- [rich-15.0.0-py3-none-any.whl](https://files.pythonhosted.org/packages/82/3b/64d4899d73f91ba49a8c18a8ff3f0ea8f1c1d75481760df8c68ef5235bf5/rich-15.0.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `33bd4ef74232fb73fe9279a257718407f169c09b78a87ad3d296f548e27de0bb`.
+  - `rich-15.0.0.dist-info/licenses/LICENSE` — `deed7c17a4318158190a3ea239cc879a5a50271cebb98ae7025f48fbe58dca15`.
+
+### ruff 0.16.10
+
+[Метаданные выпуска](https://pypi.org/project/ruff/0.16.10/)
+
+- [ruff-0.16.10-py3-none-win_amd64.whl](https://files.pythonhosted.org/packages/99/29/cfb0df9448d4d4ad48c2de029ada9ebd71baa6da983a6c77ee6c6cd0fe82/ruff-0.16.10-py3-none-win_amd64.whl) — license members через Range.
+  SHA-256 архива по lockfile: `97f2015c92aa97105b0eab19eb5d224884399281cfc5da86a92db4ab5e7fb2ca`.
+  - `ruff-0.16.10.dist-info/licenses/LICENSE` — `2597d854122b77ddc71971564ca2350a37608575ce324adc5650a2b2051c8f18`.
+- [ruff-0.16.10-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl](https://files.pythonhosted.org/packages/e4/03/17234145f302a645a123e8c3bb2411ecf4669fbc350de3b0d803230a1729/ruff-0.16.10-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl) — license members через Range.
+  SHA-256 архива по lockfile: `f33f43a864a8483eebd160e713336c8bab02c934feaff0a33cf5ccb41546d09a`.
+  - `ruff-0.16.10.dist-info/licenses/LICENSE` — `2597d854122b77ddc71971564ca2350a37608575ce324adc5650a2b2051c8f18`.
+
+### secretstorage 3.5.0
+
+[Метаданные выпуска](https://pypi.org/project/secretstorage/3.5.0/)
+
+- [secretstorage-3.5.0-py3-none-any.whl](https://files.pythonhosted.org/packages/b7/46/f5af3402b579fd5e11573ce652019a67074317e18c1935cc0b4ba9b35552/secretstorage-3.5.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `0ce65888c0725fcb2c5bc0fdb8e5438eece02c523557ea40ce0703c266248137`.
+  - `secretstorage-3.5.0.dist-info/licenses/LICENSE` — `e700357592bb93704cb040ce4a6663a85292716a4041b6a267f598f21658466f`.
+
+### six 1.17.0
+
+[Метаданные выпуска](https://pypi.org/project/six/1.17.0/)
+
+- [six-1.17.0-py2.py3-none-any.whl](https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274`.
+  - `six-1.17.0.dist-info/LICENSE` — `4375ba20e2b9c6c4e7cad2940a628fd90e95cc3d50ee92aae755715d8ba1fbd0`.
+
+### soupsieve 2.10
+
+[Метаданные выпуска](https://pypi.org/project/soupsieve/2.10/)
+
+- [soupsieve-2.10-py3-none-any.whl](https://files.pythonhosted.org/packages/66/87/5ed59e1d0290564e2027ed066c52b059892c4637741337fc0967183c8d4d/soupsieve-2.10-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `8596eb8967d744174820280fa62b4542a2e955bfaccca73ed8a13c6eb8e9b502`.
+  - `soupsieve-2.10.dist-info/licenses/LICENSE.md` — `76a0acdb98c3a63681e20b6f096699ef8cad5fb35d56eef8387e0fa71d797a9a`.
+
+### termcolor 3.3.0
+
+[Метаданные выпуска](https://pypi.org/project/termcolor/3.3.0/)
+
+- [termcolor-3.3.0-py3-none-any.whl](https://files.pythonhosted.org/packages/33/d1/8bb87d21e9aeb323cc03034f5eaf2c8f69841e40e4853c2627edf8111ed3/termcolor-3.3.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `cf642efadaf0a8ebbbf4bc7a31cec2f9b5f21a9f726f4ccbb08192c9c26f43a5`.
+  - `termcolor-3.3.0.dist-info/licenses/COPYING.txt` — `e79b6bd82962c1330caaa7c42278567b08667777673f8e2371a624d5715d4c0e`.
+
+### tinycss2 1.5.1
+
+[Метаданные выпуска](https://pypi.org/project/tinycss2/1.5.1/)
+
+- [tinycss2-1.5.1-py3-none-any.whl](https://files.pythonhosted.org/packages/60/45/c7b5c3168458db837e8ceab06dc77824e18202679d0463f0e8f002143a97/tinycss2-1.5.1-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `3415ba0f5839c062696996998176c4a3751d18b7edaaeeb658c9ce21ec150661`.
+  - `tinycss2-1.5.1.dist-info/licenses/LICENSE` — `6b94acee20ec9f2709333134f3ba70322535fb420af0ce8c1455d9cbe297f1d5`.
+
+### twine 7.0.0
+
+[Метаданные выпуска](https://pypi.org/project/twine/7.0.0/)
+
+- [twine-7.0.0-py3-none-any.whl](https://files.pythonhosted.org/packages/96/08/ddcdc06225eaad6de0e48e1002b06d919dbde20582d0662c7af51308e5d6/twine-7.0.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `b854164df26db268af05f49aa5c0344b10e27a494343ff05b1e0bad3b135f5a7`.
+  - `twine-7.0.0.dist-info/licenses/LICENSE` — `14ed54990120efea26042269885df36e1b53db858bf04b40c8cfc8c5e12f6fb1`.
+
+### typing-extensions 4.16.0
+
+[Метаданные выпуска](https://pypi.org/project/typing-extensions/4.16.0/)
+
+- [typing_extensions-4.16.0-py3-none-any.whl](https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8`.
+  - `typing_extensions-4.16.0.dist-info/licenses/LICENSE` — `3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf`.
+
+### urllib3 2.8.0
+
+[Метаданные выпуска](https://pypi.org/project/urllib3/2.8.0/)
+
+- [urllib3-2.8.0-py3-none-any.whl](https://files.pythonhosted.org/packages/92/9d/c4e665119135114480843e7ab388fa94d8480650450e6f8e26b70d323a4c/urllib3-2.8.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3`.
+  - `urllib3-2.8.0.dist-info/licenses/LICENSE.txt` — `130e3a64d5fdd5d096a752694634a7d9df284469de86e5732100268041e3d686`.
+
+### watchdog 6.0.0
+
+[Метаданные выпуска](https://pypi.org/project/watchdog/6.0.0/)
+
+- [watchdog-6.0.0-py3-none-win_amd64.whl](https://files.pythonhosted.org/packages/db/d9/c495884c6e548fce18a8f40568ff120bc3a4b7b99813081c8ac0c936fa64/watchdog-6.0.0-py3-none-win_amd64.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `cbafb470cf848d93b5d013e2ecb245d4aa1c8fd0504e863ccefa32445359d680`.
+  - `watchdog-6.0.0.dist-info/COPYING` — `39f081828db6f94c70123fa4fb30c1bce3e215a8fdece53a49991fe076a69c08`.
+  - `watchdog-6.0.0.dist-info/LICENSE` — `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`.
+- [watchdog-6.0.0-py3-none-manylinux2014_x86_64.whl](https://files.pythonhosted.org/packages/b5/e8/dbf020b4d98251a9860752a094d09a65e1b436ad181faf929983f697048f/watchdog-6.0.0-py3-none-manylinux2014_x86_64.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `20ffe5b202af80ab4266dcd3e91aae72bf2da48c0d33bdb15c66658e685e94e2`.
+  - `watchdog-6.0.0.dist-info/COPYING` — `39f081828db6f94c70123fa4fb30c1bce3e215a8fdece53a49991fe076a69c08`.
+  - `watchdog-6.0.0.dist-info/LICENSE` — `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`.
+
+### webencodings 0.6.1
+
+[Метаданные выпуска](https://pypi.org/project/webencodings/0.6.1/)
+
+- [webencodings-0.6.1-py3-none-any.whl](https://files.pythonhosted.org/packages/77/c6/040cbc72480d789a5f40d63fb484d3106554c4dfa2d2b70ad5022057750f/webencodings-0.6.1-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `7fab6269c8bf237c657876b52058ccb182e861518d1c695c1a9aaa8c1c105d5b`.
+  - `webencodings-0.6.1.dist-info/licenses/LICENSE` — `e06ef33485e7498ad592887c41fa79cc8a7fecde576c7210e11bfdddef58040e`.
+
+### xlsxwriter 3.2.9
+
+[Метаданные выпуска](https://pypi.org/project/xlsxwriter/3.2.9/)
+
+- [xlsxwriter-3.2.9-py3-none-any.whl](https://files.pythonhosted.org/packages/3a/0c/3662f4a66880196a590b202f0db82d919dd2f89e99a27fadef91c4a33d41/xlsxwriter-3.2.9-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `9a5db42bc5dff014806c58a20b9eae7322a134abb6fce3c92c181bfb275ec5b3`.
+  - `xlsxwriter-3.2.9.dist-info/LICENSE.txt` — `cf08b60a4ded986b58a617cb8304373bda5c4eff42fb4e30d7597b616e116e87`.
+
+### zipp 4.1.1
+
+[Метаданные выпуска](https://pypi.org/project/zipp/4.1.1/)
+
+- [zipp-4.1.1-py3-none-any.whl](https://files.pythonhosted.org/packages/b5/98/df615823cd9419131ce19fba00de53a663794369e198aade064a244b385d/zipp-4.1.1-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `8979f52d874162f485ff2981e3891f3a3317b7a3dd43ff1e1775b9304f307a9c`.
+  - `zipp-4.1.1.dist-info/licenses/LICENSE` — `9755a18519666e5f0f4cae3daad3d7012bcae48a600b31237d75e9fe134e6683`.

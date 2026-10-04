@@ -32,9 +32,11 @@ nav:
       - Архитектура и зависимость: guide/architecture.md
       - Нативный доступ: guide/native-access.md
       - Проверенные возможности: guide/format-audit.md
+      - Зависимости: guide/dependencies.md
   - Справочник:
       - Публичный API: reference/api.md
       - Навигатор по коду: reference/code.md
+      - Лицензии зависимостей: reference/dependencies.md
   - Разработка:
       - Результаты аудита: development/audit.md
       - Тестовый корпус: development/corpus.md
@@ -42,7 +44,9 @@ nav:
       - Запросы к библиотеке: development/format-requests.md
       - Подтверждённые задачи: development/todo.md
       - Исследования: development/research.md
+      - Предложения к OpenDoc: development/opendoc-proposals.md
       - Сборка и выпуск: development/release.md
       - Участие в проекте: development/contributing.md
       - Улучшения версии: development/changelog.md
       - Происхождение и лицензии: development/notice.md
+      - Лицензионный аудит: development/licenses.md

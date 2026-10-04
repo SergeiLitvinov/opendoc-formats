@@ -64,7 +64,7 @@
       {% if page.next_page %}<a href="{{ page.next_page.url|url }}"><small>Далее →</small>{{ page.next_page.title }}</a>{% endif %}
     </nav>{% endif %}
     {% endif %}
-    <footer class="docs-footer">OpenDoc Formats · <a href="{{ config.repo_url }}">GitHub</a> · Руководство и справочник проекта</footer>
+    <footer class="docs-footer">OpenDoc Formats · <a href="{{ config.repo_url }}">GitHub</a> · <a href="{{ doc_url('development/licenses.md') }}">Лицензии</a> · Руководство и справочник проекта</footer>
   </main>
   {% if page and not page.is_homepage %}<aside class="docs-outline" aria-label="На странице"><strong>На странице</strong>{{ outline(page.toc) }}<a class="docs-back-top" href="#main-content">Наверх ↑</a></aside>{% endif %}
 </div>
