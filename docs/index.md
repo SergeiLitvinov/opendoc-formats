@@ -1,14 +1,20 @@
+<img src="https://raw.githubusercontent.com/SergeiLitvinov/opendoc-formats/main/docs/assets/documentation-logo.svg" width="64" height="64" align="right" alt="OpenDoc Formats">
+
 # OpenDoc Formats
 
-**Форматы. Структура. Переход.**
+**Файлы → модель OpenDoc → файлы.**
 
 [![CI](https://github.com/SergeiLitvinov/opendoc-formats/actions/workflows/ci.yml/badge.svg)](https://github.com/SergeiLitvinov/opendoc-formats/actions/workflows/ci.yml)
-[![Pages](https://github.com/SergeiLitvinov/opendoc-formats/actions/workflows/pages.yml/badge.svg)](https://SergeiLitvinov.github.io/opendoc-formats/)
+[![Release](https://img.shields.io/github/v/release/SergeiLitvinov/opendoc-formats)](https://github.com/SergeiLitvinov/opendoc-formats/releases)
+[![MIT](https://img.shields.io/badge/license-MIT-blue)](development/LICENSE)
 
-OpenDoc Formats — пакет Python для чтения и записи документов с диагностикой преобразований.
-Отдельный проект экосистемы **okidoki** со своими версиями, тестами и релизами.
-**OpenDoc 0.1.0 — обязательная зависимость:** библиотека использует его модель, валидацию и отчёты.
-Собственной копии модели и зависимости от прикладного приложения нет.
+[Документация](https://SergeiLitvinov.github.io/opendoc-formats/) · [Руководство](guide/index.md) · [API](reference/api.md) · [Выпуски](https://github.com/SergeiLitvinov/opendoc-formats/releases)
+
+Импорт и экспорт файлов через модель OpenDoc, с диагностикой преобразований.
+Пакет: `opendoc-formats`, импорт: `opendoc_formats`; Python 3.11+.
+**Обязательная зависимость — OpenDoc 0.1.0.** Собственной копии модели и зависимости от приложений нет.
+
+Проект экосистемы [okidoki](https://github.com/search?q=user%3ASergeiLitvinov+topic%3Aokidoki&type=repositories), со своими версиями, тестами и выпусками.
 
 | Формат | Импорт | Экспорт | Движок / extra |
 | --- | --- | --- | --- |
