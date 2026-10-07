@@ -223,7 +223,7 @@ def _advanced_run_types(element: Any) -> set[str]:
             detected.add("text_boxes")
         if local_name in {"textFill", "textOutline", "textPath"}:
             detected.add("wordart")
-        if local_name == "oleObject":
+        if local_name.casefold() == "oleobject":
             detected.add("embedded_ole")
         if "/diagram/" in namespace or (local_name == "relIds" and "diagram" in namespace):
             detected.add("smartart")

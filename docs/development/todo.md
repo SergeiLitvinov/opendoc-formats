@@ -15,6 +15,9 @@
 - PPTX отмечает потери package graph, transitions/timing, иерархии групп, audio/video,
   3D settings и пропуски фигур/картинок. Неподдержанные graphic objects различают
   visual preview и lost; source XPath, part, shape ID и номер слайда сохраняются в JSON.
+- DOCX отмечает complex fields, comments/revisions/content controls, text boxes/WordArt,
+  SmartArt/OLE и protection по источнику: `opaque` требует сохранённого фрагмента/part,
+  иначе `lost`. Учёт inventory не выдаётся за доказательство сохранения.
 - Остаётся: читатели EPUB/PDF и других форматов не диагностируют каждый пропуск;
   legacy warning без структурированной оценки не определяет состояние сохранности.
 - Реализовать общий контракт feature/location/severity для каждого читателя:

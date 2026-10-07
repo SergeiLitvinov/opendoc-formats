@@ -11,8 +11,14 @@ _FEATURE_TAGS = {
     "comments": {"commentReference", "commentRangeStart", "commentRangeEnd"},
     "content_controls": {"sdt"},
     "text_boxes": {"txbxContent", "textbox"},
-    "wordart": {"textOutline", "textFill", "textPath"},
+    "wordart": {"textOutline", "textFill", "textPath", "textpath"},
     "protected_fields": {"documentProtection"},
+}
+_WORD = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+_VML = "urn:schemas-microsoft-com:vml"
+_WORD14 = "http://schemas.microsoft.com/office/word/2010/wordml"
+_FEATURE_NAMESPACES = {
+    "text_boxes": {_WORD, _VML}, "wordart": {_VML, _WORD14},
 }
 
 
@@ -29,17 +35,21 @@ def inspect_docx_features(document: Any) -> dict[str, Any]:
         if "xml" not in media_type:
             continue
         try:
-            roots.append(etree.fromstring(relationship.target_part.blob))
+            roots.append(etree.fromstring(relationship.target_part.blob,
+                                         etree.XMLParser(resolve_entities=False, load_dtd=False, no_network=True)))
         except etree.XMLSyntaxError:
             continue
     protection_xml: str | None = None
     for root in roots:
         for element in root.iter():
-            local = etree.QName(element).localname
-            if local == "documentProtection" and protection_xml is None:
+            if not isinstance(element.tag, str):
+                continue
+            qname = etree.QName(element)
+            local = qname.localname
+            if local == "documentProtection" and qname.namespace == _WORD and protection_xml is None:
                 protection_xml = etree.tostring(element, encoding="unicode")
             for feature, tags in _FEATURE_TAGS.items():
-                if local in tags:
+                if local in tags and qname.namespace in _FEATURE_NAMESPACES.get(feature, {_WORD}):
                     counts[feature] += 1
 
     relationship_counts: Counter[str] = Counter()
@@ -65,6 +75,7 @@ def inspect_docx_features(document: Any) -> dict[str, Any]:
     }
     result: dict[str, Any] = {
         "schema_version": 1,
+        "assessment_scope": "inventory-only; verified retention is in opendoc.integration",
         "features": {
             feature: {
                 "count": count,

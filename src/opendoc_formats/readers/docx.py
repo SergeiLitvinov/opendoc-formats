@@ -28,6 +28,7 @@ from opendoc_formats.ooxml.package import (
     RELATIONSHIP_TYPE,
     load_package_graph,
 )
+from opendoc_formats.readers.docx_diagnostics import attach_docx_diagnostics
 from opendoc_formats.readers.docx_features import inspect_docx_features
 from opendoc_formats.readers.docx_section import read_section
 from opendoc_formats.readers.docx_style import (
@@ -128,6 +129,7 @@ def read_docx_model(
             )
         )
     _attach_docx_provenance(model, source)
+    attach_docx_diagnostics(document, model, source)
     return model
 
 
