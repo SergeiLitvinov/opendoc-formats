@@ -9,6 +9,9 @@
   из metadata и typed preservation ledger OpenDoc, включая повторный импорт JSON.
   `assessment_complete` и `lossless` требуют явно завершённой оценки функций;
   пустой список предупреждений не доказывает отсутствие потерь.
+- EPUB отмечает потери нелинейных/неподдержанных spine items, структуры таблиц,
+  MathML, inline SVG, standalone/missing images, audio/video/object/script и font/media assets.
+  Ledger содержит reason и source provenance; оценка явно неполная.
 - Остаётся: читатели EPUB/PDF и других форматов не диагностируют каждый пропуск;
   legacy warning без структурированной оценки не определяет состояние сохранности.
 - Реализовать общий контракт feature/location/severity для каждого читателя:

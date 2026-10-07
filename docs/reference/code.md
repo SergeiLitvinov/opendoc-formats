@@ -363,13 +363,25 @@ EPUB → Text.
 
 Тесты: [test_epub_model.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_model.py#L1)
 
+## src/opendoc_formats/readers/epub_diagnostics.py
+
+Located, partial EPUB preservation assessment using the OpenDoc contract.
+
+- `EpubDiagnostics` — [строка 21](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L21)
+- `__init__(self, source: Path, root_directory: str='') -> None` — [строка 22](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L22)
+- `lost(self, feature: str, reason: str, message: str, part: str, node: Any=None) -> None` — [строка 27](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L27)
+- `attach(self, document: DocumentModel) -> None` — [строка 40](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L40)
+- `chapter(self, body: Any, part: str, blocks: set[str]) -> None` — [строка 48](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L48)
+
+Импорты: `__future__`, `opendoc_model`, `pathlib`, `typing`
+
 ## src/opendoc_formats/readers/epub_model.py
 
 Rich EPUB spine importer with links, media, and a small deterministic CSS cascade.
 
 - `read_epub_model(path: str | Path, *, backend: str='native') -> DocumentModel` — [строка 32](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_model.py#L32)
 
-Импорты: `__future__`, `bs4`, `collections.abc`, `opendoc_formats.readers.epub_package`, `opendoc_model.document_model`, `pathlib`, `typing`, `urllib.parse`
+Импорты: `__future__`, `bs4`, `collections.abc`, `opendoc_formats.readers.epub_diagnostics`, `opendoc_formats.readers.epub_package`, `opendoc_model.document_model`, `pathlib`, `typing`, `urllib.parse`
 
 Тесты: [test_source_coverage.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_source_coverage.py#L1)
 
@@ -379,8 +391,8 @@ Original, bounded EPUB container reader; no network or XML entity expansion.
 
 - `EpubItem` — [строка 24](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L24)
 - `EpubPackage` — [строка 33](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L33)
-- `read_epub_package(path: str | Path) -> EpubPackage` — [строка 71](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L71)
-- `read_ebooklib_package(path: str | Path) -> EpubPackage` — [строка 143](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L143)
+- `read_epub_package(path: str | Path) -> EpubPackage` — [строка 81](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L81)
+- `read_ebooklib_package(path: str | Path) -> EpubPackage` — [строка 148](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L148)
 
 Импорты: `__future__`, `dataclasses`, `ebooklib`, `opendoc_formats.support.io`, `pathlib`, `urllib.parse`
 

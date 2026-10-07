@@ -42,6 +42,23 @@ def test_epub_table_math_and_nonlinear_content_are_not_semantic(tmp_path):
     assert "Visible" in text and "TableOnly" not in text and "NonlinearOnly" not in text
     assert not any(isinstance(block, Table) for block in blocks)
     assert not any(isinstance(inline, Formula) for block in blocks for inline in block.content)
+    result = read_document(source)
+    assert result.success and not result.lossless and not result.assessment_complete
+    assert {issue.code for issue in result.issues} == {"epub.table", "epub.math", "epub.spine"}
+    assert all(issue.severity.value == "loss" and str(source) in issue.location for issue in result.issues)
+    assert any("appendix.xhtml" in issue.location and issue.reason == "nonlinear-spine" for issue in result.issues)
+    assert any("#line=" in issue.location for issue in result.issues if issue.code == "epub.table")
+    from opendoc_model import document_from_json, document_to_json, get_integration
+
+    restored = document_from_json(document_to_json(document))
+    ledger = get_integration(restored)
+    assert ledger == get_integration(document)
+    assert all(record.provenance.source_path == str(source) for record in ledger.preservation)
+    assert all(record.provenance.package_part.endswith(".xhtml") for record in ledger.preservation)
+    import zipfile
+
+    with zipfile.ZipFile(source) as archive:
+        assert all(record.provenance.package_part.lstrip("/") in archive.namelist() for record in ledger.preservation)
     report = write_document(document, tmp_path / "output.epub")
     assert not report.success and report.issues[0].feature == "export.unsupported-format"
 

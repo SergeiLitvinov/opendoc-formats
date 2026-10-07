@@ -32,6 +32,7 @@ _BLOCKS = {"p", "h1", "h2", "h3", "h4", "h5", "h6", "li", "blockquote", "pre", "
 def read_epub_model(path: str | Path, *, backend: str = "native") -> DocumentModel:
     from bs4 import BeautifulSoup
 
+    from opendoc_formats.readers.epub_diagnostics import EpubDiagnostics
     from opendoc_formats.readers.epub_package import read_ebooklib_package, read_epub_package
 
     source = Path(path)
@@ -40,23 +41,34 @@ def read_epub_model(path: str | Path, *, backend: str = "native") -> DocumentMod
     if backend not in {"native", "ebooklib"}:
         raise ValueError("EPUB backend must be native or ebooklib")
     book = read_epub_package(source) if backend == "native" else read_ebooklib_package(source)
+    diagnostics = EpubDiagnostics(source, book.root_directory)
     resources, item_names = _resources(book, source)
+    for item in book.items.values():
+        if item.media_type.startswith(("font/", "audio/", "video/")) or item.media_type in {
+            "application/vnd.ms-opentype", "application/font-sfnt", "application/font-woff",
+        }:
+            diagnostics.lost("epub.asset", "unsupported-asset", "Font or media asset is not retained", item.name)
     titles = book.titles
     sections, warnings, styles = [], [], {}
     for idref, linear in book.spine:
-        if str(linear).lower() == "no":
-            continue
         item = book.items.get(idref)
+        if str(linear).lower() == "no":
+            diagnostics.lost("epub.spine", "nonlinear-spine", "Nonlinear spine item is skipped", item.name if item else idref)
+            continue
         if item is None or item.media_type != "application/xhtml+xml" or "nav" in item.properties:
+            diagnostics.lost(
+                "epub.spine", "unsupported-spine-item", "Spine item has no content section", item.name if item else idref,
+            )
             continue
         soup = BeautifulSoup(item.content, "html.parser")
         rules = _chapter_rules(book, item, soup)
         blocks = []
         body = soup.body or soup
+        diagnostics.chapter(body, item.name, _BLOCKS)
         for tag in body.find_all(_BLOCKS):
             if tag.find_parent(_BLOCKS):
                 continue
-            content = _inline_content(tag, rules, item.name, item_names, warnings)
+            content = _inline_content(tag, rules, item.name, item_names, diagnostics)
             if content or tag.name in {"p", "li"}:
                 properties = {"epub": {"tag": tag.name}}
                 if tag.get("id"):
@@ -100,7 +112,9 @@ def read_epub_model(path: str | Path, *, backend: str = "native") -> DocumentMod
         "source_name": source.name,
         "epub": {"spine": [section.properties["epub"]["href"] for section in sections], "warnings": warnings},
     }
-    return DocumentModel(sections=sections, resources=resources, styles=styles, metadata=metadata, source_format="epub")
+    document = DocumentModel(sections=sections, resources=resources, styles=styles, metadata=metadata, source_format="epub")
+    diagnostics.attach(document)
+    return document
 
 
 def _resources(book: Any, source: Path) -> tuple[dict[str, od.Resource], dict[str, str]]:
@@ -148,7 +162,7 @@ def _chapter_rules(book: Any, item: Any, soup: Any) -> list[tuple[str, dict[str,
 
 
 def _inline_content(
-    root: Any, rules: list[tuple[str, dict[str, str], int]], chapter_name: str, item_names: dict[str, str], warnings: list[str]
+    root: Any, rules: list[tuple[str, dict[str, str], int]], chapter_name: str, item_names: dict[str, str], diagnostics: Any
 ) -> list[od.Inline]:
     from bs4 import NavigableString, Tag
 
@@ -176,7 +190,7 @@ def _inline_content(
             if resource_id:
                 result.append(Image(resource_id, alt_text=node.get("alt", ""), provenance=None))
             else:
-                warnings.append(f"missing image: {name}")
+                diagnostics.lost("epub.image", "missing-image", f"missing image: {name}", chapter_name, node)
                 if node.get("alt"):
                     result.append(TextRun(node["alt"], _text_style(style), link=child_link))
         else:

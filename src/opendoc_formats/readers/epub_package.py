@@ -36,6 +36,7 @@ class EpubPackage:
     metadata: dict[str, str]
     titles: dict[str, str] = field(default_factory=dict)
     engine: str = "native-epub+bs4"
+    root_directory: str = ""
 
 
 def _local_path(base: str, href: str) -> str:
@@ -68,6 +69,15 @@ def _xml(data: bytes) -> ET.Element:
     return root
 
 
+def _opf_name(container_data: bytes) -> str:
+    container = _xml(container_data)
+    candidates = container.findall(f"{{{_CONTAINER}}}rootfiles/{{{_CONTAINER}}}rootfile")
+    entry = next((item for item in candidates if item.get("media-type") == "application/oebps-package+xml"), None)
+    if entry is None:
+        raise ValueError("EPUB container has no OPF rootfile")
+    return _local_path("", entry.get("full-path", ""))
+
+
 def read_epub_package(path: str | Path) -> EpubPackage:
     """Read OPF, spine, EPUB 3 navigation and EPUB 2 NCX without extracting files."""
     check_archive_safety(path)
@@ -80,12 +90,7 @@ def read_epub_package(path: str | Path) -> EpubPackage:
 
         if read("mimetype") != b"application/epub+zip":
             raise ValueError("Invalid EPUB mimetype")
-        container = _xml(read("META-INF/container.xml"))
-        candidates = container.findall(f"{{{_CONTAINER}}}rootfiles/{{{_CONTAINER}}}rootfile")
-        package_entry = next((entry for entry in candidates if entry.get("media-type") == "application/oebps-package+xml"), None)
-        if package_entry is None:
-            raise ValueError("EPUB container has no OPF rootfile")
-        opf_name = _local_path("", package_entry.get("full-path", ""))
+        opf_name = _opf_name(read("META-INF/container.xml"))
         opf = _xml(read(opf_name))
         if opf.tag != f"{{{_OPF}}}package":
             raise ValueError("Invalid EPUB OPF root")
@@ -137,7 +142,7 @@ def read_epub_package(path: str | Path) -> EpubPackage:
         items = {key: EpubItem(item.id, posixpath.relpath(item.name, base), item.media_type,
                                item.content, item.properties) for key, item in items.items()}
         titles = {posixpath.relpath(name, base): title for name, title in titles.items()}
-        return EpubPackage(items, tuple(spine), metadata, titles)
+        return EpubPackage(items, tuple(spine), metadata, titles, root_directory=posixpath.dirname(opf_name))
 
 
 def read_ebooklib_package(path: str | Path) -> EpubPackage:
@@ -145,6 +150,8 @@ def read_ebooklib_package(path: str | Path) -> EpubPackage:
     from ebooklib import epub
 
     check_archive_safety(path)
+    with zipfile.ZipFile(path) as archive:
+        root_directory = posixpath.dirname(_opf_name(archive.read("META-INF/container.xml")))
     book = epub.read_epub(str(path))
     items = {
         item.id: EpubItem(item.id, posixpath.normpath(item.get_name()), item.media_type, item.content,
@@ -165,4 +172,4 @@ def read_ebooklib_package(path: str | Path) -> EpubPackage:
     for name in ("title", "language", "identifier"):
         values = book.get_metadata("DC", name)
         metadata[name] = values[0][0] if values else ""
-    return EpubPackage(items, tuple(book.spine), metadata, titles, "ebooklib+bs4")
+    return EpubPackage(items, tuple(book.spine), metadata, titles, "ebooklib+bs4", root_directory)
