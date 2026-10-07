@@ -11,7 +11,7 @@
 | Поддержка и потери | `CapabilityProfile`, `FeatureCapability`, `PreservationRecord`, `PreservationState` | Объявлять конечный профиль и записывать semantic/opaque/visual/lost/rejected с причиной и местом; OF15 |
 | Исходный синтаксис | `SourceFile`, `SourceSpan`, `SourceMap`, `UnknownFragment` | Связывать разобранные узлы с исходником, сохранять неизвестные фрагменты с лимитами; OF04/OF14 |
 | Поля и диапазоны | `TextPosition`, `TextRange`, `Field`, `BibliographyEntry`, `Comment`, `Revision`, `ContentControl` | Разбирать и экспортировать реальные поля, цитаты, комментарии и revisions; OF05 |
-| Вектор | `AffineTransform`, `PathCommand`, `Paint`, `VectorPath`, `VectorGroup`, `VectorScene` | Преобразовывать команды PDF/SVG/OOXML, сохранять геометрию, обозначать fallback; OF03/OF07 |
+| Вектор | `AffineTransform`, `PathCommand`, `Paint`, `VectorPath`, `VectorGroup`, `VectorScene` | Развивать graphics state и связи с integration scene; конечный ресурсный PDF writer реализован, полнота исходного PDF остаётся OF07 |
 | Диаграммы и стили | `ChartSeries`, `ChartAxis`, `Chart`, `SceneStyle` | Разбирать данные, группы, theme/master/layout без выдачи картинки за редактируемые данные; OF06 |
 | Специализированные данные | Типы reading order, annotation, form, media/timing, math AST и sheet/cell в `integration_types` | Заполнять поддержанную семантику форматов; не исполнять actions; OF04/OF06/OF07/OF08/OF13 |
 

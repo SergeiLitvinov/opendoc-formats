@@ -82,11 +82,18 @@ def test_pdf_zero_opacity_preserves_fill_stroke_and_json_metadata(tmp_path):
         assert image.getpixel((50, 50)) == (255, 255, 255)
 
 
-def test_confirmed_vector_export_gap_has_loss_diagnostic(tmp_path):
+def test_vector_export_preserves_native_geometry_and_pixels(tmp_path):
     source = Path(__file__).parents[1] / "corpus/native/vector-export.pdf"
     imported = read_document(source)
     assert imported.success
     output = tmp_path / "result.pdf"
     report = write_document(imported.document, output)
-    assert not report.success and not report.lossless
-    assert any("vector" in issue.message.lower() or "application/pdf" in issue.message.lower() for issue in report.issues)
+    assert report.success and report.lossless, report.to_dict()
+    assert report.metrics["pdf_vectors"]["native"] == 1
+    with pymupdf.open(source) as before, pymupdf.open(output) as after:
+        drawing = before[0].get_drawings()[0]
+        restored = next(value for value in after[0].get_drawings() if value["rect"] == drawing["rect"])
+        for name in ("rect", "color", "fill", "width", "fill_opacity", "stroke_opacity"):
+            assert restored[name] == drawing[name]
+        assert after[0].get_images() == []
+        assert before[0].get_pixmap().samples == after[0].get_pixmap().samples

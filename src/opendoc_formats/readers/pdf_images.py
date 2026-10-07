@@ -223,7 +223,7 @@ def extract_pdf_vector_drawings(path: str | Path) -> tuple[list[PdfVectorDrawing
                         stroke_opacity=stroke_opacity,
                         even_odd=bool(draw.get("even_odd", False)),
                         close_path=bool(draw.get("closePath", True)),
-                        dashes=str(draw.get("dashes", "")),
+                        dashes=str(draw.get("dashes") or "[] 0"),
                         line_join=_to_int(draw.get("lineJoin", 0)),
                         line_cap=_to_int(draw.get("lineCap", 0)),
                     )

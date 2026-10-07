@@ -238,6 +238,13 @@ def read_pdf_model(
                         "stroke": vec.stroke.to_dict() if vec.stroke else None,
                         "fill_opacity": vec.fill_opacity,
                         "stroke_opacity": vec.stroke_opacity,
+                        "bbox": list(vec.bbox),
+                        "width": vec.width,
+                        "even_odd": vec.even_odd,
+                        "close_path": vec.close_path,
+                        "dashes": vec.dashes,
+                        "line_join": vec.line_join,
+                        "line_cap": vec.line_cap,
                     },
                     provenance=origin(f"vector-{vec.number}", detail="extracted PDF drawing operators"),
                 )

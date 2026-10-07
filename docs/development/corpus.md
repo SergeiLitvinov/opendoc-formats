@@ -71,8 +71,10 @@ PPTX and EMF fixtures remain generated during tests and require no office suite.
   split runs, header/footer, объединения, вложенная таблица, собственный PNG, OMML и секции.
 - `zero-opacity.pdf`: PyMuPDF, страница 100×100 points, прямоугольник (10,10,90,90),
   красная заливка и синяя обводка с alpha=0. Приёмка: alpha сохраняется, raster белый.
-- `vector-export.pdf`: та же геометрия с alpha=1. Приёмка текущего пробела: экспорт
-  векторного ресурса возвращает диагностируемую ошибку, не ложный lossless success.
+- `vector-export.pdf`: та же геометрия с alpha=1. Приёмка: нативный экспорт сохраняет
+  paint, геометрию и пиксели без растровых изображений.
+- `unsupported-vector.json`: собственная модель с неизвестной командой. Приёмка:
+  явное отклонение и сохранение прежнего выходного файла; surrogate проверяется отдельно.
 - `text-pages.pdf`: собственные две страницы PyMuPDF с текстом Native PDF и второй
   страницей с поворотом 90°. Проверяет установленный extra pdf-text без PyMuPDF.
 

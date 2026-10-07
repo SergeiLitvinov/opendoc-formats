@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import Block, DocumentModel, Formula, FormulaFormat, Paragraph, Section, Table
@@ -16,14 +16,22 @@ from opendoc_formats.writers.pdf_resources import PdfResourceStage
 from opendoc_formats.writers.stages import StageContext
 
 
-def write_pdf_model(document: DocumentModel, output_path: str | Path) -> ConversionReport:
+def write_pdf_model(
+    document: DocumentModel, output_path: str | Path, *, cancelled: Callable[[], bool] | None = None,
+) -> ConversionReport:
     """Записать модель в PDF, сохранив размеры секций и многостраничный поток."""
 
     import fitz
 
     output = Path(output_path)
     report = ConversionReport(output)
-    prepared = PdfResourceStage().execute(document, StageContext(output))
+    from opendoc_formats.writers.pdf_vectors import draw_vectors, prepare_vectors
+
+    check_cancelled = cancelled or (lambda: False)
+    document, vectors = prepare_vectors(document, report, check_cancelled)
+    if not report.success:
+        return report
+    prepared = PdfResourceStage().execute(document, StageContext(output, check_cancelled))
     report.issues.extend(prepared.report.issues)
     report.metrics.update(prepared.report.metrics)
     if not report.success:
@@ -37,9 +45,19 @@ def write_pdf_model(document: DocumentModel, output_path: str | Path) -> Convers
     try:
         for section_index, section in enumerate(document.sections or [Section()]):
             section_pdf, renderer = _render_section(document, section, section_index, report)
+            section_vectors = vectors[section_index] if section_index < len(vectors) else []
+            try:
+                for page_number, page in enumerate(section_pdf):
+                    placed = [v for v in section_vectors
+                              if page_number == 0 or ".headers[" in v.location or ".footers[" in v.location]
+                    draw_vectors(page, placed, check_cancelled)
+            except Exception:
+                section_pdf.close()
+                raise
             totals["pages"] += section_pdf.page_count
             for key in ("paragraphs", "tables", "images", "formulas"):
                 totals[key] += renderer.metrics[key]
+            totals["images"] += len(section_vectors)
             target.insert_pdf(section_pdf)
             section_pdf.close()
         _set_metadata(target, document.metadata)
@@ -50,6 +68,8 @@ def write_pdf_model(document: DocumentModel, output_path: str | Path) -> Convers
             staged = workspace.artifact_path("output.pdf")
             target.save(staged, garbage=4, deflate=True)
             workspace.validate_artifact(staged)
+            if check_cancelled():
+                raise ValueError("PDF export cancelled before publication")
             atomic_copy(staged, output)
     except Exception as error:  # noqa: BLE001 - backend failures must be represented in the report
         report.add(IssueSeverity.ERROR, "pdf-write", str(error))

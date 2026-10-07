@@ -46,6 +46,8 @@ def main() -> None:
             assert any(r.media_type == "application/pdf+vector" for r in vector.document.resources.values())
             restored = document_from_json(document_to_json(vector.document))
             assert restored.resources == vector.document.resources
+            vector_report = write_document(vector.document, output / "vector.pdf")
+            assert vector_report.success and vector_report.metrics["pdf_vectors"]["native"] == 1, vector_report.to_dict()
             assert not read_document(source, options=ImportOptions(cancelled=lambda: True)).success
             target = output / "cancelled.pdf"
             target.write_bytes(b"existing")
