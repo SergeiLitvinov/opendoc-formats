@@ -4,7 +4,7 @@
 
 | ID | Чтение | Запись | Что сохраняется и где возможны потери |
 | --- | --- | --- | --- |
-| `txt` | UTF-8 / CP1251, пустые строки | UTF-8 | Основной текст; стили, ссылки, изображения и геометрия теряются |
+| `txt` | UTF-8, UTF-16 LE/BE, явный CP1251; BOM и пустые строки | Выбранный `TextProfile`; по умолчанию UTF-8/LF без BOM | Исходные encoding/BOM/newlines сохраняются для выбранного byte roundtrip; стили и геометрия теряются |
 | `json` | Нативный JSON OpenDoc Model | Нативный JSON OpenDoc Model | Полная модель, JSON-совместимые дополнительные поля и встроенные ресурсы |
 | `html` | Статический HTML и ограниченный CSS | HTML, встроенные ресурсы | Абзацы, таблицы, списки, ссылки, изображения, формулы; неподдержанный CSS диагностируется |
 | `docx` | OOXML через python-docx | OOXML через python-docx | Текст, стили, таблицы, формулы и ресурсы; непрозрачные части пакета имеют отдельные границы переноса |
@@ -20,6 +20,42 @@
 перечисление само по себе не означает наличие маршрута в реестре.
 
 ## Проверка результата
+
+### Профиль TXT
+
+```python
+from opendoc_formats import ExportOptions, ImportOptions, TextProfile, read_document, write_document
+
+# CP1251 без BOM требует явного выбора.
+result = read_document("source.txt", options=ImportOptions(txt_profile=TextProfile("cp1251")))
+if result.success:
+    # auto на записи использует сохранённые encoding/BOM/newlines исходного TXT.
+    report = write_document(result.document, "copy.txt", options=ExportOptions(txt_profile=TextProfile()))
+```
+
+`TextProfile.encoding`: `auto`, `utf-8`, `utf-16-le`, `utf-16-be`, `cp1251`.
+Автоматическое чтение распознаёт UTF-8/UTF-16 BOM; без BOM применяется строгий UTF-8.
+Это конечная политика, не распознавание произвольной кодировки. Legacy text и UTF-16
+без BOM требуют явного выбора. Невалидные bytes, UTF-32, NUL, конфликтующий/запрещённый
+или обязательный отсутствующий BOM отклоняются с `import.txt-encoding` и машинным `reason`.
+CP1251 не имеет BOM. Декодирование и кодирование не заменяют ошибочные символы.
+
+`bom`: `auto`, `require`, `forbid`. На записи `auto` берёт BOM исходного профиля,
+если он сохранён; для новой модели BOM отсутствует. `newline`: `preserve`, `lf`, `crlf`, `cr`.
+Модель хранит логические абзацы независимо от физических разделителей; низкоуровневый
+`read_txt` применяет выбранную newline policy к тексту. Writer применяет её к выходным bytes.
+`preserve` использует исходную последовательность разделителей, включая смешанные CRLF/LF/CR.
+При изменении числа границ writer выбирает LF и сообщает `LOSS: txt-newlines`.
+Без `ExportOptions.txt_profile` сохраняется прежний UTF-8/LF без BOM.
+
+Исходные encoding/BOM/newlines, SHA-256 и размер находятся в `metadata.txt`;
+сводка профиля — в provenance секции. JSON сохраняет оба представления.
+Неизменённый TXT после JSON и записи с `TextProfile()` проверен байт-в-байт для всех
+перечисленных кодировок. Непредставимые в выбранной кодировке символы отклоняют экспорт
+до замены предыдущего файла. Проверка результата использует фактическую кодировку writer.
+TXT сохраняет только основной текст; byte roundtrip не обещан для произвольной сложной модели.
+
+### Отчёт импорта
 
 `ImportResult.issues` объединяет предупреждения читателя из `metadata.warnings`
 и `metadata.<format>.warnings` с записями `opendoc.integration`.

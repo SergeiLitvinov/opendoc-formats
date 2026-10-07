@@ -7,27 +7,27 @@
 Document format readers and writers built on the OpenDoc model.
 
 
-Импорты: `api`, `export`, `importlib.metadata`
+Импорты: `api`, `export`, `importlib.metadata`, `text_profile`
 
 ## src/opendoc_formats/api.py
 
 Format reader registry using the OpenDoc model and validation contract.
 
-- `ImportOptions` — [строка 17](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L17)
-- `ImportResult` — [строка 41](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L41)
-- `success(self) -> bool` — [строка 47](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L47)
-- `assessment_complete(self) -> bool` — [строка 51](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L51)
-- `lossless(self) -> bool` — [строка 62](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L62)
-- `AdapterSpec` — [строка 79](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L79)
-- `AdapterRegistry` — [строка 99](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L99)
-- `__init__(self) -> None` — [строка 100](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L100)
-- `register(self, adapter: AdapterSpec) -> None` — [строка 104](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L104)
-- `adapters(self) -> tuple[AdapterSpec, ...]` — [строка 112](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L112)
-- `read(self, path: str | Path, *, format_id: str | None=None, options: ImportOptions | None=None) -> ImportResult` — [строка 115](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L115)
-- `default_registry() -> AdapterRegistry` — [строка 202](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L202)
-- `read_document(path: str | Path, *, format_id: str | None=None, options: ImportOptions | None=None) -> ImportResult` — [строка 215](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L215)
+- `ImportOptions` — [строка 18](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L18)
+- `ImportResult` — [строка 45](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L45)
+- `success(self) -> bool` — [строка 51](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L51)
+- `assessment_complete(self) -> bool` — [строка 55](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L55)
+- `lossless(self) -> bool` — [строка 66](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L66)
+- `AdapterSpec` — [строка 83](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L83)
+- `AdapterRegistry` — [строка 103](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L103)
+- `__init__(self) -> None` — [строка 104](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L104)
+- `register(self, adapter: AdapterSpec) -> None` — [строка 108](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L108)
+- `adapters(self) -> tuple[AdapterSpec, ...]` — [строка 116](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L116)
+- `read(self, path: str | Path, *, format_id: str | None=None, options: ImportOptions | None=None) -> ImportResult` — [строка 119](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L119)
+- `default_registry() -> AdapterRegistry` — [строка 211](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L211)
+- `read_document(path: str | Path, *, format_id: str | None=None, options: ImportOptions | None=None) -> ImportResult` — [строка 224](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L224)
 
-Импорты: `__future__`, `collections.abc`, `dataclasses`, `importlib`, `opendoc_formats.errors`, `opendoc_formats.support.backends`, `opendoc_model`, `pathlib`, `typing`
+Импорты: `__future__`, `collections.abc`, `dataclasses`, `importlib`, `opendoc_formats.errors`, `opendoc_formats.support.backends`, `opendoc_formats.text_profile`, `opendoc_model`, `pathlib`, `typing`
 
 ## src/opendoc_formats/docx.py
 
@@ -92,17 +92,17 @@ Format-specific errors, independent of consumers.
 
 Extensible model export with validation and atomic publication.
 
-- `ExportOptions` — [строка 19](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L19)
-- `ExporterSpec` — [строка 38](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L38)
-- `ExporterRegistry` — [строка 61](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L61)
-- `__init__(self) -> None` — [строка 62](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L62)
-- `register(self, exporter: ExporterSpec) -> None` — [строка 66](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L66)
-- `exporters(self) -> tuple[ExporterSpec, ...]` — [строка 74](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L74)
-- `write(self, document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport` — [строка 77](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L77)
-- `default_exporter_registry() -> ExporterRegistry` — [строка 157](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L157)
-- `write_document(document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport` — [строка 180](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L180)
+- `ExportOptions` — [строка 20](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L20)
+- `ExporterSpec` — [строка 42](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L42)
+- `ExporterRegistry` — [строка 65](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L65)
+- `__init__(self) -> None` — [строка 66](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L66)
+- `register(self, exporter: ExporterSpec) -> None` — [строка 70](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L70)
+- `exporters(self) -> tuple[ExporterSpec, ...]` — [строка 78](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L78)
+- `write(self, document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport` — [строка 81](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L81)
+- `default_exporter_registry() -> ExporterRegistry` — [строка 173](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L173)
+- `write_document(document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport` — [строка 196](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L196)
 
-Импорты: `__future__`, `collections.abc`, `dataclasses`, `importlib`, `opendoc_formats.support.backends`, `opendoc_formats.support.output_validation`, `opendoc_model`, `pathlib`, `tempfile`, `typing`
+Импорты: `__future__`, `collections.abc`, `dataclasses`, `importlib`, `opendoc_formats.support.backends`, `opendoc_formats.support.output_validation`, `opendoc_formats.text_profile`, `opendoc_formats.writers.txt_writer`, `opendoc_model`, `pathlib`, `tempfile`, `typing`
 
 ## src/opendoc_formats/fonts/__init__.py
 
@@ -275,9 +275,9 @@ Optional backends are imported only when selected.
 
 Plain-text input without application types or optional dependencies.
 
-- `read_txt_model(path: str | Path) -> DocumentModel` — [строка 8](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/_txt_model.py#L8)
+- `read_txt_model(path: str | Path, *, profile: TextProfile | None=None) -> DocumentModel` — [строка 12](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/_txt_model.py#L12)
 
-Импорты: `opendoc_model`, `pathlib`
+Импорты: `opendoc_formats.text_profile`, `opendoc_model`, `pathlib`
 
 ## src/opendoc_formats/readers/docx.py
 
@@ -712,10 +712,12 @@ Safe SVG color discovery for canonical resource metadata.
 
 TXT и DjVu → Text.
 
-- `read_txt(path: Union[str, Path]) -> Text` — [строка 12](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/txt.py#L12)
-- `read_djvu(path: Union[str, Path]) -> Text` — [строка 30](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/txt.py#L30)
+- `read_txt(path: Union[str, Path], *, profile: TextProfile | None=None) -> Text` — [строка 13](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/txt.py#L13)
+- `read_djvu(path: Union[str, Path]) -> Text` — [строка 32](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/txt.py#L32)
 
-Импорты: `__future__`, `opendoc_formats.readers._txt_model`, `opendoc_formats.types`, `pathlib`, `typing`
+Импорты: `__future__`, `opendoc_formats.readers._txt_model`, `opendoc_formats.text_profile`, `opendoc_formats.types`, `pathlib`, `typing`
+
+Тесты: [test_text_profile.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_text_profile.py#L1)
 
 ## src/opendoc_formats/support/__init__.py
 
@@ -818,6 +820,20 @@ Readability checks for staged exports; these do not measure visual fidelity.
 Импорты: `__future__`, `docx`, `html.parser`, `opendoc_model`, `pathlib`, `pptx`, `zipfile`
 
 Тесты: [test_release_contracts.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_release_contracts.py#L1)
+
+## src/opendoc_formats/text_profile.py
+
+Finite, dependency-free text encoding and newline policies.
+
+- `TextProfile` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L15)
+- `TextEncodingError` — [строка 33](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L33)
+- `__init__(self, reason: str, message: str) -> None` — [строка 34](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L34)
+- `decode_text(data: bytes, profile: TextProfile) -> tuple[str, str, bool]` — [строка 39](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L39)
+- `normalize_newlines(text: str) -> str` — [строка 65](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L65)
+- `source_profile(text: str, encoding: str, bom: bool) -> dict[str, Any]` — [строка 69](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L69)
+- `encode_text(text: str, profile: TextProfile, original: dict[str, Any]) -> tuple[bytes, dict[str, Any], bool]` — [строка 74](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L74)
+
+Импорты: `__future__`, `dataclasses`, `typing`
 
 ## src/opendoc_formats/types.py
 
@@ -1386,6 +1402,6 @@ Text extraction-result rendering, independent of application operations.
 
 UTF-8 plain-text export with explicit flattening diagnostics.
 
-- `write_txt_model(document: od.DocumentModel, output_path: str | Path) -> od.ConversionReport` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/txt_writer.py#L15)
+- `write_txt_model(document: od.DocumentModel, output_path: str | Path, *, profile: TextProfile | None=None) -> od.ConversionReport` — [строка 16](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/txt_writer.py#L16)
 
-Импорты: `__future__`, `collections.abc`, `opendoc_formats.support.io`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`
+Импорты: `__future__`, `collections.abc`, `opendoc_formats.support.io`, `opendoc_formats.text_profile`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`

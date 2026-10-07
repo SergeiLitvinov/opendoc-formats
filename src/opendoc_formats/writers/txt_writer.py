@@ -10,9 +10,15 @@ from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import Formula, Image, PageSettings, Paragraph, Table, TextRun, TextStyle
 
 from opendoc_formats.support.io import atomic_write_bytes
+from opendoc_formats.text_profile import TextProfile, encode_text
 
 
-def write_txt_model(document: od.DocumentModel, output_path: str | Path) -> od.ConversionReport:
+def write_txt_model(
+    document: od.DocumentModel, output_path: str | Path, *, profile: TextProfile | None = None,
+) -> od.ConversionReport:
+    profile = TextProfile("utf-8", "forbid", "lf") if profile is None else profile
+    if not isinstance(profile, TextProfile):
+        raise ValueError("profile must be TextProfile")
     report = ConversionReport(Path(output_path))
     losses = set()
     labels = {
@@ -90,8 +96,14 @@ def write_txt_model(document: od.DocumentModel, output_path: str | Path) -> od.C
         if document.styles:
             loss("styles")
         text = "\n".join(sections)
-        atomic_write_bytes(report.output_path, text.encode("utf-8"))
-        report.metrics.update(characters=len(text), encoding="utf-8", line_separator="\n")
+        original = document.metadata.get("txt", {})
+        if not isinstance(original, dict):
+            raise ValueError("Invalid source TXT profile")
+        data, metrics, changed = encode_text(text, profile, original)
+        if changed:
+            report.add(IssueSeverity.LOSS, "txt-newlines", "Line count changed; original mixed newlines replaced by LF")
+        atomic_write_bytes(report.output_path, data)
+        report.metrics.update(characters=len(text), line_separator="\n", **metrics)
     except (OSError, ValueError, TypeError) as error:
         report.add(IssueSeverity.ERROR, "txt-write", str(error))
     return report

@@ -3,9 +3,10 @@
 from importlib.metadata import version
 
 from .api import AdapterRegistry, AdapterSpec, ImportOptions, ImportResult, default_registry, read_document
+from .text_profile import TextProfile
 
 __version__ = version("opendoc-formats")
-__all__ = ["AdapterRegistry", "AdapterSpec", "ImportOptions", "ImportResult", "default_registry", "read_document"]
+__all__ = ["AdapterRegistry", "AdapterSpec", "ImportOptions", "ImportResult", "TextProfile", "default_registry", "read_document"]
 
 from .export import ExporterRegistry, ExporterSpec, ExportOptions, default_exporter_registry, write_document
 

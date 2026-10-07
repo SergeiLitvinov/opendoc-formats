@@ -20,7 +20,15 @@ def main() -> None:
     from opendoc_model import DocumentModel, Formula, FormulaFormat, Paragraph, Section, Table, TableCell, TableRow, TextRun
 
     import opendoc_formats
-    from opendoc_formats import default_exporter_registry, default_registry, read_document, write_document
+    from opendoc_formats import (
+        ExportOptions,
+        ImportOptions,
+        TextProfile,
+        default_exporter_registry,
+        default_registry,
+        read_document,
+        write_document,
+    )
     from opendoc_formats.docx import DocxPackage, ReplaceTextSpan
     from opendoc_formats.errors import BackendUnavailableError
     from opendoc_formats.office import find_libreoffice
@@ -65,6 +73,19 @@ def main() -> None:
         assert text.engine == "pypdf" and text.pages == 2 and "Native PDF" in text.plain, text
     with TemporaryDirectory(prefix="opendoc-formats-installed-") as directory:
         root = Path(directory)
+        for encoding in ("utf-8", "utf-16-le", "utf-16-be", "cp1251"):
+            source = root / "profile.txt"
+            original = "Первая\r\nВторая\rПоследняя\n".encode(encoding)
+            source.write_bytes(original)
+            imported = read_document(source, options=ImportOptions(txt_profile=TextProfile(encoding)))
+            assert imported.success, imported.issues
+            transport = root / "profile.json"
+            assert write_document(imported.document, transport).success
+            restored = read_document(transport)
+            target = root / "profile-copy.txt"
+            copied = write_document(restored.document, target, options=ExportOptions(txt_profile=TextProfile()))
+            assert copied.success and copied.lossless and copied.metrics["output_verified"], copied.to_dict()
+            assert target.read_bytes() == original
         if args.epub:
             source = root / "native.epub"
             with zipfile.ZipFile(source, "w") as archive:

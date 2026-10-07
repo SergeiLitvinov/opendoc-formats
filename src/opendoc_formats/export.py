@@ -13,6 +13,7 @@ from typing import cast
 from opendoc_model import ArtifactLimitError, ConversionReport, DocumentLimits, DocumentModel, IssueSeverity
 
 from opendoc_formats.support.backends import missing_backends
+from opendoc_formats.text_profile import TextProfile, decode_text
 
 
 @dataclass(frozen=True)
@@ -20,8 +21,11 @@ class ExportOptions:
     document_limits: DocumentLimits = field(default_factory=DocumentLimits)
     cancelled: Callable[[], bool] | None = None
     verify_output: bool = True
+    txt_profile: TextProfile | None = None
 
     def __post_init__(self) -> None:
+        if self.txt_profile is not None and not isinstance(self.txt_profile, TextProfile):
+            raise ValueError("txt_profile must be TextProfile or None")
         if not isinstance(self.document_limits, DocumentLimits):
             raise ValueError("document_limits must be DocumentLimits")
         if self.cancelled is not None and not callable(self.cancelled):
@@ -107,7 +111,10 @@ class ExporterRegistry:
         output.parent.mkdir(parents=True, exist_ok=True)
         with TemporaryDirectory(prefix=".opendoc-formats-export-", dir=output.parent) as directory:
             staged = Path(directory) / output.name
-            written = exporter.writer(document, staged)
+            written = (
+                _txt(document, staged, profile=options.txt_profile)
+                if exporter.writer is _txt else exporter.writer(document, staged)
+            )
             if not isinstance(written, ConversionReport):
                 return fail("export.invalid-result", "Writer did not return an OpenDoc ConversionReport")
             report = written
@@ -120,7 +127,10 @@ class ExporterRegistry:
                 return fail("export.missing-output", "Writer did not produce a file")
             if options.verify_output and exporter.validator is not None:
                 try:
-                    exporter.validator(staged)
+                    if exporter.writer is _txt:
+                        decode_text(staged.read_bytes(), TextProfile(encoding=str(report.metrics["encoding"])))
+                    else:
+                        exporter.validator(staged)
                 except Exception as error:  # noqa: BLE001 - third-party validators are a diagnostic boundary
                     return fail("export.invalid-output", str(error))
                 report.metrics["output_verified"] = True
@@ -143,6 +153,12 @@ def _json(document: DocumentModel, path: Path) -> ConversionReport:
 
     save_document(document, path)
     return ConversionReport(path)
+
+
+def _txt(document: DocumentModel, path: Path, *, profile: TextProfile | None = None) -> ConversionReport:
+    from opendoc_formats.writers.txt_writer import write_txt_model
+
+    return write_txt_model(document, path, profile=profile)
 
 
 def _validator(identifier: str) -> OutputValidator:
@@ -168,7 +184,7 @@ def default_exporter_registry() -> ExporterRegistry:
             ExporterSpec(
                 identifier,
                 suffixes,
-                _writer(identifier + "_writer", "write_" + identifier + "_model"),
+                _txt if identifier == "txt" else _writer(identifier + "_writer", "write_" + identifier + "_model"),
                 requirements,
                 _validator(identifier),
             )

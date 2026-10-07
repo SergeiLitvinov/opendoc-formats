@@ -6,19 +6,21 @@ from pathlib import Path
 from typing import Union
 
 from opendoc_formats.readers._txt_model import read_txt_model as read_txt_model
+from opendoc_formats.text_profile import TextProfile, decode_text, normalize_newlines
 from opendoc_formats.types import Block, BlockType, DocFormat, Text
 
 
-def read_txt(path: Union[str, Path]) -> Text:
+def read_txt(path: Union[str, Path], *, profile: TextProfile | None = None) -> Text:
     p = Path(path)
     if not p.is_file():
         raise FileNotFoundError(p)
-    try:
-        text = p.read_text(encoding="utf-8")
-        enc = "utf-8"
-    except UnicodeDecodeError:
-        text = p.read_text(encoding="cp1251")
-        enc = "cp1251"
+    profile = TextProfile() if profile is None else profile
+    if not isinstance(profile, TextProfile):
+        raise ValueError("profile must be TextProfile")
+    text, enc, _ = decode_text(p.read_bytes(), profile)
+    if profile.newline != "preserve":
+        separator = {"lf": "\n", "crlf": "\r\n", "cr": "\r"}[profile.newline]
+        text = normalize_newlines(text).replace("\n", separator)
     return Text(
         blocks=[Block(type=BlockType.PARAGRAPH, text=text)],
         plain=text,

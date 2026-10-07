@@ -67,7 +67,7 @@ def api_reference() -> str:
         "Модель и отчёты определены в обязательном пакете OpenDoc.",
         "",
     ]
-    for module in ("api", "export", "docx", "pdf", "office", "package_resources", "errors"):
+    for module in ("api", "export", "text_profile", "docx", "pdf", "office", "package_resources", "errors"):
         path = ROOT / f"src/opendoc_formats/{module}.py"
         rows += [f"## opendoc_formats.{module}", ""]
         tree = ast.parse(path.read_text(encoding="utf-8"))

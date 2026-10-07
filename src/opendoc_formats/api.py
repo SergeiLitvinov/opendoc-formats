@@ -11,6 +11,7 @@ from typing import cast
 from opendoc_model import ArtifactLimitError, DiagnosticIssue, DocumentLimits, DocumentModel, IssueSeverity, get_integration
 
 from opendoc_formats.support.backends import missing_backends
+from opendoc_formats.text_profile import TextEncodingError, TextProfile
 
 
 @dataclass(frozen=True)
@@ -21,8 +22,11 @@ class ImportOptions:
     pdf_mode: str = "fast"
     ocr_engine_factory: Callable[..., object] | None = None
     cancelled: Callable[[], bool] | None = None
+    txt_profile: TextProfile = field(default_factory=TextProfile)
 
     def __post_init__(self) -> None:
+        if not isinstance(self.txt_profile, TextProfile):
+            raise ValueError("txt_profile must be TextProfile")
         if type(self.max_input_bytes) is not int or self.max_input_bytes < 1:
             raise ValueError("max_input_bytes must be a positive integer")
         if not isinstance(self.document_limits, DocumentLimits):
@@ -133,7 +137,12 @@ class AdapterRegistry:
         if missing:
             return failure("import.backend-unavailable", "Missing optional backends: " + ", ".join(missing))
         # Reader failures and missing files remain exceptions; never manufacture a valid empty model.
-        document = adapter.reader(source, options)
+        try:
+            document = adapter.reader(source, options)
+        except TextEncodingError as error:
+            return ImportResult(None, identifier, (DiagnosticIssue(
+                "import.txt-encoding", IssueSeverity.ERROR, str(error), str(source), reason=error.reason,
+            ),))
         if not isinstance(document, DocumentModel):
             return failure("import.invalid-result", "Reader did not return an OpenDoc DocumentModel")
         if options.cancelled and options.cancelled():
@@ -190,8 +199,8 @@ def _import_issues(
 
 
 def _txt(path: Path, options: ImportOptions) -> DocumentModel:
-    reader = cast(Callable[[Path], DocumentModel], import_module("opendoc_formats.readers.txt").read_txt_model)
-    return reader(path)
+    reader = cast(Callable[..., DocumentModel], import_module("opendoc_formats.readers.txt").read_txt_model)
+    return reader(path, profile=options.txt_profile)
 
 
 def _html(path: Path, options: ImportOptions) -> DocumentModel:
