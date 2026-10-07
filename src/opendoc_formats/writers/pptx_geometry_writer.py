@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-import opendoc as od
-from opendoc.diagnostics import IssueSeverity
+import opendoc_model as od
+from opendoc_model.diagnostics import IssueSeverity
 
 from opendoc_formats.writers.pptx_text_writer import set_color
 

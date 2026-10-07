@@ -1,8 +1,8 @@
 """Inspect serialized emphasis, including partial losses and strict publication."""
 
 import pytest
-from opendoc.document_model import DocumentModel, Paragraph, Section, TextRun, TextStyle
-from opendoc.emphasis_quality import EmphasisInventory, EmphasisLossPolicy
+from opendoc_model.document_model import DocumentModel, Paragraph, Section, TextRun, TextStyle
+from opendoc_model.emphasis_quality import EmphasisInventory, EmphasisLossPolicy
 
 from opendoc_formats.support.inspection import compare_inspections, inspect_document_model
 
@@ -24,7 +24,7 @@ def test_invalid_emphasis_limit(limit):
 
 
 def test_run_splitting_whitespace_and_paragraph_boundaries_do_not_change_emphasis(tmp_path):
-    from opendoc.diagnostics import ConversionReport
+    from opendoc_model.diagnostics import ConversionReport
 
     source = emphasis_document()
     target = DocumentModel(sections=[Section(blocks=[
@@ -39,7 +39,7 @@ def test_run_splitting_whitespace_and_paragraph_boundaries_do_not_change_emphasi
 
 
 def test_emphasis_inventory_is_bounded(monkeypatch):
-    monkeypatch.setattr('opendoc.emphasis_quality.MAX_EMPHASIS_RUNS', 2)
+    monkeypatch.setattr('opendoc_model.emphasis_quality.MAX_EMPHASIS_RUNS', 2)
     inventory = EmphasisInventory()
     for bold in (True, False, True):
         inventory.add(TextRun('x', TextStyle(bold=bold)))

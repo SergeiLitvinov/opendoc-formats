@@ -2,9 +2,9 @@
 
 from pathlib import Path
 
-from opendoc.color import ColorValue
-from opendoc.diagnostics import ConversionReport
-from opendoc.document_model import DocumentModel, Paragraph, Section, TextRun, TextStyle
+from opendoc_model.color import ColorValue
+from opendoc_model.diagnostics import ConversionReport
+from opendoc_model.document_model import DocumentModel, Paragraph, Section, TextRun, TextStyle
 
 from opendoc_formats.writers.color_preflight import preflight_colors
 

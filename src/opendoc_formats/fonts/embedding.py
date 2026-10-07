@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
 
-from opendoc.document_model import Block, DocumentModel, Paragraph, Table, TextRun
+from opendoc_model.document_model import Block, DocumentModel, Paragraph, Table, TextRun
 
 
 @dataclass(frozen=True)

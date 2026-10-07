@@ -13,7 +13,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from opendoc.document_model import Box, DocumentModel, Paragraph, Section, TextRun
+from opendoc_model.document_model import Box, DocumentModel, Paragraph, Section, TextRun
 
 from opendoc_formats.writers.pdf_writer import write_pdf_model
 from tests.helpers.visual import render_pdf_pages

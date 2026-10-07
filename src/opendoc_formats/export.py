@@ -10,7 +10,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import cast
 
-from opendoc import ArtifactLimitError, ConversionReport, DocumentLimits, DocumentModel, IssueSeverity
+from opendoc_model import ArtifactLimitError, ConversionReport, DocumentLimits, DocumentModel, IssueSeverity
 
 from opendoc_formats.support.backends import missing_backends
 
@@ -139,7 +139,7 @@ def _writer(module: str, name: str) -> Writer:
 
 
 def _json(document: DocumentModel, path: Path) -> ConversionReport:
-    from opendoc import save_document
+    from opendoc_model import save_document
 
     save_document(document, path)
     return ConversionReport(path)

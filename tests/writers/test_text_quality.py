@@ -1,9 +1,9 @@
 """Exact text preservation detects changes hidden by object/length counts."""
 
 import pytest
-from opendoc.diagnostics import ConversionReport
-from opendoc.document_model import DocumentModel, Paragraph, Section, Table, TableCell, TableRow, TextRun
-from opendoc.text_quality_policy import TextPreservationPolicy
+from opendoc_model.diagnostics import ConversionReport
+from opendoc_model.document_model import DocumentModel, Paragraph, Section, Table, TableCell, TableRow, TextRun
+from opendoc_model.text_quality_policy import TextPreservationPolicy
 
 from opendoc_formats.support.inspection import DocumentInspection, compare_inspections, inspect_document_model
 

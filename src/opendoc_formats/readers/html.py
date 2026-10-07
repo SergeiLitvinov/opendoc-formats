@@ -7,8 +7,8 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
 
-import opendoc as od
-from opendoc import (
+import opendoc_model as od
+from opendoc_model import (
     DocumentModel,
     Formula,
     FormulaFormat,

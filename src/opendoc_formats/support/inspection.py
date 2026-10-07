@@ -10,17 +10,17 @@ from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
 
-from opendoc.diagnostics import IssueSeverity
-from opendoc.inspection import (
+from opendoc_model.diagnostics import IssueSeverity
+from opendoc_model.inspection import (
     DocumentComparison as DocumentComparison,
 )
-from opendoc.inspection import (
+from opendoc_model.inspection import (
     DocumentInspection as DocumentInspection,
 )
-from opendoc.inspection import (
+from opendoc_model.inspection import (
     compare_inspections as compare_inspections,
 )
-from opendoc.inspection import (
+from opendoc_model.inspection import (
     inspect_document_model as inspect_document_model,
 )
 
@@ -47,7 +47,7 @@ def inspect_path(path: str | Path) -> DocumentInspection:
 
         return inspect_document_model(read_docx_model(source), source_path=source, source_format="docx")
     if suffix == ".json":
-        from opendoc.document_codec import load_document
+        from opendoc_model.document_codec import load_document
 
         return inspect_document_model(load_document(source), source_path=source, source_format="document-model-json")
     if suffix == ".pdf":

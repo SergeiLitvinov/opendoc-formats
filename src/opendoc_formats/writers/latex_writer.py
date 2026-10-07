@@ -3,7 +3,7 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from opendoc import ConversionReport, DocumentModel, IssueSeverity
+from opendoc_model import ConversionReport, DocumentModel, IssueSeverity
 
 from opendoc_formats.writers.docx_to_latex import DocxToLatexConverter
 from opendoc_formats.writers.docx_writer import write_docx_model

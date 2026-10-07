@@ -8,7 +8,7 @@ from importlib import import_module
 from pathlib import Path
 from typing import cast
 
-from opendoc import ArtifactLimitError, DiagnosticIssue, DocumentLimits, DocumentModel, IssueSeverity
+from opendoc_model import ArtifactLimitError, DiagnosticIssue, DocumentLimits, DocumentModel, IssueSeverity
 
 from opendoc_formats.support.backends import missing_backends
 
@@ -181,7 +181,7 @@ def _pdf(path: Path, options: ImportOptions) -> DocumentModel:
 
 
 def _json(path: Path, options: ImportOptions) -> DocumentModel:
-    from opendoc import load_document
+    from opendoc_model import load_document
 
     return load_document(path)
 

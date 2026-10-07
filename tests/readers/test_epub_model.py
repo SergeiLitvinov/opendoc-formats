@@ -7,8 +7,8 @@ import pytest
 pytest.importorskip("ebooklib")
 pytest.importorskip("bs4")
 from ebooklib import epub
-from opendoc.document_codec import load_document, save_document
-from opendoc.document_model import Image, ResourceKind, TextRun
+from opendoc_model.document_codec import load_document, save_document
+from opendoc_model.document_model import Image, ResourceKind, TextRun
 from PIL import Image as PillowImage
 
 from opendoc_formats.readers.epub import read_epub_model

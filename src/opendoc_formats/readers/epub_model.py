@@ -9,8 +9,8 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import unquote, urlsplit
 
-import opendoc as od
-from opendoc.document_model import (
+import opendoc_model as od
+from opendoc_model.document_model import (
     DocumentModel,
     Image,
     Length,

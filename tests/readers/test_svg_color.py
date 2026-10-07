@@ -1,6 +1,6 @@
 """Tests for canonical SVG paint discovery."""
 
-from opendoc.color import ColorValue
+from opendoc_model.color import ColorValue
 
 from opendoc_formats.readers.svg_color import parse_svg_color, svg_color_catalog
 

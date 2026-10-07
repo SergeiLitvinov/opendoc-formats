@@ -5,8 +5,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
-import opendoc as od
-from opendoc.document_model import Paragraph, Table, TableCell, TableRow
+import opendoc_model as od
+from opendoc_model.document_model import Paragraph, Table, TableCell, TableRow
 
 from opendoc_formats.readers.pptx_paragraph import frame_metadata, paragraph_metadata
 

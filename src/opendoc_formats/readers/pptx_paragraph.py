@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-import opendoc as od
+import opendoc_model as od
 
 A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
 
@@ -13,7 +13,7 @@ def merge_text_styles(inherited: od.TextStyle | None, explicit: od.TextStyle) ->
     from copy import deepcopy
     from dataclasses import fields
 
-    from opendoc.document_model import TextStyle
+    from opendoc_model.document_model import TextStyle
 
     result = deepcopy(inherited) if inherited is not None else TextStyle()
     for field in fields(TextStyle):

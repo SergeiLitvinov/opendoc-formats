@@ -60,7 +60,7 @@ jobs:
       - name: Install base wheel outside the checkout
         run: |
           uv venv .opendoc-formats/installed
-          uv pip install --python .opendoc-formats/installed/bin/python 'opendoc @ https://github.com/SergeiLitvinov/opendoc/releases/download/v0.1.0/opendoc-0.1.0-py3-none-any.whl' .opendoc-formats/from-sdist/*.whl
+          uv pip install --python .opendoc-formats/installed/bin/python 'opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.3.0/opendoc_model-0.3.0-py3-none-any.whl' .opendoc-formats/from-sdist/*.whl
           .opendoc-formats/installed/bin/python -I tools/package_smoke.py
       - name: Exercise minimal PDF text extra
         run: |

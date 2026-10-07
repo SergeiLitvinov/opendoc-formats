@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from opendoc.diagnostics import ConversionReport, IssueSeverity
-from opendoc.document_model import DocumentModel
+from opendoc_model.diagnostics import ConversionReport, IssueSeverity
+from opendoc_model.document_model import DocumentModel
 
 from opendoc_formats.fonts import FontResolver, prepare_document_fonts
 

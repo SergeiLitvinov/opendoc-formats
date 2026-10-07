@@ -2,9 +2,9 @@
 
 
 import pytest
-from opendoc.document_codec import save_document
-from opendoc.document_model import DocumentModel, Formula, FormulaFormat, Paragraph, Section, TextRun
-from opendoc.formula_quality_policy import FormulaLossPolicy, formula_fingerprint
+from opendoc_model.document_codec import save_document
+from opendoc_model.document_model import DocumentModel, Formula, FormulaFormat, Paragraph, Section, TextRun
+from opendoc_model.formula_quality_policy import FormulaLossPolicy, formula_fingerprint
 
 MATH = '<math xmlns="http://www.w3.org/1998/Math/MathML"><mfrac><mi>x</mi><mn>2</mn></mfrac></math>'
 

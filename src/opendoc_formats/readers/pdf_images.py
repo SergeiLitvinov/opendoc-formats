@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from opendoc.color import ColorValue
+from opendoc_model.color import ColorValue
 
 from opendoc_formats.readers.pdf_geometry import (
     PdfBox,

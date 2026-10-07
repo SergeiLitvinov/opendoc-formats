@@ -36,7 +36,7 @@ def build_bookmark_docx(path):
 
 
 def test_native_docx_bookmark_and_link_reach_html(tmp_path):
-    from opendoc.document_codec import document_to_dict
+    from opendoc_model.document_codec import document_to_dict
 
     source = build_bookmark_docx(tmp_path / "source.docx")
     model = read_docx_model(source)
@@ -53,7 +53,7 @@ def test_native_docx_bookmark_and_link_reach_html(tmp_path):
 
 
 def test_navigation_and_inline_position_survive_two_serialized_cycles(tmp_path):
-    from opendoc.document_codec import document_from_json, document_to_json
+    from opendoc_model.document_codec import document_from_json, document_to_json
 
     from opendoc_formats.readers.html_text import read_html_model
     from opendoc_formats.writers.docx_writer import write_docx_model
@@ -85,7 +85,7 @@ def test_navigation_and_inline_position_survive_two_serialized_cycles(tmp_path):
 
 
 def test_external_link_and_native_word_data_remain_unchanged(tmp_path):
-    from opendoc.document_model import DocumentModel, Paragraph, Section, TextRun
+    from opendoc_model.document_model import DocumentModel, Paragraph, Section, TextRun
 
     from opendoc_formats.writers.html_normalize import HtmlNormalizeStage
     from opendoc_formats.writers.stages import StageContext
@@ -122,7 +122,7 @@ def test_empty_inline_target_survives_html_import_without_whitespace_changes(tmp
 
 @pytest.mark.parametrize("existing", [False, True])
 def test_cancelled_normalization_preserves_output(tmp_path, monkeypatch, existing):
-    from opendoc.document_model import DocumentModel
+    from opendoc_model.document_model import DocumentModel
 
     from opendoc_formats.writers.html_normalize import HtmlNormalizeStage
     from opendoc_formats.writers.stages import StageContext
@@ -145,7 +145,7 @@ def test_cancelled_normalization_preserves_output(tmp_path, monkeypatch, existin
 
 
 def test_normalization_traverses_tables_and_rendered_headers(tmp_path):
-    from opendoc.document_model import DocumentModel, Paragraph, Section, Table, TableCell, TableRow, TextRun
+    from opendoc_model.document_model import DocumentModel, Paragraph, Section, Table, TableCell, TableRow, TextRun
 
     from opendoc_formats.writers.html_normalize import HtmlNormalizeStage
     from opendoc_formats.writers.stages import StageContext
@@ -168,7 +168,7 @@ def test_normalization_traverses_tables_and_rendered_headers(tmp_path):
 
 
 def test_model_anchor_is_encoded_once_and_escaped_in_html(tmp_path):
-    from opendoc.document_model import DocumentModel, Paragraph, Section, TextRun
+    from opendoc_model.document_model import DocumentModel, Paragraph, Section, TextRun
 
     name = 'Раздел%20&"'
     model = DocumentModel(
@@ -195,7 +195,7 @@ def test_model_anchor_is_encoded_once_and_escaped_in_html(tmp_path):
 
 
 def test_unnamed_word_bookmark_reports_loss(tmp_path):
-    from opendoc.document_model import DocumentModel, Paragraph, Section, TextRun
+    from opendoc_model.document_model import DocumentModel, Paragraph, Section, TextRun
 
     model = DocumentModel(
         sections=[

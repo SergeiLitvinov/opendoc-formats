@@ -5,9 +5,9 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
-from opendoc.diagnostics import ConversionReport, IssueSeverity
-from opendoc.document_model import Block, DocumentModel, Table
-from opendoc.properties import TableCellProperties, TableProperties, TableRowProperties
+from opendoc_model.diagnostics import ConversionReport, IssueSeverity
+from opendoc_model.document_model import Block, DocumentModel, Table
+from opendoc_model.properties import TableCellProperties, TableProperties, TableRowProperties
 
 BlockWriter = Callable[
     [Any, list[Block], DocumentModel, ConversionReport, str, dict[str, int]],

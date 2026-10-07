@@ -5,8 +5,8 @@ from __future__ import annotations
 from collections.abc import Callable, Collection
 from typing import Any
 
-from opendoc.document_model import PackageGraph, PackagePart, PackageRelationship
-from opendoc.units import EMU_PER_POINT, points_to_emu
+from opendoc_model.document_model import PackageGraph, PackagePart, PackageRelationship
+from opendoc_model.units import EMU_PER_POINT, points_to_emu
 
 DOCX_ROOT_PART = "/word/document.xml"
 

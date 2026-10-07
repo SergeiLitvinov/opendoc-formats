@@ -4,14 +4,15 @@ from __future__ import annotations
 
 import math
 import re
+import xml.etree.ElementTree as ET
 from html import escape
 from pathlib import Path
 from typing import Any, Callable
 from urllib.parse import quote, urlsplit
 
-from opendoc.color import ColorValue, color_to_css
-from opendoc.diagnostics import ConversionReport, IssueSeverity
-from opendoc.document_model import (
+from opendoc_model.color import ColorValue, color_to_css
+from opendoc_model.diagnostics import ConversionReport, IssueSeverity
+from opendoc_model.document_model import (
     Block,
     Box,
     DocumentModel,
@@ -24,7 +25,7 @@ from opendoc.document_model import (
     TextRun,
     TextStyle,
 )
-from opendoc.units import points_to_css_px
+from opendoc_model.units import points_to_css_px
 
 from opendoc_formats.fonts.html_embedding import embedded_font_stylesheet
 from opendoc_formats.writers.color_preflight import preflight_colors
@@ -1832,40 +1833,31 @@ def _has_content(blocks: list[Block]) -> bool:
 
 
 def _safe_mathml(value: str) -> str:
-    from lxml import etree
-
+    # Reject DTDs before ElementTree can expand internal entities. Input is a
+    # Unicode string, so XML encoding declarations cannot hide these tokens.
+    if re.search(r"<!\s*(?:DOCTYPE|ENTITY)\b", value, re.IGNORECASE):
+        raise ValueError("DTD and entities are not accepted in MathML")
     try:
-        parser = etree.XMLParser(resolve_entities=False, no_network=True, recover=False)
-        root = etree.fromstring(value.encode("utf-8"), parser)
-    except (etree.XMLSyntaxError, ValueError) as error:
+        root = ET.fromstring(value)
+    except (ET.ParseError, ValueError) as error:
         raise ValueError(str(error)) from error
     for element in root.iter():
-        name = etree.QName(element)
-        if name.namespace not in {None, _MATHML_NAMESPACE}:
-            raise ValueError(f"foreign element {name.localname!r} is not allowed")
-        if name.localname not in _MATHML_ELEMENTS:
-            raise ValueError(f"MathML element {name.localname!r} is not allowed")
-        if element is root and name.localname != "math":
+        namespace, _, name = element.tag[1:].partition("}") if element.tag.startswith("{") else (None, "", element.tag)
+        if namespace not in {None, _MATHML_NAMESPACE}:
+            raise ValueError(f"foreign element {name!r} is not allowed")
+        if name not in _MATHML_ELEMENTS:
+            raise ValueError(f"MathML element {name!r} is not allowed")
+        if element is root and name != "math":
             raise ValueError("root element must be math")
         for attribute in list(element.attrib):
-            local_name = etree.QName(attribute).localname.lower()
+            local_name = attribute.rsplit("}", 1)[-1].lower()
             if local_name.startswith("on") or local_name in {"href", "src", "style"}:
                 del element.attrib[attribute]
-
-    # HTML parsing recognizes unprefixed <math>; XML namespace prefixes alone do
-    # not enter the browser's MathML parsing mode. Rebuild with a default namespace.
-    def browser_math(element: Any, *, top: bool = False) -> None:
-        node = etree.Element(
-            f"{{{_MATHML_NAMESPACE}}}{etree.QName(element).localname}",
-            nsmap={None: _MATHML_NAMESPACE} if top else None,
-        )
-        node.attrib.update(element.attrib)
-        node.text, node.tail = element.text, element.tail
-        for child in element:
-            node.append(browser_math(child))
-        return node
-
-    return etree.tostring(browser_math(root, top=True), encoding="unicode")
+        # Unprefixed math enters the browser's MathML parsing mode. Avoid global
+        # namespace registration, which can affect concurrent serializers.
+        element.tag = name
+    root.set("xmlns", _MATHML_NAMESPACE)
+    return ET.tostring(root, encoding="unicode", short_empty_elements=False)
 
 
 __all__ = ["write_html_model"]

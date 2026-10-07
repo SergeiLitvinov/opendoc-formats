@@ -4,7 +4,7 @@ import pytest
 
 pytest.importorskip("pptx")
 from lxml import etree
-from opendoc.document_codec import load_document, save_document
+from opendoc_model.document_codec import load_document, save_document
 from pptx import Presentation
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.util import Pt

@@ -1,7 +1,7 @@
 """Generic resource assembly owns DOCX topology and leaves consumer models unchanged."""
 
 import pytest
-from opendoc import DocumentModel, PackageGraph, Resource, ResourceKind
+from opendoc_model import DocumentModel, PackageGraph, Resource, ResourceKind
 
 from opendoc_formats.errors import InvalidDocumentError, OperationCancelledError, ResourceLimitError
 from opendoc_formats.package_resources import assemble_docx_package_resources

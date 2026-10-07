@@ -1,6 +1,6 @@
 """Reproducible limits of source import, linked to finite coverage tasks."""
 
-from opendoc import Formula, Table
+from opendoc_model import Formula, Table
 
 from opendoc_formats import read_document, write_document
 from opendoc_formats.readers.epub_model import read_epub_model

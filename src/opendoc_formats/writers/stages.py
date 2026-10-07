@@ -7,8 +7,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Protocol, TypeAlias, runtime_checkable
 
-from opendoc.diagnostics import ConversionReport
-from opendoc.document_model import DocumentModel
+from opendoc_model.diagnostics import ConversionReport
+from opendoc_model.document_model import DocumentModel
 
 StageValue: TypeAlias = Path | DocumentModel
 CancellationCheck: TypeAlias = Callable[[], bool]

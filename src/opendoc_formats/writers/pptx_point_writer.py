@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from opendoc.diagnostics import ConversionReport, IssueSeverity
+from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 
 from opendoc_formats.writers.pptx_text_writer import set_color
 

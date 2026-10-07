@@ -7,7 +7,7 @@ import pytest
 
 pytest.importorskip("pptx")
 from lxml import etree
-from opendoc.document_codec import load_document, save_document
+from opendoc_model.document_codec import load_document, save_document
 from pptx import Presentation
 from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE as SHAPE
 from pptx.enum.shapes import MSO_CONNECTOR_TYPE as CONNECTOR
@@ -158,7 +158,7 @@ def test_custom_path_mutation_and_unsafe_xml_rejection(tmp_path):
 
 
 def test_shear_is_reported_and_ambiguous_connection_not_rebound(tmp_path):
-    from opendoc.document_model import Box, DocumentModel, Paragraph, Section, TextRun
+    from opendoc_model.document_model import Box, DocumentModel, Paragraph, Section, TextRun
 
     block = Paragraph(
         [TextRun("Shear")],

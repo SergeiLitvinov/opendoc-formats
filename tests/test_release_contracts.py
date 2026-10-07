@@ -3,7 +3,7 @@
 from pathlib import Path
 
 import pytest
-from opendoc import ConversionReport, DocumentModel
+from opendoc_model import ConversionReport, DocumentModel
 
 from opendoc_formats import (
     AdapterRegistry,

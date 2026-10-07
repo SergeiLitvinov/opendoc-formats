@@ -2,7 +2,7 @@
 from pathlib import Path
 
 import pytest
-from opendoc import Formula, Table
+from opendoc_model import Formula, Table
 
 from opendoc_formats.readers.html import read_html_model
 

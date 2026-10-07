@@ -25,7 +25,7 @@ Format reader registry using the OpenDoc model and validation contract.
 - `default_registry() -> AdapterRegistry` — [строка 146](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L146)
 - `read_document(path: str | Path, *, format_id: str | None=None, options: ImportOptions | None=None) -> ImportResult` — [строка 159](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L159)
 
-Импорты: `__future__`, `collections.abc`, `dataclasses`, `importlib`, `opendoc`, `opendoc_formats.errors`, `opendoc_formats.support.backends`, `pathlib`, `typing`
+Импорты: `__future__`, `collections.abc`, `dataclasses`, `importlib`, `opendoc_formats.errors`, `opendoc_formats.support.backends`, `opendoc_model`, `pathlib`, `typing`
 
 ## src/opendoc_formats/docx.py
 
@@ -100,7 +100,7 @@ Extensible model export with validation and atomic publication.
 - `default_exporter_registry() -> ExporterRegistry` — [строка 157](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L157)
 - `write_document(document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport` — [строка 180](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L180)
 
-Импорты: `__future__`, `collections.abc`, `dataclasses`, `importlib`, `opendoc`, `opendoc_formats.support.backends`, `opendoc_formats.support.output_validation`, `pathlib`, `tempfile`, `typing`
+Импорты: `__future__`, `collections.abc`, `dataclasses`, `importlib`, `opendoc_formats.support.backends`, `opendoc_formats.support.output_validation`, `opendoc_model`, `pathlib`, `tempfile`, `typing`
 
 ## src/opendoc_formats/fonts/__init__.py
 
@@ -116,7 +116,7 @@ Embed deterministic obfuscated OpenType subsets into DOCX packages.
 - `embed_docx_fonts(target: object, document: DocumentModel, report: ConversionReport) -> None` — [строка 18](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/docx_embedding.py#L18)
 - `verify_docx_font_embedding(output: str | Path, report: ConversionReport) -> None` — [строка 101](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/docx_embedding.py#L101)
 
-Импорты: `__future__`, `docx.opc.constants`, `docx.opc.packuri`, `docx.opc.part`, `docx.oxml`, `docx.oxml.ns`, `lxml`, `opendoc.diagnostics`, `opendoc.document_model`, `opendoc_formats.fonts.embedding`, `pathlib`, `uuid`
+Импорты: `__future__`, `docx.opc.constants`, `docx.opc.packuri`, `docx.opc.part`, `docx.oxml`, `docx.oxml.ns`, `lxml`, `opendoc_formats.fonts.embedding`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`, `uuid`
 
 ## src/opendoc_formats/fonts/embedding.py
 
@@ -126,7 +126,7 @@ Shared font usage collection and deterministic OpenType subsetting.
 - `collect_font_usages(document: DocumentModel) -> list[FontUsage]` — [строка 23](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/embedding.py#L23)
 - `subset_font(usage: FontUsage) -> bytes` — [строка 69](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/embedding.py#L69)
 
-Импорты: `__future__`, `dataclasses`, `fontTools`, `fontTools.ttLib`, `io`, `opendoc.document_model`, `pathlib`
+Импорты: `__future__`, `dataclasses`, `fontTools`, `fontTools.ttLib`, `io`, `opendoc_model.document_model`, `pathlib`
 
 ## src/opendoc_formats/fonts/html_embedding.py
 
@@ -135,7 +135,7 @@ Target-specific embedding of resolved fonts into self-contained HTML.
 - `embedded_font_stylesheet(document: DocumentModel, report: ConversionReport, *, target: str='html', subset_fonts: bool=False) -> str` — [строка 16](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/html_embedding.py#L16)
 - `archived_font_stylesheet(document: DocumentModel, workspace: object, report: ConversionReport) -> str` — [строка 77](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/html_embedding.py#L77)
 
-Импорты: `__future__`, `opendoc.diagnostics`, `opendoc.document_model`, `opendoc_formats.fonts.embedding`, `pathlib`
+Импорты: `__future__`, `opendoc_formats.fonts.embedding`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`
 
 ## src/opendoc_formats/fonts/resolver.py
 
@@ -156,7 +156,7 @@ Cross-platform font registry and metric-aware deterministic substitutions.
 - `resolve(self, family: str, text: str='', *, bold: bool=False, italic: bool=False) -> FontResolution` — [строка 94](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L94)
 - `prepare_document_fonts(document: DocumentModel, resolver: FontResolver | None=None) -> tuple[DocumentModel, FontResolutionReport]` — [строка 137](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L137)
 
-Импорты: `__future__`, `collections.abc`, `dataclasses`, `fontTools.ttLib`, `functools`, `opendoc.document_model`, `pathlib`, `typing`
+Импорты: `__future__`, `collections.abc`, `dataclasses`, `fontTools.ttLib`, `functools`, `opendoc_model.document_model`, `pathlib`, `typing`
 
 ## src/opendoc_formats/native/__init__.py
 
@@ -217,7 +217,7 @@ Shared OOXML DrawingML color resolution.
 
 - `resolve_drawingml_color(node: Any, theme_colors: Mapping[str, str]) -> tuple[ColorValue | None, dict[str, Any]]` — [строка 20](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/color.py#L20)
 
-Импорты: `__future__`, `collections.abc`, `opendoc.color`, `typing`
+Импорты: `__future__`, `collections.abc`, `opendoc_model.color`, `typing`
 
 Тесты: [test_ooxml_color.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_ooxml_color.py#L1)
 
@@ -229,7 +229,7 @@ Reusable helpers for importing and restoring OOXML package topology.
 - `package_part_for_relationship(graph: PackageGraph | None, relationship_type: str) -> PackagePart | None` — [строка 75](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/package.py#L75)
 - `restore_package_graph(root_part: Any, graph: PackageGraph) -> None` — [строка 81](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/package.py#L81)
 
-Импорты: `__future__`, `collections.abc`, `docx.opc.packuri`, `docx.opc.part`, `opendoc.document_model`, `opendoc.units`, `pptx.opc.packuri`, `pptx.opc.part`, `typing`
+Импорты: `__future__`, `collections.abc`, `docx.opc.packuri`, `docx.opc.part`, `opendoc_model.document_model`, `opendoc_model.units`, `pptx.opc.packuri`, `pptx.opc.part`, `typing`
 
 Тесты: [test_ooxml_package.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_ooxml_package.py#L1)
 
@@ -239,7 +239,7 @@ Attach explicitly selected native DOCX resources to the official OpenDoc package
 
 - `assemble_docx_package_resources(document: DocumentModel, resource_roles: Mapping[str, DocxResourceRole], *, consume_resources: bool=False, max_bytes: int=128 * 1024 * 1024, cancelled: Cancellation | None=None) -> DocumentModel` — [строка 47](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/package_resources.py#L47)
 
-Импорты: `__future__`, `collections.abc`, `opendoc`, `opendoc_formats.errors`, `opendoc_formats.native.common`, `pathlib`, `typing`
+Импорты: `__future__`, `collections.abc`, `opendoc_formats.errors`, `opendoc_formats.native.common`, `opendoc_model`, `pathlib`, `typing`
 
 Тесты: [test_package_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_package_resources.py#L1)
 
@@ -275,7 +275,7 @@ Plain-text input without application types or optional dependencies.
 
 - `read_txt_model(path: str | Path) -> DocumentModel` — [строка 8](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/_txt_model.py#L8)
 
-Импорты: `opendoc`, `pathlib`
+Импорты: `opendoc_model`, `pathlib`
 
 ## src/opendoc_formats/readers/docx.py
 
@@ -284,7 +284,7 @@ DOCX → Text.
 - `read_docx(path: Union[str, Path], *, include_tables: bool=True) -> Text` — [строка 43](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx.py#L43)
 - `read_docx_model(path: Union[str, Path], *, mode: ConversionMode=ConversionMode.BALANCED) -> DocumentModel` — [строка 77](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx.py#L77)
 
-Импорты: `__future__`, `collections.abc`, `docx`, `docx.oxml.ns`, `docx.oxml.table`, `docx.oxml.text.paragraph`, `docx.table`, `docx.text.paragraph`, `lxml`, `opendoc.document_model`, `opendoc.units`, `opendoc_formats.ooxml.package`, `opendoc_formats.readers.docx_features`, `opendoc_formats.readers.docx_section`, `opendoc_formats.readers.docx_style`, `opendoc_formats.readers.docx_table`, `opendoc_formats.readers.docx_text`, `opendoc_formats.support.io`, `opendoc_formats.types`, `pathlib`, `typing`
+Импорты: `__future__`, `collections.abc`, `docx`, `docx.oxml.ns`, `docx.oxml.table`, `docx.oxml.text.paragraph`, `docx.table`, `docx.text.paragraph`, `lxml`, `opendoc_formats.ooxml.package`, `opendoc_formats.readers.docx_features`, `opendoc_formats.readers.docx_section`, `opendoc_formats.readers.docx_style`, `opendoc_formats.readers.docx_table`, `opendoc_formats.readers.docx_text`, `opendoc_formats.support.io`, `opendoc_formats.types`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
 
 Тесты: [test_format_audit.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_format_audit.py#L1), [test_docx_model.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_model.py#L1), [test_full_contract.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_full_contract.py#L1), [test_docx_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_docx_writer.py#L1), [test_html_normalize.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_normalize.py#L1)
 
@@ -295,7 +295,7 @@ DOCX drawing importer for raster/vector resources and anchor geometry.
 - `read_run_images(run: Any, model: DocumentModel) -> list[Image]` — [строка 25](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_drawing.py#L25)
 - `read_run_vml_colors(run: Any) -> tuple[list[dict[str, Any]], list[str]]` — [строка 76](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_drawing.py#L76)
 
-Импорты: `__future__`, `docx.oxml.ns`, `lxml`, `opendoc.document_model`, `opendoc.units`, `opendoc_formats.ooxml.color`, `opendoc_formats.readers.docx_style`, `opendoc_formats.readers.svg_color`, `pathlib`, `typing`
+Импорты: `__future__`, `docx.oxml.ns`, `lxml`, `opendoc_formats.ooxml.color`, `opendoc_formats.readers.docx_style`, `opendoc_formats.readers.svg_color`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
 
 ## src/opendoc_formats/readers/docx_features.py
 
@@ -311,7 +311,7 @@ Inventory advanced DOCX features and their preservation level.
 
 - `append_note_references(content: list[Any], run: Any, style: TextStyle) -> None` — [строка 10](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_notes.py#L10)
 
-Импорты: `__future__`, `docx.oxml.ns`, `opendoc.document_model`, `typing`
+Импорты: `__future__`, `docx.oxml.ns`, `opendoc_model.document_model`, `typing`
 
 ## src/opendoc_formats/readers/docx_section.py
 
@@ -319,7 +319,7 @@ DOCX section importer for page geometry and running content.
 
 - `read_section(source: Any, blocks: list[Block], model: DocumentModel, section_index: int, read_blocks: BlockReader, *, odd_and_even_pages: bool) -> Section` — [строка 13](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_section.py#L13)
 
-Импорты: `__future__`, `collections.abc`, `opendoc.document_model`, `typing`
+Импорты: `__future__`, `collections.abc`, `opendoc_model.document_model`, `typing`
 
 ## src/opendoc_formats/readers/docx_style.py
 
@@ -331,7 +331,7 @@ DOCX style resolver for inheritance, themes, defaults, and numbering.
 - `read_paragraph_properties(paragraph: Any) -> dict[str, Any]` — [строка 115](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_style.py#L115)
 - `document_theme_colors(model: DocumentModel) -> dict[str, str]` — [строка 157](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_style.py#L157)
 
-Импорты: `__future__`, `docx.enum.style`, `docx.oxml.ns`, `lxml`, `opendoc.color`, `opendoc.document_model`, `opendoc_formats.ooxml.package`, `typing`
+Импорты: `__future__`, `docx.enum.style`, `docx.oxml.ns`, `lxml`, `opendoc_formats.ooxml.package`, `opendoc_model.color`, `opendoc_model.document_model`, `typing`
 
 ## src/opendoc_formats/readers/docx_table.py
 
@@ -339,7 +339,7 @@ DOCX table importer for spans, geometry, fills, margins, and styles.
 
 - `read_table(table: Any, model: DocumentModel, read_blocks: BlockReader) -> Table` — [строка 13](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_table.py#L13)
 
-Импорты: `__future__`, `collections.abc`, `docx.oxml.ns`, `lxml`, `opendoc.document_model`, `typing`
+Импорты: `__future__`, `collections.abc`, `docx.oxml.ns`, `lxml`, `opendoc_model.document_model`, `typing`
 
 ## src/opendoc_formats/readers/docx_text.py
 
@@ -348,7 +348,7 @@ DOCX table importer for spans, geometry, fills, margins, and styles.
 - `read_paragraph(paragraph: Any, model: DocumentModel) -> Paragraph` — [строка 14](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_text.py#L14)
 - `read_block_ooxml(element: Any) -> Paragraph` — [строка 94](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_text.py#L94)
 
-Импорты: `__future__`, `docx.oxml.ns`, `docx.text.hyperlink`, `docx.text.run`, `lxml`, `opendoc.document_model`, `opendoc_formats.readers.docx_drawing`, `opendoc_formats.readers.docx_notes`, `opendoc_formats.readers.docx_style`, `typing`
+Импорты: `__future__`, `docx.oxml.ns`, `docx.text.hyperlink`, `docx.text.run`, `lxml`, `opendoc_formats.readers.docx_drawing`, `opendoc_formats.readers.docx_notes`, `opendoc_formats.readers.docx_style`, `opendoc_model.document_model`, `typing`
 
 ## src/opendoc_formats/readers/epub.py
 
@@ -367,7 +367,7 @@ Rich EPUB spine importer with links, media, and a small deterministic CSS cascad
 
 - `read_epub_model(path: str | Path) -> DocumentModel` — [строка 32](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_model.py#L32)
 
-Импорты: `__future__`, `bs4`, `collections.abc`, `ebooklib`, `opendoc.document_model`, `opendoc_formats.support.io`, `pathlib`, `typing`, `urllib.parse`
+Импорты: `__future__`, `bs4`, `collections.abc`, `ebooklib`, `opendoc_formats.support.io`, `opendoc_model.document_model`, `pathlib`, `typing`, `urllib.parse`
 
 Тесты: [test_source_coverage.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_source_coverage.py#L1)
 
@@ -391,7 +391,7 @@ Static HTML to editable document blocks, without browser or network execution.
 - `list_blocks(self, node: Any) -> list[od.Block]` — [строка 201](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html.py#L201)
 - `table(self, node: Any) -> od.Table` — [строка 234](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html.py#L234)
 
-Импорты: `__future__`, `bs4`, `opendoc`, `opendoc_formats.readers.html_css`, `opendoc_formats.readers.html_diagnostics`, `opendoc_formats.readers.html_resources`, `pathlib`, `typing`, `urllib.parse`
+Импорты: `__future__`, `bs4`, `opendoc_formats.readers.html_css`, `opendoc_formats.readers.html_diagnostics`, `opendoc_formats.readers.html_resources`, `opendoc_model`, `pathlib`, `typing`, `urllib.parse`
 
 Тесты: [test_html_reader.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_html_reader.py#L1)
 
@@ -406,7 +406,7 @@ Bounded static CSS cascade; unsupported syntax is never silently accepted.
 - `matches(node: Any, selector: str) -> bool` — [строка 135](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_css.py#L135)
 - `text_style(self, css: dict[str, str], node: Any=None) -> od.TextStyle` — [строка 144](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_css.py#L144)
 
-Импорты: `__future__`, `collections.abc`, `opendoc`, `tinycss2.color3`, `typing`
+Импорты: `__future__`, `collections.abc`, `opendoc_model`, `tinycss2.color3`, `typing`
 
 ## src/opendoc_formats/readers/html_diagnostics.py
 
@@ -420,7 +420,7 @@ Resolve source-node diagnostics to stable, JSON-persisted imported blocks.
 - `resolve(self, node: Any) -> str` — [строка 53](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_diagnostics.py#L53)
 - `finish(self) -> dict[str, Any]` — [строка 70](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_diagnostics.py#L70)
 
-Импорты: `__future__`, `collections.abc`, `contextlib`, `opendoc`, `typing`
+Импорты: `__future__`, `collections.abc`, `contextlib`, `opendoc_model`, `typing`
 
 ## src/opendoc_formats/readers/html_resources.py
 
@@ -432,7 +432,7 @@ Embedded HTML resources with explicit opt-in for a bounded local directory.
 - `image(self, src: str, alt: str='') -> od.Image | None` — [строка 71](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_resources.py#L71)
 - `svg(self, xml: str, alt: str='') -> od.Image | None` — [строка 108](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_resources.py#L108)
 
-Импорты: `__future__`, `collections.abc`, `opendoc`, `pathlib`, `urllib.parse`
+Импорты: `__future__`, `collections.abc`, `opendoc_model`, `pathlib`, `urllib.parse`
 
 ## src/opendoc_formats/readers/html_text.py
 
@@ -511,7 +511,7 @@ Extract raster images and vector drawings from PDF pages.
 - `extract_pdf_vector_drawings(path: str | Path) -> tuple[list[PdfVectorDrawing], list[str]]` — [строка 170](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L170)
 - `enrich_geometry_with_images(geometry: PdfGeometryDocument, images: list[ExtractedPdfImage] | None=None, vector_drawings: list[PdfVectorDrawing] | None=None) -> PdfGeometryDocument` — [строка 244](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L244)
 
-Импорты: `__future__`, `dataclasses`, `opendoc.color`, `opendoc_formats.readers.pdf_geometry`, `pathlib`, `typing`
+Импорты: `__future__`, `dataclasses`, `opendoc_formats.readers.pdf_geometry`, `opendoc_model.color`, `pathlib`, `typing`
 
 Тесты: [test_format_audit.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_format_audit.py#L1), [test_pdf_images.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_images.py#L1)
 
@@ -532,7 +532,7 @@ PDF → модель OpenDoc: геометрия, семантические б�
 
 - `read_pdf_model(*, path: str | Path, use_ocr: bool=False, ocr_backend: str='', handwriting: bool=False, use_gpu: bool=False, mode: str | None=None, ocr_engine_factory: Callable[..., Any] | None=None) -> DocumentModel` — [строка 44](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_model.py#L44)
 
-Импорты: `__future__`, `collections.abc`, `opendoc.color`, `opendoc.document_model`, `opendoc.units`, `opendoc_formats.readers.pdf`, `opendoc_formats.readers.pdf_images`, `opendoc_formats.readers.pdf_ocr_merge`, `opendoc_formats.types`, `pathlib`, `typing`
+Импорты: `__future__`, `collections.abc`, `opendoc_formats.readers.pdf`, `opendoc_formats.readers.pdf_images`, `opendoc_formats.readers.pdf_ocr_merge`, `opendoc_formats.types`, `opendoc_model.color`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
 
 ## src/opendoc_formats/readers/pdf_ocr_merge.py
 
@@ -576,7 +576,7 @@ PPTX → Text / DocumentModel импортёры.
 - `read_pptx(path: Union[str, Path], *, include_tables: bool=True) -> Text` — [строка 355](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx.py#L355)
 - `read_pptx_model(path: Union[str, Path], *, mode: ConversionMode=ConversionMode.BALANCED) -> DocumentModel` — [строка 396](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx.py#L396)
 
-Импорты: `__future__`, `dataclasses`, `lxml`, `opendoc.color`, `opendoc.document_model`, `opendoc.units`, `opendoc_formats.ooxml.color`, `opendoc_formats.readers.pptx_chart_data`, `opendoc_formats.readers.pptx_geometry`, `opendoc_formats.readers.pptx_numeric_cache`, `opendoc_formats.readers.pptx_paragraph`, `opendoc_formats.readers.pptx_picture`, `opendoc_formats.readers.pptx_placeholder`, `opendoc_formats.readers.pptx_table`, `opendoc_formats.readers.pptx_theme_fonts`, `opendoc_formats.support.io`, `opendoc_formats.types`, `pathlib`, `pptx`, `pptx.opc.constants`, `typing`
+Импорты: `__future__`, `dataclasses`, `lxml`, `opendoc_formats.ooxml.color`, `opendoc_formats.readers.pptx_chart_data`, `opendoc_formats.readers.pptx_geometry`, `opendoc_formats.readers.pptx_numeric_cache`, `opendoc_formats.readers.pptx_paragraph`, `opendoc_formats.readers.pptx_picture`, `opendoc_formats.readers.pptx_placeholder`, `opendoc_formats.readers.pptx_table`, `opendoc_formats.readers.pptx_theme_fonts`, `opendoc_formats.support.io`, `opendoc_formats.types`, `opendoc_model.color`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `pptx`, `pptx.opc.constants`, `typing`
 
 Тесты: [test_source_coverage.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_source_coverage.py#L1), [test_mathml_decorations.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_mathml_decorations.py#L1), [test_mathml_pptx.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_mathml_pptx.py#L1), [test_pptx_chart_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_chart_roundtrip.py#L1), [test_pptx_combo_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_combo_roundtrip.py#L1), [test_pptx_custom_errors.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_custom_errors.py#L1), [test_pptx_error_directions.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_error_directions.py#L1), [test_pptx_geometry_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_geometry_roundtrip.py#L1), [test_pptx_label_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_label_roundtrip.py#L1), [test_pptx_multiple_trends.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_multiple_trends.py#L1), [test_pptx_office_regressions.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_office_regressions.py#L1), [test_pptx_placeholder_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_placeholder_roundtrip.py#L1), [test_pptx_plot_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_plot_roundtrip.py#L1), [test_pptx_point_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_point_roundtrip.py#L1), [test_pptx_statistics_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_statistics_roundtrip.py#L1), [test_pptx_table_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_table_roundtrip.py#L1), [test_pptx_text_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_text_roundtrip.py#L1), [test_pptx_theme_fonts.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_theme_fonts.py#L1), [test_pptx_trend_forecast.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_trend_forecast.py#L1), [test_pptx_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_writer.py#L1)
 
@@ -620,7 +620,7 @@ Explicit paragraph and frame formatting from DrawingML.
 - `merge_paragraph_settings(inherited: dict[str, Any], explicit: dict[str, Any]) -> dict[str, Any]` — [строка 73](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_paragraph.py#L73)
 - `frame_metadata(body: Any) -> dict[str, Any]` — [строка 89](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_paragraph.py#L89)
 
-Импорты: `__future__`, `copy`, `dataclasses`, `opendoc.document_model`, `typing`
+Импорты: `__future__`, `copy`, `dataclasses`, `opendoc_model.document_model`, `typing`
 
 ## src/opendoc_formats/readers/pptx_picture.py
 
@@ -628,7 +628,7 @@ Read SVG companions and cropping without flattening vector resources.
 
 - `read_picture(element: Any, slide_part: Any, state: Any, box: od.Box | None) -> od.Image | None` — [строка 16](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_picture.py#L16)
 
-Импорты: `__future__`, `opendoc.document_model`, `typing`
+Импорты: `__future__`, `opendoc_model.document_model`, `typing`
 
 ## src/opendoc_formats/readers/pptx_placeholder.py
 
@@ -648,7 +648,7 @@ Editable table cells, including paragraph structure and explicit cell appearance
 
 - `read_table(element: Any, box: od.Box | None, slide_part: Any, theme_colors: dict[str, str], parse_runs: Callable[..., None], resolve_color: Callable[..., Any], alignments: dict[str, str]) -> od.Table` — [строка 16](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_table.py#L16)
 
-Импорты: `__future__`, `collections.abc`, `opendoc.document_model`, `opendoc_formats.readers.pptx_paragraph`, `typing`
+Импорты: `__future__`, `collections.abc`, `opendoc_formats.readers.pptx_paragraph`, `opendoc_model.document_model`, `typing`
 
 ## src/opendoc_formats/readers/pptx_theme_fonts.py
 
@@ -657,7 +657,7 @@ Editable table cells, including paragraph structure and explicit cell appearance
 - `slide_theme_fonts(slide: Any) -> dict[str, str]` — [строка 40](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_theme_fonts.py#L40)
 - `materialize_theme_fonts(blocks: list[Any], fonts: dict[str, str]) -> None` — [строка 56](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_theme_fonts.py#L56)
 
-Импорты: `__future__`, `lxml`, `opendoc.document_model`, `pptx.opc.constants`, `typing`
+Импорты: `__future__`, `lxml`, `opendoc_model.document_model`, `pptx.opc.constants`, `typing`
 
 Тесты: [test_pptx_theme_fonts.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_theme_fonts.py#L1)
 
@@ -668,7 +668,7 @@ Safe SVG color discovery for canonical resource metadata.
 - `parse_svg_color(value: str, *, opacity: float | None=None) -> ColorValue | None` — [строка 17](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/svg_color.py#L17)
 - `svg_color_catalog(data: bytes) -> list[dict[str, object]]` — [строка 33](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/svg_color.py#L33)
 
-Импорты: `__future__`, `opendoc.color`, `xml.etree`
+Импорты: `__future__`, `opendoc_model.color`, `xml.etree`
 
 Тесты: [test_svg_color.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_svg_color.py#L1)
 
@@ -710,7 +710,7 @@ Safe lifecycle management for temporary conversion artifacts.
 - `cleanup(self) -> None` — [строка 105](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/artifacts.py#L105)
 - `safe_artifact_filename(name: str, *, fallback: str) -> str` — [строка 129](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/artifacts.py#L129)
 
-Импорты: `__future__`, `opendoc.storage`, `pathlib`, `types`, `typing`
+Импорты: `__future__`, `opendoc_model.storage`, `pathlib`, `types`, `typing`
 
 Тесты: [test_artifacts.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_artifacts.py#L1), [test_io.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_io.py#L1)
 
@@ -729,7 +729,7 @@ Availability checks for optional modules, including missing dotted parents.
 - `text_to_document(text: Text) -> DocumentModel` — [строка 25](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/document_adapters.py#L25)
 - `document_to_text(document: DocumentModel) -> Text` — [строка 50](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/document_adapters.py#L50)
 
-Импорты: `__future__`, `opendoc.document_model`, `opendoc_formats.types`
+Импорты: `__future__`, `opendoc_formats.types`, `opendoc_model.document_model`
 
 Тесты: [test_full_contract.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_full_contract.py#L1)
 
@@ -739,7 +739,7 @@ Availability checks for optional modules, including missing dotted parents.
 
 - `inspect_path(path: str | Path) -> DocumentInspection` — [строка 30](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/inspection.py#L30)
 
-Импорты: `__future__`, `collections`, `html.parser`, `opendoc.diagnostics`, `opendoc.document_codec`, `opendoc.inspection`, `opendoc_formats.errors`, `opendoc_formats.readers.docx`, `opendoc_formats.readers.pptx`, `opendoc_formats.readers.txt`, `pathlib`, `pypdf`, `typing`
+Импорты: `__future__`, `collections`, `html.parser`, `opendoc_formats.errors`, `opendoc_formats.readers.docx`, `opendoc_formats.readers.pptx`, `opendoc_formats.readers.txt`, `opendoc_model.diagnostics`, `opendoc_model.document_codec`, `opendoc_model.inspection`, `pathlib`, `pypdf`, `typing`
 
 Тесты: [test_emphasis_quality.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_emphasis_quality.py#L1), [test_text_edit_budget.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_text_edit_budget.py#L1), [test_text_flow.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_text_flow.py#L1), [test_text_quality.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_text_quality.py#L1)
 
@@ -788,7 +788,7 @@ Readability checks for staged exports; these do not measure visual fidelity.
 
 - `validate_output(path: Path, format_id: str) -> None` — [строка 20](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/output_validation.py#L20)
 
-Импорты: `__future__`, `docx`, `html.parser`, `opendoc`, `pathlib`, `pptx`, `zipfile`
+Импорты: `__future__`, `docx`, `html.parser`, `opendoc_model`, `pathlib`, `pptx`, `zipfile`
 
 Тесты: [test_release_contracts.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_release_contracts.py#L1)
 
@@ -823,7 +823,7 @@ Format adapter implementation helpers.
 - `BaseConverter` — [строка 40](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/base.py#L40)
 - `convert(self, input_path: str | Path, output_path: str | Path) -> ConversionReport` — [строка 55](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/base.py#L55)
 
-Импорты: `abc`, `opendoc.diagnostics`, `pathlib`
+Импорты: `abc`, `opendoc_model.diagnostics`, `pathlib`
 
 ## src/opendoc_formats/writers/color_preflight.py
 
@@ -831,7 +831,7 @@ Target-specific diagnostics for canonical color metadata.
 
 - `preflight_colors(document: DocumentModel, report: ConversionReport, *, target: str) -> None` — [строка 12](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/color_preflight.py#L12)
 
-Импорты: `__future__`, `collections.abc`, `opendoc.color`, `opendoc.diagnostics`, `opendoc.document_model`
+Импорты: `__future__`, `collections.abc`, `opendoc_model.color`, `opendoc_model.diagnostics`, `opendoc_model.document_model`
 
 Тесты: [test_color_preflight.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_color_preflight.py#L1)
 
@@ -841,7 +841,7 @@ DOCX drawing exporter for raster and vector images.
 
 - `write_image(paragraph: Any, image: Image, document: DocumentModel, report: ConversionReport, location: str) -> None` — [строка 16](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_drawing_writer.py#L16)
 
-Импорты: `__future__`, `docx.opc.constants`, `docx.opc.part`, `docx.oxml`, `docx.oxml.ns`, `docx.shared`, `io`, `lxml`, `opendoc.diagnostics`, `opendoc.document_model`, `opendoc.units`, `opendoc_formats.ooxml.package`, `pathlib`, `typing`
+Импорты: `__future__`, `docx.opc.constants`, `docx.opc.part`, `docx.oxml`, `docx.oxml.ns`, `docx.shared`, `io`, `lxml`, `opendoc_formats.ooxml.package`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
 
 ## src/opendoc_formats/writers/docx_html_links.py
 
@@ -866,7 +866,7 @@ Native Word numbering for independently editable HTML lists.
 
 - `write_note_reference(paragraph: Any, item: TextRun) -> bool` — [строка 12](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_notes_writer.py#L12)
 
-Импорты: `__future__`, `docx.oxml`, `docx.oxml.ns`, `opendoc.document_model`, `opendoc_formats.writers.docx_style_writer`, `typing`
+Импорты: `__future__`, `docx.oxml`, `docx.oxml.ns`, `opendoc_formats.writers.docx_style_writer`, `opendoc_model.document_model`, `typing`
 
 ## src/opendoc_formats/writers/docx_postprocess.py
 
@@ -884,7 +884,7 @@ DOCX section exporter for page geometry and running content.
 - `section_start_type(source: Section, section_enum: Any) -> Any` — [строка 17](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_section_writer.py#L17)
 - `configure_section(target: Any, source: Section, document: DocumentModel, report: ConversionReport, section_index: int, counters: dict[str, int], write_blocks: BlockWriter) -> None` — [строка 22](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_section_writer.py#L22)
 
-Импорты: `__future__`, `collections.abc`, `docx.shared`, `lxml`, `opendoc.diagnostics`, `opendoc.document_model`, `typing`
+Импорты: `__future__`, `collections.abc`, `docx.shared`, `lxml`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `typing`
 
 ## src/opendoc_formats/writers/docx_style_writer.py
 
@@ -896,7 +896,7 @@ DOCX style exporter for definitions, font formatting, and numbering.
 - `apply_text_style(run: Any, style: TextStyle) -> None` — [строка 88](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_style_writer.py#L88)
 - `apply_font_style(font: Any, style: TextStyle) -> None` — [строка 100](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_style_writer.py#L100)
 
-Импорты: `__future__`, `collections.abc`, `docx.enum.style`, `docx.oxml`, `docx.oxml.ns`, `docx.shared`, `opendoc.color`, `opendoc.diagnostics`, `opendoc.document_model`, `typing`
+Импорты: `__future__`, `collections.abc`, `docx.enum.style`, `docx.oxml`, `docx.oxml.ns`, `docx.shared`, `opendoc_model.color`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `typing`
 
 ## src/opendoc_formats/writers/docx_table_writer.py
 
@@ -904,7 +904,7 @@ DOCX table exporter for spans, geometry, fills, margins, and styles.
 
 - `write_table(container: Any, source: Table, document: DocumentModel, report: ConversionReport, location: str, counters: dict[str, int], write_blocks: BlockWriter) -> None` — [строка 18](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_table_writer.py#L18)
 
-Импорты: `__future__`, `collections.abc`, `docx.enum.table`, `docx.oxml`, `docx.oxml.ns`, `docx.shared`, `lxml`, `opendoc.diagnostics`, `opendoc.document_model`, `opendoc.properties`, `typing`
+Импорты: `__future__`, `collections.abc`, `docx.enum.table`, `docx.oxml`, `docx.oxml.ns`, `docx.shared`, `lxml`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `opendoc_model.properties`, `typing`
 
 ## src/opendoc_formats/writers/docx_text_writer.py
 
@@ -914,7 +914,7 @@ DOCX table exporter for spans, geometry, fills, margins, and styles.
 - `write_paragraph_content(paragraph: Any, source: Paragraph, document: DocumentModel, report: ConversionReport, location: str, counters: dict[str, int]) -> None` — [строка 57](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_text_writer.py#L57)
 - `write_formula(paragraph: Any, formula: Formula, report: ConversionReport, location: str) -> None` — [строка 107](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_text_writer.py#L107)
 
-Импорты: `__future__`, `docx.enum.text`, `docx.opc.constants`, `docx.oxml`, `docx.oxml.ns`, `opendoc.diagnostics`, `opendoc.document_model`, `opendoc_formats.ooxml.package`, `opendoc_formats.writers.docx_drawing_writer`, `opendoc_formats.writers.docx_html_links`, `opendoc_formats.writers.docx_html_lists`, `opendoc_formats.writers.docx_notes_writer`, `opendoc_formats.writers.docx_style_writer`, `opendoc_formats.writers.mathml_to_omml`, `typing`, `urllib.parse`
+Импорты: `__future__`, `docx.enum.text`, `docx.opc.constants`, `docx.oxml`, `docx.oxml.ns`, `opendoc_formats.ooxml.package`, `opendoc_formats.writers.docx_drawing_writer`, `opendoc_formats.writers.docx_html_links`, `opendoc_formats.writers.docx_html_lists`, `opendoc_formats.writers.docx_notes_writer`, `opendoc_formats.writers.docx_style_writer`, `opendoc_formats.writers.mathml_to_omml`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `typing`, `urllib.parse`
 
 ## src/opendoc_formats/writers/docx_to_latex.py
 
@@ -934,7 +934,7 @@ DOCX table exporter for spans, geometry, fills, margins, and styles.
 
 - `write_docx_model(document: DocumentModel, output_path: str | Path) -> ConversionReport` — [строка 30](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_writer.py#L30)
 
-Импорты: `__future__`, `docx`, `docx.enum.section`, `docx.oxml`, `opendoc.diagnostics`, `opendoc.document_model`, `opendoc_formats.fonts.docx_embedding`, `opendoc_formats.ooxml.package`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.io`, `opendoc_formats.writers.color_preflight`, `opendoc_formats.writers.docx_drawing_writer`, `opendoc_formats.writers.docx_section_writer`, `opendoc_formats.writers.docx_style_writer`, `opendoc_formats.writers.docx_table_writer`, `opendoc_formats.writers.docx_text_writer`, `opendoc_formats.writers.font_preflight`, `pathlib`, `typing`
+Импорты: `__future__`, `docx`, `docx.enum.section`, `docx.oxml`, `opendoc_formats.fonts.docx_embedding`, `opendoc_formats.ooxml.package`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.io`, `opendoc_formats.writers.color_preflight`, `opendoc_formats.writers.docx_drawing_writer`, `opendoc_formats.writers.docx_section_writer`, `opendoc_formats.writers.docx_style_writer`, `opendoc_formats.writers.docx_table_writer`, `opendoc_formats.writers.docx_text_writer`, `opendoc_formats.writers.font_preflight`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`, `typing`
 
 Тесты: [test_format_audit.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_format_audit.py#L1), [test_docx_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_docx_writer.py#L1), [test_html_normalize.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_normalize.py#L1)
 
@@ -954,7 +954,7 @@ Shared font preflight for model exporters.
 
 - `prepare_fonts(document: DocumentModel, report: ConversionReport) -> DocumentModel` — [строка 11](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/font_preflight.py#L11)
 
-Импорты: `__future__`, `opendoc.diagnostics`, `opendoc.document_model`, `opendoc_formats.fonts`
+Импорты: `__future__`, `opendoc_formats.fonts`, `opendoc_model.diagnostics`, `opendoc_model.document_model`
 
 ## src/opendoc_formats/writers/html_layout.py
 
@@ -964,7 +964,7 @@ Shared font preflight for model exporters.
 - `execute(self, value: StageValue, context: StageContext) -> StageResult` — [строка 29](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/html_layout.py#L29)
 - `geometry_styles(box: Box | None, properties: Any, *, positioned: bool, browser: bool=False) -> list[str]` — [строка 83](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/html_layout.py#L83)
 
-Импорты: `__future__`, `collections.abc`, `dataclasses`, `opendoc.diagnostics`, `opendoc.document_model`, `opendoc.units`, `opendoc_formats.writers.stages`, `typing`
+Импорты: `__future__`, `collections.abc`, `dataclasses`, `opendoc_formats.writers.stages`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `opendoc_model.units`, `typing`
 
 Тесты: [test_html_layout.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_layout.py#L1)
 
@@ -974,7 +974,7 @@ Serialize model list paragraphs as nested semantic HTML lists.
 
 - `render_blocks(blocks: Iterable[od.Block], render: Callable[[od.Block], str]) -> str` — [строка 11](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/html_lists.py#L11)
 
-Импорты: `__future__`, `collections.abc`, `opendoc.document_model`
+Импорты: `__future__`, `collections.abc`, `opendoc_model.document_model`
 
 ## src/opendoc_formats/writers/html_normalize.py
 
@@ -983,7 +983,7 @@ Serialize model list paragraphs as nested semantic HTML lists.
 - `HtmlNormalizeStage` — [строка 21](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/html_normalize.py#L21)
 - `execute(self, value: StageValue, context: StageContext) -> StageResult` — [строка 27](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/html_normalize.py#L27)
 
-Импорты: `__future__`, `collections.abc`, `dataclasses`, `opendoc.diagnostics`, `opendoc.document_model`, `opendoc_formats.writers.stages`, `urllib.parse`
+Импорты: `__future__`, `collections.abc`, `dataclasses`, `opendoc_formats.writers.stages`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `urllib.parse`
 
 Тесты: [test_html_normalize.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_normalize.py#L1)
 
@@ -996,7 +996,7 @@ Serialize model list paragraphs as nested semantic HTML lists.
 - `document_images(document: DocumentModel) -> Iterator[tuple[Image, str]]` — [строка 87](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/html_resources.py#L87)
 - `image_data_uri(resource: Resource) -> str` — [строка 94](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/html_resources.py#L94)
 
-Импорты: `__future__`, `collections.abc`, `dataclasses`, `opendoc.diagnostics`, `opendoc.document_model`, `opendoc_formats.writers.stages`, `pathlib`
+Импорты: `__future__`, `collections.abc`, `dataclasses`, `opendoc_formats.writers.stages`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`
 
 Тесты: [test_html_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_resources.py#L1)
 
@@ -1008,15 +1008,15 @@ Serialize model list paragraphs as nested semantic HTML lists.
 - `execute(self, value: StageValue, context: StageContext) -> StageResult` — [строка 42](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/html_verify.py#L42)
 - `publish_verified_html(html: str, output: Path, report: ConversionReport) -> None` — [строка 76](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/html_verify.py#L76)
 
-Импорты: `__future__`, `collections`, `dataclasses`, `html.parser`, `opendoc.diagnostics`, `opendoc_formats.writers.stages`, `pathlib`, `urllib.parse`
+Импорты: `__future__`, `collections`, `dataclasses`, `html.parser`, `opendoc_formats.writers.stages`, `opendoc_model.diagnostics`, `pathlib`, `urllib.parse`
 
 ## src/opendoc_formats/writers/html_writer.py
 
 Экспорт богатой промежуточной модели в самодостаточный HTML.
 
-- `write_html_model(document: DocumentModel, output_path: str | Path) -> ConversionReport` — [строка 90](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/html_writer.py#L90)
+- `write_html_model(document: DocumentModel, output_path: str | Path) -> ConversionReport` — [строка 91](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/html_writer.py#L91)
 
-Импорты: `__future__`, `html`, `lxml`, `opendoc.color`, `opendoc.diagnostics`, `opendoc.document_model`, `opendoc.units`, `opendoc_formats.fonts.html_embedding`, `opendoc_formats.writers.color_preflight`, `opendoc_formats.writers.font_preflight`, `opendoc_formats.writers.html_layout`, `opendoc_formats.writers.html_lists`, `opendoc_formats.writers.html_normalize`, `opendoc_formats.writers.html_resources`, `opendoc_formats.writers.html_verify`, `opendoc_formats.writers.pptx_to_html._omml`, `opendoc_formats.writers.pptx_to_html._pptx_lib`, `opendoc_formats.writers.stages`, `pathlib`, `typing`, `urllib.parse`
+Импорты: `__future__`, `html`, `opendoc_formats.fonts.html_embedding`, `opendoc_formats.writers.color_preflight`, `opendoc_formats.writers.font_preflight`, `opendoc_formats.writers.html_layout`, `opendoc_formats.writers.html_lists`, `opendoc_formats.writers.html_normalize`, `opendoc_formats.writers.html_resources`, `opendoc_formats.writers.html_verify`, `opendoc_formats.writers.pptx_to_html._omml`, `opendoc_formats.writers.pptx_to_html._pptx_lib`, `opendoc_formats.writers.stages`, `opendoc_model.color`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`, `urllib.parse`
 
 Тесты: [test_html_chart_statistics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_chart_statistics.py#L1), [test_html_layout.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_layout.py#L1), [test_html_normalize.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_normalize.py#L1), [test_html_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_resources.py#L1), [test_html_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_writer.py#L1), [test_pptx_custom_errors.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_custom_errors.py#L1), [test_pptx_error_directions.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_error_directions.py#L1), [test_pptx_multiple_trends.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_multiple_trends.py#L1), [test_pptx_trend_forecast.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_trend_forecast.py#L1)
 
@@ -1026,14 +1026,14 @@ Independent model-to-LaTeX adapter using the established DOCX bridge.
 
 - `write_latex_model(document: DocumentModel, output_path: str | Path) -> ConversionReport` — [строка 12](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/latex_writer.py#L12)
 
-Импорты: `opendoc`, `opendoc_formats.writers.docx_to_latex`, `opendoc_formats.writers.docx_writer`, `pathlib`, `tempfile`
+Импорты: `opendoc_formats.writers.docx_to_latex`, `opendoc_formats.writers.docx_writer`, `opendoc_model`, `pathlib`, `tempfile`
 
 ## src/opendoc_formats/writers/mathml_to_omml.py
 
 Compatibility entry point for the shared MathML-to-Office-Math structure converter.
 
 
-Импорты: `opendoc.mathml`
+Импорты: `opendoc_model.mathml`
 
 Тесты: [test_mathml_decorations.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_mathml_decorations.py#L1), [test_mathml_pptx.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_mathml_pptx.py#L1)
 
@@ -1044,7 +1044,7 @@ Compatibility entry point for the shared MathML-to-Office-Math structure convert
 - `PdfResourceStage` — [строка 16](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_resources.py#L16)
 - `execute(self, value: StageValue, context: StageContext) -> StageResult` — [строка 22](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_resources.py#L22)
 
-Импорты: `__future__`, `dataclasses`, `opendoc.diagnostics`, `opendoc.document_model`, `opendoc_formats.writers.html_resources`, `opendoc_formats.writers.stages`
+Импорты: `__future__`, `dataclasses`, `opendoc_formats.writers.html_resources`, `opendoc_formats.writers.stages`, `opendoc_model.diagnostics`, `opendoc_model.document_model`
 
 Тесты: [test_pdf_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_resources.py#L1)
 
@@ -1077,7 +1077,7 @@ Compatibility entry point for the shared MathML-to-Office-Math structure convert
 
 - `write_pdf_model(document: DocumentModel, output_path: str | Path) -> ConversionReport` — [строка 19](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_writer.py#L19)
 
-Импорты: `__future__`, `opendoc.diagnostics`, `opendoc.document_model`, `opendoc_formats.fonts.embedding`, `opendoc_formats.fonts.html_embedding`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.io`, `opendoc_formats.writers.color_preflight`, `opendoc_formats.writers.font_preflight`, `opendoc_formats.writers.html_writer`, `opendoc_formats.writers.pdf_resources`, `opendoc_formats.writers.stages`, `pathlib`, `typing`
+Импорты: `__future__`, `opendoc_formats.fonts.embedding`, `opendoc_formats.fonts.html_embedding`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.io`, `opendoc_formats.writers.color_preflight`, `opendoc_formats.writers.font_preflight`, `opendoc_formats.writers.html_writer`, `opendoc_formats.writers.pdf_resources`, `opendoc_formats.writers.stages`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`, `typing`
 
 Тесты: [test_pdf_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_resources.py#L1), [test_pdf_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_writer.py#L1)
 
@@ -1087,7 +1087,7 @@ Explicit cell appearance; no dependency on source table style IDs.
 
 - `configure_cell(cell: Any, properties: dict[str, Any], report: od.ConversionReport, location: str) -> None` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pptx_cell_writer.py#L15)
 
-Импорты: `__future__`, `lxml`, `opendoc.color`, `opendoc.diagnostics`, `opendoc_formats.writers.pptx_text_writer`, `pptx.dml.color`, `pptx.enum.text`, `pptx.oxml.xmlchemy`, `pptx.util`, `typing`
+Импорты: `__future__`, `lxml`, `opendoc_formats.writers.pptx_text_writer`, `opendoc_model.color`, `opendoc_model.diagnostics`, `pptx.dml.color`, `pptx.enum.text`, `pptx.oxml.xmlchemy`, `pptx.util`, `typing`
 
 ## src/opendoc_formats/writers/pptx_chart_settings.py
 
@@ -1095,7 +1095,7 @@ Native axis scales and titles, independent of chart data/workbook generation.
 
 - `configure_chart(chart: Any, data: dict[str, Any], report: od.ConversionReport, location: str) -> None` — [строка 14](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pptx_chart_settings.py#L14)
 
-Импорты: `__future__`, `lxml`, `opendoc.diagnostics`, `pptx.chart.axis`, `pptx.enum.chart`, `typing`
+Импорты: `__future__`, `lxml`, `opendoc_model.diagnostics`, `pptx.chart.axis`, `pptx.enum.chart`, `typing`
 
 ## src/opendoc_formats/writers/pptx_chart_writer.py
 
@@ -1103,7 +1103,7 @@ Native chart data export, including stacking and independent XY series.
 
 - `write_chart(slide: Any, data: dict[str, Any], geometry: tuple[int, int, int, int], report: od.ConversionReport, location: str) -> bool` — [строка 92](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pptx_chart_writer.py#L92)
 
-Импорты: `__future__`, `opendoc.diagnostics`, `opendoc_formats.writers.pptx_chart_settings`, `opendoc_formats.writers.pptx_combo_writer`, `opendoc_formats.writers.pptx_label_writer`, `opendoc_formats.writers.pptx_plot_writer`, `opendoc_formats.writers.pptx_point_writer`, `opendoc_formats.writers.pptx_statistics_writer`, `opendoc_formats.writers.pptx_text_writer`, `pptx.chart.data`, `pptx.enum.chart`, `typing`
+Импорты: `__future__`, `opendoc_formats.writers.pptx_chart_settings`, `opendoc_formats.writers.pptx_combo_writer`, `opendoc_formats.writers.pptx_label_writer`, `opendoc_formats.writers.pptx_plot_writer`, `opendoc_formats.writers.pptx_point_writer`, `opendoc_formats.writers.pptx_statistics_writer`, `opendoc_formats.writers.pptx_text_writer`, `opendoc_model.diagnostics`, `pptx.chart.data`, `pptx.enum.chart`, `typing`
 
 ## src/opendoc_formats/writers/pptx_combo_writer.py
 
@@ -1121,7 +1121,7 @@ Restore editable DrawingML shapes instead of substituting text boxes.
 
 - `write_shape(slide: Any, meta: dict[str, Any], geometry: tuple[int, int, int, int], report: od.ConversionReport, location: str) -> Any` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pptx_geometry_writer.py#L15)
 
-Импорты: `__future__`, `lxml`, `opendoc.diagnostics`, `opendoc_formats.writers.pptx_text_writer`, `pptx.enum.shapes`, `pptx.util`, `typing`
+Импорты: `__future__`, `lxml`, `opendoc_formats.writers.pptx_text_writer`, `opendoc_model.diagnostics`, `pptx.enum.shapes`, `pptx.util`, `typing`
 
 ## src/opendoc_formats/writers/pptx_image_writer.py
 
@@ -1129,7 +1129,7 @@ Native raster and SVG package resources for PPTX.
 
 - `write_image(slide: Any, image: od.Image, document: od.DocumentModel, geometry: tuple[int, int, int, int], report: od.ConversionReport, location: str) -> Any` — [строка 13](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pptx_image_writer.py#L13)
 
-Импорты: `__future__`, `io`, `opendoc.diagnostics`, `pathlib`, `pptx.opc.constants`, `pptx.opc.package`, `pptx.oxml`, `pptx.oxml.ns`, `typing`
+Импорты: `__future__`, `io`, `opendoc_model.diagnostics`, `pathlib`, `pptx.opc.constants`, `pptx.opc.package`, `pptx.oxml`, `pptx.oxml.ns`, `typing`
 
 ## src/opendoc_formats/writers/pptx_label_writer.py
 
@@ -1137,7 +1137,7 @@ Native raster and SVG package resources for PPTX.
 
 - `configure_labels(*, chart: Any, data: dict[str, Any], report: ConversionReport, location: str) -> None` — [строка 22](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pptx_label_writer.py#L22)
 
-Импорты: `__future__`, `lxml`, `opendoc.diagnostics`, `typing`
+Импорты: `__future__`, `lxml`, `opendoc_model.diagnostics`, `typing`
 
 ## src/opendoc_formats/writers/pptx_objects_writer.py
 
@@ -1146,7 +1146,7 @@ Native PPTX tables and category charts.
 - `write_table(slide: Any, block: od.Table, geometry: tuple[int, int, int, int], report: od.ConversionReport, location: str) -> None` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pptx_objects_writer.py#L15)
 - `write_chart(slide: Any, data: dict[str, Any], geometry: tuple[int, int, int, int], report: od.ConversionReport, location: str) -> bool` — [строка 63](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pptx_objects_writer.py#L63)
 
-Импорты: `__future__`, `opendoc.diagnostics`, `opendoc.document_model`, `opendoc_formats.writers.pptx_cell_writer`, `opendoc_formats.writers.pptx_chart_writer`, `opendoc_formats.writers.pptx_text_writer`, `pptx.util`, `typing`
+Импорты: `__future__`, `opendoc_formats.writers.pptx_cell_writer`, `opendoc_formats.writers.pptx_chart_writer`, `opendoc_formats.writers.pptx_text_writer`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pptx.util`, `typing`
 
 ## src/opendoc_formats/writers/pptx_paragraph_writer.py
 
@@ -1155,7 +1155,7 @@ Native paragraph/list and text-frame settings, independent of run writing.
 - `configure_frame(frame: Any, block: od.Block, report: od.ConversionReport, location: str) -> None` — [строка 13](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pptx_paragraph_writer.py#L13)
 - `configure_paragraph(paragraph: Any, block: od.Block, index: int) -> None` — [строка 50](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pptx_paragraph_writer.py#L50)
 
-Импорты: `__future__`, `lxml`, `opendoc.diagnostics`, `pptx.enum.text`, `pptx.util`, `typing`
+Импорты: `__future__`, `lxml`, `opendoc_model.diagnostics`, `pptx.enum.text`, `pptx.util`, `typing`
 
 ## src/opendoc_formats/writers/pptx_plot_writer.py
 
@@ -1163,7 +1163,7 @@ Native paragraph/list and text-frame settings, independent of run writing.
 
 - `configure_plots(*, chart: Any, data: dict[str, Any], report: ConversionReport, location: str) -> None` — [строка 18](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pptx_plot_writer.py#L18)
 
-Импорты: `__future__`, `lxml`, `opendoc.diagnostics`, `typing`
+Импорты: `__future__`, `lxml`, `opendoc_model.diagnostics`, `typing`
 
 ## src/opendoc_formats/writers/pptx_point_writer.py
 
@@ -1171,7 +1171,7 @@ Native paragraph/list and text-frame settings, independent of run writing.
 
 - `configure_points(*, source: dict[str, Any], target: Any, kind: str, report: ConversionReport, location: str) -> None` — [строка 12](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pptx_point_writer.py#L12)
 
-Импорты: `__future__`, `lxml`, `opendoc.diagnostics`, `opendoc_formats.writers.pptx_text_writer`, `typing`
+Импорты: `__future__`, `lxml`, `opendoc_formats.writers.pptx_text_writer`, `opendoc_model.diagnostics`, `typing`
 
 ## src/opendoc_formats/writers/pptx_scene_writer.py
 
@@ -1181,7 +1181,7 @@ Slide-local transforms, connector identities and native group hierarchy.
 - `restore_connections(entries: list[tuple[od.Block, Any, str]], report: od.ConversionReport, groups: dict[str, list[Any]] | None=None) -> None` — [строка 53](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pptx_scene_writer.py#L53)
 - `restore_groups(slide: Any, entries: list[tuple[od.Block, Any, str]], report: od.ConversionReport) -> dict[str, list[Any]]` — [строка 83](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pptx_scene_writer.py#L83)
 
-Импорты: `__future__`, `collections`, `itertools`, `lxml`, `opendoc.diagnostics`, `pptx.util`, `typing`
+Импорты: `__future__`, `collections`, `itertools`, `lxml`, `opendoc_model.diagnostics`, `pptx.util`, `typing`
 
 ## src/opendoc_formats/writers/pptx_statistics_writer.py
 
@@ -1189,7 +1189,7 @@ Slide-local transforms, connector identities and native group hierarchy.
 
 - `configure_statistics(*, source: dict[str, Any], target: Any, options: dict[str, Any], report: Any, location: str) -> None` — [строка 144](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pptx_statistics_writer.py#L144)
 
-Импорты: `__future__`, `lxml`, `opendoc.color`, `opendoc.diagnostics`, `typing`
+Импорты: `__future__`, `lxml`, `opendoc_model.color`, `opendoc_model.diagnostics`, `typing`
 
 ## src/opendoc_formats/writers/pptx_text_writer.py
 
@@ -1199,7 +1199,7 @@ Native DrawingML text and Office Math, without importing PPTX at package import.
 - `write_text(frame: Any, block: od.Block, report: od.ConversionReport, location: str, *, append: bool=False) -> None` — [строка 33](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pptx_text_writer.py#L33)
 - `write_formula(paragraph: Any, formula: od.Formula, report: od.ConversionReport, location: str) -> None` — [строка 81](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pptx_text_writer.py#L81)
 
-Импорты: `__future__`, `lxml`, `opendoc.color`, `opendoc.diagnostics`, `opendoc.document_model`, `opendoc_formats.writers.mathml_to_omml`, `opendoc_formats.writers.pptx_paragraph_writer`, `pptx.dml.color`, `pptx.util`, `typing`
+Импорты: `__future__`, `lxml`, `opendoc_formats.writers.mathml_to_omml`, `opendoc_formats.writers.pptx_paragraph_writer`, `opendoc_model.color`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pptx.dml.color`, `pptx.util`, `typing`
 
 ## src/opendoc_formats/writers/pptx_to_html/__init__.py
 
@@ -1237,7 +1237,7 @@ Convert a .pptx file to a self-contained HTML viewer.
 - `size_to_pt(sz: int | str | None) -> str` — [строка 193](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pptx_to_html/_pptx_lib.py#L193)
 - `safe_id(s: str) -> str` — [строка 200](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pptx_to_html/_pptx_lib.py#L200)
 
-Импорты: `__future__`, `opendoc.units`, `typing`
+Импорты: `__future__`, `opendoc_model.units`, `typing`
 
 Тесты: [test_pptx_to_html.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_to_html.py#L1)
 
@@ -1278,7 +1278,7 @@ Convert a .pptx to a self-contained HTML viewer.
 - `write_css(out: Path) -> None` — [строка 1781](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pptx_to_html/_renderer.py#L1781)
 - `write_js(out: Path) -> None` — [строка 1785](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pptx_to_html/_renderer.py#L1785)
 
-Импорты: `PIL`, `__future__`, `_omml`, `_pptx_lib`, `lxml`, `opendoc.units`, `opendoc_formats.support.io`, `pathlib`, `pptx`, `pptx.enum.shapes`, `typing`
+Импорты: `PIL`, `__future__`, `_omml`, `_pptx_lib`, `lxml`, `opendoc_formats.support.io`, `opendoc_model.units`, `pathlib`, `pptx`, `pptx.enum.shapes`, `typing`
 
 ## src/opendoc_formats/writers/pptx_to_html/converter.py
 
@@ -1297,7 +1297,7 @@ DocumentModel → editable PPTX. One model section becomes one slide.
 
 - `write_pptx_model(document: DocumentModel, output_path: str | Path) -> ConversionReport` — [строка 20](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pptx_writer.py#L20)
 
-Импорты: `__future__`, `opendoc.diagnostics`, `opendoc.document_model`, `opendoc_formats.writers.pptx_chart_writer`, `opendoc_formats.writers.pptx_geometry_writer`, `opendoc_formats.writers.pptx_image_writer`, `opendoc_formats.writers.pptx_objects_writer`, `opendoc_formats.writers.pptx_scene_writer`, `opendoc_formats.writers.pptx_text_writer`, `pathlib`, `pptx`, `pptx.util`, `typing`
+Импорты: `__future__`, `opendoc_formats.writers.pptx_chart_writer`, `opendoc_formats.writers.pptx_geometry_writer`, `opendoc_formats.writers.pptx_image_writer`, `opendoc_formats.writers.pptx_objects_writer`, `opendoc_formats.writers.pptx_scene_writer`, `opendoc_formats.writers.pptx_text_writer`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`, `pptx`, `pptx.util`, `typing`
 
 Тесты: [test_mathml_decorations.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_mathml_decorations.py#L1), [test_mathml_pptx.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_mathml_pptx.py#L1), [test_pptx_chart_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_chart_roundtrip.py#L1), [test_pptx_combo_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_combo_roundtrip.py#L1), [test_pptx_custom_errors.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_custom_errors.py#L1), [test_pptx_error_directions.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_error_directions.py#L1), [test_pptx_geometry_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_geometry_roundtrip.py#L1), [test_pptx_label_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_label_roundtrip.py#L1), [test_pptx_multiple_trends.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_multiple_trends.py#L1), [test_pptx_office_regressions.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_office_regressions.py#L1), [test_pptx_placeholder_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_placeholder_roundtrip.py#L1), [test_pptx_plot_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_plot_roundtrip.py#L1), [test_pptx_point_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_point_roundtrip.py#L1), [test_pptx_statistics_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_statistics_roundtrip.py#L1), [test_pptx_table_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_table_roundtrip.py#L1), [test_pptx_text_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_text_roundtrip.py#L1), [test_pptx_theme_fonts.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_theme_fonts.py#L1), [test_pptx_trend_forecast.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_trend_forecast.py#L1), [test_pptx_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_writer.py#L1)
 
@@ -1314,7 +1314,7 @@ Public protocols for executable document conversion components.
 - `ConversionBackend` — [строка 36](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/protocols.py#L36)
 - `execute(self, value: ConversionValue, output_path: Path) -> tuple[ConversionValue, ConversionReport | None]` — [строка 39](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/protocols.py#L39)
 
-Импорты: `__future__`, `opendoc.diagnostics`, `opendoc.document_model`, `pathlib`, `typing`
+Импорты: `__future__`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`, `typing`
 
 ## src/opendoc_formats/writers/stages.py
 
@@ -1329,7 +1329,7 @@ Public protocols for executable document conversion components.
 - `apply_to(self, properties: dict[str, Any]) -> dict[str, Any]` — [строка 65](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/stages.py#L65)
 - `from_properties(cls, properties: Any, namespace: str) -> FormatExtension | None` — [строка 69](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/stages.py#L69)
 
-Импорты: `__future__`, `dataclasses`, `enum`, `opendoc.diagnostics`, `opendoc.document_model`, `pathlib`, `typing`
+Импорты: `__future__`, `dataclasses`, `enum`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`, `typing`
 
 Тесты: [test_html_layout.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_layout.py#L1), [test_html_normalize.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_normalize.py#L1), [test_html_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_resources.py#L1), [test_pdf_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_resources.py#L1), [test_stages.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_stages.py#L1)
 
@@ -1351,4 +1351,4 @@ UTF-8 plain-text export with explicit flattening diagnostics.
 
 - `write_txt_model(document: od.DocumentModel, output_path: str | Path) -> od.ConversionReport` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/txt_writer.py#L15)
 
-Импорты: `__future__`, `collections.abc`, `opendoc.diagnostics`, `opendoc.document_model`, `opendoc_formats.support.io`, `pathlib`
+Импорты: `__future__`, `collections.abc`, `opendoc_formats.support.io`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`

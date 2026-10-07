@@ -6,9 +6,9 @@ from io import BytesIO
 from pathlib import Path
 from typing import Any
 
-from opendoc.diagnostics import ConversionReport, IssueSeverity
-from opendoc.document_model import VECTOR_IMAGE_MEDIA_TYPES, DocumentModel, Image, Resource
-from opendoc.units import degrees_to_ooxml_angle
+from opendoc_model.diagnostics import ConversionReport, IssueSeverity
+from opendoc_model.document_model import VECTOR_IMAGE_MEDIA_TYPES, DocumentModel, Image, Resource
+from opendoc_model.units import degrees_to_ooxml_angle
 
 from opendoc_formats.ooxml.package import points_to_emu
 

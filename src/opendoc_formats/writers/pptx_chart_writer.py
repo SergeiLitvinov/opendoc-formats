@@ -5,8 +5,8 @@ from __future__ import annotations
 import math
 from typing import Any
 
-import opendoc as od
-from opendoc.diagnostics import IssueSeverity
+import opendoc_model as od
+from opendoc_model.diagnostics import IssueSeverity
 
 from opendoc_formats.writers.pptx_chart_settings import configure_chart
 from opendoc_formats.writers.pptx_combo_writer import compose_combo, install_combo, is_combo

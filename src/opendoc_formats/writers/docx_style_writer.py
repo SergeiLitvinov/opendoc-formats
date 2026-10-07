@@ -5,8 +5,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from opendoc.diagnostics import ConversionReport, IssueSeverity
-from opendoc.document_model import TextStyle
+from opendoc_model.diagnostics import ConversionReport, IssueSeverity
+from opendoc_model.document_model import TextStyle
 
 
 def write_styles(target: Any, styles: dict[str, TextStyle], report: ConversionReport) -> None:
@@ -100,7 +100,7 @@ def apply_text_style(run: Any, style: TextStyle) -> None:
 def apply_font_style(font: Any, style: TextStyle) -> None:
     from docx.oxml.ns import qn
     from docx.shared import Pt, RGBColor
-    from opendoc.color import ColorValue
+    from opendoc_model.color import ColorValue
 
     if style.font_family:
         font.name = style.font_family

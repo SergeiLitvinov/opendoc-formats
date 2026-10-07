@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from opendoc.document_model import Paragraph, Table, TextRun
+from opendoc_model.document_model import Paragraph, Table, TextRun
 
 A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
 

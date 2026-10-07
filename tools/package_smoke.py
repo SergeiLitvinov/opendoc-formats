@@ -15,7 +15,7 @@ def main() -> None:
     parser.add_argument("--all-formats", action="store_true")
     parser.add_argument("--pdf-text", action="store_true")
     args = parser.parse_args()
-    from opendoc import DocumentModel, Paragraph, Section, Table, TableCell, TableRow, TextRun
+    from opendoc_model import DocumentModel, Formula, FormulaFormat, Paragraph, Section, Table, TableCell, TableRow, TextRun
 
     import opendoc_formats
     from opendoc_formats import default_exporter_registry, default_registry, read_document, write_document
@@ -26,7 +26,7 @@ def main() -> None:
     from opendoc_formats.pdf import PdfDocument
 
     assert opendoc_formats.__version__ == version("opendoc-formats")
-    assert version("opendoc") == "0.1.0"
+    assert version("opendoc-model") == "0.3.0"
     engines = ("bs4", "fitz", "pymupdf", "lxml", "docx", "pptx", "ebooklib", "fontTools")
     assert all(name not in sys.modules for name in engines)
     installed = Path(opendoc_formats.__file__).resolve().parent
@@ -62,6 +62,15 @@ def main() -> None:
         assert text.engine == "pypdf" and text.pages == 2 and "Native PDF" in text.plain, text
     with TemporaryDirectory(prefix="opendoc-formats-installed-") as directory:
         root = Path(directory)
+        math_path = root / "math.html"
+        math = DocumentModel(sections=[Section(blocks=[Formula(
+            '<math xmlns="http://www.w3.org/1998/Math/MathML"><mi>x</mi></math>', FormulaFormat.MATHML,
+        )])])
+        math_report = write_document(math, math_path)
+        assert math_report.success, math_report.to_dict()
+        assert "<mi>x</mi>" in math_path.read_text(encoding="utf-8")
+        if not args.all_formats:
+            assert "lxml" not in sys.modules
         formats = ("txt", "json", "html", "docx", "pptx", "pdf", "latex") if args.all_formats else ("txt", "json", "html")
         for format_id in formats:
             path = root / ("document." + ("tex" if format_id == "latex" else format_id))

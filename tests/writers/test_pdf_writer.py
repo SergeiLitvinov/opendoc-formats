@@ -1,8 +1,8 @@
 """Тесты DocumentModel → PDF."""
 
 import pytest
-from opendoc.diagnostics import IssueSeverity
-from opendoc.document_model import (
+from opendoc_model.diagnostics import IssueSeverity
+from opendoc_model.document_model import (
     DocumentModel,
     Formula,
     FormulaFormat,

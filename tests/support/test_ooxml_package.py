@@ -2,7 +2,7 @@
 
 from types import SimpleNamespace
 
-from opendoc.document_model import PackageGraph, PackagePart, PackageRelationship
+from opendoc_model.document_model import PackageGraph, PackagePart, PackageRelationship
 
 from opendoc_formats.ooxml.package import (
     EMU_PER_POINT,

@@ -1,7 +1,7 @@
 """Ресурсы PDF: однократная подготовка, снимок источника и безопасный отказ."""
 
 import pytest
-from opendoc.document_model import DocumentModel, Image, Paragraph, Resource, ResourceKind, Section
+from opendoc_model.document_model import DocumentModel, Image, Paragraph, Resource, ResourceKind, Section
 from PIL import Image as PillowImage
 
 from opendoc_formats.writers.pdf_resources import PdfResourceStage

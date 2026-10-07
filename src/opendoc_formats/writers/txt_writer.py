@@ -5,9 +5,9 @@ from __future__ import annotations
 from collections.abc import Iterable
 from pathlib import Path
 
-import opendoc as od
-from opendoc.diagnostics import ConversionReport, IssueSeverity
-from opendoc.document_model import Formula, Image, PageSettings, Paragraph, Table, TextRun, TextStyle
+import opendoc_model as od
+from opendoc_model.diagnostics import ConversionReport, IssueSeverity
+from opendoc_model.document_model import Formula, Image, PageSettings, Paragraph, Table, TextRun, TextStyle
 
 from opendoc_formats.support.io import atomic_write_bytes
 

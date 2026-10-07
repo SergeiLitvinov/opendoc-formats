@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from opendoc import DocumentModel, Paragraph, Section, TextRun
+from opendoc_model import DocumentModel, Paragraph, Section, TextRun
 
 
 def read_txt_model(path: str | Path) -> DocumentModel:

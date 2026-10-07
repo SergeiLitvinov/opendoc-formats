@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from opendoc.document_model import TextRun
+from opendoc_model.document_model import TextRun
 
 from opendoc_formats.writers.docx_style_writer import apply_text_style
 

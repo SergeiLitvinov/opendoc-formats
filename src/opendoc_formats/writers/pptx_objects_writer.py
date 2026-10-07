@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
-import opendoc as od
-from opendoc.diagnostics import IssueSeverity
-from opendoc.document_model import Paragraph
+import opendoc_model as od
+from opendoc_model.diagnostics import IssueSeverity
+from opendoc_model.document_model import Paragraph
 
 from opendoc_formats.writers.pptx_cell_writer import configure_cell
 from opendoc_formats.writers.pptx_text_writer import write_text

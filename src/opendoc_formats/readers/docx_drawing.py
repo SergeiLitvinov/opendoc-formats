@@ -6,7 +6,7 @@ import hashlib
 from pathlib import Path
 from typing import Any
 
-from opendoc.document_model import (
+from opendoc_model.document_model import (
     VECTOR_IMAGE_MEDIA_TYPES,
     Box,
     DocumentModel,
@@ -16,7 +16,7 @@ from opendoc.document_model import (
     ResourceKind,
     attach_visual_surrogate,
 )
-from opendoc.units import emu_to_points, ooxml_angle_to_degrees
+from opendoc_model.units import emu_to_points, ooxml_angle_to_degrees
 
 from opendoc_formats.ooxml.color import resolve_drawingml_color
 from opendoc_formats.readers.svg_color import parse_svg_color, svg_color_catalog

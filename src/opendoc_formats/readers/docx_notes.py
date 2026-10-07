@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from opendoc.document_model import TextRun, TextStyle
+from opendoc_model.document_model import TextRun, TextStyle
 
 
 def append_note_references(content: list[Any], run: Any, style: TextStyle) -> None:

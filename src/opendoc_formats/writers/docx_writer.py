@@ -5,8 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from opendoc.diagnostics import ConversionReport, IssueSeverity
-from opendoc.document_model import (
+from opendoc_model.diagnostics import ConversionReport, IssueSeverity
+from opendoc_model.document_model import (
     Block,
     DocumentModel,
     Formula,

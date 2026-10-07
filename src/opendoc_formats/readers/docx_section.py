@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
-from opendoc.document_model import Block, DocumentModel, Length, PageSettings, Section
+from opendoc_model.document_model import Block, DocumentModel, Length, PageSettings, Section
 
 BlockReader = Callable[[Any, DocumentModel], list[Block]]
 

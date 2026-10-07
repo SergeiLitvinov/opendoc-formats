@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from opendoc.color import ColorValue
-from opendoc.document_model import DocumentModel, Length, TextStyle
+from opendoc_model.color import ColorValue
+from opendoc_model.document_model import DocumentModel, Length, TextStyle
 
 from opendoc_formats.ooxml.package import OOXML_NAMESPACES, RELATIONSHIP_TYPE, package_part_for_relationship
 

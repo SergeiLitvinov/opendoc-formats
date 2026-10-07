@@ -8,7 +8,7 @@ from __future__ import annotations
 import re
 from typing import Any, Optional
 
-from opendoc.units import CSS_PIXELS_PER_INCH, EMU_PER_INCH, emu_to_inches
+from opendoc_model.units import CSS_PIXELS_PER_INCH, EMU_PER_INCH, emu_to_inches
 
 # ----------------------------------------------------------------------------
 # Namespaces

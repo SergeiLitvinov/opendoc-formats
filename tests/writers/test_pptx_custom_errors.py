@@ -6,8 +6,8 @@ import pytest
 
 pytest.importorskip("pptx")
 from lxml import etree
-from opendoc.document_codec import document_from_json, document_to_json
-from opendoc.document_model import DocumentModel, Paragraph, Section, TextRun
+from opendoc_model.document_codec import document_from_json, document_to_json
+from opendoc_model.document_model import DocumentModel, Paragraph, Section, TextRun
 from pptx import Presentation
 
 from opendoc_formats.readers.pptx import read_pptx_model

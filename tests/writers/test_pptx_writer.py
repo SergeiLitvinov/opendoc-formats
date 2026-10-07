@@ -5,7 +5,7 @@ from zipfile import ZipFile
 import pytest
 
 pytest.importorskip("pptx")
-from opendoc.document_model import Formula, FormulaFormat, Paragraph, Table
+from opendoc_model.document_model import Formula, FormulaFormat, Paragraph, Table
 from pptx import Presentation
 from pptx.chart.data import CategoryChartData
 from pptx.enum.chart import XL_CHART_TYPE
@@ -70,7 +70,7 @@ def test_native_mutation_roundtrip(tmp_path):
 def test_svg_and_crop_survive_two_roundtrips(tmp_path, preview):
     from io import BytesIO
 
-    from opendoc.document_model import Box, DocumentModel, Image, ImageCrop, Resource, ResourceKind, Section
+    from opendoc_model.document_model import Box, DocumentModel, Image, ImageCrop, Resource, ResourceKind, Section
     from PIL import Image as PillowImage
 
     svg = b'<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10" fill="red"/></svg>'

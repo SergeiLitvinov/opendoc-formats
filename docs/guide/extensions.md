@@ -8,7 +8,7 @@ ID и расширения должны быть уникальны, расши�
 
 ```python
 from pathlib import Path
-from opendoc import DocumentModel, Paragraph, Section, TextRun
+from opendoc_model import DocumentModel, Paragraph, Section, TextRun
 from opendoc_formats import AdapterSpec, ImportOptions, default_registry
 
 def read_note(path: Path, options: ImportOptions) -> DocumentModel:
@@ -27,7 +27,7 @@ result = registry.read("message.note")
 
 ```python
 from pathlib import Path
-from opendoc import ConversionReport, DocumentModel
+from opendoc_model import ConversionReport, DocumentModel
 from opendoc_formats import ExporterSpec, default_exporter_registry
 
 def write_note(document: DocumentModel, path: Path) -> ConversionReport:

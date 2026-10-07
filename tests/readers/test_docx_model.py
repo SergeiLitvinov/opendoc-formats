@@ -6,8 +6,8 @@ from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.shared import Inches, Pt
-from opendoc.color import ColorValue
-from opendoc.document_model import Formula, Image, Paragraph, ResourceKind, Table
+from opendoc_model.color import ColorValue
+from opendoc_model.document_model import Formula, Image, Paragraph, ResourceKind, Table
 from PIL import Image as PillowImage
 
 from opendoc_formats.readers.docx import read_docx_model

@@ -6,8 +6,8 @@ from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from typing import Any
 
-import opendoc as od
-from opendoc import Paragraph
+import opendoc_model as od
+from opendoc_model import Paragraph
 
 
 class HtmlDiagnostics:

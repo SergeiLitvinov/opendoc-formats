@@ -8,7 +8,7 @@ from collections.abc import Mapping
 from pathlib import PurePosixPath
 from typing import Literal, TypeAlias
 
-from opendoc import DocumentModel, PackageGraph, PackagePart, PackageRelationship
+from opendoc_model import DocumentModel, PackageGraph, PackagePart, PackageRelationship
 
 from opendoc_formats.errors import InvalidDocumentError, ResourceLimitError
 from opendoc_formats.native.common import Cancellation, check_cancel, positive_int

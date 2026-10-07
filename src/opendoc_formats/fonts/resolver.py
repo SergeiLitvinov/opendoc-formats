@@ -10,8 +10,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Iterable
 
-import opendoc as od
-from opendoc.document_model import DocumentModel, Paragraph, Table, TextRun, TextStyle
+import opendoc_model as od
+from opendoc_model.document_model import DocumentModel, Paragraph, Table, TextRun, TextStyle
 
 
 @dataclass(frozen=True)

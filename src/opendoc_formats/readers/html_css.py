@@ -6,8 +6,8 @@ import re
 from collections.abc import Callable
 from typing import Any
 
-import opendoc as od
-from opendoc import Length, TextStyle
+import opendoc_model as od
+from opendoc_model import Length, TextStyle
 
 SELECTOR = re.compile(r"(?:[a-zA-Z][\w-]*|\*)?(?:[.#][\w-]+)*$")
 INHERITED = {"color", "font-family", "font-size", "font-weight", "font-style", "text-align", "white-space"}
@@ -154,7 +154,7 @@ class Cascade:
             if parsed is None or isinstance(parsed, str):
                 self.warn("html-css", f"Цвет не поддержан: {name}: {value}", node)
                 return None
-            from opendoc import ColorValue
+            from opendoc_model import ColorValue
 
             return ColorValue(space="srgb", components=(parsed.red, parsed.green, parsed.blue), alpha=parsed.alpha)
 

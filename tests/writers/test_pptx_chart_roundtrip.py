@@ -3,8 +3,8 @@
 import pytest
 
 pytest.importorskip("pptx")
-from opendoc.document_codec import load_document, save_document
-from opendoc.document_model import DocumentModel, Paragraph, Section, TextRun
+from opendoc_model.document_codec import load_document, save_document
+from opendoc_model.document_model import DocumentModel, Paragraph, Section, TextRun
 from pptx import Presentation
 from pptx.chart.data import BubbleChartData, CategoryChartData, XyChartData
 from pptx.enum.chart import XL_CHART_TYPE as K

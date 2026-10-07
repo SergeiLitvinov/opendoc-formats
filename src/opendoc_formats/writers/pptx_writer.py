@@ -5,9 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-import opendoc as od
-from opendoc.diagnostics import ConversionReport, IssueSeverity
-from opendoc.document_model import Box, DocumentModel, Formula, Image, Paragraph, Section, Table
+import opendoc_model as od
+from opendoc_model.diagnostics import ConversionReport, IssueSeverity
+from opendoc_model.document_model import Box, DocumentModel, Formula, Image, Paragraph, Section, Table
 
 from opendoc_formats.writers.pptx_chart_writer import write_chart
 from opendoc_formats.writers.pptx_geometry_writer import write_shape

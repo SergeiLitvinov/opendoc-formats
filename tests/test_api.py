@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 import pytest
-from opendoc import DocumentModel, Paragraph, Section, TextRun, document_from_json, document_to_json
+from opendoc_model import DocumentModel, Paragraph, Section, TextRun, document_from_json, document_to_json
 
 from opendoc_formats import AdapterRegistry, AdapterSpec, ImportOptions, default_registry, read_document
 

@@ -12,7 +12,7 @@
 
 Импорт и экспорт файлов через модель OpenDoc, с диагностикой преобразований.
 Пакет: `opendoc-formats`, импорт: `opendoc_formats`; Python 3.11+.
-**Обязательная зависимость — OpenDoc 0.1.0.** Собственной копии модели и зависимости от приложений нет.
+**Обязательная зависимость — OpenDoc Model 0.3.0.** Собственной копии модели и зависимости от приложений нет.
 
 Проект экосистемы [okidoki](https://github.com/search?q=user%3ASergeiLitvinov+topic%3Aokidoki&type=repositories), со своими версиями, тестами и выпусками.
 Библиотека предназначена для открытых проектов. MIT собственного кода и условия
@@ -45,7 +45,7 @@
 Из [GitHub Release](https://github.com/SergeiLitvinov/opendoc-formats/releases), без зависимости от публикации на PyPI:
 
 ```sh
-python -m pip install "opendoc @ https://github.com/SergeiLitvinov/opendoc/releases/download/v0.1.0/opendoc-0.1.0-py3-none-any.whl" "opendoc-formats[docx,html] @ https://github.com/SergeiLitvinov/opendoc-formats/releases/download/v0.3.0/opendoc_formats-0.3.0-py3-none-any.whl"
+python -m pip install "opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.3.0/opendoc_model-0.3.0-py3-none-any.whl" "opendoc-formats[docx,html] @ https://github.com/SergeiLitvinov/opendoc-formats/releases/download/v0.4.0/opendoc_formats-0.4.0-py3-none-any.whl"
 ```
 
 Необязательные движки импортируются только при выборе обработчика. TXT/JSON работают с базовой установкой.

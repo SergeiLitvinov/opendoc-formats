@@ -7,10 +7,10 @@ from collections.abc import Iterable
 from dataclasses import dataclass, replace
 from typing import Any
 
-import opendoc as od
-from opendoc.diagnostics import ConversionReport, IssueSeverity
-from opendoc.document_model import Box, DocumentModel, Image, Paragraph, Table
-from opendoc.units import points_to_css_px
+import opendoc_model as od
+from opendoc_model.diagnostics import ConversionReport, IssueSeverity
+from opendoc_model.document_model import Box, DocumentModel, Image, Paragraph, Table
+from opendoc_model.units import points_to_css_px
 
 from opendoc_formats.writers.stages import StageContext, StageKind, StageResult, StageValue
 

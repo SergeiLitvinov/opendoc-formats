@@ -5,8 +5,8 @@ from __future__ import annotations
 import math
 from typing import Any
 
-import opendoc as od
-from opendoc.diagnostics import IssueSeverity
+import opendoc_model as od
+from opendoc_model.diagnostics import IssueSeverity
 
 C = "{http://schemas.openxmlformats.org/drawingml/2006/chart}"
 

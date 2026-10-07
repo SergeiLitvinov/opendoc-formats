@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from typing import Any
 
-import opendoc as od
-from opendoc.color import ColorValue
-from opendoc.diagnostics import IssueSeverity
-from opendoc.document_model import Formula, FormulaFormat, TextRun
+import opendoc_model as od
+from opendoc_model.color import ColorValue
+from opendoc_model.diagnostics import IssueSeverity
+from opendoc_model.document_model import Formula, FormulaFormat, TextRun
 
 from opendoc_formats.writers.pptx_paragraph_writer import configure_frame, configure_paragraph
 

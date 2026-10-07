@@ -5,8 +5,8 @@ from __future__ import annotations
 import base64
 from pathlib import Path
 
-from opendoc.diagnostics import ConversionReport, IssueSeverity
-from opendoc.document_model import DocumentModel
+from opendoc_model.diagnostics import ConversionReport, IssueSeverity
+from opendoc_model.document_model import DocumentModel
 
 from opendoc_formats.fonts.embedding import collect_font_usages, subset_font
 

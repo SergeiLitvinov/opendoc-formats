@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 import pytest
-from opendoc import DocumentModel, Paragraph, Section, TextRun
+from opendoc_model import DocumentModel, Paragraph, Section, TextRun
 
 from opendoc_formats import (
     ExporterRegistry,
@@ -58,7 +58,7 @@ def test_registry_declares_all_existing_model_routes():
 
 
 def test_export_invalid_model_and_cancellation_preserve_previous_file(tmp_path):
-    from opendoc import ConversionReport
+    from opendoc_model import ConversionReport
 
     output = tmp_path / "result.txt"
     output.write_text("previous", encoding="utf-8")

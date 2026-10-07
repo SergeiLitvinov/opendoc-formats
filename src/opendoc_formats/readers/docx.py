@@ -10,10 +10,10 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Any, Union
 
-from opendoc.document_model import (
+from opendoc_model.document_model import (
     Block as RichBlock,
 )
-from opendoc.document_model import (
+from opendoc_model.document_model import (
     ConversionMode,
     DocumentModel,
     PackageGraph,
@@ -21,8 +21,8 @@ from opendoc.document_model import (
     Provenance,
     ProvenanceEvent,
 )
-from opendoc.document_model import Table as RichTable
-from opendoc.units import canonical_coordinate_contract
+from opendoc_model.document_model import Table as RichTable
+from opendoc_model.units import canonical_coordinate_contract
 
 from opendoc_formats.ooxml.package import (
     RELATIONSHIP_TYPE,

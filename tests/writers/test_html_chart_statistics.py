@@ -3,7 +3,7 @@
 import xml.etree.ElementTree as ET
 
 import pytest
-from opendoc.document_model import DocumentModel, Paragraph, Section
+from opendoc_model.document_model import DocumentModel, Paragraph, Section
 
 from opendoc_formats.writers.html_writer import _error_bar_parts, _trendline_parts, write_html_model
 

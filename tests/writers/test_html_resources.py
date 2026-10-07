@@ -3,7 +3,7 @@
 from pathlib import Path
 
 import pytest
-from opendoc.document_model import DocumentModel, Image, Paragraph, Resource, ResourceKind, Section
+from opendoc_model.document_model import DocumentModel, Image, Paragraph, Resource, ResourceKind, Section
 
 from opendoc_formats.writers.html_resources import HtmlResourceStage
 from opendoc_formats.writers.html_writer import write_html_model

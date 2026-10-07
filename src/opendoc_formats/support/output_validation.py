@@ -26,7 +26,7 @@ def validate_output(path: Path, format_id: str) -> None:
     if format_id == "txt":
         path.read_text(encoding="utf-8")
     elif format_id == "json":
-        from opendoc import load_document
+        from opendoc_model import load_document
 
         errors = load_document(path).validate()
         if errors:

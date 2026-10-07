@@ -6,8 +6,8 @@ from io import BytesIO
 from pathlib import Path
 from typing import Any
 
-import opendoc as od
-from opendoc.diagnostics import IssueSeverity
+import opendoc_model as od
+from opendoc_model.diagnostics import IssueSeverity
 
 
 def write_image(

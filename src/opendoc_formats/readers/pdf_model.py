@@ -7,11 +7,11 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from opendoc.color import ColorValue
-from opendoc.document_model import (
+from opendoc_model.color import ColorValue
+from opendoc_model.document_model import (
     Block as RichBlock,
 )
-from opendoc.document_model import (
+from opendoc_model.document_model import (
     Box,
     ConversionMode,
     DocumentModel,
@@ -30,13 +30,13 @@ from opendoc.document_model import (
     TextRun,
     TextStyle,
 )
-from opendoc.document_model import (
+from opendoc_model.document_model import (
     Image as RichImage,
 )
-from opendoc.document_model import (
+from opendoc_model.document_model import (
     Table as RichTable,
 )
-from opendoc.units import canonical_coordinate_contract
+from opendoc_model.units import canonical_coordinate_contract
 
 from opendoc_formats.types import BlockType, DocFormat
 

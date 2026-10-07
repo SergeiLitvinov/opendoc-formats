@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from opendoc.document_model import DocumentModel, Formula, FormulaFormat, Image, Paragraph, TextRun
+from opendoc_model.document_model import DocumentModel, Formula, FormulaFormat, Image, Paragraph, TextRun
 
 from opendoc_formats.readers.docx_drawing import read_run_images, read_run_vml_colors
 from opendoc_formats.readers.docx_notes import append_note_references

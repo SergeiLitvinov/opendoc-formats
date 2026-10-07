@@ -5,7 +5,7 @@ import pytest
 pytest.importorskip("bs4")
 pytest.importorskip("tinycss2")
 
-from opendoc.document_codec import document_from_json, document_to_json
+from opendoc_model.document_codec import document_from_json, document_to_json
 
 from opendoc_formats.readers.html_text import read_html_model
 

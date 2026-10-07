@@ -14,7 +14,7 @@ import zipfile
 from pathlib import Path
 from typing import Any, Optional
 
-from opendoc.units import emu_to_points, ooxml_angle_to_degrees
+from opendoc_model.units import emu_to_points, ooxml_angle_to_degrees
 from PIL import Image
 from pptx import Presentation
 

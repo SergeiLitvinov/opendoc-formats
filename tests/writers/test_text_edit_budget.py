@@ -3,9 +3,9 @@
 from itertools import product
 
 import pytest
-from opendoc.diagnostics import ConversionReport
-from opendoc.text_edit_budget import bounded_word_distance
-from opendoc.text_quality_policy import TextPreservationPolicy
+from opendoc_model.diagnostics import ConversionReport
+from opendoc_model.text_edit_budget import bounded_word_distance
+from opendoc_model.text_quality_policy import TextPreservationPolicy
 
 
 def _reference(left, right):
@@ -36,7 +36,7 @@ def test_banded_distance_against_full_matrix_for_all_short_sequences():
     ("one two", "two one", 2), ("same same", "same", 1), ("word!", "word", 1),
 ])
 def test_budget_detects_edits_and_reports_only_proven_counts(tmp_path, before, after, edits):
-    from opendoc.document_model import DocumentModel, Paragraph, Section, TextRun
+    from opendoc_model.document_model import DocumentModel, Paragraph, Section, TextRun
 
     from opendoc_formats.support.inspection import compare_inspections, inspect_document_model
 
@@ -53,7 +53,7 @@ def test_budget_detects_edits_and_reports_only_proven_counts(tmp_path, before, a
 
 
 def test_work_limit_returns_unknown_not_false_zero(monkeypatch):
-    monkeypatch.setattr("opendoc.text_edit_budget.MAX_DISTANCE_CELLS", 1)
+    monkeypatch.setattr("opendoc_model.text_edit_budget.MAX_DISTANCE_CELLS", 1)
     assert bounded_word_distance(list("abc"), list("def"), 3) == (None, False)
 
 
@@ -64,10 +64,10 @@ def test_invalid_budgets_are_rejected(limit):
 
 
 def test_token_inventory_is_bounded_and_equal_large_text_can_still_pass(tmp_path, monkeypatch):
-    from opendoc.text_edit_budget import evaluate_text_edit_budget
-    from opendoc.text_flow import TextFlowFingerprint
+    from opendoc_model.text_edit_budget import evaluate_text_edit_budget
+    from opendoc_model.text_flow import TextFlowFingerprint
 
-    monkeypatch.setattr("opendoc.text_flow.MAX_TEXT_TOKENS", 2)
+    monkeypatch.setattr("opendoc_model.text_flow.MAX_TEXT_TOKENS", 2)
     flow = TextFlowFingerprint()
     flow.add("one two three")
     snapshot = flow.to_dict()

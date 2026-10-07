@@ -1,9 +1,11 @@
 """Тесты DocumentModel → самодостаточный HTML."""
 
+import builtins
+
 import pytest
-from opendoc.color import ColorValue
-from opendoc.diagnostics import IssueSeverity
-from opendoc.document_model import (
+from opendoc_model.color import ColorValue
+from opendoc_model.diagnostics import IssueSeverity
+from opendoc_model.document_model import (
     Box,
     DocumentModel,
     Formula,
@@ -24,6 +26,38 @@ from opendoc.document_model import (
 from PIL import Image as PillowImage
 
 from opendoc_formats.writers.html_writer import _chart_axis_style, write_html_model
+
+
+def test_mathml_cleanup_works_without_lxml(monkeypatch):
+    from opendoc_formats.writers.html_writer import _safe_mathml
+
+    original = builtins.__import__
+
+    def no_lxml(name, *args, **kwargs):
+        if name == "lxml" or name.startswith("lxml."):
+            raise ImportError("lxml is not installed")
+        return original(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", no_lxml)
+    value = '<m:math xmlns:m="http://www.w3.org/1998/Math/MathML"><m:mi onclick="bad()">x</m:mi></m:math>'
+    output = _safe_mathml(value)
+    assert output.startswith('<math xmlns="http://www.w3.org/1998/Math/MathML">')
+    assert "<mi>x</mi>" in output
+    assert "onclick" not in output
+
+
+@pytest.mark.parametrize("value", [
+    '<!DOCTYPE math [<!ENTITY x "expanded">]><math><mi>&x;</mi></math>',
+    '<!DOCTYPE math SYSTEM "file:///private"><math/>',
+    '<math xmlns="urn:foreign"><mi>x</mi></math>',
+    '<math><script>bad()</script></math>',
+    '<mi>x</mi>',
+])
+def test_mathml_cleanup_rejects_unsafe_xml(value):
+    from opendoc_formats.writers.html_writer import _safe_mathml
+
+    with pytest.raises(ValueError):
+        _safe_mathml(value)
 
 
 def _png_bytes(tmp_path):

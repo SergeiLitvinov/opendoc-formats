@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from opendoc.diagnostics import ConversionReport, IssueSeverity
-from opendoc.document_model import DocumentModel, Formula, FormulaFormat, Image, Paragraph, TextRun
+from opendoc_model.diagnostics import ConversionReport, IssueSeverity
+from opendoc_model.document_model import DocumentModel, Formula, FormulaFormat, Image, Paragraph, TextRun
 
 from opendoc_formats.ooxml.package import RELATIONSHIP_TYPE
 from opendoc_formats.writers.docx_drawing_writer import write_image

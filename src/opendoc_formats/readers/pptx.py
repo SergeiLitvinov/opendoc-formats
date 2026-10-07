@@ -12,7 +12,7 @@ python-pptx, чтобы не потерять контейнеры ``mc:Alternat
 (например, fallback-картинки диаграмм), которые python-pptx не отдаёт.
 
 Модель не зависит от python-pptx: после импорта она содержит только типы
-``opendoc.document_model`` и может быть отрендерена любым экспортёром
+``opendoc_model.document_model`` и может быть отрендерена любым экспортёром
 (см. ``opendoc_formats.writers.html_writer``).
 """
 
@@ -28,8 +28,8 @@ try:
 except ImportError:  # pragma: no cover - python-pptx тянет lxml транзитивно
     etree = None  # type: ignore[assignment]
 
-from opendoc.color import ColorValue
-from opendoc.document_model import (
+from opendoc_model.color import ColorValue
+from opendoc_model.document_model import (
     Box,
     ConversionMode,
     DocumentModel,
@@ -47,10 +47,10 @@ from opendoc.document_model import (
     TextRun,
     TextStyle,
 )
-from opendoc.document_model import (
+from opendoc_model.document_model import (
     Table as RichTable,
 )
-from opendoc.units import canonical_coordinate_contract, emu_to_points, ooxml_angle_to_degrees
+from opendoc_model.units import canonical_coordinate_contract, emu_to_points, ooxml_angle_to_degrees
 
 from opendoc_formats.ooxml.color import resolve_drawingml_color
 from opendoc_formats.support.io import check_archive_safety

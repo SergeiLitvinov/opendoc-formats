@@ -1,7 +1,7 @@
 """Object budgets verify serialized artifacts, not exporter declarations."""
 
 import pytest
-from opendoc.object_quality_policy import ObjectLossPolicy
+from opendoc_model.object_quality_policy import ObjectLossPolicy
 
 
 @pytest.mark.parametrize("limit", [-1, True, 0.5])

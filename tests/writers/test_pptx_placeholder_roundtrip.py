@@ -6,7 +6,7 @@ import pytest
 
 pytest.importorskip("pptx")
 from lxml import etree
-from opendoc.document_codec import document_from_json, document_to_json
+from opendoc_model.document_codec import document_from_json, document_to_json
 from pptx import Presentation
 
 from opendoc_formats.readers.pptx import read_pptx_model
@@ -88,7 +88,7 @@ def test_placeholder_three_level_style_mutation(tmp_path, level, master_geometry
             break
         run.text = "Inherited edited"
         if cycle == 1:
-            from opendoc.document_model import Length
+            from opendoc_model.document_model import Length
 
             run.style.font_size = Length(29)
         model = document_from_json(document_to_json(model))

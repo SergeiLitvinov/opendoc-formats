@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import opendoc as od
+import opendoc_model as od
 
 from opendoc_formats.support.document_adapters import document_to_text
 from opendoc_formats.types import DocFormat, Text

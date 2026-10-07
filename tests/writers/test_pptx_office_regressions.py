@@ -3,7 +3,7 @@
 import pytest
 
 pytest.importorskip("pptx")
-from opendoc.document_codec import document_from_json, document_to_json
+from opendoc_model.document_codec import document_from_json, document_to_json
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE, MSO_SHAPE_TYPE
@@ -33,7 +33,7 @@ def test_shape_font_reference_and_explicit_run_color_survive_mutation(tmp_path):
         assert runs[1].style.color.to_hex().upper() == ("#FF0000" if cycle == 0 else "#00FF00")
         runs[0].text = "Edited white text"
         if cycle == 0:
-            from opendoc.color import ColorValue
+            from opendoc_model.color import ColorValue
 
             runs[1].style.color = ColorValue.from_hex("#00FF00")
         target = tmp_path / f"roundtrip{cycle}.pptx"

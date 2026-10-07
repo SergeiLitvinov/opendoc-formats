@@ -8,8 +8,8 @@ from collections.abc import Iterator
 from dataclasses import dataclass, replace
 from pathlib import Path
 
-from opendoc.diagnostics import ConversionReport, IssueSeverity
-from opendoc.document_model import Block, DocumentModel, Image, Paragraph, Resource, Table
+from opendoc_model.diagnostics import ConversionReport, IssueSeverity
+from opendoc_model.document_model import Block, DocumentModel, Image, Paragraph, Resource, Table
 
 from opendoc_formats.writers.stages import StageContext, StageKind, StageResult, StageValue
 

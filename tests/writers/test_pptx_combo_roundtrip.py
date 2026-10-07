@@ -8,7 +8,7 @@ import pytest
 
 pytest.importorskip("pptx")
 from lxml import etree
-from opendoc.document_codec import load_document, save_document
+from opendoc_model.document_codec import load_document, save_document
 from pptx import Presentation
 from pptx.chart.axis import ValueAxis
 from pptx.chart.data import CategoryChartData

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from opendoc.diagnostics import ConversionReport, IssueSeverity
+from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 
 
 class ConversionResult(ConversionReport):

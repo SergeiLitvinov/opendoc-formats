@@ -4,7 +4,7 @@ import io
 from pathlib import Path
 
 import pymupdf
-from opendoc import (
+from opendoc_model import (
     Box,
     DocumentModel,
     Image,

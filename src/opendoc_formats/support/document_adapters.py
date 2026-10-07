@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from opendoc.document_model import (
+from opendoc_model.document_model import (
     Block as RichBlock,
 )
-from opendoc.document_model import (
+from opendoc_model.document_model import (
     DocumentModel,
     Formula,
     Image,
@@ -15,7 +15,7 @@ from opendoc.document_model import (
     TableRow,
     TextRun,
 )
-from opendoc.document_model import (
+from opendoc_model.document_model import (
     Table as RichTable,
 )
 

@@ -12,8 +12,8 @@ from collections.abc import Callable
 from pathlib import Path
 from urllib.parse import unquote, unquote_to_bytes, urlsplit
 
-import opendoc as od
-from opendoc import Image, Resource, ResourceKind
+import opendoc_model as od
+from opendoc_model import Image, Resource, ResourceKind
 
 LIMIT = 10 * 1024 * 1024
 RASTER_TYPES = {"image/png", "image/jpeg", "image/gif", "image/webp"}

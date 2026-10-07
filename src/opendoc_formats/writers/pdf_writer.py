@@ -5,8 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from opendoc.diagnostics import ConversionReport, IssueSeverity
-from opendoc.document_model import Block, DocumentModel, Formula, FormulaFormat, Paragraph, Section, Table
+from opendoc_model.diagnostics import ConversionReport, IssueSeverity
+from opendoc_model.document_model import Block, DocumentModel, Formula, FormulaFormat, Paragraph, Section, Table
 
 from opendoc_formats.fonts.html_embedding import archived_font_stylesheet
 from opendoc_formats.writers.color_preflight import preflight_colors

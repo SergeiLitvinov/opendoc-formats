@@ -3,9 +3,9 @@
 import zipfile
 
 from docx import Document
-from opendoc.color import ColorValue
-from opendoc.diagnostics import IssueSeverity
-from opendoc.document_model import (
+from opendoc_model.color import ColorValue
+from opendoc_model.diagnostics import IssueSeverity
+from opendoc_model.document_model import (
     Box,
     DocumentModel,
     Formula,

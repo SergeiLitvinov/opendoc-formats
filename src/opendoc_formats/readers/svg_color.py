@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from xml.etree import ElementTree
 
-from opendoc.color import ColorValue
+from opendoc_model.color import ColorValue
 
 _COLOR_ATTRIBUTES = frozenset({"fill", "stroke", "stop-color", "flood-color", "lighting-color", "color"})
 _CSS_RGB_RE = re.compile(

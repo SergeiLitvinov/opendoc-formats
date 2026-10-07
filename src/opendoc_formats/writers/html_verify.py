@@ -10,7 +10,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import unquote
 
-from opendoc.diagnostics import ConversionReport, IssueSeverity
+from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 
 from opendoc_formats.writers.stages import StageContext, StageKind, StageResult, StageValue
 

@@ -5,8 +5,8 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, replace
 
-from opendoc.diagnostics import IssueSeverity
-from opendoc.document_model import DocumentModel, ResourceKind
+from opendoc_model.diagnostics import IssueSeverity
+from opendoc_model.document_model import DocumentModel, ResourceKind
 
 from opendoc_formats.writers.html_resources import HtmlResourceStage, document_images
 from opendoc_formats.writers.stages import StageContext, StageKind, StageResult, StageValue

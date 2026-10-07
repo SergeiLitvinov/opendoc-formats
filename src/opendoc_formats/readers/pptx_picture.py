@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-import opendoc as od
-from opendoc.document_model import Image, ImageCrop
+import opendoc_model as od
+from opendoc_model.document_model import Image, ImageCrop
 
 P = "{http://schemas.openxmlformats.org/presentationml/2006/main}"
 A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"

@@ -8,7 +8,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Union
 
-import opendoc as od
+import opendoc_model as od
 
 from opendoc_formats.support.io import check_archive_safety
 from opendoc_formats.types import Block, BlockType, DocFormat, Text

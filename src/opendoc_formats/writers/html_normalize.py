@@ -6,9 +6,9 @@ from collections.abc import Iterable
 from dataclasses import dataclass, replace
 from urllib.parse import quote
 
-import opendoc as od
-from opendoc.diagnostics import ConversionReport, IssueSeverity
-from opendoc.document_model import DocumentModel, Paragraph, Table, TextRun
+import opendoc_model as od
+from opendoc_model.diagnostics import ConversionReport, IssueSeverity
+from opendoc_model.document_model import DocumentModel, Paragraph, Table, TextRun
 
 from opendoc_formats.writers.stages import StageContext, StageKind, StageResult, StageValue
 

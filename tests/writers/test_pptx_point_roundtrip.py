@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 pytest.importorskip("pptx")
-from opendoc.document_codec import load_document, save_document
+from opendoc_model.document_codec import load_document, save_document
 from pptx import Presentation
 from pptx.chart.data import CategoryChartData
 from pptx.dml.color import RGBColor
@@ -56,7 +56,7 @@ def test_mutate_point_fill_and_explosion(tmp_path: Path, kind: XL_CHART_TYPE) ->
 
 @pytest.mark.parametrize("points", [{"-1": {"color": "#FF0000"}}, {"3": {}}, {"1.5": {}}, {"0": None}, {"0": {"explosion": -5}}])
 def test_invalid_point_settings_are_reported(tmp_path: Path, points: dict) -> None:
-    from opendoc.document_model import DocumentModel, Paragraph, Section, TextRun
+    from opendoc_model.document_model import DocumentModel, Paragraph, Section, TextRun
 
     data = {
         "chart_type": "pieChart",

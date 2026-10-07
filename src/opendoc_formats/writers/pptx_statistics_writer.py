@@ -5,8 +5,8 @@ from __future__ import annotations
 import math
 from typing import Any
 
-from opendoc.color import ColorValue
-from opendoc.diagnostics import IssueSeverity
+from opendoc_model.color import ColorValue
+from opendoc_model.diagnostics import IssueSeverity
 
 C = "{http://schemas.openxmlformats.org/drawingml/2006/chart}"
 A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"

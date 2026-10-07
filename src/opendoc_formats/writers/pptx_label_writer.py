@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from opendoc.diagnostics import ConversionReport, IssueSeverity
+from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 
 C = "{http://schemas.openxmlformats.org/drawingml/2006/chart}"
 FLAGS = {

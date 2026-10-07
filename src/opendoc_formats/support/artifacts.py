@@ -10,7 +10,7 @@ from pathlib import Path
 from types import TracebackType
 from typing import Any
 
-from opendoc.storage import ArtifactLimitError as ArtifactLimitError
+from opendoc_model.storage import ArtifactLimitError as ArtifactLimitError
 
 DEFAULT_ARTIFACT_QUOTA = 100 * 1024 * 1024
 _WINDOWS_RESERVED_NAMES = {

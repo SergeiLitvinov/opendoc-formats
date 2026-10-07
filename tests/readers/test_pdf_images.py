@@ -6,7 +6,7 @@ import io
 
 import fitz
 import pytest
-from opendoc.color import ColorValue
+from opendoc_model.color import ColorValue
 from PIL import Image
 
 from opendoc_formats.readers.pdf_images import (

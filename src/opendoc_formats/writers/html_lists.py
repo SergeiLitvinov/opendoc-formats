@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable
 
-import opendoc as od
-from opendoc.document_model import Paragraph
+import opendoc_model as od
+from opendoc_model.document_model import Paragraph
 
 
 def render_blocks(blocks: Iterable[od.Block], render: Callable[[od.Block], str]) -> str:

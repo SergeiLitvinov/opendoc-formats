@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
-from opendoc.color import ColorValue
-from opendoc.diagnostics import ConversionReport, IssueSeverity
-from opendoc.document_model import Block, DocumentModel, Paragraph, Table, TextRun
+from opendoc_model.color import ColorValue
+from opendoc_model.diagnostics import ConversionReport, IssueSeverity
+from opendoc_model.document_model import Block, DocumentModel, Paragraph, Table, TextRun
 
 
 def preflight_colors(document: DocumentModel, report: ConversionReport, *, target: str) -> None:
