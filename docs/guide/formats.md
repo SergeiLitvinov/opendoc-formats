@@ -112,6 +112,36 @@ Issue содержит исходную часть, XPath или relationship ID
 JSON сохраняет эти сведения. Импорт и экспорт не исполняют embedded payload или поля.
 Оценка остаётся неполной (`assessment_complete=False`); OF05/OF15 открыты.
 
+### Интерактивный профиль PDF
+
+`opendoc.integration` содержит `DocumentPage`, `Annotation` и `FormControl`:
+links с inert destination, Text/FreeText notes, highlights с исходными vertices,
+text/checkbox/choice/button widgets с именем, value, choices и flags. Scripts и
+сырые `A`/`AA` сохраняются как строки/данные, не исполняются и не разыменовываются
+во внешние файлы/URL. Это конечный профиль; сложное appearance и редактируемая
+иерархия полей не обещаются. Outline сохранён в `extra.pdf_outline`, пока нет
+общего typed outline контракта.
+
+Неизвестные типы annotations/widgets, structure tree, layers и catalog actions
+получают состояние `opaque`, а исходный PDF сохраняется в Attachment
+`pdf-original-source` (до 10 MiB). Для профильных объектов эта копия тоже сохраняется,
+чтобы удержать оставшиеся source references и appearance. Она не исполняется.
+Plain PDF без таких объектов не получает дополнительную source-копию.
+Лимиты профиля: 10 000 записей, 65 536 символов в извлекаемых строках;
+ошибка лимита отклоняет чтение, а не возвращает пустую модель.
+
+Page/xref provenance и backup сохраняются через JSON. `assessment_complete=False`:
+наличие source-копии не означает полного семантического чтения PDF. Layout writer
+пока не восстанавливает annotations/forms/outline и opaque features; сообщает `LOSS`.
+Другие writer profiles не получают обещания переноса этих объектов.
+
+Координаты — точки в неповёрнутом cropbox; rotation находится в page extra и
+`section.properties.pdf.source_rotation`. Writer восстанавливает этот поворот
+после layout, сохраняя согласованность размеров и геометрии.
+API и координатный контракт движка: [Page](https://pymupdf.readthedocs.io/en/latest/page.html),
+[Annot](https://pymupdf.readthedocs.io/en/latest/annot.html),
+[Widget](https://pymupdf.readthedocs.io/en/latest/widget.html).
+
 `ExportOptions.verify_output=True` включает проверку временного файла **до** замены результата:
 
 | Формат | Проверка |

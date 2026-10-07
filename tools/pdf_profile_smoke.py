@@ -29,6 +29,9 @@ def main() -> None:
     with TemporaryDirectory(prefix="opendoc-formats-pdf-profile-") as directory:
         output = Path(directory)
         if args.profile == "pdf-rich":
+            import fitz
+            from opendoc_model import get_integration
+
             from opendoc_formats.pdf import PdfDocument
 
             with PdfDocument(source) as pdf:
@@ -41,6 +44,30 @@ def main() -> None:
             report = write_document(result.document, output / "document.pdf")
             assert report.success, report.to_dict()
             assert read_document(output / "document.pdf").success
+            interactive_source = output / "interactive.pdf"
+            with fitz.open() as fixture:
+                page = fixture.new_page(width=300, height=400)
+                page.insert_text((30, 60), "Interactive PDF")
+                page.insert_link({"kind": fitz.LINK_URI, "from": fitz.Rect(30, 40, 140, 65), "uri": "https://example.invalid"})
+                page.add_text_annot((160, 90), "Own note")
+                widget = fitz.Widget()
+                widget.field_name = "own-field"
+                widget.field_type = fitz.PDF_WIDGET_TYPE_TEXT
+                widget.field_value = "Own value"
+                widget.rect = fitz.Rect(30, 150, 170, 175)
+                page.add_widget(widget)
+                page.set_rotation(90)
+                fixture.save(interactive_source)
+            interactive = read_document(interactive_source)
+            assert interactive.success, interactive.issues
+            interaction_model = document_from_json(document_to_json(interactive.document))
+            interaction = get_integration(interaction_model)
+            assert len(interaction.annotations) == 2 and interaction.forms[0].value == "Own value"
+            assert interaction_model.resources["pdf-original-source"].data == interactive_source.read_bytes()
+            interaction_report = write_document(interaction_model, output / "interactive-export.pdf")
+            assert interaction_report.success and not interaction_report.lossless, interaction_report.to_dict()
+            with fitz.open(output / "interactive-export.pdf") as converted:
+                assert converted[0].rotation == 90
             vector = read_document(corpus / "vector-export.pdf")
             assert vector.success, vector.issues
             assert any(r.media_type == "application/pdf+vector" for r in vector.document.resources.values())

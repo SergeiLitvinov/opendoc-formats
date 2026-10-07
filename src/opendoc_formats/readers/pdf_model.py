@@ -264,7 +264,11 @@ def read_pdf_model(
                 blocks=blocks,
                 headers=headers,
                 footers=footers,
-                page=_pdf_page_settings(page.width, page.height),
+                page=_pdf_page_settings(
+                    page.height if page.rotation % 180 else page.width,
+                    page.width if page.rotation % 180 else page.height,
+                ),
+                properties={"pdf": {"source_rotation": page.rotation, "coordinate_space": "pymupdf-unrotated"}},
                 provenance=origin(f"page-{page.number}", detail="created document section from PDF page"),
             )
         )
@@ -277,13 +281,17 @@ def read_pdf_model(
     }
     metadata.update(geometry.metadata)
 
-    return DocumentModel(
+    document = DocumentModel(
         sections=sections,
         resources=resources,
         metadata=metadata,
         source_format="pdf",
         mode=ConversionMode.BALANCED,
     )
+    from opendoc_formats.readers.pdf_interactive import attach_pdf_interactions
+
+    attach_pdf_interactions(document, path)
+    return document
 
 
 def _pdf_page_settings(width: float, height: float) -> PageSettings:

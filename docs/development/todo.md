@@ -18,6 +18,9 @@
 - DOCX отмечает complex fields, comments/revisions/content controls, text boxes/WordArt,
   SmartArt/OLE и protection по источнику: `opaque` требует сохранённого фрагмента/part,
   иначе `lost`. Учёт inventory не выдаётся за доказательство сохранения.
+- PDF имеет typed finite links/notes/highlights/forms и partial ledger с page/xref;
+  неподдержанные типы, tagged structure, layers/catalog actions сохраняются opaque
+  в ограниченном source PDF. Геометрические/OCR warning ещё не полностью типизированы.
 - Остаётся: читатели EPUB/PDF и других форматов не диагностируют каждый пропуск;
   legacy warning без структурированной оценки не определяет состояние сохранности.
 - Реализовать общий контракт feature/location/severity для каждого читателя:
@@ -62,9 +65,11 @@
 
 ## Приоритет P1: семантика и graphics state PDF (OF07)
 
-- Основание: геометрическое извлечение не читает structure tree, annotations/widgets
-  и optional content как модель исходного документа; нет полного clipping/masks/blend.
-- Подзадачи: marked content и reading order; формы/аннотации/ссылки/оглавление;
+- Реализовано: конечный import links/notes/highlights и simple forms, inert actions,
+  outline extension и opaque source для неподдержанных объектов; JSON и поворот страниц.
+- Остаётся: semantic structure tree и optional content; полный clipping/masks/blend,
+  семантический outline contract, XFA/signatures/radio groups и полный annotation appearance.
+- Подзадачи: marked content и reading order; расширение форм/аннотаций и их writer;
   слои; clipping, transform, masks, blend и ICC/output intents с сохранением оригинала.
 - Приёмка: tagged PDF и PDF с формой, слоями и обтравкой → JSON;
   сохраняемые данные проверены структурно, визуальные — рендером с допусками.

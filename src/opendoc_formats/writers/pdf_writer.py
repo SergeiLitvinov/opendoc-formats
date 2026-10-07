@@ -25,6 +25,21 @@ def write_pdf_model(
 
     output = Path(output_path)
     report = ConversionReport(output)
+    from opendoc_model import PreservationState, get_integration
+
+    integration = get_integration(document)
+    if integration is not None:
+        for feature, values in (("pdf.annotations", integration.annotations), ("pdf.forms", integration.forms)):
+            if values:
+                report.add(IssueSeverity.LOSS, feature, "Interactive objects are not recreated by the PDF layout writer")
+        if integration.extra.get("pdf_outline"):
+            report.add(IssueSeverity.LOSS, "pdf.outline", "Source outline is not recreated by the PDF layout writer")
+        for record in integration.preservation:
+            if record.state is not PreservationState.SEMANTIC:
+                report.add(
+                    IssueSeverity.LOSS, record.issue.code, "Opaque source feature is not recreated by the PDF layout writer",
+                    record.issue.location,
+                )
     from opendoc_formats.writers.pdf_vectors import draw_vectors, prepare_vectors
 
     check_cancelled = cancelled or (lambda: False)
@@ -44,6 +59,12 @@ def write_pdf_model(
 
     try:
         for section_index, section in enumerate(document.sections or [Section()]):
+            pdf_profile = section.properties.get("pdf", {})
+            if not isinstance(pdf_profile, dict):
+                raise ValueError("Invalid PDF section profile")
+            rotation = pdf_profile.get("source_rotation", 0)
+            if type(rotation) is not int or rotation not in (0, 90, 180, 270):
+                raise ValueError("Invalid PDF source page rotation")
             section_pdf, renderer = _render_section(document, section, section_index, report)
             section_vectors = vectors[section_index] if section_index < len(vectors) else []
             try:
@@ -58,6 +79,8 @@ def write_pdf_model(
             for key in ("paragraphs", "tables", "images", "formulas"):
                 totals[key] += renderer.metrics[key]
             totals["images"] += len(section_vectors)
+            for page in section_pdf:
+                page.set_rotation(rotation)
             target.insert_pdf(section_pdf)
             section_pdf.close()
         _set_metadata(target, document.metadata)

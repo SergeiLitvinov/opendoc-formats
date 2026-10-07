@@ -550,6 +550,14 @@ Extract raster images and vector drawings from PDF pages.
 
 Тесты: [test_format_audit.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_format_audit.py#L1), [test_pdf_images.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_images.py#L1)
 
+## src/opendoc_formats/readers/pdf_interactive.py
+
+Finite PDF interaction profile; actions are inert data, never executed.
+
+- `attach_pdf_interactions(model: DocumentModel, source: str | Path) -> None` — [строка 68](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_interactive.py#L68)
+
+Импорты: `__future__`, `opendoc_model`, `pathlib`, `typing`
+
 ## src/opendoc_formats/readers/pdf_layout.py
 
 Детерминированный порядок чтения для геометрических блоков PDF.
@@ -567,7 +575,7 @@ PDF → модель OpenDoc: геометрия, семантические б�
 
 - `read_pdf_model(*, path: str | Path, use_ocr: bool=False, ocr_backend: str='', handwriting: bool=False, use_gpu: bool=False, mode: str | None=None, ocr_engine_factory: Callable[..., Any] | None=None) -> DocumentModel` — [строка 44](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_model.py#L44)
 
-Импорты: `__future__`, `collections.abc`, `opendoc_formats.readers.pdf`, `opendoc_formats.readers.pdf_images`, `opendoc_formats.readers.pdf_ocr_merge`, `opendoc_formats.types`, `opendoc_model.color`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
+Импорты: `__future__`, `collections.abc`, `opendoc_formats.readers.pdf`, `opendoc_formats.readers.pdf_images`, `opendoc_formats.readers.pdf_interactive`, `opendoc_formats.readers.pdf_ocr_merge`, `opendoc_formats.types`, `opendoc_model.color`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
 
 ## src/opendoc_formats/readers/pdf_ocr_merge.py
 
@@ -1151,7 +1159,7 @@ Bounded native PDF paths, separated from raster HTML resources.
 
 - `write_pdf_model(document: DocumentModel, output_path: str | Path, *, cancelled: Callable[[], bool] | None=None) -> ConversionReport` — [строка 19](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_writer.py#L19)
 
-Импорты: `__future__`, `opendoc_formats.fonts.embedding`, `opendoc_formats.fonts.html_embedding`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.io`, `opendoc_formats.writers.color_preflight`, `opendoc_formats.writers.font_preflight`, `opendoc_formats.writers.html_writer`, `opendoc_formats.writers.pdf_resources`, `opendoc_formats.writers.pdf_vectors`, `opendoc_formats.writers.stages`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`, `typing`
+Импорты: `__future__`, `opendoc_formats.fonts.embedding`, `opendoc_formats.fonts.html_embedding`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.io`, `opendoc_formats.writers.color_preflight`, `opendoc_formats.writers.font_preflight`, `opendoc_formats.writers.html_writer`, `opendoc_formats.writers.pdf_resources`, `opendoc_formats.writers.pdf_vectors`, `opendoc_formats.writers.stages`, `opendoc_model`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`, `typing`
 
 Тесты: [test_pdf_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_resources.py#L1), [test_pdf_vectors.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_vectors.py#L1), [test_pdf_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_writer.py#L1)
 
