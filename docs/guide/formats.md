@@ -84,6 +84,18 @@ Provenance сохраняет исходную часть и ID. Связанн�
 этой диагностикой не объявляется потерянным. Полный CSS, OPF metadata, accessibility
 и другие функции ещё не оценены: `assessment_complete` остаётся `False` для EPUB.
 
+PPTX reader сохраняет частичную оценку: исходный package graph не перенесён,
+transition/timing, иерархия групп, audio/video playback и 3D settings потеряны;
+фигуры без разрешимой геометрии/положительного extent и картинки без ресурса
+отмечены как пропущенные. Для неподдержанного graphic object (включая OLE/диаграмму
+SmartArt) `visual` означает фактически сохранённую картинку предпросмотра с `resource_id`;
+`lost` — отсутствие такой картинки. Payload OLE и исходные связи из этого не следуют.
+Диагностика содержит source path, фактический part name, XPath, source shape ID
+и номер слайда. Путь к части не вычисляется из номера слайда, поэтому перестановка
+слайдов не искажает адрес. JSON сохраняет ledger и provenance.
+Полнота тем, master/layout, chart data и других функций ещё не оценена;
+`assessment_complete` остаётся `False`, а OF06/OF15 остаются открытыми.
+
 `ExportOptions.verify_output=True` включает проверку временного файла **до** замены результата:
 
 | Формат | Проверка |

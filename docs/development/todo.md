@@ -12,6 +12,9 @@
 - EPUB отмечает потери нелинейных/неподдержанных spine items, структуры таблиц,
   MathML, inline SVG, standalone/missing images, audio/video/object/script и font/media assets.
   Ledger содержит reason и source provenance; оценка явно неполная.
+- PPTX отмечает потери package graph, transitions/timing, иерархии групп, audio/video,
+  3D settings и пропуски фигур/картинок. Неподдержанные graphic objects различают
+  visual preview и lost; source XPath, part, shape ID и номер слайда сохраняются в JSON.
 - Остаётся: читатели EPUB/PDF и других форматов не диагностируют каждый пропуск;
   legacy warning без структурированной оценки не определяет состояние сохранности.
 - Реализовать общий контракт feature/location/severity для каждого читателя:

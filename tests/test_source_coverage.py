@@ -77,6 +77,9 @@ def test_pptx_import_does_not_preserve_original_package(tmp_path):
     document = read_pptx_model(source)
     assert document.package is None
     assert "transition" not in document.sections[0].properties
+    result = read_document(source)
+    assert result.success and not result.lossless and not result.assessment_complete
+    assert any(issue.code == "pptx.transition" and issue.reason == "unsupported-transition" for issue in result.issues)
     target = tmp_path / "output.pptx"
     assert write_document(document, target).success
     restored = Presentation(target)

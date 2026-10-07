@@ -53,6 +53,7 @@ from opendoc_model.document_model import (
 from opendoc_model.units import canonical_coordinate_contract, emu_to_points, ooxml_angle_to_degrees
 
 from opendoc_formats.ooxml.color import resolve_drawingml_color
+from opendoc_formats.readers.pptx_diagnostics import PptxDiagnostics
 from opendoc_formats.support.io import check_archive_safety
 from opendoc_formats.types import Block, BlockType, DocFormat, Table, Text
 
@@ -191,6 +192,8 @@ class _ImporterState:
     layout_element: Optional[Any] = None
     master_element: Optional[Any] = None
     theme_colors: dict[str, str] | None = None
+    diagnostics: PptxDiagnostics | None = None
+    source_part: str | None = None
 
     def origin(self, *, object_id: str | None = None, package_part: str | None = None) -> Provenance:
         return Provenance(
@@ -198,7 +201,7 @@ class _ImporterState:
             source_path=str(self.model.metadata.get("source_path") or "") or None,
             page=self.slide_index,
             object_id=object_id,
-            package_part=package_part or f"/ppt/slides/slide{self.slide_index}.xml",
+            package_part=package_part or self.source_part or f"/ppt/slides/slide{self.slide_index}.xml",
             events=[ProvenanceEvent("import.pptx", "parsed OOXML slide element")],
         )
 
@@ -434,8 +437,22 @@ def read_pptx_model(
         margin_left=Length(0),
     )
 
-    state = _ImporterState(model=model)
+    diagnostics = PptxDiagnostics(source)
+    diagnostics.part = str(presentation.part.partname)
+    diagnostics.record(
+        "pptx.package", "original-package-not-retained", "Original package graph and opaque parts are not retained",
+    )
+    state = _ImporterState(model=model, diagnostics=diagnostics)
+    # Accessing Presentation.slides renames parts by display order. Snapshot the
+    # archive identities first so provenance still points into the source ZIP.
+    original_parts = {
+        id(relation.target_part): str(relation.target_part.partname)
+        for relation in presentation.part.rels.values()
+        if not relation.is_external and relation.reltype.endswith("/slide")
+    }
     for slide_index, slide in enumerate(presentation.slides, start=1):
+        state.source_part = original_parts[id(slide.part)]
+        diagnostics.slide(slide, slide_index, state.source_part)
         state.slide_index = slide_index
         state.layout_element = _layout_sp_tree(slide)
         state.master_element = _master_sp_tree(slide)
@@ -463,6 +480,7 @@ def read_pptx_model(
         section.properties["slide_number"] = slide_index
         model.sections.append(section)
 
+    diagnostics.attach(model)
     return model
 
 
@@ -526,9 +544,13 @@ def _collect_shape_element(
     if xfrm is None:
         xfrm = _placeholder_geometry(element, state)
     if xfrm is None:
+        if state.diagnostics:
+            state.diagnostics.record("pptx.shape", "missing-geometry", "Shape without resolvable geometry is skipped", element)
         return
     left, top, width, height = _apply_transform(transform, *xfrm[:4])
     if (width <= 0 or height <= 0) and not (tag == "cxnSp" and width >= 0 and height >= 0):
+        if state.diagnostics:
+            state.diagnostics.record("pptx.shape", "nonpositive-geometry", "Shape with nonpositive extent is skipped", element)
         return
     box = Box(
         x=_emu_to_pt(left),
@@ -545,6 +567,8 @@ def _collect_shape_element(
         blocks.append(_shape_paragraph_from_element(element, box, slide_part, state.theme_colors))
     elif tag == "pic":
         _handle_picture(element, slide_part, state, blocks, box)
+        if len(blocks) == first_block and state.diagnostics:
+            state.diagnostics.record("pptx.image", "missing-image-resource", "Picture produced no image block", element)
     elif tag == "graphicFrame":
         _handle_graphic_frame(element, slide_part, state, blocks, box)
     if affine is not None:
@@ -1057,7 +1081,7 @@ def _handle_picture(element: Any, slide_part: Any, state: _ImporterState, blocks
 
 def _part_filename(part: Any) -> str | None:
     try:
-        return part.partname
+        return str(part.partname)
     except Exception:  # noqa: BLE001
         return None
 
@@ -1092,7 +1116,11 @@ def _handle_graphic_frame(element: Any, slide_part: Any, state: _ImporterState, 
                     filename=_part_filename(part),
                 )
                 blocks.append(Image(resource_id=resource_id, alt_text="", box=box))
+                if state.diagnostics:
+                    state.diagnostics.graphic(element, resource_id=resource_id)
                 return
+    if state.diagnostics:
+        state.diagnostics.graphic(element)
     blocks.append(Paragraph(content=[], box=box, properties={"pptx": {"shape": {"kind": "graphicFrame"}}}))
 
 
