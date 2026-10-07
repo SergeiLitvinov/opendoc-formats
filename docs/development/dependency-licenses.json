@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "lock_sha256": "3232df934e56042e3825a27b81256d2bf62a35a6ad6c241b8ea158e6846c80ea",
-  "configuration_sha256": "d04181d46b6b0305862d0669dd8a743234932a1469d062d6deb8e350a6406f50",
+  "lock_sha256": "780987f9d7debf4b26630c0eb02a98f9feac73a16a1b4d5a4804042de1d16304",
+  "configuration_sha256": "adcaff7d26fbceaa83d3700d9331e2c833f6469bf0720265836cf868b64e8843",
   "packages": [
     {
       "name": "ast-serialize",
@@ -148,7 +148,8 @@
       "version": "2.1.1",
       "scopes": [
         "dev",
-        "pdf"
+        "pdf",
+        "pdf-layout"
       ],
       "description": "Вызов native кода",
       "license": "MIT-0",
@@ -183,7 +184,8 @@
       "version": "3.5.2",
       "scopes": [
         "dev",
-        "pdf"
+        "pdf",
+        "pdf-layout"
       ],
       "description": "Определение кодировки HTTP",
       "license": "MIT",
@@ -254,7 +256,8 @@
       "version": "50.0.2",
       "scopes": [
         "dev",
-        "pdf"
+        "pdf",
+        "pdf-layout"
       ],
       "description": "Криптография PDF и системного credential storage",
       "license": "Apache-2.0 OR BSD-3-Clause",
@@ -366,7 +369,8 @@
       "name": "fire",
       "version": "0.7.1",
       "scopes": [
-        "pdf"
+        "pdf",
+        "pdf-docx"
       ],
       "description": "CLI прямого PDF-конвертера",
       "license": "Apache-2.0",
@@ -390,7 +394,8 @@
       "version": "4.66.1",
       "scopes": [
         "fonts",
-        "pdf"
+        "pdf",
+        "pdf-docx"
       ],
       "description": "Метаданные шрифтов",
       "license": "MIT",
@@ -707,6 +712,7 @@
         "docx",
         "epub-ebooklib",
         "pdf",
+        "pdf-docx",
         "pptx"
       ],
       "description": "XML/OOXML parser",
@@ -1169,7 +1175,8 @@
       "name": "numpy",
       "version": "2.4.6",
       "scopes": [
-        "pdf"
+        "pdf",
+        "pdf-docx"
       ],
       "description": "Массивы PDF-конвертера",
       "license": "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0; wheel: BLAS/GCC runtime exception и bundled notices",
@@ -1355,7 +1362,8 @@
       "name": "numpy",
       "version": "2.5.3",
       "scopes": [
-        "pdf"
+        "pdf",
+        "pdf-docx"
       ],
       "description": "Массивы PDF-конвертера",
       "license": "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0; wheel: BLAS/GCC runtime exception и bundled notices",
@@ -1541,7 +1549,8 @@
       "name": "opencv-python-headless",
       "version": "5.0.0.93",
       "scopes": [
-        "pdf"
+        "pdf",
+        "pdf-docx"
       ],
       "description": "Обработка изображений PDF-конвертера",
       "license": "MIT wrapper + Apache-2.0 OpenCV; FFmpeg LGPL и прочие bundled условия",
@@ -1686,7 +1695,8 @@
       "name": "pdf2docx",
       "version": "0.5.13",
       "scopes": [
-        "pdf"
+        "pdf",
+        "pdf-docx"
       ],
       "description": "Прямой PDF → DOCX converter",
       "license": "MIT",
@@ -1709,7 +1719,8 @@
       "name": "pdfminer-six",
       "version": "20260107",
       "scopes": [
-        "pdf"
+        "pdf",
+        "pdf-layout"
       ],
       "description": "Текст и layout для pdfplumber",
       "license": "MIT",
@@ -1732,7 +1743,8 @@
       "name": "pdfplumber",
       "version": "0.11.10",
       "scopes": [
-        "pdf"
+        "pdf",
+        "pdf-layout"
       ],
       "description": "Таблицы и геометрия PDF",
       "license": "MIT",
@@ -1756,6 +1768,7 @@
       "version": "12.3.0",
       "scopes": [
         "pdf",
+        "pdf-layout",
         "pptx"
       ],
       "description": "Изображения и fallback",
@@ -1837,7 +1850,8 @@
       "version": "3.0",
       "scopes": [
         "dev",
-        "pdf"
+        "pdf",
+        "pdf-layout"
       ],
       "description": "C declarations для cffi",
       "license": "BSD-3-Clause",
@@ -1887,7 +1901,9 @@
       "name": "pymupdf",
       "version": "1.28.2",
       "scopes": [
-        "pdf"
+        "pdf",
+        "pdf-docx",
+        "pdf-rich"
       ],
       "description": "PDF import/export/render",
       "license": "AGPL-3.0 OR Artifex commercial",
@@ -1945,7 +1961,8 @@
       "name": "pypdfium2",
       "version": "5.13.0",
       "scopes": [
-        "pdf"
+        "pdf",
+        "pdf-layout"
       ],
       "description": "PDFium rendering для pdfplumber",
       "license": "Apache-2.0 OR BSD-3-Clause; PDFium/build licenses; CC-BY-4.0 для документации",
@@ -2193,7 +2210,8 @@
       "version": "1.2.0",
       "scopes": [
         "docx",
-        "pdf"
+        "pdf",
+        "pdf-docx"
       ],
       "description": "DOCX reader/writer",
       "license": "MIT",
@@ -2544,7 +2562,8 @@
       "name": "termcolor",
       "version": "3.3.0",
       "scopes": [
-        "pdf"
+        "pdf",
+        "pdf-docx"
       ],
       "description": "Цвет CLI конвертера",
       "license": "MIT",
@@ -2619,6 +2638,7 @@
         "epub-ebooklib",
         "html",
         "pdf",
+        "pdf-docx",
         "pptx"
       ],
       "description": "Совместимость аннотаций типов",

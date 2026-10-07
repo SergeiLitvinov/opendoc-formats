@@ -24,7 +24,7 @@
 | HTML / CSS | Да | Да | `html` для импорта |
 | DOCX | Да | Да | `docx` |
 | PPTX | Да | Да | `pptx` |
-| PDF | Да | Да | `pdf` |
+| PDF | Да | Да | `pdf-rich` или полный `pdf` |
 | EPUB | Да | — | `epub` |
 | DjVu | Текст | — | Внешний `djvutxt` |
 | LaTeX | — | DOCX-мост | `docx`; Pandoc для отдельного маршрута |
@@ -45,11 +45,11 @@
 Из [GitHub Release](https://github.com/SergeiLitvinov/opendoc-formats/releases), без зависимости от публикации на PyPI:
 
 ```sh
-python -m pip install "opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.3.0/opendoc_model-0.3.0-py3-none-any.whl" "opendoc-formats[docx,html] @ https://github.com/SergeiLitvinov/opendoc-formats/releases/download/v0.5.0/opendoc_formats-0.5.0-py3-none-any.whl"
+python -m pip install "opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.3.0/opendoc_model-0.3.0-py3-none-any.whl" "opendoc-formats[docx,html] @ https://github.com/SergeiLitvinov/opendoc-formats/releases/download/v0.6.0/opendoc_formats-0.6.0-py3-none-any.whl"
 ```
 
 Необязательные движки импортируются только при выборе обработчика. TXT/JSON работают с базовой установкой.
-Extra `pdf-text` устанавливает pypdf для извлечения текста; полный `pdf` нужен для геометрии и рендера.
+Extra `pdf-text` устанавливает pypdf для извлечения текста; `pdf-rich` нужен для геометрии и рендера; `pdf` сохраняет полный набор движков.
 
 ## Пример
 

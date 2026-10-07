@@ -14,15 +14,15 @@
 | [beautifulsoup4](#beautifulsoup4-4150) | 4.15.0 | epub, epub-ebooklib, html | MIT License | HTML/XHTML parser |
 | [build](#build-161) | 1.6.1 | dev | MIT | Frontend сборки Python |
 | [certifi](#certifi-2026722) | 2026.7.22 | dev | MPL-2.0 | Набор корневых TLS-сертификатов |
-| [cffi](#cffi-211) | 2.1.1 | dev, pdf | MIT-0 | Вызов native кода |
-| [charset-normalizer](#charset-normalizer-352) | 3.5.2 | dev, pdf | MIT | Определение кодировки HTTP |
+| [cffi](#cffi-211) | 2.1.1 | dev, pdf, pdf-layout | MIT-0 | Вызов native кода |
+| [charset-normalizer](#charset-normalizer-352) | 3.5.2 | dev, pdf, pdf-layout | MIT | Определение кодировки HTTP |
 | [click](#click-850) | 8.5.0 | docs | BSD-3-Clause | CLI MkDocs/tooling |
 | [colorama](#colorama-046) | 0.4.6 | dev, docs | BSD-3-Clause | Цветной вывод Windows |
-| [cryptography](#cryptography-5002) | 50.0.2 | dev, pdf | Apache-2.0 OR BSD-3-Clause | Криптография PDF и системного credential storage |
+| [cryptography](#cryptography-5002) | 50.0.2 | dev, pdf, pdf-layout | Apache-2.0 OR BSD-3-Clause | Криптография PDF и системного credential storage |
 | [docutils](#docutils-023) | 0.23 | dev | Public domain + BSD-2-Clause/BSD-3-Clause; GPL-3.0-or-later для отдельных tooling files | Разбор описаний reStructuredText для twine |
 | [ebooklib](#ebooklib-020) | 0.20 | epub-ebooklib | AGPL-3.0-or-later | Контейнер и spine EPUB |
-| [fire](#fire-071) | 0.7.1 | pdf | Apache-2.0 | CLI прямого PDF-конвертера |
-| [fonttools](#fonttools-4661) | 4.66.1 | fonts, pdf | MIT | Метаданные шрифтов |
+| [fire](#fire-071) | 0.7.1 | pdf, pdf-docx | Apache-2.0 | CLI прямого PDF-конвертера |
+| [fonttools](#fonttools-4661) | 4.66.1 | fonts, pdf, pdf-docx | MIT | Метаданные шрифтов |
 | [ghp-import](#ghp-import-210) | 2.1.0 | docs | Apache Software License | Инструмент публикации MkDocs |
 | [id](#id-161) | 1.6.1 | dev | Apache-2.0 | Идентификация публикации tooling |
 | [idna](#idna-320) | 3.20 | dev | BSD-3-Clause | Международные доменные имена HTTP |
@@ -35,7 +35,7 @@
 | [jinja2](#jinja2-316) | 3.1.6 | docs | BSD-3-Clause | Шаблоны документации |
 | [keyring](#keyring-2570) | 25.7.0 | dev | MIT | Хранилище credentials twine |
 | [librt](#librt-0160) | 0.16.0 | dev | MIT | Runtime mypy |
-| [lxml](#lxml-613) | 6.1.3 | docx, epub-ebooklib, pdf, pptx | BSD-3-Clause + PSF/ElementTree, MIT, Zlib, LGPL-2.1; два XSL: unresolved license grant (OF16) | XML/OOXML parser |
+| [lxml](#lxml-613) | 6.1.3 | docx, epub-ebooklib, pdf, pdf-docx, pptx | BSD-3-Clause + PSF/ElementTree, MIT, Zlib, LGPL-2.1; два XSL: unresolved license grant (OF16) | XML/OOXML parser |
 | [markdown](#markdown-311) | 3.11 | docs | BSD-3-Clause | Markdown документации |
 | [markdown-it-py](#markdown-it-py-420) | 4.2.0 | dev | MIT | Разбор Markdown для CLI |
 | [markupsafe](#markupsafe-304) | 3.0.4 | docs | BSD-3-Clause | Экранирование HTML шаблонов |
@@ -47,27 +47,27 @@
 | [mypy](#mypy-240) | 2.4.0 | dev | MIT | Проверка типов |
 | [mypy-extensions](#mypy-extensions-110) | 1.1.0 | dev | MIT | Дополнения typing |
 | [nh3](#nh3-037) | 0.3.7 | dev | MIT | Очистка HTML описания пакета |
-| [numpy](#numpy-246) | 2.4.6 | pdf | BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0; wheel: BLAS/GCC runtime exception и bundled notices | Массивы PDF-конвертера |
-| [numpy](#numpy-253) | 2.5.3 | pdf | BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0; wheel: BLAS/GCC runtime exception и bundled notices | Массивы PDF-конвертера |
-| [opencv-python-headless](#opencv-python-headless-50093) | 5.0.0.93 | pdf | MIT wrapper + Apache-2.0 OpenCV; FFmpeg LGPL и прочие bundled условия | Обработка изображений PDF-конвертера |
+| [numpy](#numpy-246) | 2.4.6 | pdf, pdf-docx | BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0; wheel: BLAS/GCC runtime exception и bundled notices | Массивы PDF-конвертера |
+| [numpy](#numpy-253) | 2.5.3 | pdf, pdf-docx | BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0; wheel: BLAS/GCC runtime exception и bundled notices | Массивы PDF-конвертера |
+| [opencv-python-headless](#opencv-python-headless-50093) | 5.0.0.93 | pdf, pdf-docx | MIT wrapper + Apache-2.0 OpenCV; FFmpeg LGPL и прочие bundled условия | Обработка изображений PDF-конвертера |
 | [opendoc-model](#opendoc-model-030) | 0.3.0 | base | MIT | Модель документа, ресурсы и валидация |
 | [packaging](#packaging-263) | 26.3 | dev, docs | Apache-2.0 OR BSD-2-Clause | Версии, требования и platform tags |
 | [pathspec](#pathspec-111) | 1.1.1 | dev, docs | MPL-2.0 | Шаблоны файлов mypy |
-| [pdf2docx](#pdf2docx-0513) | 0.5.13 | pdf | MIT | Прямой PDF → DOCX converter |
-| [pdfminer-six](#pdfminer-six-20260107) | 20260107 | pdf | MIT | Текст и layout для pdfplumber |
-| [pdfplumber](#pdfplumber-01110) | 0.11.10 | pdf | MIT | Таблицы и геометрия PDF |
-| [pillow](#pillow-1230) | 12.3.0 | pdf, pptx | MIT-CMU + bundled licenses (см. LICENSE) | Изображения и fallback |
+| [pdf2docx](#pdf2docx-0513) | 0.5.13 | pdf, pdf-docx | MIT | Прямой PDF → DOCX converter |
+| [pdfminer-six](#pdfminer-six-20260107) | 20260107 | pdf, pdf-layout | MIT | Текст и layout для pdfplumber |
+| [pdfplumber](#pdfplumber-01110) | 0.11.10 | pdf, pdf-layout | MIT | Таблицы и геометрия PDF |
+| [pillow](#pillow-1230) | 12.3.0 | pdf, pdf-layout, pptx | MIT-CMU + bundled licenses (см. LICENSE) | Изображения и fallback |
 | [platformdirs](#platformdirs-4122) | 4.12.2 | docs | MIT | Пути кеша tooling |
 | [pluggy](#pluggy-160) | 1.6.0 | dev | MIT | Плагины pytest |
-| [pycparser](#pycparser-30) | 3.0 | dev, pdf | BSD-3-Clause | C declarations для cffi |
+| [pycparser](#pycparser-30) | 3.0 | dev, pdf, pdf-layout | BSD-3-Clause | C declarations для cffi |
 | [pygments](#pygments-2210) | 2.21.0 | dev | BSD-2-Clause | Подсветка кода CLI/описаний |
-| [pymupdf](#pymupdf-1282) | 1.28.2 | pdf | AGPL-3.0 OR Artifex commercial | PDF import/export/render |
+| [pymupdf](#pymupdf-1282) | 1.28.2 | pdf, pdf-docx, pdf-rich | AGPL-3.0 OR Artifex commercial | PDF import/export/render |
 | [pypdf](#pypdf-6190) | 6.19.0 | pdf, pdf-text | BSD-3-Clause | Низкоуровневый PDF text |
-| [pypdfium2](#pypdfium2-5130) | 5.13.0 | pdf | Apache-2.0 OR BSD-3-Clause; PDFium/build licenses; CC-BY-4.0 для документации | PDFium rendering для pdfplumber |
+| [pypdfium2](#pypdfium2-5130) | 5.13.0 | pdf, pdf-layout | Apache-2.0 OR BSD-3-Clause; PDFium/build licenses; CC-BY-4.0 для документации | PDFium rendering для pdfplumber |
 | [pyproject-hooks](#pyproject-hooks-133) | 1.3.3 | dev | MIT | Вызов backend сборки |
 | [pytest](#pytest-911) | 9.1.1 | dev | MIT | Тестовый runner |
 | [python-dateutil](#python-dateutil-290post0) | 2.9.0.post0 | docs | BSD-3-Clause OR Apache-2.0 | Даты инструментов документации |
-| [python-docx](#python-docx-120) | 1.2.0 | docx, pdf | MIT | DOCX reader/writer |
+| [python-docx](#python-docx-120) | 1.2.0 | docx, pdf, pdf-docx | MIT | DOCX reader/writer |
 | [python-pptx](#python-pptx-102) | 1.0.2 | pptx | MIT | PPTX reader/writer |
 | [pywin32-ctypes](#pywin32-ctypes-023) | 0.2.3 | dev | BSD-3-Clause | Windows credential API tooling |
 | [pyyaml](#pyyaml-603) | 6.0.3 | docs | MIT | YAML конфигурация |
@@ -81,10 +81,10 @@
 | [secretstorage](#secretstorage-350) | 3.5.0 | dev | BSD-3-Clause | Linux credential storage |
 | [six](#six-1170) | 1.17.0 | docs, epub-ebooklib | MIT | Совместимость Python EPUB/dateutil |
 | [soupsieve](#soupsieve-210) | 2.10 | epub, epub-ebooklib, html | MIT | CSS selectors BeautifulSoup |
-| [termcolor](#termcolor-330) | 3.3.0 | pdf | MIT | Цвет CLI конвертера |
+| [termcolor](#termcolor-330) | 3.3.0 | pdf, pdf-docx | MIT | Цвет CLI конвертера |
 | [tinycss2](#tinycss2-151) | 1.5.1 | html | BSD-3-Clause | CSS parser HTML |
 | [twine](#twine-700) | 7.0.0 | dev | Apache-2.0 | Проверка/публикация метаданных Python |
-| [typing-extensions](#typing-extensions-4160) | 4.16.0 | dev, docx, epub, epub-ebooklib, html, pdf, pptx | PSF-2.0 | Совместимость аннотаций типов |
+| [typing-extensions](#typing-extensions-4160) | 4.16.0 | dev, docx, epub, epub-ebooklib, html, pdf, pdf-docx, pptx | PSF-2.0 | Совместимость аннотаций типов |
 | [urllib3](#urllib3-280) | 2.8.0 | dev | MIT | HTTP transport tooling |
 | [watchdog](#watchdog-600) | 6.0.0 | docs | Apache-2.0 | Отслеживание файлов документации |
 | [webencodings](#webencodings-061) | 0.6.1 | html | BSD-3-Clause | Кодировки CSS |

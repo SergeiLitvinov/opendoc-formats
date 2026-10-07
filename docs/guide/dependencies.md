@@ -13,9 +13,9 @@
 | --- | --- | --- | --- |
 | opendoc-model 0.3.0 | обязательный | Общий контракт документа; официальный release wheel | MIT |
 | pypdf 6.19.0 | pdf-text, pdf | Низкоуровневое извлечение текста и отдельные PDF-конвертеры | BSD-3-Clause |
-| PyMuPDF 1.28.2 | pdf | Богатый импорт, геометрия, вектор/растр, рендер и PDF writer | AGPL-3.0 или коммерческая лицензия Artifex |
-| pdf2docx 0.5.13 | pdf | Отдельный прямой PDF → DOCX маршрут | MIT; зависит от AGPL/commercial PyMuPDF и OpenCV; upstream помечен как не поддерживаемый активно |
-| pdfplumber 0.11.10 | pdf | Альтернативный анализ таблиц/геометрии в PDF → DOCX | MIT; pdfminer.six, Pillow, pypdfium2 и их компоненты |
+| PyMuPDF 1.28.2 | pdf-rich, pdf; транзитивно pdf-docx | Богатый импорт, геометрия, вектор/растр, рендер и PDF writer | AGPL-3.0 или коммерческая лицензия Artifex |
+| pdf2docx 0.5.13 | pdf-docx, pdf | Отдельный прямой PDF → DOCX маршрут | MIT; зависит от AGPL/commercial PyMuPDF и OpenCV; upstream помечен как не поддерживаемый активно |
+| pdfplumber 0.11.10 | pdf-layout, pdf | Альтернативное извлечение текста/геометрии PDF | MIT; pdfminer.six, Pillow, pypdfium2 и их компоненты |
 | python-docx 1.2.0 | docx | OOXML DOCX, rich reader/writer и DOCX → TeX | MIT; использует lxml |
 | lxml 6.1.3 | docx, pptx; транзитивно epub-ebooklib/pdf | XML и OOXML | BSD-3-Clause; bundled libiconv LGPL-2.1 и другие отдельные условия |
 | python-pptx 1.0.2 | pptx | Чтение/создание презентаций и отдельный HTML viewer | MIT; lxml, Pillow, XlsxWriter |
@@ -26,7 +26,7 @@
 | fonttools 4.66.1 | fonts | Метаданные шрифтов, покрытие глифов и ограничения embedding | MIT; лицензия самих шрифтов отдельно |
 
 `pdf-text` обслуживает `readers.pdf.read_pdf`, а `read_document(...pdf)` использует
-PyMuPDF и требует полный профиль. Это не взаимозаменяемые rich readers.
+PyMuPDF и требует `pdf-rich` либо полный `pdf`. Это не взаимозаменяемые rich readers.
 OCR передаётся фабрикой потребителя; OCR engine и модели не поставляются.
 
 HTML-экспорт исходного MathML проверяет и очищает XML собственным кодом на стандартной
@@ -70,6 +70,9 @@ OMML в MathML и OOXML-маршруты имеют отдельные треб�
 | --- | --- | --- |
 | Базовый, TXT/JSON | MIT у библиотеки и OpenDoc | Сохранить MIT/copyright; разрешены permissive и совместимые copyleft-проекты |
 | `pdf-text` | MIT + BSD-3-Clause у pypdf | Сохранить notices; это извлечение текста, не полный rich PDF профиль |
+| `pdf-rich` | MIT библиотеки; PyMuPDF AGPL-3.0 либо commercial | Чтение модели, геометрия, рендер и PDF writer. Соблюдать выбранные условия PyMuPDF; lxml и его XSL-ресурсы не устанавливаются |
+| `pdf-layout` | MIT, MIT-0, BSD-3-Clause, Apache-2.0; MIT-CMU Pillow и bundled notices; PDFium BUILD_LICENSES; CC-BY-4.0 документации pypdfium2 | Извлечение через pdfplumber, не универсальный rich reader. Сохранить notices; lxml/PyMuPDF не устанавливаются |
+| `pdf-docx` | MIT/BSD/Apache/PSF, 0BSD/Zlib/CC0; PyMuPDF AGPL-3.0 либо commercial; LGPL FFmpeg/libiconv и GCC runtime exception; условия lxml | Прямой PDF → DOCX; соблюдать AGPL и notices выбранного состава. XSL-исключение остаётся |
 | `html` | MIT, BSD-3-Clause, PSF-2.0 | Сохранить лицензии/copyright; разрешён статический HTML импорт без AGPL-движка |
 | `fonts` | MIT; права на font assets отдельно | Сохранить MIT; встраиваемые шрифты должны иметь соответствующее разрешение |
 | `docx` | MIT, BSD-3-Clause, PSF/ElementTree, Zlib; LGPL-2.1 для bundled libiconv | Сохранить условия lxml и LGPL-компонента; XSL-исключение описано ниже |
@@ -122,3 +125,22 @@ nonlinear content и полный fixed layout остаются задачами
 Прежний маршрут доступен после установки `epub-ebooklib`:
 `read_epub_model(path, backend="ebooklib")` и `read_epub(path, backend="ebooklib")`.
 По умолчанию и в `read_document` используется `backend="native"`.
+
+## Минимальные PDF-профили
+
+| Задача | Профиль | Публичный маршрут |
+| --- | --- | --- |
+| Текст через pypdf | `pdf-text` | `readers.pdf.read_pdf` |
+| Модель, геометрия, рендер, PDF export | `pdf-rich` | `read_document`, `PdfDocument`, `read_pdf_geometry`, `write_document` |
+| Текст/геометрия через pdfplumber | `pdf-layout` | `readers.pdf.read_pdf` |
+| Прямой PDF → DOCX | `pdf-docx` | `Pdf2DocxConverter` |
+| PDF → DOCX через PyMuPDF | `pdf-rich` + `docx` | `PyMuPdfConverter` |
+| Все прежние PDF-движки | `pdf` | Совместимый полный состав |
+
+`read_pdf` выбирает доступный маршрут в порядке pdfplumber → pypdf → PyMuPDF.
+`read_document` для PDF требует PyMuPDF и явно сообщает отсутствие backend;
+установка `pdf-layout` или `pdf-text` не делает их равнозначными rich reader.
+Разделение не меняет алгоритмы и качество выбранного движка. Векторный PDF export
+и остальные пробелы спецификации остаются отдельными задачами в TODO.
+Изолированные проверки профилей в CI используют constraints из `uv.lock`, чтобы
+состав установки соответствовал проверенному лицензионному реестру.

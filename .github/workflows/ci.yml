@@ -52,6 +52,9 @@ jobs:
         with:
           python-version: '3.12'
       - run: uv sync --frozen --extra dev
+      - run: |
+          mkdir -p .opendoc-formats
+          uv export --frozen --all-extras --no-emit-project --no-hashes --output-file .opendoc-formats/profile-constraints.txt
       - run: uv build --out-dir .opendoc-formats/dist
       - run: uv run --frozen python -m tools.release check
       - run: uv run --frozen twine check .opendoc-formats/dist/*.whl .opendoc-formats/dist/*.tar.gz
@@ -77,6 +80,14 @@ jobs:
           version=$(python -m tools.release version)
           uv pip install --python .opendoc-formats/installed/bin/python ".opendoc-formats/from-sdist/opendoc_formats-${version}-py3-none-any.whl[docx,html,pdf,pptx]"
           .opendoc-formats/installed/bin/python -I tools/package_smoke.py --all-formats
+      - name: Exercise each PDF profile in a fresh environment
+        run: |
+          version=$(python -m tools.release version)
+          for profile in pdf-rich pdf-layout pdf-docx; do
+            uv venv ".opendoc-formats/${profile}"
+            uv pip install --constraint .opendoc-formats/profile-constraints.txt --python ".opendoc-formats/${profile}/bin/python" 'opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.3.0/opendoc_model-0.3.0-py3-none-any.whl' ".opendoc-formats/from-sdist/opendoc_formats-${version}-py3-none-any.whl[${profile}]"
+            ".opendoc-formats/${profile}/bin/python" -I tools/pdf_profile_smoke.py "${profile}"
+          done
       - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:
           name: release-packages
