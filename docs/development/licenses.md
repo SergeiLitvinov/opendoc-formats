@@ -40,7 +40,7 @@ CRLF/LF, чтобы CI Windows/Linux сравнивал одинаковое с�
 | Компонент | Вывод |
 | --- | --- |
 | PyMuPDF / MuPDF | AGPL-3.0 либо отдельная коммерческая лицензия Artifex. Распространение связанного продукта и сетевые сценарии оцениваются по условиям выбранной лицензии; lazy import не снимает их |
-| EbookLib | AGPL-3.0-or-later; `epub` нельзя представлять как профиль только MIT. Для распространения совместной программы требуется соблюдение AGPL; модифицированная сетевая версия имеет требование предоставления corresponding source |
+| EbookLib | AGPL-3.0-or-later; относится к `epub-ebooklib`, не к собственному контейнеру `epub`. Для распространения совместной программы требуется соблюдение AGPL; модифицированная сетевая версия имеет требование предоставления corresponding source |
 | pdf2docx | Его MIT не отменяет AGPL/commercial у обязательного PyMuPDF. Транзитивно использует OpenCV/NumPy/python-docx; upstream указывает отсутствие активного сопровождения |
 | lxml wheel | BSD-3-Clause/PSF/ElementTree плюс bundled MIT/zlib/libiconv LGPL-2.1. Для `RNG2Schtrn.xsl`/`XSD2Schtrn.xsl` подтверждено отсутствие explicit license grant: это отдельное исключение, не BSD и не public domain. Подробности и действие — в [статусе XSL](lxml-xslt.md), задача OF16 |
 | OpenCV wheel | MIT у Python-обёртки, Apache-2.0 у OpenCV; `LICENSE-3RD-PARTY.txt` перечисляет FFmpeg LGPL и остальные условия. Headless не означает отсутствие таких компонентов |

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import posixpath
 import re
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 from urllib.parse import unquote, urlsplit
@@ -29,41 +29,38 @@ _SIZE = re.compile(r"^([0-9.]+)(pt|px|em|rem|%)$")
 _BLOCKS = {"p", "h1", "h2", "h3", "h4", "h5", "h6", "li", "blockquote", "pre", "figcaption"}
 
 
-def read_epub_model(path: str | Path) -> DocumentModel:
-    import ebooklib
+def read_epub_model(path: str | Path, *, backend: str = "native") -> DocumentModel:
     from bs4 import BeautifulSoup
-    from ebooklib import epub
+
+    from opendoc_formats.readers.epub_package import read_ebooklib_package, read_epub_package
 
     source = Path(path)
     if not source.is_file():
         raise FileNotFoundError(source)
-    from opendoc_formats.support.io import check_archive_safety
-
-    check_archive_safety(source)
-    book = epub.read_epub(str(source))
-    resources, item_names = _resources(book, ebooklib, source)
-    titles = _toc_titles(book.toc)
+    if backend not in {"native", "ebooklib"}:
+        raise ValueError("EPUB backend must be native or ebooklib")
+    book = read_epub_package(source) if backend == "native" else read_ebooklib_package(source)
+    resources, item_names = _resources(book, source)
+    titles = book.titles
     sections, warnings, styles = [], [], {}
     for idref, linear in book.spine:
         if str(linear).lower() == "no":
             continue
-        item = book.get_item_with_id(idref)
-        if item is None or item.get_type() != ebooklib.ITEM_DOCUMENT or isinstance(item, epub.EpubNav):
+        item = book.items.get(idref)
+        if item is None or item.media_type != "application/xhtml+xml" or "nav" in item.properties:
             continue
-        # ebooklib rebuilds XHTML in get_content() and may drop the original head
-        # (including linked stylesheets) after reading an existing package.
         soup = BeautifulSoup(item.content, "html.parser")
-        rules = _chapter_rules(book, item, soup, ebooklib)
+        rules = _chapter_rules(book, item, soup)
         blocks = []
         body = soup.body or soup
         for tag in body.find_all(_BLOCKS):
             if tag.find_parent(_BLOCKS):
                 continue
-            content = _inline_content(tag, rules, item.get_name(), item_names, warnings)
+            content = _inline_content(tag, rules, item.name, item_names, warnings)
             if content or tag.name in {"p", "li"}:
                 properties = {"epub": {"tag": tag.name}}
                 if tag.get("id"):
-                    properties["anchor_id"] = _anchor_id(item.get_name(), tag["id"])
+                    properties["anchor_id"] = _anchor_id(item.name, tag["id"])
                 if tag.name == "li":
                     properties["list_level"] = len(tag.find_parents(["ul", "ol"])) - 1
                     parent = tag.find_parent(["ul", "ol"])
@@ -77,53 +74,53 @@ def read_epub_model(path: str | Path) -> DocumentModel:
                         content=content,
                         style_id=heading_style,
                         properties=properties,
-                        provenance=_provenance(source, item.get_name(), tag.get("id")),
+                        provenance=_provenance(source, item.name, tag.get("id")),
                     )
                 )
         sections.append(
             Section(
                 blocks=blocks,
                 properties={
-                    "anchor_id": _anchor_id(item.get_name()),
+                    "anchor_id": _anchor_id(item.name),
                     "epub": {
                         "id": idref,
-                        "href": item.get_name(),
-                        "title": titles.get(posixpath.normpath(item.get_name()))
+                        "href": item.name,
+                        "title": titles.get(posixpath.normpath(item.name))
                         or (blocks[0].plain_text if blocks and blocks[0].style_id else ""),
                     },
                 },
-                provenance=_provenance(source, item.get_name()),
+                provenance=_provenance(source, item.name),
             )
         )
     metadata = {
-        "title": _metadata_first(book, "DC", "title"),
-        "language": _metadata_first(book, "DC", "language"),
-        "identifier": _metadata_first(book, "DC", "identifier"),
-        "engine": "ebooklib+bs4",
+        "title": book.metadata["title"],
+        "language": book.metadata["language"],
+        "identifier": book.metadata["identifier"],
+        "engine": book.engine,
         "source_name": source.name,
         "epub": {"spine": [section.properties["epub"]["href"] for section in sections], "warnings": warnings},
     }
     return DocumentModel(sections=sections, resources=resources, styles=styles, metadata=metadata, source_format="epub")
 
 
-def _resources(book: Any, ebooklib: Any, source: Path) -> tuple[dict[str, od.Resource], dict[str, str]]:
+def _resources(book: Any, source: Path) -> tuple[dict[str, od.Resource], dict[str, str]]:
     resources, names = {}, {}
-    for item in book.get_items():
+    for item in book.items.values():
         media_type = item.media_type or "application/octet-stream"
-        if item.get_type() == ebooklib.ITEM_IMAGE:
+        if media_type.startswith("image/"):
             kind = ResourceKind.VECTOR_IMAGE if media_type == "image/svg+xml" else ResourceKind.RASTER_IMAGE
-        elif item.get_type() == ebooklib.ITEM_STYLE:
+        elif media_type == "text/css":
             kind = ResourceKind.ATTACHMENT
         else:
             continue
         resource_id = f"epub-{item.id}"
-        name = posixpath.normpath(item.get_name())
+        name = posixpath.normpath(item.name)
         names[name] = resource_id
         resources[resource_id] = Resource(
             resource_id,
             kind,
             media_type,
-            data=item.get_content(),
+            data=item.content,
             filename=posixpath.basename(name),
             properties={"epub": {"href": name, "item_id": item.id}},
             provenance=_provenance(source, name, item.id),
@@ -131,15 +128,14 @@ def _resources(book: Any, ebooklib: Any, source: Path) -> tuple[dict[str, od.Res
     return resources, names
 
 
-def _chapter_rules(book: Any, item: Any, soup: Any, ebooklib: Any) -> list[tuple[str, dict[str, str], int]]:
+def _chapter_rules(book: Any, item: Any, soup: Any) -> list[tuple[str, dict[str, str], int]]:
     css = []
     hrefs = [link["href"] for link in soup.find_all("link", href=True)]
-    hrefs.extend(link.get("href", "") for link in item.get_links() if "stylesheet" in str(link.get("rel", "")))
     for href in dict.fromkeys(hrefs):
-        name = _resolve(item.get_name(), href)
-        linked = next((entry for entry in book.get_items() if posixpath.normpath(entry.get_name()) == name), None)
-        if linked is not None and linked.get_type() == ebooklib.ITEM_STYLE:
-            css.append(linked.get_content().decode("utf-8", errors="replace"))
+        name = _resolve(item.name, href)
+        linked = next((entry for entry in book.items.values() if posixpath.normpath(entry.name) == name), None)
+        if linked is not None and linked.media_type == "text/css":
+            css.append(linked.content.decode("utf-8", errors="replace"))
     css.extend(style.get_text() for style in soup.find_all("style"))
     rules = []
     for order, match in enumerate(_RULE.finditer("\n".join(css))):
@@ -263,33 +259,6 @@ def _resolve_link(chapter: str, href: str | None) -> str | None:
 def _anchor_id(chapter: str, fragment: str = "") -> str:
     value = posixpath.normpath(chapter) + ("--" + fragment if fragment else "")
     return "epub-" + re.sub(r"[^a-zA-Z0-9_.:-]+", "-", value).strip("-")
-
-
-def _metadata_first(book: Any, namespace: str, name: str) -> str:
-    values = book.get_metadata(namespace, name)
-    return values[0][0] if values else ""
-
-
-def _toc_titles(items: Iterable[Any]) -> dict[str, str]:
-    result = {}
-
-    def add(link: str | None) -> None:
-        href = getattr(link, "href", "")
-        title = getattr(link, "title", "")
-        if href and title:
-            result[posixpath.normpath(unquote(urlsplit(href).path))] = title
-
-    def visit(entries: Iterable[Any]) -> None:
-        for entry in entries:
-            if isinstance(entry, tuple):
-                link, children = entry
-                add(link)
-                visit(children)
-            else:
-                add(entry)
-
-    visit(items)
-    return result
 
 
 def _provenance(source: Path, part: str, object_id: str | None = None) -> od.Provenance:

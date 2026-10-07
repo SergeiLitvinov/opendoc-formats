@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "opendoc-formats"
-version = "0.4.0"
+version = "0.5.0"
 description = "Document format readers and writers built on OpenDoc: formats, structure, transition"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -30,7 +30,8 @@ pdf-text = ["pypdf>=4"]
 pdf = ["pypdf>=4", "pymupdf>=1.24", "pdf2docx>=0.2", "pdfplumber>=0.11"]
 docx = ["python-docx>=1.1", "lxml>=5"]
 pptx = ["python-pptx>=1.0.2", "lxml>=5", "Pillow>=10"]
-epub = ["ebooklib>=0.18", "beautifulsoup4>=4.12"]
+epub = ["beautifulsoup4>=4.12"]
+epub-ebooklib = ["ebooklib>=0.18", "beautifulsoup4>=4.12"]
 fonts = ["fonttools>=4.50"]
 html = ["beautifulsoup4>=4.12", "tinycss2>=1.5"]
 dev = ["pytest>=8", "ruff>=0.9", "mypy>=1.15", "build>=1.2", "twine>=6"]

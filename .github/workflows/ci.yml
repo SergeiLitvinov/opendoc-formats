@@ -67,6 +67,11 @@ jobs:
           version=$(python -m tools.release version)
           uv pip install --python .opendoc-formats/installed/bin/python ".opendoc-formats/from-sdist/opendoc_formats-${version}-py3-none-any.whl[pdf-text]"
           .opendoc-formats/installed/bin/python -I tools/package_smoke.py --pdf-text
+      - name: Exercise native EPUB without EbookLib or lxml
+        run: |
+          version=$(python -m tools.release version)
+          uv pip install --python .opendoc-formats/installed/bin/python ".opendoc-formats/from-sdist/opendoc_formats-${version}-py3-none-any.whl[epub]"
+          .opendoc-formats/installed/bin/python -I tools/package_smoke.py --epub
       - name: Install optional engines and exercise installed formats
         run: |
           version=$(python -m tools.release version)

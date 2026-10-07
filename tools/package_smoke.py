@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import sys
+import zipfile
 from importlib.metadata import version
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -14,6 +15,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--all-formats", action="store_true")
     parser.add_argument("--pdf-text", action="store_true")
+    parser.add_argument("--epub", action="store_true")
     args = parser.parse_args()
     from opendoc_model import DocumentModel, Formula, FormulaFormat, Paragraph, Section, Table, TableCell, TableRow, TextRun
 
@@ -35,7 +37,8 @@ def main() -> None:
     default_registry()
     default_exporter_registry()
     if not args.all_formats:
-        assert all(importlib.util.find_spec(name) is None for name in engines)
+        absent = tuple(name for name in engines if name != "bs4" or not args.epub)
+        assert all(importlib.util.find_spec(name) is None for name in absent)
         for constructor in (DocxPackage, PdfDocument):
             try:
                 constructor(b"missing engine")
@@ -62,6 +65,21 @@ def main() -> None:
         assert text.engine == "pypdf" and text.pages == 2 and "Native PDF" in text.plain, text
     with TemporaryDirectory(prefix="opendoc-formats-installed-") as directory:
         root = Path(directory)
+        if args.epub:
+            source = root / "native.epub"
+            with zipfile.ZipFile(source, "w") as archive:
+                archive.writestr("mimetype", "application/epub+zip")
+                archive.writestr("META-INF/container.xml", '''
+                  <container xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles>
+                  <rootfile full-path="book.opf" media-type="application/oebps-package+xml"/></rootfiles></container>''')
+                archive.writestr("book.opf", '''<package xmlns="http://www.idpf.org/2007/opf"><metadata/>
+                  <manifest><item id="c" href="c.xhtml" media-type="application/xhtml+xml"/></manifest>
+                  <spine><itemref idref="c"/></spine></package>''')
+                archive.writestr("c.xhtml", "<html><body><p>Native EPUB 123</p></body></html>")
+            result = read_document(source)
+            assert result.success, result.issues
+            assert result.document.sections[0].blocks[0].plain_text == "Native EPUB 123"
+            assert all(name not in sys.modules for name in ("lxml", "ebooklib"))
         math_path = root / "math.html"
         math = DocumentModel(sections=[Section(blocks=[Formula(
             '<math xmlns="http://www.w3.org/1998/Math/MathML"><mi>x</mi></math>', FormulaFormat.MATHML,

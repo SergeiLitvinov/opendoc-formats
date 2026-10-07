@@ -11,7 +11,7 @@
 | --- | --- | --- | --- | --- |
 | [ast-serialize](#ast-serialize-0121) | 0.12.1 | dev | MIT | Сериализация AST для mypy |
 | [backports-tarfile](#backports-tarfile-120) | 1.2.0 | dev | MIT | Совместимость архивов tooling |
-| [beautifulsoup4](#beautifulsoup4-4150) | 4.15.0 | epub, html | MIT License | HTML/XHTML parser |
+| [beautifulsoup4](#beautifulsoup4-4150) | 4.15.0 | epub, epub-ebooklib, html | MIT License | HTML/XHTML parser |
 | [build](#build-161) | 1.6.1 | dev | MIT | Frontend сборки Python |
 | [certifi](#certifi-2026722) | 2026.7.22 | dev | MPL-2.0 | Набор корневых TLS-сертификатов |
 | [cffi](#cffi-211) | 2.1.1 | dev, pdf | MIT-0 | Вызов native кода |
@@ -20,7 +20,7 @@
 | [colorama](#colorama-046) | 0.4.6 | dev, docs | BSD-3-Clause | Цветной вывод Windows |
 | [cryptography](#cryptography-5002) | 50.0.2 | dev, pdf | Apache-2.0 OR BSD-3-Clause | Криптография PDF и системного credential storage |
 | [docutils](#docutils-023) | 0.23 | dev | Public domain + BSD-2-Clause/BSD-3-Clause; GPL-3.0-or-later для отдельных tooling files | Разбор описаний reStructuredText для twine |
-| [ebooklib](#ebooklib-020) | 0.20 | epub | AGPL-3.0-or-later | Контейнер и spine EPUB |
+| [ebooklib](#ebooklib-020) | 0.20 | epub-ebooklib | AGPL-3.0-or-later | Контейнер и spine EPUB |
 | [fire](#fire-071) | 0.7.1 | pdf | Apache-2.0 | CLI прямого PDF-конвертера |
 | [fonttools](#fonttools-4661) | 4.66.1 | fonts, pdf | MIT | Метаданные шрифтов |
 | [ghp-import](#ghp-import-210) | 2.1.0 | docs | Apache Software License | Инструмент публикации MkDocs |
@@ -35,7 +35,7 @@
 | [jinja2](#jinja2-316) | 3.1.6 | docs | BSD-3-Clause | Шаблоны документации |
 | [keyring](#keyring-2570) | 25.7.0 | dev | MIT | Хранилище credentials twine |
 | [librt](#librt-0160) | 0.16.0 | dev | MIT | Runtime mypy |
-| [lxml](#lxml-613) | 6.1.3 | docx, epub, pdf, pptx | BSD-3-Clause + PSF/ElementTree, MIT, Zlib, LGPL-2.1; два XSL: unresolved license grant (OF16) | XML/OOXML parser |
+| [lxml](#lxml-613) | 6.1.3 | docx, epub-ebooklib, pdf, pptx | BSD-3-Clause + PSF/ElementTree, MIT, Zlib, LGPL-2.1; два XSL: unresolved license grant (OF16) | XML/OOXML parser |
 | [markdown](#markdown-311) | 3.11 | docs | BSD-3-Clause | Markdown документации |
 | [markdown-it-py](#markdown-it-py-420) | 4.2.0 | dev | MIT | Разбор Markdown для CLI |
 | [markupsafe](#markupsafe-304) | 3.0.4 | docs | BSD-3-Clause | Экранирование HTML шаблонов |
@@ -79,12 +79,12 @@
 | [rich](#rich-1500) | 15.0.0 | dev | MIT | Форматирование CLI |
 | [ruff](#ruff-01610) | 0.16.10 | dev | MIT | Линтер |
 | [secretstorage](#secretstorage-350) | 3.5.0 | dev | BSD-3-Clause | Linux credential storage |
-| [six](#six-1170) | 1.17.0 | docs, epub | MIT | Совместимость Python EPUB/dateutil |
-| [soupsieve](#soupsieve-210) | 2.10 | epub, html | MIT | CSS selectors BeautifulSoup |
+| [six](#six-1170) | 1.17.0 | docs, epub-ebooklib | MIT | Совместимость Python EPUB/dateutil |
+| [soupsieve](#soupsieve-210) | 2.10 | epub, epub-ebooklib, html | MIT | CSS selectors BeautifulSoup |
 | [termcolor](#termcolor-330) | 3.3.0 | pdf | MIT | Цвет CLI конвертера |
 | [tinycss2](#tinycss2-151) | 1.5.1 | html | BSD-3-Clause | CSS parser HTML |
 | [twine](#twine-700) | 7.0.0 | dev | Apache-2.0 | Проверка/публикация метаданных Python |
-| [typing-extensions](#typing-extensions-4160) | 4.16.0 | dev, docx, epub, html, pdf, pptx | PSF-2.0 | Совместимость аннотаций типов |
+| [typing-extensions](#typing-extensions-4160) | 4.16.0 | dev, docx, epub, epub-ebooklib, html, pdf, pptx | PSF-2.0 | Совместимость аннотаций типов |
 | [urllib3](#urllib3-280) | 2.8.0 | dev | MIT | HTTP transport tooling |
 | [watchdog](#watchdog-600) | 6.0.0 | docs | Apache-2.0 | Отслеживание файлов документации |
 | [webencodings](#webencodings-061) | 0.6.1 | html | BSD-3-Clause | Кодировки CSS |

@@ -149,7 +149,7 @@ def default_registry() -> AdapterRegistry:
     registry.register(AdapterSpec("html", (".html", ".htm"), _html, ("bs4", "tinycss2")))
     registry.register(AdapterSpec("docx", (".docx",), _docx, ("docx",)))
     registry.register(AdapterSpec("pptx", (".pptx",), _pptx, ("pptx",)))
-    registry.register(AdapterSpec("epub", (".epub",), _epub, ("ebooklib", "bs4")))
+    registry.register(AdapterSpec("epub", (".epub",), _epub, ("bs4",)))
     registry.register(AdapterSpec("pdf", (".pdf",), _pdf, ("fitz",)))
     registry.register(AdapterSpec("json", (".json",), _json))
     registry.register(AdapterSpec("djvu", (".djvu",), _djvu))

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "lock_sha256": "c9bce929c56907551f788f12dfa1357a3713845ad9e8c353461e0414a73fb7d4",
-  "configuration_sha256": "f89c7e6d7f874db13baa23d7f531f5d47d0ea7b72e4f97f7e7bc3b9d924fb9f7",
+  "lock_sha256": "3232df934e56042e3825a27b81256d2bf62a35a6ad6c241b8ea158e6846c80ea",
+  "configuration_sha256": "d04181d46b6b0305862d0669dd8a743234932a1469d062d6deb8e350a6406f50",
   "packages": [
     {
       "name": "ast-serialize",
@@ -73,6 +73,7 @@
       "version": "4.15.0",
       "scopes": [
         "epub",
+        "epub-ebooklib",
         "html"
       ],
       "description": "HTML/XHTML parser",
@@ -338,7 +339,7 @@
       "name": "ebooklib",
       "version": "0.20",
       "scopes": [
-        "epub"
+        "epub-ebooklib"
       ],
       "description": "Контейнер и spine EPUB",
       "license": "AGPL-3.0-or-later",
@@ -704,7 +705,7 @@
       "version": "6.1.3",
       "scopes": [
         "docx",
-        "epub",
+        "epub-ebooklib",
         "pdf",
         "pptx"
       ],
@@ -2495,7 +2496,7 @@
       "version": "1.17.0",
       "scopes": [
         "docs",
-        "epub"
+        "epub-ebooklib"
       ],
       "description": "Совместимость Python EPUB/dateutil",
       "license": "MIT",
@@ -2519,6 +2520,7 @@
       "version": "2.10",
       "scopes": [
         "epub",
+        "epub-ebooklib",
         "html"
       ],
       "description": "CSS selectors BeautifulSoup",
@@ -2614,6 +2616,7 @@
         "dev",
         "docx",
         "epub",
+        "epub-ebooklib",
         "html",
         "pdf",
         "pptx"

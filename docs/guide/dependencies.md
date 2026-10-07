@@ -17,11 +17,11 @@
 | pdf2docx 0.5.13 | pdf | Отдельный прямой PDF → DOCX маршрут | MIT; зависит от AGPL/commercial PyMuPDF и OpenCV; upstream помечен как не поддерживаемый активно |
 | pdfplumber 0.11.10 | pdf | Альтернативный анализ таблиц/геометрии в PDF → DOCX | MIT; pdfminer.six, Pillow, pypdfium2 и их компоненты |
 | python-docx 1.2.0 | docx | OOXML DOCX, rich reader/writer и DOCX → TeX | MIT; использует lxml |
-| lxml 6.1.3 | docx, pptx; транзитивно epub/pdf | XML и OOXML | BSD-3-Clause; bundled libiconv LGPL-2.1 и другие отдельные условия |
+| lxml 6.1.3 | docx, pptx; транзитивно epub-ebooklib/pdf | XML и OOXML | BSD-3-Clause; bundled libiconv LGPL-2.1 и другие отдельные условия |
 | python-pptx 1.0.2 | pptx | Чтение/создание презентаций и отдельный HTML viewer | MIT; lxml, Pillow, XlsxWriter |
 | Pillow 12.3.0 | pptx; транзитивно pdf | Обработка изображений, fallback и измерения | MIT-CMU; комплект лицензий встроенных библиотек |
-| EbookLib 0.20 | epub | Чтение контейнера/OPF/spine EPUB | **AGPL-3.0-or-later**, использует lxml/six |
-| beautifulsoup4 4.15.0 | html, epub | Разбор HTML/XHTML | MIT; soupsieve/typing-extensions |
+| EbookLib 0.20 | epub-ebooklib | Необязательный прежний backend контейнера/OPF/spine EPUB | **AGPL-3.0-or-later**, использует lxml/six |
+| beautifulsoup4 4.15.0 | html, epub, epub-ebooklib | Разбор HTML/XHTML | MIT; soupsieve/typing-extensions |
 | tinycss2 1.5.1 | html | Токены и разбор статического CSS | BSD-3-Clause; webencodings |
 | fonttools 4.66.1 | fonts | Метаданные шрифтов, покрытие глифов и ограничения embedding | MIT; лицензия самих шрифтов отдельно |
 
@@ -75,7 +75,8 @@ OMML в MathML и OOXML-маршруты имеют отдельные треб�
 | `docx` | MIT, BSD-3-Clause, PSF/ElementTree, Zlib; LGPL-2.1 для bundled libiconv | Сохранить условия lxml и LGPL-компонента; XSL-исключение описано ниже |
 | `pptx` | Условия `docx` плюс BSD-2-Clause XlsxWriter и MIT-CMU/third-party notices Pillow | Сохранить весь комплект notices; XSL-исключение остаётся |
 | `pdf` | PyMuPDF AGPL-3.0 либо commercial; MIT/BSD/Apache/PSF, MIT-0, Zlib/0BSD/CC0 у остальных пакетов; LGPL FFmpeg/libiconv, GCC runtime exception; PDFium BUILD_LICENSES | При выборе AGPL распространять охватываемую объединённую программу на совместимых условиях с corresponding source. Коммерческая ветвь PyMuPDF не требуется для соблюдающего AGPL открытого проекта. XSL-исключение остаётся |
-| `epub` | EbookLib AGPL-3.0-or-later; MIT/BSD/PSF и условия lxml/libiconv | Совместимые AGPL-условия для охватываемой объединённой программы, source и notices; XSL-исключение остаётся |
+| `epub` | MIT; PSF-2.0 у typing-extensions | Собственный ZIP/OPF/spine/nav/NCX слой; BeautifulSoup/soupsieve для XHTML. Сохранить notices; lxml и EbookLib не требуются |
+| `epub-ebooklib` | EbookLib AGPL-3.0-or-later; MIT/BSD/PSF и условия lxml/libiconv | Прежний backend выбирается явно. Совместимые AGPL-условия для охватываемой объединённой программы, source и notices; XSL-исключение остаётся |
 | `dev` | MIT/BSD/Apache/PSF, MIT-0, MPL-2.0; docutils Public domain/BSD и GPL у отдельных tooling-файлов | Это инструменты разработки; их применение не назначает всему выходному wheel их лицензии. При распространении самого окружения учитывать все компоненты |
 | `docs` | BSD-2-Clause MkDocs; MIT/BSD/Apache и MPL-2.0 зависимостей; MIT и MPL-1.1 JavaScript поиска | Для публикуемых assets сохранить headers/полные license texts и доступность MPL source; это сделано на Pages |
 | build-system | MIT setuptools; версия выбирается из `>=77` при изолированной сборке | Фиксировать и проверять точный backend при распространении сборочного окружения |
@@ -107,4 +108,17 @@ MIT позволяет включать собственный код в сов�
 Направление развития зависимости — выбор совместимых открытых движков, устранение
 неясных прав и уменьшение лишнего состава установки. Переписывание AGPL-движков
 только из-за copyleft не является обязательной задачей. Конкретные пункты —
-[OF16–OF18](../development/todo.md); текущие зависимости и условия сохраняются.
+[TODO](../development/todo.md).
+
+## EPUB без лишнего движка
+
+`epub` использует собственный контейнер стандартной библиотеки. Он сохраняет порядок
+spine, метаданные title/language/identifier, оглавление EPUB 3 nav и EPUB 2 NCX,
+исходные XHTML/CSS и изображения. Archive safety, проверки локальных путей и XML
+исключают выход за архив, сетевые обращения и объявления сущностей.
+Существующий профиль XHTML/CSS не расширяется этим изменением: таблицы, MathML,
+nonlinear content и полный fixed layout остаются задачами OF08.
+
+Прежний маршрут доступен после установки `epub-ebooklib`:
+`read_epub_model(path, backend="ebooklib")` и `read_epub(path, backend="ebooklib")`.
+По умолчанию и в `read_document` используется `backend="native"`.

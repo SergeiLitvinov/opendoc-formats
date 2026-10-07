@@ -7,7 +7,7 @@ import pytest
 pytest.importorskip("ebooklib")
 pytest.importorskip("bs4")
 from ebooklib import epub
-from opendoc_model.document_codec import load_document, save_document
+from opendoc_model.document_codec import document_to_dict, load_document, save_document
 from opendoc_model.document_model import Image, ResourceKind, TextRun
 from PIL import Image as PillowImage
 
@@ -71,3 +71,13 @@ def test_spine_links_media_css_and_json_roundtrip(tmp_path):
     restored = load_document(saved)
     assert restored.sections[0].blocks[0].content[0].link == "#epub-chapters-first.xhtml--target"
     assert restored.resources[image.resource_id].data == model.resources[image.resource_id].data
+
+
+def test_native_and_ebooklib_have_equal_rich_document_semantics(tmp_path):
+    source = tmp_path / "rich.epub"
+    _rich_epub(source)
+    native = document_to_dict(read_epub_model(source))
+    legacy = document_to_dict(read_epub_model(source, backend="ebooklib"))
+    native["document"]["metadata"].pop("engine")
+    legacy["document"]["metadata"].pop("engine")
+    assert native == legacy
