@@ -28,6 +28,59 @@ def test_html_actual_parser_and_diagnostics(tmp_path):
     assert any("script" in issue.message for issue in result.issues)
     assert document_from_json(document_to_json(result.document)).styles["Heading1"]
 
+
+@pytest.mark.parametrize("format_id,nested", [("epub", True), ("pdf", False), ("custom", False)])
+def test_reader_warnings_are_exposed_without_claiming_losslessness(tmp_path, format_id, nested):
+    path = tmp_path / "input.fixture"
+    path.write_text("source", encoding="utf-8")
+    metadata = {"warnings": ["An object was skipped"]}
+    document = DocumentModel(metadata={format_id: metadata} if nested else metadata)
+    registry = AdapterRegistry()
+    registry.register(AdapterSpec(format_id, (".fixture",), lambda path, options: document))
+    result = registry.read(path)
+    assert result.success and not result.assessment_complete and not result.lossless
+    assert result.issues[0].code == f"{format_id}.warning"
+    assert str(path) in result.issues[0].location
+    restored = document_from_json(document_to_json(document))
+    assert restored.metadata == document.metadata
+
+
+@pytest.mark.parametrize("state", ["semantic", "opaque", "visual", "lost", "rejected"])
+def test_json_preservation_ledger_controls_import_result(tmp_path, state):
+    from opendoc_model import (
+        DiagnosticIssue,
+        IntegrationModel,
+        IssueSeverity,
+        PreservationRecord,
+        PreservationState,
+        set_integration,
+    )
+
+    document = DocumentModel()
+    issue = DiagnosticIssue("source.object", IssueSeverity.INFO, "Object assessment", "part.xml#object-1",
+                            reason="fixture-assessment")
+    set_integration(document, IntegrationModel(
+        assessed_features=(issue.code,), assessment_complete=True,
+        preservation=(PreservationRecord(issue=issue, state=PreservationState(state)),),
+    ))
+    path = tmp_path / "input.json"
+    path.write_text(document_to_json(document), encoding="utf-8")
+    result = read_document(path)
+    assert result.assessment_complete
+    assert result.lossless is (state == "semantic")
+    assert result.success is (state != "rejected")
+    assert result.issues[0].location == issue.location
+    assert result.issues[0].reason == issue.reason
+    assert document_from_json(document_to_json(result.document)).metadata == document.metadata
+
+
+def test_empty_import_diagnostics_do_not_prove_losslessness(tmp_path):
+    path = tmp_path / "input.txt"
+    path.write_text("content", encoding="utf-8")
+    result = read_document(path)
+    assert result.success and not result.issues
+    assert not result.assessment_complete and not result.lossless
+
 def test_registry_extension_and_duplicate_rejection(tmp_path):
     path = tmp_path / "input.custom"
     path.write_text("Value", encoding="utf-8")

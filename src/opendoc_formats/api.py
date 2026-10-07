@@ -8,7 +8,7 @@ from importlib import import_module
 from pathlib import Path
 from typing import cast
 
-from opendoc_model import ArtifactLimitError, DiagnosticIssue, DocumentLimits, DocumentModel, IssueSeverity
+from opendoc_model import ArtifactLimitError, DiagnosticIssue, DocumentLimits, DocumentModel, IssueSeverity, get_integration
 
 from opendoc_formats.support.backends import missing_backends
 
@@ -46,6 +46,30 @@ class ImportResult:
     @property
     def success(self) -> bool:
         return self.document is not None and not any(issue.severity is IssueSeverity.ERROR for issue in self.issues)
+
+    @property
+    def assessment_complete(self) -> bool:
+        """Only an explicit, fully reported OpenDoc assessment proves coverage."""
+        if self.document is None:
+            return False
+        model = get_integration(self.document)
+        return bool(
+            model is not None and model.assessment_complete and model.assessed_features
+            and {record.issue.code for record in model.preservation} == set(model.assessed_features)
+        )
+
+    @property
+    def lossless(self) -> bool:
+        from opendoc_model import PreservationState
+
+        if not self.success or not self.assessment_complete or self.document is None:
+            return False
+        model = get_integration(self.document)
+        return bool(
+            model is not None
+            and all(record.state is PreservationState.SEMANTIC for record in model.preservation)
+            and not any(issue.severity in (IssueSeverity.LOSS, IssueSeverity.ERROR) for issue in self.issues)
+        )
 
 
 Reader = Callable[[Path, ImportOptions], DocumentModel]
@@ -120,17 +144,49 @@ class AdapterRegistry:
             return failure("import.document-limit", str(error))
         if errors:
             return failure("import.invalid-model", "; ".join(errors))
-        warnings = document.metadata.get("html", {}).get("warnings", []) if identifier == "html" else []
-        issues = tuple(
-            DiagnosticIssue(
-                str(item.get("feature", "import.warning")),
-                IssueSeverity.WARNING,
-                str(item.get("message", "")),
-                str(item.get("location", "")),
-            )
-            for item in warnings
-        )
-        return ImportResult(document, identifier, issues)
+        return ImportResult(document, identifier, _import_issues(document, identifier, source, options.document_limits))
+
+
+def _import_issues(
+    document: DocumentModel, identifier: str, source: Path, limits: DocumentLimits,
+) -> tuple[DiagnosticIssue, ...]:
+    """Expose existing diagnostics without guessing preservation from prose."""
+    from opendoc_model import PreservationState
+
+    issues: list[DiagnosticIssue] = []
+    model = get_integration(document, limits=limits)
+    if model is not None:
+        for record in model.preservation:
+            issue = record.issue
+            if record.state is not PreservationState.SEMANTIC:
+                severity = IssueSeverity.ERROR if record.state is PreservationState.REJECTED else IssueSeverity.LOSS
+                issue = DiagnosticIssue(
+                    issue.code, severity, issue.message, issue.location,
+                    {**(issue.measurement or {}), "state": record.state.value, "node_id": record.node_id}, issue.reason,
+                )
+            issues.append(issue)
+    containers = [(document.metadata, "metadata")]
+    nested = document.metadata.get(identifier)
+    if isinstance(nested, dict):
+        containers.append((nested, f"metadata.{identifier}"))
+    for container, location in containers:
+        warnings = container.get("warnings", [])
+        if not isinstance(warnings, list):
+            continue
+        for index, item in enumerate(warnings):
+            fallback = f"{source}#{location}.warnings[{index}]"
+            if isinstance(item, str):
+                issue = DiagnosticIssue(f"{identifier}.warning", IssueSeverity.WARNING, item, fallback)
+            elif isinstance(item, dict):
+                issue = DiagnosticIssue(
+                    str(item.get("feature") or f"{identifier}.warning"), IssueSeverity.WARNING,
+                    str(item.get("message", "")), str(item.get("location") or fallback),
+                )
+            else:
+                continue
+            if issue not in issues:
+                issues.append(issue)
+    return tuple(issues)
 
 
 def _txt(path: Path, options: ImportOptions) -> DocumentModel:
