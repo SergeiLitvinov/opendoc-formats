@@ -175,12 +175,23 @@ def main() -> None:
                 assert result.document.validate() == []
                 assert "Cell" in str(result.document)
             if args.all_formats and format_id == "docx":
-                from opendoc_model import Heading, get_heading, set_heading
+                from opendoc_model import (
+                    Heading,
+                    WidthMeasure,
+                    get_heading,
+                    get_preferred_width,
+                    set_heading,
+                    set_preferred_width,
+                )
                 from opendoc_model.document_codec import document_from_json, document_to_json
 
                 heading = Paragraph([TextRun("Own formal heading")])
                 set_heading(heading, Heading(2))
-                heading_model = DocumentModel(sections=[Section(blocks=[heading])])
+                width_cell = TableCell([Paragraph([TextRun("Own typed width")])])
+                width_table = Table([TableRow([width_cell])])
+                set_preferred_width(width_table, WidthMeasure("relative", 0.8, "ratio", "content"))
+                set_preferred_width(width_cell, WidthMeasure("absolute", 120, "pt"))
+                heading_model = DocumentModel(sections=[Section(blocks=[heading, width_table])])
                 for cycle in range(2):
                     heading_target = root / f"heading-{cycle}.docx"
                     restored = document_from_json(document_to_json(heading_model))
@@ -189,6 +200,9 @@ def main() -> None:
                     assert heading_result.success, heading_result.issues
                     heading_model = heading_result.document
                     assert get_heading(heading_model.sections[0].blocks[0]) == Heading(2)
+                    returned_table = heading_model.sections[0].blocks[1]
+                    assert get_preferred_width(returned_table) == WidthMeasure("relative", 0.8, "ratio", "content")
+                    assert get_preferred_width(returned_table.rows[0].cells[0]) == WidthMeasure("absolute", 120, "pt")
                 with DocxPackage(path) as package:
                     paragraph = next(p for p in package.paragraphs if p.is_body and p.text)
                     updated = package.to_bytes([ReplaceTextSpan(paragraph.id, 0, 0, "Native ")])

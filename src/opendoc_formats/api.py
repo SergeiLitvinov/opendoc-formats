@@ -256,9 +256,17 @@ def _pdf(path: Path, options: ImportOptions) -> DocumentModel:
 
 
 def _json(path: Path, options: ImportOptions) -> DocumentModel:
-    from opendoc_model import load_document
+    from opendoc_model import Table, TableCell, load_document, walk_model
 
-    return load_document(path)
+    from opendoc_formats.ooxml.widths import import_width
+
+    document = load_document(path)
+    for reference in walk_model(document, limits=options.document_limits):
+        node = reference.node
+        if isinstance(node, (Table, TableCell)) and "docx_preferred_width" in node.properties:
+            if "preferred_width" not in node.properties and "docx_width_imported" not in node.properties:
+                import_width(node)
+    return document
 
 
 def _djvu(path: Path, options: ImportOptions) -> DocumentModel:

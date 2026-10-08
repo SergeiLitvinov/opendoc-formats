@@ -149,6 +149,26 @@ PowerPoint устанавливается отдельно; CI выполняе�
 получает расположенный loss. Это структурная приёмка, без доказательства
 браузерного accessibility tree или работы экранного диктора.
 
+## DOCX: общая предпочтительная ширина
+
+`tests/readers/test_docx_typed_widths.py` проверяет абсолютные и относительные
+предпочтения таблиц/ячеек, physical units, отсутствие type, ноль, auto/nil,
+отсутствующую ширину, два JSON/DOCX цикла, точную native запись и неизменность
+исходника/модели. Старые JSON проходят публичный импорт до правки/удаления.
+Отрицательная native ширина остаётся расширением. Прежний тест неверной ширины
+проверяет сохранение старого результата при отказе.
+
+`tools/docx_word_acceptance.ps1` подтверждает прежний текст, одну страницу и
+колонки 48/384/48 pt. `tools/docx_typed_width_acceptance.ps1` открывает четыре
+результата правок read-only в Word 16.0, проверяет preferred types и значения:
+75.001% и 12.125 pt отображаются API Word как 75% и 12.1 pt. Точный XML сохраняется;
+это дискретность Word, без утверждения о точном полном визуальном рендере.
+
+```powershell
+uv run --frozen pytest tests/readers/test_docx_typed_widths.py --basetemp=.opendoc-formats/width-native
+./tools/docx_typed_width_acceptance.ps1 -FixtureRoot .opendoc-formats/width-native
+```
+
 ## DOCX: формальная роль заголовка
 
 `tests/readers/test_docx_headings.py` создаёт собственные документы с уровнями
