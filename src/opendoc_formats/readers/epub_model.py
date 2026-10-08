@@ -46,6 +46,27 @@ def read_epub_model(path: str | Path, *, backend: str = "native", include_nonlin
     book = read_epub_package(source) if backend == "native" else read_ebooklib_package(source)
     resources, item_names = _resources(book, source)
     diagnostics = EpubDiagnostics(source, book.root_directory, resources)
+    source_resources = {}
+    for index, (part, payload) in enumerate(book.source_parts.items(), 1):
+        resource_id = f"epub-source-xml-{index}"
+        while resource_id in resources:
+            resource_id += "-source"
+        resources[resource_id] = Resource(
+            resource_id,
+            ResourceKind.ATTACHMENT,
+            "application/xml",
+            data=payload,
+            filename=posixpath.basename(part),
+            provenance=_provenance(source, part),
+        )
+        source_resources[part] = resource_id
+        diagnostics.opaque(
+            "epub.package",
+            "source-package-xml",
+            "Original package/navigation XML retained; partial semantic model",
+            posixpath.relpath(part, book.root_directory or "."),
+            resource_id,
+        )
     for item in book.items.values():
         if item.media_type.startswith(("font/", "audio/", "video/")) or item.media_type in {
             "application/vnd.ms-opentype",
@@ -105,6 +126,9 @@ def read_epub_model(path: str | Path, *, backend: str = "native", include_nonlin
             "spine": [section.properties["epub"]["href"] for section in sections],
             "warnings": warnings,
             "include_nonlinear": include_nonlinear,
+            "source_xml_resources": source_resources,
+            "metadata_entries": list(book.metadata_entries),
+            "package_properties": book.package_properties,
             "source_spine": [
                 {"idref": idref, "linear": str(linear), "href": book.items[idref].name if idref in book.items else None}
                 for idref, linear in book.spine

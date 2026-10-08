@@ -34,7 +34,7 @@ def test_epub_asset_and_xhtml_losses_survive_json(tmp_path):
     reasons = {issue.reason for issue in result.issues}
     assert reasons == {
         "missing-image", "svg-resource", "unsupported-media",
-        "unsupported-object", "inactive-script", "inert-asset", "unsupported-spine-item",
+        "unsupported-object", "inactive-script", "inert-asset", "unsupported-spine-item", "source-package-xml",
     }
     assert all(issue.severity.value == "loss" for issue in result.issues)
     assert any(issue.location.endswith("chapter.xhtml#missing") for issue in result.issues)
@@ -44,7 +44,7 @@ def test_epub_asset_and_xhtml_losses_survive_json(tmp_path):
     assert get_integration(restored) == get_integration(result.document)
     ledger = get_integration(restored)
     retained = [record for record in ledger.preservation if record.state.value == "opaque"]
-    assert len(retained) == 3
+    assert len(retained) == 5
     assert all(record.extra["resource_id"] in restored.resources for record in retained)
     assert restored.resources["epub-font"].data == b"own inert placeholder"
     assert restored.resources["epub-audio"].data == b"own inert placeholder"

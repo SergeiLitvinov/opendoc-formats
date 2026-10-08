@@ -400,8 +400,8 @@ Original, bounded EPUB container reader; no network or XML entity expansion.
 
 - `EpubItem` — [строка 24](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L24)
 - `EpubPackage` — [строка 33](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L33)
-- `read_epub_package(path: str | Path) -> EpubPackage` — [строка 81](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L81)
-- `read_ebooklib_package(path: str | Path) -> EpubPackage` — [строка 148](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L148)
+- `read_epub_package(path: str | Path) -> EpubPackage` — [строка 98](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L98)
+- `read_ebooklib_package(path: str | Path) -> EpubPackage` — [строка 178](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L178)
 
 Импорты: `__future__`, `dataclasses`, `ebooklib`, `opendoc_formats.support.io`, `pathlib`, `urllib.parse`
 

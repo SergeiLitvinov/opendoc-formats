@@ -87,9 +87,12 @@
   исходные font/audio/video bytes удерживаются в inert attachments.
 - Реализовано: явный `epub_include_nonlinear`/`include_nonlinear` для глав `linear=no`,
   source spine descriptor и линейность разделов сохраняются через JSON.
+- Реализовано: исходные container/OPF/nav/NCX bytes удерживаются opaque;
+  все metadata XML entries и package attributes сохраняются через JSON.
 - Остаётся: семантика CSS font-face/обфускации шрифтов,
   редактируемые SVG shapes и playback/media contracts,
-  fixed-layout и полный CSS; таблицы внутри текстовых блоков диагностируются как flattened.
+  семантика nav/OPF metadata, fixed-layout и полный CSS;
+  таблицы внутри текстовых блоков диагностируются как flattened.
 - Разбирать XHTML общим структурным путём: таблицы с объединениями, MathML, SVG,
   standalone media; сохранить весь spine/nav/OPF metadata, font assets и fixed-layout
   признаки. Нелинейные документы учитывать отдельным явным режимом.

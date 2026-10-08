@@ -37,6 +37,23 @@ class EpubPackage:
     titles: dict[str, str] = field(default_factory=dict)
     engine: str = "native-epub+bs4"
     root_directory: str = ""
+    source_parts: dict[str, bytes] = field(default_factory=dict)
+    metadata_entries: tuple[str, ...] = ()
+    package_properties: dict[str, str] = field(default_factory=dict)
+
+
+def _source_snapshot(archive: zipfile.ZipFile, opf_name: str) -> tuple[dict[str, bytes], tuple[str, ...], dict[str, str]]:
+    """Original inert XML parts, independent of backend serialization."""
+    payload = archive.read(opf_name)
+    opf = _xml(payload)
+    parts = {"META-INF/container.xml": archive.read("META-INF/container.xml"), opf_name: payload}
+    for item in opf.findall(f"{{{_OPF}}}manifest/{{{_OPF}}}item"):
+        if "nav" in item.get("properties", "").split() or item.get("media-type") == "application/x-dtbncx+xml":
+            name = _local_path(opf_name, item.get("href", ""))
+            parts[name] = archive.read(name)
+    metadata = opf.find(f"{{{_OPF}}}metadata")
+    entries = tuple(ET.tostring(entry, encoding="unicode") for entry in metadata) if metadata is not None else ()
+    return parts, entries, dict(opf.attrib)
 
 
 def _local_path(base: str, href: str) -> str:
@@ -55,7 +72,7 @@ def _local_path(base: str, href: str) -> str:
 def _xml(data: bytes) -> ET.Element:
     # Strip NUL only for inspection, so UTF-16/32 cannot hide declarations.
     probe = data.replace(b"\x00", b"")
-    if re.search(br"<!\s*ENTITY\b|<!\s*DOCTYPE[^>]*\[", probe, re.IGNORECASE):
+    if re.search(rb"<!\s*ENTITY\b|<!\s*DOCTYPE[^>]*\[", probe, re.IGNORECASE):
         raise ValueError("Internal DTD subsets and entity declarations are not accepted in EPUB")
     root = ET.fromstring(data)  # External DTDs are never fetched by ElementTree.
     pending = [(root, 1)]
@@ -82,6 +99,7 @@ def read_epub_package(path: str | Path) -> EpubPackage:
     """Read OPF, spine, EPUB 3 navigation and EPUB 2 NCX without extracting files."""
     check_archive_safety(path)
     with zipfile.ZipFile(path) as archive:
+
         def read(name: str) -> bytes:
             try:
                 return archive.read(name)
@@ -139,10 +157,22 @@ def read_epub_package(path: str | Path) -> EpubPackage:
         # Keep public chapter/resource identifiers relative to OPF, as in the
         # legacy backend. Archive lookup above always uses absolute ZIP names.
         base = posixpath.dirname(opf_name) or "."
-        items = {key: EpubItem(item.id, posixpath.relpath(item.name, base), item.media_type,
-                               item.content, item.properties) for key, item in items.items()}
+        items = {
+            key: EpubItem(item.id, posixpath.relpath(item.name, base), item.media_type, item.content, item.properties)
+            for key, item in items.items()
+        }
         titles = {posixpath.relpath(name, base): title for name, title in titles.items()}
-        return EpubPackage(items, tuple(spine), metadata, titles, root_directory=posixpath.dirname(opf_name))
+        parts, entries, properties = _source_snapshot(archive, opf_name)
+        return EpubPackage(
+            items,
+            tuple(spine),
+            metadata,
+            titles,
+            root_directory=posixpath.dirname(opf_name),
+            source_parts=parts,
+            metadata_entries=entries,
+            package_properties=properties,
+        )
 
 
 def read_ebooklib_package(path: str | Path) -> EpubPackage:
@@ -151,11 +181,18 @@ def read_ebooklib_package(path: str | Path) -> EpubPackage:
 
     check_archive_safety(path)
     with zipfile.ZipFile(path) as archive:
-        root_directory = posixpath.dirname(_opf_name(archive.read("META-INF/container.xml")))
+        opf_name = _opf_name(archive.read("META-INF/container.xml"))
+        root_directory = posixpath.dirname(opf_name)
+        parts, entries, properties = _source_snapshot(archive, opf_name)
     book = epub.read_epub(str(path))
     items = {
-        item.id: EpubItem(item.id, posixpath.normpath(item.get_name()), item.media_type, item.content,
-                          ("nav",) if isinstance(item, epub.EpubNav) else ())
+        item.id: EpubItem(
+            item.id,
+            posixpath.normpath(item.get_name()),
+            item.media_type,
+            item.content,
+            ("nav",) if isinstance(item, epub.EpubNav) else (),
+        )
         for item in book.get_items()
     }
     titles: dict[str, str] = {}
@@ -172,4 +209,14 @@ def read_ebooklib_package(path: str | Path) -> EpubPackage:
     for name in ("title", "language", "identifier"):
         values = book.get_metadata("DC", name)
         metadata[name] = values[0][0] if values else ""
-    return EpubPackage(items, tuple(book.spine), metadata, titles, "ebooklib+bs4", root_directory)
+    return EpubPackage(
+        items,
+        tuple(book.spine),
+        metadata,
+        titles,
+        "ebooklib+bs4",
+        root_directory,
+        source_parts=parts,
+        metadata_entries=entries,
+        package_properties=properties,
+    )

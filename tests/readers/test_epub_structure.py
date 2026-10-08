@@ -43,7 +43,7 @@ def test_tables_math_links_mixed_cells_order_and_json(tmp_path):
     )
     result = read_document(source)
     assert result.success and not result.assessment_complete
-    assert not result.issues
+    assert {issue.reason for issue in result.issues} == {"source-package-xml"}
     blocks = result.document.sections[0].blocks
     assert len(blocks) == 5 and blocks[0].plain_text == "Before x after" and blocks[1].plain_text == "Own caption"
     inline = blocks[0].content[1]
@@ -75,7 +75,7 @@ def test_invalid_cell_span_has_located_loss(tmp_path, value):
     _book(source, f'<table><tr><td id="cell" colspan="{value}">Own cell</td></tr></table>')
     result = read_document(source)
     assert result.success and result.document.sections[0].blocks[0].rows[0].cells[0].column_span == 1
-    record = get_integration(result.document).preservation[0]
+    record = next(item for item in get_integration(result.document).preservation if item.issue.reason == "invalid-cell-span")
     assert record.issue.reason == "invalid-cell-span" and record.issue.location.endswith("OPS/chapter.xhtml#cell")
     assert record.provenance.package_part == "/OPS/chapter.xhtml"
 
@@ -191,5 +191,5 @@ def test_inline_svg_resource_collision_preserves_manifest_asset(tmp_path):
     assert resources["epub-" + item_id].data == b"own inert other asset"
     images = [block.content[0] for block in result.document.sections[0].blocks]
     assert images[0].resource_id == images[1].resource_id and images[0].resource_id != "epub-" + item_id
-    assert len(resources) == 2
+    assert len(resources) == 4
     assert b"rect" in resources[images[0].resource_id].data

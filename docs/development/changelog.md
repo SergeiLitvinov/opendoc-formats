@@ -1,5 +1,15 @@
 # Улучшения версии
 
+## 0.11.2 — улучшения относительно 0.11.1
+
+- EPUB сохраняет оригинальные container/OPF/nav/NCX как inert XML attachments:
+  точные байты, имена частей архива и resource IDs проверяются через JSON.
+- Все OPF metadata entries сохраняются как XML strings, включая повторяющиеся
+  creator, refines и rendition hints; атрибуты package сохраняются отдельно.
+  Ledger обозначает исходные XML parts как opaque: полная семантическая модель
+  навигации и fixed-layout не заявляется. Оба backend используют оригинал ZIP,
+  а не повторную сериализацию движка. Новых зависимостей нет.
+
 ## 0.11.1 — улучшения относительно 0.11.0
 
 - EPUB имеет явный режим импорта нелинейных глав: `ImportOptions(epub_include_nonlinear=True)`

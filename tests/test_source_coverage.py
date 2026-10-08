@@ -27,7 +27,7 @@ def test_epub_table_math_are_semantic_but_nonlinear_content_is_lost(tmp_path):
     chapter.content = (
         '<html xmlns="http://www.w3.org/1999/xhtml"><body>'
         '<p>Visible <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>x</mi></math></p>'
-        '<table><tr><td>TableOnly</td></tr></table></body></html>'
+        "<table><tr><td>TableOnly</td></tr></table></body></html>"
     )
     appendix = epub.EpubHtml(title="Appendix", file_name="appendix.xhtml")
     appendix.content = "<html><body><p>NonlinearOnly</p></body></html>"
@@ -45,7 +45,7 @@ def test_epub_table_math_are_semantic_but_nonlinear_content_is_lost(tmp_path):
     assert isinstance(blocks[0].content[1], Formula)
     result = read_document(source)
     assert result.success and not result.lossless and not result.assessment_complete
-    assert {issue.code for issue in result.issues} == {"epub.spine"}
+    assert {issue.code for issue in result.issues} == {"epub.spine", "epub.package"}
     assert all(issue.severity.value == "loss" and str(source) in issue.location for issue in result.issues)
     assert any("appendix.xhtml" in issue.location and issue.reason == "nonlinear-spine" for issue in result.issues)
     from opendoc_formats import ImportOptions
@@ -65,7 +65,9 @@ def test_epub_table_math_are_semantic_but_nonlinear_content_is_lost(tmp_path):
     ledger = get_integration(restored)
     assert ledger == get_integration(document)
     assert all(record.provenance.source_path == str(source) for record in ledger.preservation)
-    assert all(record.provenance.package_part.endswith(".xhtml") for record in ledger.preservation)
+    assert next(
+        record for record in ledger.preservation if record.issue.reason == "nonlinear-spine"
+    ).provenance.package_part.endswith(".xhtml")
     import zipfile
 
     with zipfile.ZipFile(source) as archive:

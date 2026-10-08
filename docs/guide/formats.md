@@ -57,6 +57,15 @@ TXT сохраняет только основной текст; byte roundtrip 
 
 ### Отчёт импорта
 
+EPUB удерживает оригинальные `META-INF/container.xml`, OPF и manifest nav/NCX
+как XML attachments. `metadata["epub"]["source_xml_resources"]` связывает действительное
+имя части ZIP с resource ID; исходные байты и provenance сохраняются через JSON.
+`epub.metadata_entries` содержит все дочерние OPF metadata XML entries, включая
+повторяющиеся поля и `refines`, а `epub.package_properties` — атрибуты package.
+Это исходные данные, не выполняемые инструкции. Ledger `epub.package` отмечает
+`opaque` и проверенный ресурс. Иерархия навигации и rendition hints удерживаются
+в источнике, но не являются полной редактируемой моделью nav или fixed-layout.
+
 Нелинейные главы EPUB импортируются при явном выборе:
 
 ```python
