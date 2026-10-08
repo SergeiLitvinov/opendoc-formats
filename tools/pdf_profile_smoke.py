@@ -30,7 +30,7 @@ def main() -> None:
         output = Path(directory)
         if args.profile == "pdf-rich":
             import fitz
-            from opendoc_model import get_integration
+            from opendoc_model import get_integration, get_outline
 
             from opendoc_formats.pdf import PdfDocument
 
@@ -57,6 +57,7 @@ def main() -> None:
                 widget.rect = fitz.Rect(30, 150, 170, 175)
                 page.add_widget(widget)
                 page.set_rotation(90)
+                fixture.set_toc([[1, "Own outline", 1]])
                 fixture.save(interactive_source)
             interactive = read_document(interactive_source)
             assert interactive.success, interactive.issues
@@ -64,10 +65,12 @@ def main() -> None:
             interaction = get_integration(interaction_model)
             assert len(interaction.annotations) == 2 and interaction.forms[0].value == "Own value"
             assert interaction_model.resources["pdf-original-source"].data == interactive_source.read_bytes()
+            assert get_outline(interaction_model).entries[0].target.target_id == "pdf-page-1"
             interaction_report = write_document(interaction_model, output / "interactive-export.pdf")
             assert interaction_report.success and not interaction_report.lossless, interaction_report.to_dict()
             with fitz.open(output / "interactive-export.pdf") as converted:
                 assert converted[0].rotation == 90
+                assert converted.get_toc()[0][:3] == [1, "Own outline", 1]
             vector = read_document(corpus / "vector-export.pdf")
             assert vector.success, vector.issues
             assert any(r.media_type == "application/pdf+vector" for r in vector.document.resources.values())

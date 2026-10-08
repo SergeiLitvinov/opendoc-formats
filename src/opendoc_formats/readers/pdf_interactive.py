@@ -104,6 +104,10 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path) -> None:
         }
         for index, page in enumerate(pdf, 1):
             page_id = f"pdf-page-{index}"
+            if index <= len(model.sections):
+                model.sections[index - 1].properties.setdefault("pdf", {}).update(
+                    page_id=page_id, crop_origin=[page.cropbox.x0, page.cropbox.y0],
+                )
             pages.append(
                 DocumentPage(
                     page_id,
@@ -231,7 +235,7 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path) -> None:
                 None,
                 pdf.pdf_catalog(),
                 "outline-extension",
-                "Outline retained in extension and source PDF; no typed outline contract",
+                "Native outline retained alongside the shared outline; unsupported actions and appearance remain opaque",
             )
         catalog = pdf.pdf_catalog()
         for key in ("StructTreeRoot", "OCProperties", "OpenAction", "AA", "Names"):
@@ -271,3 +275,7 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path) -> None:
             extra={"pdf_outline": outline, "pdf_source_resource_id": "pdf-original-source" if preserve_source else None},
         ),
     )
+    from opendoc_formats.pdf_outline import import_pdf_outline
+
+    with fitz.open(source) as pdf:
+        import_pdf_outline(model, pdf=pdf, source=str(source))

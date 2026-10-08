@@ -119,6 +119,8 @@ def extract_pdf_geometry(path: str | Path) -> PdfGeometryDocument:
         metadata = {str(key): str(value or "") for key, value in (document.metadata or {}).items()}
         warnings: list[str] = []
         for page_index, page in enumerate(document):
+            # Table analysis may mutate the backend page's crop/rotation temporarily.
+            width, height, rotation = float(page.rect.width), float(page.rect.height), int(page.rotation)
             raw = page.get_text("dict", sort=False) or {}
             text_blocks: list[PdfTextBlockGeometry] = []
             image_blocks: list[PdfImageGeometry] = []
@@ -141,9 +143,9 @@ def extract_pdf_geometry(path: str | Path) -> PdfGeometryDocument:
             pages.append(
                 PdfPageGeometry(
                     number=page_index + 1,
-                    width=float(page.rect.width),
-                    height=float(page.rect.height),
-                    rotation=int(page.rotation),
+                    width=width,
+                    height=height,
+                    rotation=rotation,
                     text_blocks=tuple(text_blocks),
                     image_blocks=tuple(image_blocks),
                     tables=tuple(tables),

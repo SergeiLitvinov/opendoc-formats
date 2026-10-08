@@ -115,6 +115,37 @@ clipping, blend/masks graphics state и точная исходная струк
 обрезку и прозрачность. Независимый Form-reference подтверждает поворот/обрезку;
 различия антиалиасинга допустимы только на границе clip.
 
+### Оглавление и закладки PDF
+
+Reader заполняет общий `Outline` модели: иерархию, sibling order, page/external
+назначения, provenance, point и zoom. Point задан до поворота в исходной media
+системе координат; crop origin и стабильный page ID удерживаются в native
+section profile. Неизвестные destination fields остаются в extra, исходный PDF
+сохраняется непрозрачно. Модель не выполняет переходы и actions.
+
+Writer создаёт native PDF bookmarks, сохраняя title/hierarchy и конечные
+appearance fields bold/italic/color/collapse. Page IDs связываются с выходными
+секциями; point применяется только при проверенной одностраничной геометрии.
+Если геометрия изменилась, page destination сохраняется, а пропуск point получает
+`pdf.outline-point` LOSS. Paragraph anchor использует действительную позицию
+в основном потоке Story; другие kinds/нерасположенные anchors остаются без
+назначения с `pdf.outline-target` LOSS. Неизвестное назначение не заменяется
+первой страницей. Поддержаны URI http/https/mailto; launch, JavaScript, remote
+files и произвольные actions не воспроизводятся.
+При неоднозначном page ID после объединения документов назначение не угадывается:
+текст и иерархия сохраняются, закладка получает `pdf.outline-target` LOSS.
+
+Публичное чтение старого JSON переносит `pdf_outline` на общий контракт один раз.
+Типизированные правки и удаление имеют приоритет над raw extension. Без известного
+legacy crop origin point остаётся неизвестным; raw destination сохранён в extra.
+Занятый непрозрачный `opendoc.outline` не перезаписывается. Полный профиль
+named destinations/actions и media/crop структуры остаётся в OF07.
+
+[PyMuPDF native TOC API](https://pymupdf.readthedocs.io/en/latest/document.html#Document.set_toc)
+создаёт иерархию; собственные вновь созданные page actions записываются в PDF
+coordinates для точности при всех четырёх поворотах. Это конечная геометрическая
+приёмка, без обещания исходной компоновки текста любого PDF.
+
 ### Наследуемые свойства и осевые линии PPTX
 
 Для явного `bgPr` фон выбирается по цепочке slide → layout → master:

@@ -90,7 +90,11 @@
 ## Приоритет P1: семантика и graphics state PDF (OF07)
 
 - Реализовано: конечный import links/notes/highlights и simple forms, inert actions,
-  outline extension и opaque source для неподдержанных объектов; JSON и поворот страниц.
+  общий `Outline` с иерархией и page/external destinations, native outline extension
+  и opaque source для неподдержанных объектов; JSON и поворот страниц.
+  Конечный native writer сохраняет закладки, page points/zoom, базовый вид,
+  безопасные URI и body paragraph anchors по действительному потоку.
+  Старые JSON мигрируют однократно; явные правки и удаление имеют приоритет.
 - Проверен позиционированный растр: все повторные xref/inline размещения,
   soft mask, полная геометрия до viewport crop, четвертьобороты и отдельный масштаб
   осей. Два JSON roundtrip совпадают по RGB-рендеру на собственных страницах.
@@ -100,7 +104,8 @@
   с нулевыми offsets имеет flow fallback с located LOSS для floating wrap.
   Смешанный paint order диагностируется; полный graphics state/clipping остаётся открытым.
 - Остаётся: semantic structure tree и optional content; полный clipping/masks/blend,
-  перенос на общий `Outline`/`PageGeometry` модели с миграцией прежних JSON,
+  полный профиль outline actions/named destinations и anchors остальных узлов,
+  перенос на общий `PageGeometry` модели с миграцией прежних JSON,
   XFA/signatures/radio groups и полный annotation appearance.
 - Подзадачи: marked content и reading order; расширение форм/аннотаций и их writer;
   слои; clipping, transform, masks, blend и ICC/output intents с сохранением оригинала.

@@ -261,6 +261,9 @@ def _json(path: Path, options: ImportOptions) -> DocumentModel:
     from opendoc_formats.ooxml.widths import import_width
 
     document = load_document(path)
+    from opendoc_formats.pdf_outline import import_pdf_outline
+
+    import_pdf_outline(document, limits=options.document_limits)
     for reference in walk_model(document, limits=options.document_limits):
         node = reference.node
         if isinstance(node, (Table, TableCell)) and "docx_preferred_width" in node.properties:

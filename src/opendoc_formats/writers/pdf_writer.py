@@ -29,12 +29,13 @@ def write_pdf_model(
     report = ConversionReport(output)
     from opendoc_model import PreservationState, get_integration
 
+    outline_document = document
     integration = get_integration(document)
     if integration is not None:
         for feature, values in (("pdf.annotations", integration.annotations), ("pdf.forms", integration.forms)):
             if values:
                 report.add(IssueSeverity.LOSS, feature, "Interactive objects are not recreated by the PDF layout writer")
-        if integration.extra.get("pdf_outline"):
+        if integration.extra.get("pdf_outline") and not integration.extra.get("pdf_outline_imported"):
             report.add(IssueSeverity.LOSS, "pdf.outline", "Source outline is not recreated by the PDF layout writer")
         for record in integration.preservation:
             if record.state is not PreservationState.SEMANTIC:
@@ -63,6 +64,9 @@ def write_pdf_model(
     preflight_colors(document, report, target="pdf")
     target = fitz.open()
     totals = {"paragraphs": 0, "tables": 0, "images": 0, "formulas": 0, "pages": 0}
+    outline_pages: dict[str, tuple[int, tuple[float, float], bool]] = {}
+    ambiguous_pages: set[str] = set()
+    outline_anchors: dict[str, tuple[int, tuple[float, float]]] = {}
 
     try:
         for section_index, section in enumerate(document.sections or [Section()]):
@@ -73,8 +77,26 @@ def write_pdf_model(
             if type(rotation) is not int or rotation not in (0, 90, 180, 270):
                 raise ValueError("Invalid PDF source page rotation")
             flow_positions: dict[tuple[str, int], tuple[float, ...]] = {}
+            anchor_positions: dict[str, tuple[int, tuple[float, float]]] = {}
             flow_ids = {r.location: r.flow_id for r in rasters[section_index] if r.flow_id is not None}
-            section_pdf, renderer = _render_section(document, section, section_index, report, flow_positions, flow_ids)
+            section_pdf, renderer = _render_section(document, section, section_index, report, flow_positions, flow_ids,
+                                                    anchor_positions)
+            source_page_id = pdf_profile.get("page_id")
+            if source_page_id:
+                if source_page_id in outline_pages:
+                    ambiguous_pages.add(source_page_id)
+                origin = pdf_profile.get("crop_origin", [0, 0])
+                if (not isinstance(origin, (list, tuple)) or len(origin) != 2
+                        or any(type(v) not in (int, float) or not math.isfinite(v) for v in origin)):
+                    section_pdf.close()
+                    raise ValueError("Invalid PDF outline crop origin")
+                source_page = next((p for p in integration.pages if p.id == source_page_id), None) if integration else None
+                stable = (section_pdf.page_count == 1 and source_page is not None
+                          and math.isclose(source_page.width, section.page.width.pt, abs_tol=0.01)
+                          and math.isclose(source_page.height, section.page.height.pt, abs_tol=0.01))
+                outline_pages[source_page_id] = target.page_count, tuple(origin), stable
+            for identifier, (number, position) in anchor_positions.items():
+                outline_anchors.setdefault(identifier, (target.page_count + number, position))
             section_vectors = vectors[section_index] if section_index < len(vectors) else []
             if section_vectors and rasters[section_index]:
                 report.add(IssueSeverity.LOSS, "pdf-raster-compositing", "Source raster/vector paint order is not reconstructed",
@@ -127,6 +149,11 @@ def write_pdf_model(
                 page.set_rotation(rotation)
             target.insert_pdf(section_pdf)
             section_pdf.close()
+        from opendoc_formats.writers.pdf_outline import write_outline
+
+        for identifier in ambiguous_pages:
+            outline_pages.pop(identifier, None)
+        write_outline(target, outline_document, report, outline_pages, outline_anchors)
         _set_metadata(target, document.metadata)
         from opendoc_formats.support.artifacts import ArtifactWorkspace
         from opendoc_formats.support.io import atomic_copy
@@ -164,6 +191,7 @@ def _render_section(
     report: ConversionReport,
     flow_positions: dict[tuple[str, int], tuple[float, ...]],
     flow_ids: dict[str, str],
+    anchor_positions: dict[str, tuple[int, tuple[float, float]]],
 ) -> tuple[Any, _HtmlRenderer]:
     import fitz
 
@@ -233,8 +261,12 @@ def _render_section(
                 _draw_fixed_story(footer_html, css, footer_box, device, report, "footer", archive=archive,
                                   flow_positions=flow_positions, page_number=_page_number - 1)
 
-        section_pdf = story.write_with_links(rect_function, pagefn=page_function,
-                                            positionfn=lambda position: record_position(flow_positions, position))
+        def position_function(position: Any) -> None:
+            record_position(flow_positions, position)
+            if position.id and position.open_close & 1:
+                anchor_positions.setdefault(position.id, (position.page_num - 1, (position.rect[0], position.rect[1])))
+
+        section_pdf = story.write_with_links(rect_function, pagefn=page_function, positionfn=position_function)
     if isinstance(section_pdf, fitz.Document):
         return section_pdf, renderer
     return fitz.open(stream=section_pdf.read(), filetype="pdf"), renderer

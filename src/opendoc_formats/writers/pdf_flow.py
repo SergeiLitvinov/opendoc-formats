@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import math
+from dataclasses import replace
 from typing import Any
 
-from opendoc_model import ConversionReport, DocumentModel, Image
+from opendoc_model import ConversionReport, DocumentModel, Image, Paragraph, get_anchor
 
 from opendoc_formats.writers.html_writer import _HtmlRenderer
 
@@ -14,6 +15,12 @@ class PdfFlowRenderer(_HtmlRenderer):
     def __init__(self, document: DocumentModel, report: ConversionReport, flow_ids: dict[str, str]) -> None:
         super().__init__(document, report)
         self.flow_ids = flow_ids
+
+    def _paragraph(self, paragraph: Paragraph, location: str) -> str:
+        anchor = get_anchor(paragraph)
+        if anchor is not None:
+            paragraph = replace(paragraph, properties={**paragraph.properties, "anchor_id": anchor.id})
+        return super()._paragraph(paragraph, location)
 
     def _image(self, image: Image, location: str, *, block_level: bool) -> str:
         token = self.flow_ids.get(location)

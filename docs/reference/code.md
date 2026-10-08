@@ -27,7 +27,7 @@ Format reader registry using the OpenDoc model and validation contract.
 - `default_registry() -> AdapterRegistry` — [строка 214](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L214)
 - `read_document(path: str | Path, *, format_id: str | None=None, options: ImportOptions | None=None) -> ImportResult` — [строка 228](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L228)
 
-Импорты: `__future__`, `collections.abc`, `dataclasses`, `importlib`, `opendoc_formats.errors`, `opendoc_formats.ooxml.widths`, `opendoc_formats.readers.tex_model`, `opendoc_formats.support.backends`, `opendoc_formats.text_profile`, `opendoc_model`, `pathlib`, `typing`
+Импорты: `__future__`, `collections.abc`, `dataclasses`, `importlib`, `opendoc_formats.errors`, `opendoc_formats.ooxml.widths`, `opendoc_formats.pdf_outline`, `opendoc_formats.readers.tex_model`, `opendoc_formats.support.backends`, `opendoc_formats.text_profile`, `opendoc_model`, `pathlib`, `typing`
 
 Тесты: [test_djvu_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_djvu_text.py#L1), [test_docx_layout_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_layout_roundtrip.py#L1), [test_docx_typed_widths.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_typed_widths.py#L1)
 
@@ -296,6 +296,14 @@ Public, bounded PDF page access without exposing the optional rendering engine.
 Импорты: `__future__`, `collections`, `dataclasses`, `opendoc_formats.errors`, `opendoc_formats.native.common`, `typing`
 
 Тесты: [test_format_audit.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_format_audit.py#L1), [test_office_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_office_access.py#L1), [test_pdf_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_access.py#L1)
+
+## src/opendoc_formats/pdf_outline.py
+
+Bridge inert native PDF outlines to the shared Model contract.
+
+- `import_pdf_outline(document: DocumentModel, *, pdf: Any=None, source: str='', limits: DocumentLimits | None=None) -> None` — [строка 21](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_outline.py#L21)
+
+Импорты: `__future__`, `dataclasses`, `opendoc_model`, `typing`
 
 ## src/opendoc_formats/readers/__init__.py
 
@@ -613,7 +621,7 @@ Finite PDF interaction profile; actions are inert data, never executed.
 
 - `attach_pdf_interactions(model: DocumentModel, source: str | Path) -> None` — [строка 68](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_interactive.py#L68)
 
-Импорты: `__future__`, `opendoc_model`, `pathlib`, `typing`
+Импорты: `__future__`, `opendoc_formats.pdf_outline`, `opendoc_model`, `pathlib`, `typing`
 
 ## src/opendoc_formats/readers/pdf_layout.py
 
@@ -1202,19 +1210,27 @@ Compatibility entry point for the shared MathML-to-Office-Math structure convert
 
 Reserve inline image space and capture its actual Story page position.
 
-- `PdfFlowRenderer` — [строка 13](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_flow.py#L13)
-- `__init__(self, document: DocumentModel, report: ConversionReport, flow_ids: dict[str, str]) -> None` — [строка 14](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_flow.py#L14)
-- `record_position(positions: dict[tuple[str, int], tuple[float, ...]], position: Any) -> None` — [строка 34](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_flow.py#L34)
+- `PdfFlowRenderer` — [строка 14](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_flow.py#L14)
+- `__init__(self, document: DocumentModel, report: ConversionReport, flow_ids: dict[str, str]) -> None` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_flow.py#L15)
+- `record_position(positions: dict[tuple[str, int], tuple[float, ...]], position: Any) -> None` — [строка 41](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_flow.py#L41)
 
-Импорты: `__future__`, `opendoc_formats.writers.html_writer`, `opendoc_model`, `typing`
+Импорты: `__future__`, `dataclasses`, `opendoc_formats.writers.html_writer`, `opendoc_model`, `typing`
+
+## src/opendoc_formats/writers/pdf_outline.py
+
+Write shared outline hierarchy with explicit page and anchor destination maps.
+
+- `write_outline(pdf: Any, document: DocumentModel, report: ConversionReport, pages: dict[str, tuple[int, tuple[float, float], bool]], anchors: dict[str, tuple[int, tuple[float, float]]]) -> None` — [строка 21](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_outline.py#L21)
+
+Импорты: `__future__`, `opendoc_model`, `typing`, `urllib.parse`
 
 ## src/opendoc_formats/writers/pdf_rasters.py
 
 Bounded native raster transforms and placement in PDF page and Story coordinates.
 
-- `PdfRaster` — [строка 16](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_rasters.py#L16)
-- `prepare_rasters(document: DocumentModel, report: ConversionReport, cancelled: Callable[[], bool]) -> tuple[DocumentModel, list[list[PdfRaster]]]` — [строка 61](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_rasters.py#L61)
-- `draw_rasters(page: Any, rasters: list[PdfRaster], cancelled: Callable[[], bool]) -> None` — [строка 204](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_rasters.py#L204)
+- `PdfRaster` — [строка 26](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_rasters.py#L26)
+- `prepare_rasters(document: DocumentModel, report: ConversionReport, cancelled: Callable[[], bool]) -> tuple[DocumentModel, list[list[PdfRaster]]]` — [строка 71](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_rasters.py#L71)
+- `draw_rasters(page: Any, rasters: list[PdfRaster], cancelled: Callable[[], bool]) -> None` — [строка 214](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_rasters.py#L214)
 
 Импорты: `__future__`, `collections.abc`, `dataclasses`, `opendoc_model`, `typing`
 
@@ -1268,7 +1284,7 @@ Bounded native PDF paths, separated from raster HTML resources.
 
 - `write_pdf_model(document: DocumentModel, output_path: str | Path, *, cancelled: Callable[[], bool] | None=None) -> ConversionReport` — [строка 21](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_writer.py#L21)
 
-Импорты: `__future__`, `dataclasses`, `opendoc_formats.fonts.embedding`, `opendoc_formats.fonts.html_embedding`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.io`, `opendoc_formats.writers.color_preflight`, `opendoc_formats.writers.font_preflight`, `opendoc_formats.writers.html_writer`, `opendoc_formats.writers.pdf_flow`, `opendoc_formats.writers.pdf_rasters`, `opendoc_formats.writers.pdf_resources`, `opendoc_formats.writers.pdf_vectors`, `opendoc_formats.writers.stages`, `opendoc_model`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`, `typing`
+Импорты: `__future__`, `dataclasses`, `opendoc_formats.fonts.embedding`, `opendoc_formats.fonts.html_embedding`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.io`, `opendoc_formats.writers.color_preflight`, `opendoc_formats.writers.font_preflight`, `opendoc_formats.writers.html_writer`, `opendoc_formats.writers.pdf_flow`, `opendoc_formats.writers.pdf_outline`, `opendoc_formats.writers.pdf_rasters`, `opendoc_formats.writers.pdf_resources`, `opendoc_formats.writers.pdf_vectors`, `opendoc_formats.writers.stages`, `opendoc_model`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`, `typing`
 
 Тесты: [test_pdf_raster_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_raster_roundtrip.py#L1), [test_pdf_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_resources.py#L1), [test_pdf_vectors.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_vectors.py#L1), [test_pdf_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_writer.py#L1)
 

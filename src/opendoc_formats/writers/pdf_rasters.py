@@ -9,7 +9,17 @@ from collections.abc import Callable
 from dataclasses import dataclass, replace
 from typing import Any
 
-from opendoc_model import ConversionReport, DocumentModel, Image, IssueSeverity, Paragraph, Resource, Table, iter_anchors
+from opendoc_model import (
+    ConversionReport,
+    DocumentModel,
+    Image,
+    IssueSeverity,
+    Paragraph,
+    Resource,
+    Table,
+    get_anchor,
+    iter_anchors,
+)
 
 
 @dataclass(frozen=True)
@@ -66,7 +76,7 @@ def prepare_rasters(
     placements = []
     sections = []
     count = 0
-    anchors = {reference.node.properties.get("anchor_id") for reference in iter_anchors(document)}
+    anchors = {get_anchor(reference.node).id for reference in iter_anchors(document)}
     for section_index, section in enumerate(document.sections):
         rasters = []
 

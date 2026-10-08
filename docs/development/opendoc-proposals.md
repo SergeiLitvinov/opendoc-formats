@@ -61,9 +61,10 @@ IDs/headers и два цикла JSON. Адаптер сохраняет их в
 Модель предоставляет `Outline`, `OutlineEntry`, `OutlineTarget`, getters/setter
 и явный remap ID. JSON сохраняет иерархию, назначения и неизвестные поля;
 внешние URI инертны. Адаптер использует общий контракт, без своей схемы оглавления.
-Миграция прежних PDF outline extensions и заполнение при импорте/экспорте
-относятся к OF07; исходная навигация EPUB — к OF08. Наличие типа не означает
-готового нативного writer-а закладок. Аналогично `PageGeometry` доступен,
+PDF заполняет общий outline и мигрирует прежние extensions при публичном JSON
+импорте; конечный native writer сохраняет hierarchy, page points/zoom, URI и
+body paragraph anchors. Полные actions/named destinations остаются в OF07;
+исходная навигация EPUB — в OF08. Аналогично `PageGeometry` доступен,
 но перенос прежних форматных полей и проверка media/crop остаются в OF07.
 
 ## Контракт поворота изображения
