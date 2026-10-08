@@ -214,6 +214,7 @@ def _html(path: Path, options: ImportOptions) -> DocumentModel:
 def default_registry() -> AdapterRegistry:
     registry = AdapterRegistry()
     registry.register(AdapterSpec("txt", (".txt",), _txt))
+    registry.register(AdapterSpec("latex", (".tex",), _tex))
     registry.register(AdapterSpec("html", (".html", ".htm"), _html, ("bs4", "tinycss2")))
     registry.register(AdapterSpec("docx", (".docx",), _docx, ("docx",)))
     registry.register(AdapterSpec("pptx", (".pptx",), _pptx, ("pptx",)))
@@ -231,6 +232,12 @@ def read_document(path: str | Path, *, format_id: str | None = None, options: Im
 def _docx(path: Path, options: ImportOptions) -> DocumentModel:
     reader = cast(Callable[[Path], DocumentModel], import_module("opendoc_formats.readers.docx").read_docx_model)
     return reader(path)
+
+
+def _tex(path: Path, options: ImportOptions) -> DocumentModel:
+    from opendoc_formats.readers.tex_model import read_tex_model
+
+    return read_tex_model(path, max_input_bytes=options.max_input_bytes, cancelled=options.cancelled)
 
 
 def _pptx(path: Path, options: ImportOptions) -> DocumentModel:

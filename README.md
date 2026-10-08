@@ -27,7 +27,7 @@
 | PDF | Да | Да | `pdf-rich` или полный `pdf` |
 | EPUB | Да | Да, конечный EPUB 3 профиль | `epub` для импорта; экспорт в базовом пакете |
 | DjVu | Текст | — | Внешний `djvutxt` |
-| LaTeX | — | DOCX-мост | `docx`; Pandoc для отдельного маршрута |
+| LaTeX | Конечный source profile | DOCX-мост | Импорт в базовом пакете; `docx` для экспорта |
 
 Дополнительные инструменты: внедряемый OCR для PDF, шрифты (`fonts`),
 прямой PDF → DOCX и PPTX → HTML-просмотрщик с локальными CSS/JS и браузерным MathML.
@@ -35,7 +35,8 @@
 с типизированными снимками и сохранением исходного пакета. OCR и шаблоны принадлежат потребителю.
 Подробные [границы форматов](docs/guide/formats.md) включают потери, непрозрачные объекты и доступ к ресурсам.
 [Полнота исходного импорта](docs/guide/format-audit.md) и [открытые задачи](docs/development/todo.md)
-описывают непокрытые части спецификаций, включая отсутствие чтения LaTeX.
+описывают непокрытые части спецификаций; [LaTeX source profile](docs/guide/latex-source.md)
+покрывает базовую структуру без исполнения TeX.
 
 ## Установка
 
@@ -45,7 +46,7 @@
 Из [GitHub Release](https://github.com/SergeiLitvinov/opendoc-formats/releases), без зависимости от публикации на PyPI:
 
 ```sh
-python -m pip install "opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.3.0/opendoc_model-0.3.0-py3-none-any.whl" "opendoc-formats[docx,html] @ https://github.com/SergeiLitvinov/opendoc-formats/releases/download/v0.14.0/opendoc_formats-0.14.0-py3-none-any.whl"
+python -m pip install "opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.3.0/opendoc_model-0.3.0-py3-none-any.whl" "opendoc-formats[docx,html] @ https://github.com/SergeiLitvinov/opendoc-formats/releases/download/v0.15.0/opendoc_formats-0.15.0-py3-none-any.whl"
 ```
 
 Необязательные движки импортируются только при выборе обработчика. TXT/JSON работают с базовой установкой.

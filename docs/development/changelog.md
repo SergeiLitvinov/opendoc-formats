@@ -1,5 +1,15 @@
 # Улучшения версии
 
+## 0.15.0 — улучшения относительно 0.14.0
+
+- В базовом пакете добавлен `.tex` reader без запуска TeX: конечный lexer/parser
+  текста, стилей, заголовков, списков, акцентов, inline/display Formula LATEX и label/ref.
+- Оригинальные bytes, Unicode source spans/provenance и located opaque diagnostics
+  проходят JSON. Ограничены input/tokens/depth/issues, есть отмена; file commands
+  и macros не выполняются. HTML export отражает исходные потери. Новых зависимостей нет.
+- OF04 остаётся открытой для include/macros, таблиц, изображений, bibliography
+  и source → JSON → TeX roundtrip; полнота произвольного TeX не обещается.
+
 ## 0.14.0 — улучшения относительно 0.13.0
 
 - EPUB переносит повторяющиеся Dublin Core text values: creator/contributor,

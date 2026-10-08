@@ -111,7 +111,7 @@ default_registry() -> AdapterRegistry
 
 ### read_document
 
-[Исходник, строка 227](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L227)
+[Исходник, строка 228](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L228)
 
 ```python
 read_document(path: str | Path, *, format_id: str | None=None, options: ImportOptions | None=None) -> ImportResult

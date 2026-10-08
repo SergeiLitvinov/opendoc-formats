@@ -7,13 +7,14 @@ from opendoc_formats.readers.epub_model import read_epub_model
 from opendoc_formats.readers.pptx import read_pptx_model
 
 
-def test_tex_source_has_no_reader(tmp_path):
+def test_tex_source_has_finite_native_reader(tmp_path):
     source = tmp_path / "source.tex"
     source.write_text(r"\documentclass{article}\begin{document}Hello\end{document}", encoding="utf-8")
     for identifier in (None, "latex"):
         result = read_document(source, format_id=identifier)
-        assert not result.success
-        assert result.issues[0].code == "import.unsupported-format"
+        assert result.success and not result.lossless and not result.assessment_complete
+        assert result.document.sections[0].blocks[0].plain_text == "Hello"
+        assert result.document.resources["latex-original-source"].data == source.read_bytes()
 
 
 def test_epub_table_math_are_semantic_but_nonlinear_content_is_lost(tmp_path):

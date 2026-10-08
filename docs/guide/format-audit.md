@@ -9,7 +9,7 @@
 
 | Исходный формат | Реализовано | Неполнота | Задачи |
 | --- | --- | --- | --- |
-| LaTeX `.tex` | Только экспорт через DOCX-мост | Чтения TeX нет; макросы, include, окружения, библиография и исходные позиции не разбираются. Наличие `DocFormat.LATEX` и `readers/latex.py` не означает импорта LaTeX | OF04 |
+| LaTeX `.tex` | Базовый source-v1 lexer/parser: текст/стили/заголовки/списки/формулы/ссылки; исходные bytes и source spans через JSON | Include, macros, таблицы, math environments, изображения и bibliography ещё не моделируются. Export использует DOCX bridge; полный source roundtrip не заявляется | OF04 |
 | DOCX | Абзацы, runs, стили, таблицы, формулы, ссылки, сноски, колонтитулы, ресурсы и PackageGraph; нативные ограниченные правки | Инвентаризация comments, revisions, content controls, SmartArt/OLE и других сложных объектов не равна их семантической модели и редактированию. Перенос непрозрачных частей имеет ограничения | OF05 |
 | PPTX | Текст, таблицы, выбранные диаграммы, фигуры, группы с материализацией координат, фоны, заметки, разрешение части theme/master/layout | Импорт не сохраняет исходный PackageGraph. Нет полного переноса анимаций, аудио/видео, переходов, embedded objects, редактируемой иерархии групп и всего оформления; экспорт создаёт новую презентацию | OF06 |
 | PDF | Текстовый слой, координаты, изображения, команды рисования, эвристические таблицы/структура; ограниченный рендер; внедряемый OCR; нативный экспорт конечного профиля векторных команд | Нет семантического импорта structure tree/tagged PDF, annotations/widgets, layers и полного graphics state. Формулы/логический порядок не гарантированы. Границы векторного экспорта описаны в руководстве | OF07 |
@@ -40,7 +40,7 @@ EPUB уже отмечает конкретные пропуски с reason и 
 ## Проверяемые основания
 
 Маршруты: `api.default_registry`, `export.default_exporter_registry`.
-LaTeX: `readers/latex.py`, `writers/latex_writer.py` — преобразование из DOCX.
+LaTeX source: `readers/tex_source.py`, `readers/tex_model.py`; `writers/latex_writer.py` использует DOCX bridge.
 EPUB: `readers/epub_model.py`, ограниченный `_BLOCKS`, фильтр spine и сбор ресурсов.
 PPTX: `readers/pptx.py::read_pptx_model` создаёт модель без `package`;
 `writers/pptx_writer.py` диагностирует потерю исходного пакета, если он передан.

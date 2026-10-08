@@ -99,7 +99,10 @@ def write_html_model(document: DocumentModel, output_path: str | Path) -> Conver
     integration = get_integration(document)
     if integration is not None:
         for record in integration.preservation:
-            if record.issue.code.startswith(("html-", "html.", "epub.")) and record.state is not PreservationState.SEMANTIC:
+            if (
+                record.issue.code.startswith(("html-", "html.", "epub.", "latex."))
+                and record.state is not PreservationState.SEMANTIC
+            ):
                 report.add(
                     IssueSeverity.LOSS,
                     record.issue.code,

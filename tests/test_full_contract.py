@@ -37,6 +37,7 @@ def test_real_format_export_import_cycle(tmp_path, format_id):
 
 def test_registry_declares_all_existing_model_routes():
     assert {adapter.id for adapter in default_registry().adapters()} == {
+        "latex",
         "txt",
         "html",
         "docx",

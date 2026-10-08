@@ -27,6 +27,7 @@ nav:
   - Руководство:
       - Быстрый старт: guide/index.md
       - Форматы и ограничения: guide/formats.md
+      - Исходный LaTeX: guide/latex-source.md
       - Ресурсы и отмена: guide/resources.md
       - Свои обработчики: guide/extensions.md
       - Архитектура и зависимость: guide/architecture.md

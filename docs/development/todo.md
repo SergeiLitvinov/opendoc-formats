@@ -35,7 +35,14 @@
 
 ## Приоритет P1: чтение исходного LaTeX (OF04)
 
-- Основание: `.tex` не зарегистрирован; оба существующих LaTeX-маршрута принимают DOCX.
+- Базовый `.tex` reader зарегистрирован: собственный bounded lexer/parser без engine,
+  UTF-8/BOM, body/абзацы/стили/заголовки/списки/простые акценты, inline/display
+  Formula LATEX и label/ref. Source spans/provenance и оригинальные inert bytes
+  проходят JSON; unsupported commands/environments имеют located opaque diagnostics.
+  Assessment остаётся неполной; source-v1 не выполняет file commands и macros.
+- Остаются таблицы, math environments, изображения, local include/bibliography,
+  ограниченные macros и проверенный семантический source → JSON → TeX roundtrip.
+  Экспорт пока использует DOCX bridge; задача открыта до всей приёмки ниже.
 - Реализовать безопасный парсер опубликованного подмножества TeX: преамбула, секции,
   текст/акценты/комментарии, списки, таблицы, inline/display math, рисунки,
   labels/refs/citations, локальные `input/include` и ограниченные пользовательские макросы.

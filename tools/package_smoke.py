@@ -73,6 +73,13 @@ def main() -> None:
         assert text.engine == "pypdf" and text.pages == 2 and "Native PDF" in text.plain, text
     with TemporaryDirectory(prefix="opendoc-formats-installed-") as directory:
         root = Path(directory)
+        tex = root / "own-source.tex"
+        tex.write_text(r"\documentclass{article}\begin{document}\section{Own}Text $x^2$.\end{document}", encoding="utf-8")
+        source_tex = read_document(tex)
+        assert source_tex.success and not source_tex.lossless and not source_tex.assessment_complete
+        assert source_tex.document.sections[0].blocks[0].plain_text == "Own"
+        assert source_tex.document.sections[0].blocks[1].content[-2].format is FormulaFormat.LATEX
+        assert source_tex.document.resources["latex-original-source"].data == tex.read_bytes()
         book = root / "base-writer.epub"
         from opendoc_formats.readers.epub_package import read_epub_package
 
