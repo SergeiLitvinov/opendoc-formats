@@ -38,7 +38,10 @@ def read_html_model(path: str | Path, *, resource_root: str | Path | None = None
     source = Path(path)
     if source.stat().st_size > LIMIT:
         raise ValueError("HTML exceeds 10 MiB")
-    data = source.read_bytes()
+    with source.open("rb") as stream:
+        data = stream.read(LIMIT + 1)
+    if len(data) > LIMIT:
+        raise ValueError("HTML exceeds 10 MiB")
     soup = BeautifulSoup(data, "html.parser")
     reader = HtmlReader(soup, source, resource_root)
     for node in soup.find_all(["script", "iframe", "object", "embed", "link", "base"]):
@@ -49,7 +52,7 @@ def read_html_model(path: str | Path, *, resource_root: str | Path | None = None
         if node.name == "img" and any(key in node.attrs for key in ("srcset", "width", "height")):
             reader.warn("html-resource", "Размеры и адаптивный выбор img не перенесены; используется исходное изображение.", node)
     blocks = reader.blocks(soup.body or soup)
-    return DocumentModel(
+    document = DocumentModel(
         sections=[Section(blocks=blocks)],
         resources=reader.resources.items,
         styles=reader.styles,
@@ -61,6 +64,8 @@ def read_html_model(path: str | Path, *, resource_root: str | Path | None = None
             "html": reader.diagnostics.finish(),
         },
     )
+    reader.diagnostics.attach(document, source, data)
+    return document
 
 
 class HtmlReader:

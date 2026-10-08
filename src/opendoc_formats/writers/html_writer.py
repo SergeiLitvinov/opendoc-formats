@@ -94,6 +94,18 @@ def write_html_model(document: DocumentModel, output_path: str | Path) -> Conver
     output = Path(output_path)
     output.parent.mkdir(parents=True, exist_ok=True)
     report = ConversionReport(output)
+    from opendoc_model import PreservationState, get_integration
+
+    integration = get_integration(document)
+    if integration is not None:
+        for record in integration.preservation:
+            if record.issue.code.startswith(("html-", "html.")) and record.state is not PreservationState.SEMANTIC:
+                report.add(
+                    IssueSeverity.LOSS,
+                    record.issue.code,
+                    "Source HTML feature is not reconstructed: " + record.issue.message,
+                    record.issue.location,
+                )
     normalized = HtmlNormalizeStage().execute(document, StageContext(output))
     report.issues.extend(normalized.report.issues)
     report.metrics.update(normalized.report.metrics)

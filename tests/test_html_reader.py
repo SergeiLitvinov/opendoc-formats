@@ -2,7 +2,7 @@
 from pathlib import Path
 
 import pytest
-from opendoc_model import Formula, Table
+from opendoc_model import Formula, ResourceKind, Table
 
 from opendoc_formats.readers.html import read_html_model
 
@@ -69,10 +69,14 @@ def test_external_assets_opt_in_and_svg_sanitizing(tmp_path):
         '<rect width="3" height="3" onclick="run()"/><image href="https://example.org/a"/></svg>'
     )
     path.write_text('<p><img src="asset.svg"></p>')
-    assert not read_html_model(path).resources
+    restricted = read_html_model(path)
+    assert all(resource.kind is ResourceKind.ATTACHMENT for resource in restricted.resources.values())
+    assert restricted.resources["html-original-source"].data == path.read_bytes()
     model = read_html_model(path, resource_root=tmp_path)
     data = next(iter(model.resources.values())).data.decode()
     assert "script" not in data and "onclick" not in data and "https://example.org/a" not in data
     assert model.metadata["html"]["warnings"]
     path.write_text('<p><img src="../outside.png"></p>')
-    assert not read_html_model(path, resource_root=tmp_path).resources
+    restricted = read_html_model(path, resource_root=tmp_path)
+    assert all(resource.kind is ResourceKind.ATTACHMENT for resource in restricted.resources.values())
+    assert restricted.resources["html-original-source"].data == path.read_bytes()

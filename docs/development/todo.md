@@ -21,6 +21,9 @@
 - PDF имеет typed finite links/notes/highlights/forms и partial ledger с page/xref;
   неподдержанные типы, tagged structure, layers/catalog actions сохраняются opaque
   в ограниченном source PDF. Геометрические/OCR warning ещё не полностью типизированы.
+- HTML переносит выявленные profile losses в ledger со строкой/колонкой и привязкой
+  к блоку. Исходные HTML bytes удерживаются как inert attachment; внешние assets
+  не объявляются сохранёнными. Writer отмечает невоссозданные исходные функции.
 - Остаётся: читатели EPUB/PDF и других форматов не диагностируют каждый пропуск;
   legacy warning без структурированной оценки не определяет состояние сохранности.
 - Реализовать общий контракт feature/location/severity для каждого читателя:

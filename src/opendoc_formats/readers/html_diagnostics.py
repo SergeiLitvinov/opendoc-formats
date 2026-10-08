@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Any
 
 import opendoc_model as od
@@ -27,6 +28,8 @@ class HtmlDiagnostics:
             self.node = previous
 
     def warn(self, feature: str, message: str, node: Any = None) -> None:
+        if len(self.pending) >= 10_000:
+            raise ValueError("HTML diagnostic objects exceed profile limit")
         self.pending.append((feature, message, node if node is not None else self.node))
 
     def bind(self, block: od.Block, root: Any, nodes: Iterable[Any] = ()) -> None:
@@ -84,3 +87,62 @@ class HtmlDiagnostics:
                 "images": [],
             }
         return {"warnings": warnings, "locations": locations, "scope": "static-html-v1"}
+
+    def attach(self, document: od.DocumentModel, source: Path, data: bytes) -> None:
+        """Retain source markup separately from known semantic/profile losses."""
+        records, seen = [], set()
+        for feature, message, node in self.pending:
+            block = self.resolve(node)
+            line = getattr(node, "sourceline", None)
+            column = getattr(node, "sourcepos", None)
+            key = feature, message, block, line, column
+            if key in seen:
+                continue
+            seen.add(key)
+            location = str(source) + (f"#line={line},column={column}" if line is not None else "#document")
+            records.append(
+                od.PreservationRecord(
+                    issue=od.DiagnosticIssue(
+                        feature, od.IssueSeverity.LOSS, message, location, reason="outside-static-html-profile"
+                    ),
+                    state=od.PreservationState.LOST,
+                    provenance=od.Provenance(
+                        "html", str(source), object_id=str(node.get("id")) if node and node.get("id") else None
+                    ),
+                    extra={"block_location": block, "source_line": line, "source_column": column},
+                )
+            )
+        if records:
+            resource_id = "html-original-source"
+            document.add_resource(
+                od.Resource(
+                    resource_id,
+                    od.ResourceKind.ATTACHMENT,
+                    "text/html",
+                    data=data,
+                    filename=source.name,
+                    provenance=od.Provenance("html", str(source)),
+                )
+            )
+            records.append(
+                od.PreservationRecord(
+                    issue=od.DiagnosticIssue(
+                        "html.source",
+                        od.IssueSeverity.LOSS,
+                        "Original markup retained as inert attachment; external assets and browser behavior are not preserved",
+                        str(source),
+                        reason="inert-source-snapshot",
+                    ),
+                    state=od.PreservationState.OPAQUE,
+                    provenance=od.Provenance("html", str(source)),
+                    extra={"resource_id": resource_id},
+                )
+            )
+        od.set_integration(
+            document,
+            od.IntegrationModel(
+                preservation=tuple(records),
+                assessed_features=tuple(dict.fromkeys(record.issue.code for record in records)),
+                assessment_complete=False,
+            ),
+        )
