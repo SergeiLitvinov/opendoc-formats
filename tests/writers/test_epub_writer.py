@@ -142,3 +142,38 @@ def test_output_limit_preserves_existing_book(tmp_path, monkeypatch):
     report = writer.write_epub_model(DocumentModel(), output)
     assert not report.success and "exceeds" in report.issues[-1].message
     assert output.read_bytes() == b"previous"
+
+
+def test_sections_become_chapters_with_cross_chapter_links(tmp_path):
+    model = DocumentModel(sections=[
+        Section(blocks=[Paragraph([TextRun("First", link="#second")], properties={"anchor_id": "first"})]),
+        Section(blocks=[Paragraph([TextRun("Second", link="#first")], properties={"anchor_id": "second"})]),
+    ])
+    output = tmp_path / "chapters.epub"
+    report = write_document(model, output)
+    assert report.success and report.metrics["epub_spine_items"] == 2
+    package = read_epub_package(output)
+    assert package.spine == (("chapter", "yes"), ("chapter-2", "yes"))
+    with ZipFile(output) as archive:
+        ns = "{http://www.w3.org/1999/xhtml}"
+        first = ET.fromstring(archive.read("OPS/chapter.xhtml"))
+        second = ET.fromstring(archive.read("OPS/chapter-2.xhtml"))
+        assert first.find(f".//{ns}a").get("href") == "chapter-2.xhtml#second"
+        assert second.find(f".//{ns}a").get("href") == "chapter.xhtml#first"
+        nav = ET.fromstring(archive.read("OPS/nav.xhtml"))
+        assert [node.get("href") for node in nav.findall(f".//{ns}a")] == ["chapter.xhtml", "chapter-2.xhtml"]
+    restored = read_document(output)
+    assert restored.success and [section.blocks[0].plain_text for section in restored.document.sections] == ["First", "Second"]
+    assert restored.document.sections[0].blocks[0].content[0].link == "#epub-chapter-2.xhtml--second"
+    assert restored.document.sections[1].blocks[0].content[0].link == "#epub-chapter.xhtml--first"
+
+
+def test_missing_internal_link_is_inert_and_diagnosed(tmp_path):
+    output = tmp_path / "missing.epub"
+    model = DocumentModel(sections=[Section(blocks=[Paragraph([TextRun("Visible", link="#absent")])])])
+    report = write_document(model, output)
+    assert report.success and not report.lossless
+    assert any(issue.feature == "epub.internal-link" for issue in report.issues)
+    with ZipFile(output) as archive:
+        chapter = ET.fromstring(archive.read("OPS/chapter.xhtml"))
+        assert chapter.find(".//{http://www.w3.org/1999/xhtml}a").get("href") is None

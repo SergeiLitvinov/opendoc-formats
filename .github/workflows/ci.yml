@@ -40,6 +40,12 @@ jobs:
       - run: uv run --frozen python -m tools.audit
       - run: uv run --frozen pytest
       - run: uv run --frozen python -m tools.docs check
+      - name: Validate own EPUB fixtures with pinned EPUBCheck
+        if: matrix.os == 'ubuntu-latest' && matrix.python == '3.12'
+        run: |
+          mkdir -p .opendoc-formats
+          curl --fail --location --connect-timeout 15 --max-time 180 https://github.com/w3c/epubcheck/releases/download/v5.4.0/epubcheck-5.4.0.zip --output .opendoc-formats/epubcheck.zip
+          uv run --frozen python -m tools.epubcheck --archive .opendoc-formats/epubcheck.zip
   packages:
     needs: contracts
     runs-on: ubuntu-latest

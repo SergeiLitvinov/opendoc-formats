@@ -46,6 +46,7 @@ nav:
       - Исследования: development/research.md
       - Предложения к OpenDoc: development/opendoc-proposals.md
       - Сборка и выпуск: development/release.md
+      - Проверка EPUB: development/epubcheck.md
       - Участие в проекте: development/contributing.md
       - Улучшения версии: development/changelog.md
       - Происхождение и лицензии: development/notice.md

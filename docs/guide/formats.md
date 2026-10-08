@@ -25,8 +25,10 @@
 
 `write_document(model, "book.epub")` использует собственный MIT writer и стандартную
 библиотеку Python; `epub`, EbookLib и lxml для записи не нужны. EPUB 3 содержит
-container/OPF/nav, один XHTML документ в spine и оглавление из заголовков.
-Секции идут последовательно внутри XHTML. Абзацы, стили, списки, таблицы с объединениями,
+container/OPF/nav, XHTML документ на каждую секцию в spine и оглавление из заголовков.
+Секции идут последовательно как главы; ссылки между ними переписываются.
+Missing/ambiguous fragment targets становятся inert links с диагностикой потери.
+Абзацы, стили, списки, таблицы с объединениями,
 MathML и внутренние ссылки используют общий HTML renderer. PNG/JPEG/GIF/SVG сохраняются
 как локальные manifest assets; повторные изображения дедуплицируются по байтам.
 Другие image media types отклоняются без замены существующего результата.
@@ -41,7 +43,9 @@ MathML и внутренние ссылки используют общий HTML
 восстанавливаются молча: отчёт содержит потери. Reflow/fixed layout и сложная исходная
 навигация не обещаются; writer всегда отмечает границу layout profile.
 Шрифты следуют общему font preflight/embedding profile и правам на конкретный font asset.
-Разделение spine по главам и контролируемая проверка EPUBCheck остаются в OF09.
+Обычный и rich fixture с двумя главами проходят отдельную
+[EPUBCheck acceptance](../development/epubcheck.md) в CI. Расширение metadata/navigation
+profiles остаётся в OF09.
 Структура ориентирована на [спецификацию EPUB 3.3](https://www.w3.org/TR/epub-33/).
 
 ### Профиль TXT

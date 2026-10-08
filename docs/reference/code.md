@@ -1020,9 +1020,9 @@ DOCX table exporter for spans, geometry, fills, margins, and styles.
 
 Finite EPUB 3 export using the shared HTML renderer and Python's standard library.
 
-- `write_epub_model(document: DocumentModel, output_path: str | Path) -> ConversionReport` — [строка 139](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/epub_writer.py#L139)
+- `write_epub_model(document: DocumentModel, output_path: str | Path) -> ConversionReport` — [строка 178](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/epub_writer.py#L178)
 
-Импорты: `__future__`, `datetime`, `html.parser`, `opendoc_formats.support.io`, `opendoc_formats.writers.html_resources`, `opendoc_formats.writers.html_writer`, `opendoc_model`, `pathlib`, `tempfile`, `urllib.parse`, `zipfile`
+Импорты: `__future__`, `copy`, `datetime`, `html.parser`, `opendoc_formats.support.io`, `opendoc_formats.writers.html_resources`, `opendoc_formats.writers.html_writer`, `opendoc_model`, `pathlib`, `tempfile`, `urllib.parse`, `zipfile`
 
 Тесты: [test_epub_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_epub_writer.py#L1)
 

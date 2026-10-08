@@ -1,5 +1,15 @@
 # Улучшения версии
 
+## 0.13.0 — улучшения относительно 0.12.0
+
+- Каждая секция экспортируется в отдельный XHTML spine item; TOC охватывает главы,
+  внутренние ссылки между ними переписываются. Missing/ambiguous targets остаются
+  inert с loss вместо недействительной fragment-ссылки.
+- В CI добавлен отдельный EPUBCheck 5.4.0 acceptance: проверенный digest официального
+  ZIP, Java heap limit и timeout, два собственных fixture без errors/warnings.
+  Лицензия checker и границы Java distribution описаны отдельно; runtime dependencies
+  не изменились. Размер исходных изображений проверяется до HTML rendering.
+
 ## 0.12.0 — улучшения относительно 0.11.3
 
 - Добавлен собственный экспорт EPUB 3 в базовом пакете: container/OPF/nav,

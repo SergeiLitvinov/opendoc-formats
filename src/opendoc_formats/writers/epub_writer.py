@@ -6,11 +6,12 @@ import base64
 import hashlib
 import io
 import xml.etree.ElementTree as ET
+from copy import deepcopy
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from urllib.parse import unquote_to_bytes
+from urllib.parse import quote, unquote, unquote_to_bytes
 from zipfile import ZIP_STORED, ZipFile
 
 from opendoc_model import ConversionReport, DocumentModel, IssueSeverity, PreservationState, get_integration
@@ -110,7 +111,44 @@ class _Xhtml(HTMLParser):
                 parent.text = (parent.text or "") + data
 
 
-def _navigation(chapter: ET.Element, title: str, language: str) -> ET.Element:
+def _chapters(root: ET.Element, report: ConversionReport) -> list[tuple[str, ET.Element]]:
+    body = root.find("body")
+    if body is None:
+        raise ValueError("EPUB XHTML has no body")
+    sections = list(body)
+    chapters = []
+    for index, section in enumerate(sections):
+        chapter = ET.Element(root.tag, dict(root.attrib))
+        head = root.find("head")
+        if head is not None:
+            chapter.append(head)
+        target = ET.SubElement(chapter, "body", dict(body.attrib))
+        target.append(deepcopy(section))
+        name = "chapter.xhtml" if index == 0 else f"chapter-{index + 1}.xhtml"
+        chapters.append((name, chapter))
+    if not chapters:
+        chapters = [("chapter.xhtml", root)]
+    targets: dict[str, list[str]] = {}
+    for name, chapter in chapters:
+        for node in chapter.iter():
+            if node.get("id"):
+                targets.setdefault(node.attrib["id"], []).append(name)
+    for name, chapter in chapters:
+        for node in chapter.iter("a"):
+            href = node.get("href", "")
+            if not href.startswith("#"):
+                continue
+            anchor = unquote(href[1:])
+            owners = targets.get(anchor, [])
+            if len(owners) != 1:
+                node.attrib.pop("href", None)
+                report.add(IssueSeverity.LOSS, "epub.internal-link", "Missing or ambiguous internal target", f"{name}:{href}")
+            else:
+                node.set("href", (owners[0] if owners[0] != name else "") + "#" + quote(anchor, safe=""))
+    return chapters
+
+
+def _navigation(chapters: list[tuple[str, ET.Element]], title: str, language: str) -> ET.Element:
     root = ET.Element("html", {"xmlns": _XHTML, "lang": language})
     head = ET.SubElement(root, "head")
     ET.SubElement(head, "title").text = title
@@ -118,26 +156,27 @@ def _navigation(chapter: ET.Element, title: str, language: str) -> ET.Element:
     nav = ET.SubElement(body, "nav", {f"{{{_EPUB}}}type": "toc", "id": "toc"})
     ET.SubElement(nav, "h1").text = title
     listing = ET.SubElement(nav, "ol")
-    headings = [node for node in chapter.iter() if node.tag in {f"h{i}" for i in range(1, 7)}]
-    used = {node.get("id") for node in chapter.iter() if node.get("id")}
-    for index, heading in enumerate(headings):
-        anchor = heading.get("id")
-        if not anchor:
-            anchor = f"epub-heading-{index}"
-            while anchor in used:
-                anchor += "-"
-            heading.set("id", anchor)
-            used.add(anchor)
-        item = ET.SubElement(listing, "li")
-        ET.SubElement(item, "a", {"href": "chapter.xhtml#" + anchor}).text = "".join(heading.itertext()) or title
-    if not headings:
-        item = ET.SubElement(listing, "li")
-        ET.SubElement(item, "a", {"href": "chapter.xhtml"}).text = title
+    for chapter_index, (name, chapter) in enumerate(chapters):
+        headings = [node for node in chapter.iter() if node.tag in {f"h{i}" for i in range(1, 7)}]
+        used = {node.get("id") for node in chapter.iter() if node.get("id")}
+        for index, heading in enumerate(headings):
+            anchor = heading.get("id")
+            if not anchor:
+                anchor = f"epub-heading-{index}"
+                while anchor in used:
+                    anchor += "-"
+                heading.set("id", anchor)
+                used.add(anchor)
+            item = ET.SubElement(listing, "li")
+            ET.SubElement(item, "a", {"href": name + "#" + quote(anchor, safe="")}).text = "".join(heading.itertext()) or title
+        if not headings:
+            item = ET.SubElement(listing, "li")
+            ET.SubElement(item, "a", {"href": name}).text = f"{title} — {chapter_index + 1}" if len(chapters) > 1 else title
     return root
 
 
 def write_epub_model(document: DocumentModel, output_path: str | Path) -> ConversionReport:
-    """Write one XHTML spine item with TOC, tables, MathML and local image assets.
+    """Write one XHTML spine item per section, with TOC, MathML and local assets.
 
     This profile shares HTML diagnostics and presentation; it does not rebuild
     original EPUB packages, media playback or fixed-layout reading-system behavior.
@@ -146,6 +185,17 @@ def write_epub_model(document: DocumentModel, output_path: str | Path) -> Conver
     output.parent.mkdir(parents=True, exist_ok=True)
     report = ConversionReport(output)
     try:
+        requested = {image.resource_id for image, _ in document_images(document)}
+        image_bytes = 0
+        for resource_id in requested:
+            resource = document.resources.get(resource_id)
+            if resource is not None:
+                if resource.data is not None:
+                    image_bytes += len(resource.data)
+                elif resource.source is not None:
+                    image_bytes += Path(resource.source).stat().st_size
+            if image_bytes > _MAX_BYTES:
+                raise ValueError("EPUB input images exceed 64 MiB")
         with TemporaryDirectory(prefix=".opendoc-formats-epub-", dir=output.parent) as directory:
             html = Path(directory) / "chapter.html"
             rendered = write_html_model(document, html)
@@ -162,10 +212,19 @@ def write_epub_model(document: DocumentModel, output_path: str | Path) -> Conver
             raise ValueError("Incomplete EPUB XHTML")
         title = str(document.metadata.get("title") or "Document")
         language = str(document.metadata.get("language") or "ru")
-        nav = _navigation(chapter, title, language)
+        chapters = _chapters(chapter, report)
+        nav = _navigation(chapters, title, language)
+        chapter_bytes = {}
+        total_chapter_bytes = 0
+        for name, content in chapters:
+            data = _xml(content)
+            total_chapter_bytes += len(data)
+            if total_chapter_bytes > _MAX_BYTES:
+                raise ValueError("EPUB chapters exceed 64 MiB")
+            chapter_bytes[name] = data
         package = ET.Element(f"{{{_OPF}}}package", {"version": "3.0", "unique-identifier": "book-id"})
         metadata = ET.SubElement(package, f"{{{_OPF}}}metadata")
-        identifier = "urn:sha256:" + hashlib.sha256(_xml(chapter)).hexdigest()
+        identifier = "urn:sha256:" + hashlib.sha256(b"".join(chapter_bytes.values())).hexdigest()
         ET.SubElement(metadata, f"{{{_DC}}}identifier", {"id": "book-id"}).text = identifier
         ET.SubElement(metadata, f"{{{_DC}}}title").text = title
         ET.SubElement(metadata, f"{{{_DC}}}language").text = language
@@ -173,22 +232,22 @@ def write_epub_model(document: DocumentModel, output_path: str | Path) -> Conver
             "%Y-%m-%dT%H:%M:%SZ"
         )
         manifest = ET.SubElement(package, f"{{{_OPF}}}manifest")
-        properties = []
-        if any(node.tag == "math" for node in chapter.iter()):
-            properties.append("mathml")
-        if any(node.tag == "svg" for node in chapter.iter()):
-            properties.append("svg")
-        ET.SubElement(manifest, f"{{{_OPF}}}item", {
-            "id": "chapter", "href": "chapter.xhtml", "media-type": "application/xhtml+xml",
-            **({"properties": " ".join(properties)} if properties else {}),
-        })
+        for index, (name, content) in enumerate(chapters):
+            properties = [tag for tag, name_tag in (("mathml", "math"), ("svg", "svg"))
+                          if any(node.tag == name_tag for node in content.iter())]
+            ET.SubElement(manifest, f"{{{_OPF}}}item", {
+                "id": "chapter" if index == 0 else f"chapter-{index + 1}", "href": name,
+                "media-type": "application/xhtml+xml",
+                **({"properties": " ".join(properties)} if properties else {}),
+            })
         ET.SubElement(manifest, f"{{{_OPF}}}item", {
             "id": "nav", "href": "nav.xhtml", "media-type": "application/xhtml+xml", "properties": "nav",
         })
         for index, (name, (media, _)) in enumerate(parser.assets.items()):
             ET.SubElement(manifest, f"{{{_OPF}}}item", {"id": f"asset-{index}", "href": name, "media-type": media})
         spine = ET.SubElement(package, f"{{{_OPF}}}spine")
-        ET.SubElement(spine, f"{{{_OPF}}}itemref", {"idref": "chapter"})
+        for index in range(len(chapters)):
+            ET.SubElement(spine, f"{{{_OPF}}}itemref", {"idref": "chapter" if index == 0 else f"chapter-{index + 1}"})
         container_ns = "urn:oasis:names:tc:opendocument:xmlns:container"
         container = ET.Element(f"{{{container_ns}}}container", {"version": "1.0"})
         roots = ET.SubElement(container, f"{{{container_ns}}}rootfiles")
@@ -201,7 +260,8 @@ def write_epub_model(document: DocumentModel, output_path: str | Path) -> Conver
             archive.writestr("mimetype", b"application/epub+zip")
             archive.writestr("META-INF/container.xml", _xml(container))
             archive.writestr("OPS/book.opf", _xml(package))
-            archive.writestr("OPS/chapter.xhtml", _xml(chapter))
+            for name, data in chapter_bytes.items():
+                archive.writestr("OPS/" + name, data)
             archive.writestr("OPS/nav.xhtml", _xml(nav))
             for name, (_, raw) in parser.assets.items():
                 archive.writestr("OPS/" + name, raw)
@@ -225,9 +285,9 @@ def write_epub_model(document: DocumentModel, output_path: str | Path) -> Conver
             report.add(IssueSeverity.LOSS, "epub.source-package", "Original source package is not reconstructed")
         report.add(
             IssueSeverity.LOSS, "epub.layout-profile",
-            "One XHTML spine item; reading systems may reflow the shared HTML presentation",
+            "Reading systems may reflow the shared HTML presentation",
         )
-        report.metrics.update({"epub_spine_items": 1, "epub_assets": len(parser.assets), "epub_bytes": buffer.tell()})
+        report.metrics.update({"epub_spine_items": len(chapters), "epub_assets": len(parser.assets), "epub_bytes": buffer.tell()})
         atomic_write_bytes(output, buffer.getvalue())
     except (OSError, ValueError, ET.ParseError) as error:
         report.add(IssueSeverity.ERROR, "epub.write", str(error))
