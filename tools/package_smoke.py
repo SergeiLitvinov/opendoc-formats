@@ -98,13 +98,17 @@ def main() -> None:
                   <spine><itemref idref="c"/></spine></package>''')
                 archive.writestr("c.xhtml", '''<html><body><p>Native EPUB 123</p>
                     <table><tr><td colspan="2">Own cell</td></tr></table>
-                    <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>x</mi></math></body></html>''')
+                    <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>x</mi></math>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>
+                    </body></html>''')
             result = read_document(source)
             assert result.success, result.issues
             assert result.document.sections[0].blocks[0].plain_text == "Native EPUB 123"
             assert isinstance(result.document.sections[0].blocks[1], Table)
             assert result.document.sections[0].blocks[1].rows[0].cells[0].column_span == 2
             assert isinstance(result.document.sections[0].blocks[2].content[0], Formula)
+            vector = result.document.sections[0].blocks[3].content[0]
+            assert result.document.resources[vector.resource_id].media_type == "image/svg+xml"
             assert all(name not in sys.modules for name in ("lxml", "ebooklib"))
         math_path = root / "math.html"
         math = DocumentModel(sections=[Section(blocks=[Formula(

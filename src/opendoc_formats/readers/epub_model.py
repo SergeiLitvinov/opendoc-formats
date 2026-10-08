@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import posixpath
 import re
 from collections.abc import Iterator
@@ -41,15 +42,21 @@ def read_epub_model(path: str | Path, *, backend: str = "native") -> DocumentMod
     if backend not in {"native", "ebooklib"}:
         raise ValueError("EPUB backend must be native or ebooklib")
     book = read_epub_package(source) if backend == "native" else read_ebooklib_package(source)
-    diagnostics = EpubDiagnostics(source, book.root_directory)
     resources, item_names = _resources(book, source)
+    diagnostics = EpubDiagnostics(source, book.root_directory, resources)
     for item in book.items.values():
         if item.media_type.startswith(("font/", "audio/", "video/")) or item.media_type in {
             "application/vnd.ms-opentype",
             "application/font-sfnt",
             "application/font-woff",
         }:
-            diagnostics.lost("epub.asset", "unsupported-asset", "Font or media asset is not retained", item.name)
+            diagnostics.opaque(
+                "epub.asset",
+                "inert-asset",
+                "Original font/media bytes retained; no font activation or media playback",
+                item.name,
+                f"epub-{item.id}",
+            )
     titles = book.titles
     sections, warnings, styles = [], [], {}
     for idref, linear in book.spine:
@@ -112,7 +119,7 @@ def _chapter_blocks(
     if depth > 16:
         raise ValueError("EPUB table nesting exceeds profile limit")
     blocks = []
-    candidates = _BLOCKS | {"table", "math"}
+    candidates = _BLOCKS | {"table", "math", "img", "svg"}
     for tag in [root] if include_root else root.find_all(candidates):
         ancestors = []
         for parent in () if tag is root else tag.parents:
@@ -228,11 +235,18 @@ def _resources(book: Any, source: Path) -> tuple[dict[str, od.Resource], dict[st
             kind = ResourceKind.VECTOR_IMAGE if media_type == "image/svg+xml" else ResourceKind.RASTER_IMAGE
         elif media_type == "text/css":
             kind = ResourceKind.ATTACHMENT
+        elif media_type.startswith(("font/", "audio/", "video/")) or media_type in {
+            "application/vnd.ms-opentype",
+            "application/font-sfnt",
+            "application/font-woff",
+        }:
+            kind = ResourceKind.ATTACHMENT
         else:
             continue
         resource_id = f"epub-{item.id}"
         name = posixpath.normpath(item.name)
-        names[name] = resource_id
+        if media_type.startswith("image/"):
+            names[name] = resource_id
         resources[resource_id] = Resource(
             resource_id,
             kind,
@@ -295,14 +309,57 @@ def _inline_content(
         style.update(_declarations(node.get("style", "")))
         _semantic_style(node.name, style)
         child_link = _resolve_link(chapter_name, node.get("href")) if node.name == "a" else link
-        if node.name == "math":
+        if node.name in {"math", "svg"}:
             from opendoc_formats.readers.html_resources import clean_xml
 
             def warn(feature: str, message: str) -> None:
-                diagnostics.lost("epub.math", "math-profile-sanitized", message, chapter_name, node)
+                diagnostics.lost(
+                    "epub.math" if node.name == "math" else "epub.inline-svg",
+                    f"{node.name}-profile-sanitized",
+                    message,
+                    chapter_name,
+                    node,
+                )
 
-            safe = clean_xml(str(node), "math", warn)
-            if safe:
+            safe = clean_xml(str(node), node.name, warn)
+            if safe and node.name == "svg":
+                payload = safe.encode("utf-8")
+                resource_id = "epub-inline-svg-" + hashlib.sha256(payload).hexdigest()
+                base_id, suffix = resource_id, 0
+                while resource_id in diagnostics.resources and (
+                    diagnostics.resources[resource_id].data != payload
+                    or diagnostics.resources[resource_id].kind is not ResourceKind.VECTOR_IMAGE
+                    or diagnostics.resources[resource_id].media_type != "image/svg+xml"
+                ):
+                    suffix += 1
+                    resource_id = f"{base_id}-{suffix}"
+                diagnostics.resources.setdefault(
+                    resource_id,
+                    Resource(
+                        resource_id,
+                        ResourceKind.VECTOR_IMAGE,
+                        "image/svg+xml",
+                        data=payload,
+                        filename="inline.svg",
+                        provenance=_provenance(diagnostics.source, chapter_name, node.get("id"), diagnostics.root_directory),
+                    ),
+                )
+                result.append(
+                    Image(
+                        resource_id,
+                        alt_text=node.get("aria-label", ""),
+                        provenance=_provenance(diagnostics.source, chapter_name, node.get("id"), diagnostics.root_directory),
+                    )
+                )
+                diagnostics.opaque(
+                    "epub.inline-svg",
+                    "svg-resource",
+                    "SVG retained as vector image; editable shapes are not modeled",
+                    chapter_name,
+                    resource_id,
+                    node,
+                )
+            elif safe:
                 import xml.etree.ElementTree as ET
 
                 result.append(
@@ -317,10 +374,18 @@ def _inline_content(
         elif node.name == "br":
             result.append(TextRun("\n", _text_style(style), link=child_link))
         elif node.name == "img":
-            name = _resolve(chapter_name, node.get("src", ""))
-            resource_id = item_names.get(name)
+            href = node.get("src", "")
+            name = _resolve(chapter_name, href)
+            split = urlsplit(href)
+            resource_id = item_names.get(name) if not split.scheme and not split.netloc else None
             if resource_id:
-                result.append(Image(resource_id, alt_text=node.get("alt", ""), provenance=None))
+                result.append(
+                    Image(
+                        resource_id,
+                        alt_text=node.get("alt", ""),
+                        provenance=_provenance(diagnostics.source, chapter_name, node.get("id"), diagnostics.root_directory),
+                    )
+                )
             else:
                 diagnostics.lost("epub.image", "missing-image", f"missing image: {name}", chapter_name, node)
                 if node.get("alt"):

@@ -8,7 +8,7 @@ from opendoc_model import Formula, FormulaFormat, Table, document_from_json, doc
 from opendoc_formats import read_document, write_document
 
 
-def _book(source, body):
+def _book(source, body, assets=()):
     with zipfile.ZipFile(source, "w") as archive:
         archive.writestr("mimetype", "application/epub+zip")
         archive.writestr(
@@ -16,13 +16,18 @@ def _book(source, body):
             """<container xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
           <rootfiles><rootfile full-path="OPS/book.opf" media-type="application/oebps-package+xml"/></rootfiles></container>""",
         )
+        manifest = "".join(f'<item id="{item_id}" href="{name}" media-type="{media}"/>' for item_id, name, media, _ in assets)
         archive.writestr(
             "OPS/book.opf",
             """<package xmlns="http://www.idpf.org/2007/opf" version="3.0">
-          <metadata/><manifest><item id="c" href="chapter.xhtml" media-type="application/xhtml+xml"/></manifest>
+          <metadata/><manifest><item id="c" href="chapter.xhtml" media-type="application/xhtml+xml"/>"""
+            + manifest
+            + """</manifest>
           <spine><itemref idref="c"/></spine></package>""",
         )
         archive.writestr("OPS/chapter.xhtml", '<html xmlns="http://www.w3.org/1999/xhtml"><body>' + body + "</body></html>")
+        for _, name, _, payload in assets:
+            archive.writestr("OPS/" + name, payload)
 
 
 def test_tables_math_links_mixed_cells_order_and_json(tmp_path):
@@ -100,3 +105,91 @@ def test_table_profile_nesting_limits_reject_excessive_source(tmp_path, mode):
     _book(source, body)
     with pytest.raises(ValueError, match="nesting exceeds profile limit"):
         read_document(source)
+
+
+def test_standalone_images_svg_and_inert_assets_roundtrip(tmp_path):
+    import struct
+    import zlib
+
+    from opendoc_model import Image, ResourceKind
+
+    def chunk(kind, data):
+        return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data))
+
+    png = (
+        b"\x89PNG\r\n\x1a\n"
+        + chunk(b"IHDR", struct.pack(">IIBBBBB", 1, 1, 8, 2, 0, 0, 0))
+        + chunk(b"IDAT", zlib.compress(b"\x00\xff\x00\xff"))
+        + chunk(b"IEND", b"")
+    )
+    source = tmp_path / "assets.epub"
+    _book(
+        source,
+        """<p>Before</p><img id="picture" src="pic.png" alt="Own picture"/>
+        <svg id="drawing" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" aria-label="Own vector">
+        <rect width="10" height="10" fill="red" onclick="run()"/><script>run()</script>
+        <image href="https://example.invalid/remote.png"/></svg><p>After</p>""",
+        assets=(
+            ("pic", "pic.png", "image/png", png),
+            ("font", "font.woff", "font/woff", b"own inert font placeholder"),
+            ("audio", "audio.ogg", "audio/ogg", b"own inert audio placeholder"),
+        ),
+    )
+    result = read_document(source)
+    assert result.success and not result.lossless and not result.assessment_complete
+    blocks = result.document.sections[0].blocks
+    assert [blocks[0].plain_text, blocks[-1].plain_text] == ["Before", "After"]
+    assert len(blocks) == 4 and isinstance(blocks[1].content[0], Image) and isinstance(blocks[2].content[0], Image)
+    assert result.document.resources["epub-pic"].data == png
+    assert blocks[1].content[0].provenance.package_part == "/OPS/chapter.xhtml"
+    vector = result.document.resources[blocks[2].content[0].resource_id]
+    assert vector.kind is ResourceKind.VECTOR_IMAGE and b"viewBox" in vector.data
+    assert b"onclick" not in vector.data and b"script" not in vector.data and b"https://" not in vector.data
+    assert result.document.resources["epub-font"].kind is ResourceKind.ATTACHMENT
+    assert result.document.resources["epub-font"].data == b"own inert font placeholder"
+    assert any(issue.reason == "svg-profile-sanitized" for issue in result.issues)
+    restored = document_from_json(document_to_json(result.document))
+    assert restored.resources == result.document.resources and get_integration(restored) == get_integration(result.document)
+    target = tmp_path / "assets.html"
+    report = write_document(restored, target)
+    assert report.success and not report.lossless, report.to_dict()
+    assert any(issue.feature == "epub.asset" for issue in report.issues)
+    exported = target.read_text(encoding="utf-8")
+    assert "data:image/png;base64" in exported and "data:image/svg+xml;base64" in exported
+    assert "own inert font placeholder" not in exported and "own inert audio placeholder" not in exported
+
+
+def test_external_and_nonimage_references_do_not_alias_local_image(tmp_path):
+    source = tmp_path / "references.epub"
+    _book(
+        source,
+        '<img id="remote" src="https:pic.png" alt="Remote"/><img src="font.woff" alt="Not image"/>',
+        assets=(
+            ("pic", "pic.png", "image/png", b"own unused placeholder"),
+            ("font", "font.woff", "font/woff", b"own inert font placeholder"),
+        ),
+    )
+    result = read_document(source)
+    assert result.success
+    assert [block.plain_text for block in result.document.sections[0].blocks] == ["Remote", "Not image"]
+    assert len([issue for issue in result.issues if issue.reason == "missing-image"]) == 2
+
+
+def test_inline_svg_resource_collision_preserves_manifest_asset(tmp_path):
+    import hashlib
+
+    from opendoc_formats.readers.html_resources import clean_xml
+
+    svg = '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/></svg>'
+    digest = hashlib.sha256(clean_xml(svg, "svg", lambda *args: None).encode()).hexdigest()
+    item_id = "inline-svg-" + digest
+    source = tmp_path / "collision.epub"
+    _book(source, svg + svg, assets=((item_id, "other.png", "image/png", b"own inert other asset"),))
+    result = read_document(source)
+    assert result.success
+    resources = result.document.resources
+    assert resources["epub-" + item_id].data == b"own inert other asset"
+    images = [block.content[0] for block in result.document.sections[0].blocks]
+    assert images[0].resource_id == images[1].resource_id and images[0].resource_id != "epub-" + item_id
+    assert len(resources) == 2
+    assert b"rect" in resources[images[0].resource_id].data

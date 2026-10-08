@@ -375,11 +375,12 @@ EPUB → Text.
 
 Located, partial EPUB preservation assessment using the OpenDoc contract.
 
-- `EpubDiagnostics` — [строка 21](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L21)
-- `__init__(self, source: Path, root_directory: str='') -> None` — [строка 22](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L22)
-- `lost(self, feature: str, reason: str, message: str, part: str, node: Any=None) -> None` — [строка 27](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L27)
-- `attach(self, document: DocumentModel) -> None` — [строка 40](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L40)
-- `chapter(self, body: Any, part: str, blocks: set[str]) -> None` — [строка 48](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L48)
+- `EpubDiagnostics` — [строка 22](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L22)
+- `__init__(self, source: Path, root_directory: str='', resources: dict[str, Resource] | None=None) -> None` — [строка 23](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L23)
+- `lost(self, feature: str, reason: str, message: str, part: str, node: Any=None) -> None` — [строка 29](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L29)
+- `opaque(self, feature: str, reason: str, message: str, part: str, resource_id: str, node: Any=None) -> None` — [строка 32](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L32)
+- `attach(self, document: DocumentModel) -> None` — [строка 64](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L64)
+- `chapter(self, body: Any, part: str, blocks: set[str]) -> None` — [строка 75](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L75)
 
 Импорты: `__future__`, `opendoc_model`, `pathlib`, `typing`
 
@@ -387,7 +388,7 @@ Located, partial EPUB preservation assessment using the OpenDoc contract.
 
 Rich EPUB spine importer with links, media, and a small deterministic CSS cascade.
 
-- `read_epub_model(path: str | Path, *, backend: str='native') -> DocumentModel` — [строка 32](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_model.py#L32)
+- `read_epub_model(path: str | Path, *, backend: str='native') -> DocumentModel` — [строка 33](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_model.py#L33)
 
 Импорты: `__future__`, `bs4`, `collections.abc`, `opendoc_formats.readers.epub_diagnostics`, `opendoc_formats.readers.epub_package`, `opendoc_formats.readers.html_resources`, `opendoc_model.document_model`, `pathlib`, `typing`, `urllib.parse`
 
@@ -471,6 +472,8 @@ Embedded HTML resources with explicit opt-in for a bounded local directory.
 - `svg(self, xml: str, alt: str='') -> od.Image | None` — [строка 108](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_resources.py#L108)
 
 Импорты: `__future__`, `collections.abc`, `opendoc_model`, `pathlib`, `urllib.parse`
+
+Тесты: [test_epub_structure.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_structure.py#L1)
 
 ## src/opendoc_formats/readers/html_text.py
 

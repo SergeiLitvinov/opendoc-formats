@@ -9,8 +9,9 @@
   из metadata и typed preservation ledger OpenDoc, включая повторный импорт JSON.
   `assessment_complete` и `lossless` требуют явно завершённой оценки функций;
   пустой список предупреждений не доказывает отсутствие потерь.
-- EPUB отмечает потери нелинейных/неподдержанных spine items, структуры таблиц,
-  MathML, inline SVG, standalone/missing images, audio/video/object/script и font/media assets.
+- EPUB отмечает пропуски нелинейных/неподдержанных spine items, missing images,
+  audio/video playback, object/script и ограничения table/MathML профиля.
+  Inline SVG и исходные font/media assets теперь удерживаются opaque; standalone images импортируются.
   Ledger содержит reason и source provenance; оценка явно неполная.
 - PPTX отмечает потери package graph, transitions/timing, иерархии групп, audio/video,
   3D settings и пропуски фигур/картинок. Неподдержанные graphic objects различают
@@ -82,7 +83,10 @@
 
 - Реализовано: конечный профиль XHTML tables/captions/rowspan/colspan/nested tables
   и MathML Formula; mixed cell text сохраняет порядок, JSON и HTML экспорт проверены.
-- Остаётся: пропуск `linear=no`, отсутствие ресурсов шрифтов, SVG/standalone media,
+- Реализовано: standalone images, безопасный inline SVG resource (opaque);
+  исходные font/audio/video bytes удерживаются в inert attachments.
+- Остаётся: пропуск `linear=no`, семантика CSS font-face/обфускации шрифтов,
+  редактируемые SVG shapes и playback/media contracts,
   fixed-layout и полный CSS; таблицы внутри текстовых блоков диагностируются как flattened.
 - Разбирать XHTML общим структурным путём: таблицы с объединениями, MathML, SVG,
   standalone media; сохранить весь spine/nav/OPF metadata, font assets и fixed-layout
