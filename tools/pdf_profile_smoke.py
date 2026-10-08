@@ -104,6 +104,27 @@ def main() -> None:
                 assert raster_report.success and raster_report.metrics["pdf_rasters"]["native"] == 2
                 assert raster_snapshot(raster_path) == expected_raster
             assert not read_document(source, options=ImportOptions(cancelled=lambda: True)).success
+            from opendoc_model import Box, DocumentModel, Image, ImageCrop, Resource, ResourceKind, Section
+
+            cropped = DocumentModel(
+                sections=[Section(blocks=[Image("own", box=Box(30, 40, 80, 100, rotation=3),
+                                               crop=ImageCrop(0.1, 0.2, 0.1, 0.1))])],
+                resources={"own": Resource("own", ResourceKind.RASTER_IMAGE, "image/png", data=pixels.tobytes("png"))},
+            )
+            crop_path = output / "crop-source.pdf"
+            assert write_document(cropped, crop_path).success
+            expected_crop = raster_snapshot(crop_path)
+            for cycle in range(2):
+                imported = read_document(crop_path)
+                assert imported.success, imported.issues
+                crop_model = document_from_json(document_to_json(imported.document))
+                assert crop_model.sections[0].blocks[0].content[0].crop == ImageCrop(0.1, 0.2, 0.1, 0.1)
+                crop_path = output / f"crop-{cycle}.pdf"
+                assert write_document(crop_model, crop_path).success
+                actual_crop = raster_snapshot(crop_path)
+                assert len(actual_crop) == len(expected_crop)
+                for actual, expected in zip(actual_crop, expected_crop, strict=True):
+                    assert actual[:2] == expected[:2] and actual[3] == expected[3]
             target = output / "cancelled.pdf"
             target.write_bytes(b"existing")
             cancelled = write_document(result.document, target, options=ExportOptions(cancelled=lambda: True))

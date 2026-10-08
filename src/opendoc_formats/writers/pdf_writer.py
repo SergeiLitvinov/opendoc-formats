@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import math
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, Callable
 
@@ -70,7 +72,9 @@ def write_pdf_model(
             rotation = pdf_profile.get("source_rotation", 0)
             if type(rotation) is not int or rotation not in (0, 90, 180, 270):
                 raise ValueError("Invalid PDF source page rotation")
-            section_pdf, renderer = _render_section(document, section, section_index, report)
+            flow_positions: dict[tuple[str, int], tuple[float, ...]] = {}
+            flow_ids = {r.location: r.flow_id for r in rasters[section_index] if r.flow_id is not None}
+            section_pdf, renderer = _render_section(document, section, section_index, report, flow_positions, flow_ids)
             section_vectors = vectors[section_index] if section_index < len(vectors) else []
             if section_vectors and rasters[section_index]:
                 report.add(IssueSeverity.LOSS, "pdf-raster-compositing", "Source raster/vector paint order is not reconstructed",
@@ -78,7 +82,35 @@ def write_pdf_model(
             try:
                 for page_number, page in enumerate(section_pdf):
                     placed_rasters = [r for r in rasters[section_index]
-                                      if page_number == 0 or ".headers[" in r.location or ".footers[" in r.location]
+                                      if r.flow_id is None
+                                      and (page_number == 0 or ".headers[" in r.location or ".footers[" in r.location)]
+                    for raster in rasters[section_index]:
+                        if raster.flow_id is None:
+                            continue
+                        if not any(token == raster.flow_id for token, _ in flow_positions):
+                            raise ValueError(f"Missing inline raster placement at {raster.location}")
+                        position = flow_positions.get((raster.flow_id, page_number))
+                        if position is not None:
+                            x0, y0, x1, y1 = position
+                            box = raster.image.box
+                            assert box is not None
+                            angle = math.radians(box.rotation % 360)
+                            expected_width = abs(box.width * math.cos(angle)) + abs(box.height * math.sin(angle))
+                            expected_height = abs(box.width * math.sin(angle)) + abs(box.height * math.cos(angle))
+                            if not (math.isclose(x1-x0, expected_width, abs_tol=0.01)
+                                    and math.isclose(y1-y0, expected_height, abs_tol=0.01)):
+                                raise ValueError(f"Inline raster placeholder was resized or split at {raster.location}")
+                            frame = flow_positions.get((raster.flow_id + "-frame", page_number))
+                            if frame is None:
+                                raise ValueError(f"Missing inline raster container at {raster.location}")
+                            if raster.flow_alignment == "center":
+                                x0 = (frame[0] + frame[2] - expected_width) / 2
+                                x1 = x0 + expected_width
+                            elif raster.flow_alignment == "right":
+                                x1 = frame[2]
+                                x0 = x1 - expected_width
+                            placed_box = replace(box, x=(x0 + x1 - box.width) / 2, y=(y0 + y1 - box.height) / 2)
+                            placed_rasters.append(replace(raster, image=replace(raster.image, box=placed_box)))
                     draw_rasters(page, placed_rasters, check_cancelled)
                     placed = [v for v in section_vectors
                               if page_number == 0 or ".headers[" in v.location or ".footers[" in v.location]
@@ -130,6 +162,8 @@ def _render_section(
     section: Section,
     section_index: int,
     report: ConversionReport,
+    flow_positions: dict[tuple[str, int], tuple[float, ...]],
+    flow_ids: dict[str, str],
 ) -> tuple[Any, _HtmlRenderer]:
     import fitz
 
@@ -142,7 +176,9 @@ def _render_section(
         source_format=document.source_format,
         version=document.version,
     )
-    renderer = _HtmlRenderer(section_model, report)
+    from opendoc_formats.writers.pdf_flow import PdfFlowRenderer, record_position
+
+    renderer = PdfFlowRenderer(section_model, report, flow_ids)
     main_html = renderer._blocks(section.blocks, f"sections[{section_index}].blocks")
     header_html = renderer._blocks(section.headers, f"sections[{section_index}].headers")
     footer_html = renderer._blocks(section.footers, f"sections[{section_index}].footers")
@@ -185,7 +221,8 @@ def _render_section(
                     page.width.pt - page.margin_right.pt,
                     max(4, page.margin_top.pt - 4),
                 )
-                _draw_fixed_story(header_html, css, header_box, device, report, "header", archive=archive)
+                _draw_fixed_story(header_html, css, header_box, device, report, "header", archive=archive,
+                                  flow_positions=flow_positions, page_number=_page_number - 1)
             if footer_html:
                 footer_box = fitz.Rect(
                     page.margin_left.pt,
@@ -193,9 +230,11 @@ def _render_section(
                     page.width.pt - page.margin_right.pt,
                     page.height.pt - 2,
                 )
-                _draw_fixed_story(footer_html, css, footer_box, device, report, "footer", archive=archive)
+                _draw_fixed_story(footer_html, css, footer_box, device, report, "footer", archive=archive,
+                                  flow_positions=flow_positions, page_number=_page_number - 1)
 
-        section_pdf = story.write_with_links(rect_function, pagefn=page_function)
+        section_pdf = story.write_with_links(rect_function, pagefn=page_function,
+                                            positionfn=lambda position: record_position(flow_positions, position))
     if isinstance(section_pdf, fitz.Document):
         return section_pdf, renderer
     return fitz.open(stream=section_pdf.read(), filetype="pdf"), renderer
@@ -240,11 +279,17 @@ def _draw_fixed_story(
     feature: str,
     *,
     archive: Any = None,
+    flow_positions: dict[tuple[str, int], tuple[float, ...]] | None = None,
+    page_number: int = 0,
 ) -> None:
     import fitz
 
     story = fitz.Story(html=html, user_css=css, archive=archive)
     more, _filled = story.place(rectangle)
+    if flow_positions is not None:
+        from opendoc_formats.writers.pdf_flow import record_position
+
+        story.element_positions(lambda position: record_position(flow_positions, position), {"page_num": page_number + 1})
     story.draw(device)
     if more:
         report.add(IssueSeverity.LOSS, feature, f"{feature} content was clipped because it exceeds the page margin")

@@ -50,7 +50,7 @@ def check(dist: Path, tag: str | None = None) -> None:
         metadata = BytesParser().parsebytes(archive.read(prefix + "METADATA"))
         if metadata["Name"] != "opendoc-formats" or metadata["Version"] != expected:
             raise ValueError("Wheel metadata mismatch")
-        if "opendoc-model==0.6.0" not in metadata.get_all("Requires-Dist", []):
+        if "opendoc-model==0.7.2" not in metadata.get_all("Requires-Dist", []):
             raise ValueError("Missing mandatory OpenDoc contract")
         if not REQUIRED <= wheel_names:
             raise ValueError(f"Wheel resources missing: {REQUIRED - wheel_names}")

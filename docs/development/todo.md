@@ -94,9 +94,14 @@
 - Проверен позиционированный растр: все повторные xref/inline размещения,
   soft mask, полная геометрия до viewport crop, четвертьобороты и отдельный масштаб
   осей. Два JSON roundtrip совпадают по RGB-рендеру на собственных страницах.
-  Смешанный paint order диагностируется; полный affine/clipping остаётся открытым.
+  Произвольный конечный affine (поворот, shear, reflection) и ограниченный
+  single-image quadrilateral clip проходят два цикла с точным RGB совпадением.
+  Inline-изображение следует действительному потоку страниц; paragraph anchor
+  с нулевыми offsets имеет flow fallback с located LOSS для floating wrap.
+  Смешанный paint order диагностируется; полный graphics state/clipping остаётся открытым.
 - Остаётся: semantic structure tree и optional content; полный clipping/masks/blend,
-  семантический outline contract, XFA/signatures/radio groups и полный annotation appearance.
+  перенос на общий `Outline`/`PageGeometry` модели с миграцией прежних JSON,
+  XFA/signatures/radio groups и полный annotation appearance.
 - Подзадачи: marked content и reading order; расширение форм/аннотаций и их writer;
   слои; clipping, transform, masks, blend и ICC/output intents с сохранением оригинала.
 - Приёмка: tagged PDF и PDF с формой, слоями и обтравкой → JSON;

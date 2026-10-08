@@ -220,7 +220,7 @@ def read_pdf_model(
             blocks.append(
                 Paragraph(
                     content=[RichImage(
-                        resource_id=resource_id, box=box, provenance=image_origin,
+                        resource_id=resource_id, box=box, provenance=image_origin, crop=img.crop,
                         properties={"pdf_image_transform": list(img.transform)} if img.transform else {},
                     )],
                     provenance=image_origin,

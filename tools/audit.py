@@ -14,7 +14,7 @@ FORBIDDEN = {"textalchemy", "fastapi", "flask", "django", "celery"}
 def problems() -> list[str]:
     errors = []
     config = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
-    if config["project"]["dependencies"] != ["opendoc-model==0.6.0"]:
+    if config["project"]["dependencies"] != ["opendoc-model==0.7.2"]:
         errors.append("The mandatory dependency contract must be reviewed")
     for path in sorted(PACKAGE.rglob("*.py")):
         tree = ast.parse(path.read_text(encoding="utf-8"))

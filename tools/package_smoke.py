@@ -36,7 +36,7 @@ def main() -> None:
     from opendoc_formats.pdf import PdfDocument
 
     assert opendoc_formats.__version__ == version("opendoc-formats")
-    assert version("opendoc-model") == "0.6.0"
+    assert version("opendoc-model") == "0.7.2"
     engines = ("bs4", "fitz", "pymupdf", "lxml", "docx", "pptx", "ebooklib", "fontTools")
     assert all(name not in sys.modules for name in engines)
     installed = Path(opendoc_formats.__file__).resolve().parent

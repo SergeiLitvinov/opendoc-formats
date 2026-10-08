@@ -184,3 +184,18 @@ document defaults, смена/удаление роли, неверные уро
 uv run --frozen pytest tests/readers/test_docx_headings.py --basetemp=.opendoc-formats/heading-native
 ./tools/docx_heading_acceptance.ps1 -FixtureRoot .opendoc-formats/heading-native
 ```
+
+## PDF: affine, обрезка и поток изображений
+
+`tests/writers/test_pdf_raster_roundtrip.py` сравнивает два цикла с независимо
+заданными native matrices для произвольного поворота, shear и отражений:
+совпадают исходные RGB bytes и geometry. Невырожденность проверяется отдельно.
+`tests/writers/test_pdf_docx_rasters.py` проверяет ImageCrop и углы 3/12.5/-17/90
+по независимому Form-reference. Из-за двойного clipping у reference допускаются
+различия антиалиасинга только в пределах 1.5 pixels от границы, а не внутри изображения.
+
+Настоящие PDF → JSON → PDF циклы с поворотами страниц/изображений сохраняют
+crop и RGB pixels точно. Собственные DOCX проверяют положение изображения
+между абзацами, перенос на следующие страницы, центрирование, колонтитулы,
+located LOSS для paragraph anchor и отказ при пустой обрезке, чрезмерной
+рамке и PNG pixel dimensions. Исходник и модель не изменяются.

@@ -8,7 +8,7 @@
 | OF01: редактирование исходного DOCX | Реализован | Семантические снимки, пакетные исходные ID/offsets, стили, SHA частей, неизменяемый источник, атомарная запись |
 | OF02: страницы PDF и офисный preview | Реализован | `PdfDocument`, `convert_office_to_pdf`; реальные PDF и LibreOffice, bounds/cache/cancel/timeout |
 | OF03: расширение семантики форматов | Поддержанное описано; конечный профиль PDF-векторного экспорта реализован | [Руководство](../guide/formats.md#векторные-ресурсы-pdf), [неполные исходные форматы](../guide/format-audit.md); остальные задачи в TODO |
-| OF04: fallback и provenance | Подтверждён SVG→DOCX→JSON→DOCX | `test_format_audit.py`; дополнительные объекты требуют fixtures |
+| OF04: fallback и provenance | Частичный: подтверждён SVG→DOCX→JSON→DOCX, location/reason и сохранение source | `test_format_audit.py`; общий типизированный маршрут source→fallback→target и дополнительные объекты требуют реализации/fixtures; OF15 |
 | OF05: цвета и прозрачность | Подтверждена регрессия alpha=0 | RGB/CMYK и preflight в корпусе; расширенное ICC в исследованиях |
 
 [Нативный контракт](native-access-contract.md) фиксирует интерфейс интеграции.

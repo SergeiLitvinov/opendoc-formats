@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from opendoc_model import ImageCrop
 from opendoc_model.color import ColorValue
 
 from opendoc_formats.readers.pdf_geometry import (
@@ -39,6 +40,7 @@ class ExtractedPdfImage:
     page: int
     smask_xref: int = 0
     transform: tuple[float, ...] = ()
+    crop: ImageCrop | None = None
 
     @property
     def media_type(self) -> str:
@@ -127,6 +129,9 @@ def extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[
             page_dict = page.get_text("dict", sort=False) or {}
             image_blocks = [block for block in page_dict.get("blocks", []) if block.get("type") == 1]
             infos = {item["number"]: item for item in page.get_image_info(xrefs=True)}
+            from opendoc_formats.readers.pdf_image_clips import clipped_image_placement, image_clip_profiles
+
+            clips = image_clip_profiles(page)
             masks = {int(item[0]): int(item[1]) for item in page.get_images(full=True)}
             for block_index, block in enumerate(image_blocks):
                 from opendoc_formats.errors import ResourceLimitError
@@ -136,6 +141,7 @@ def extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[
                     raise ResourceLimitError("PDF raster exceeds pixel or placement limits")
                 block_number = int(block.get("number", block_index))
                 info = infos.get(block_number, {})
+                clipped = clipped_image_placement(info, clips)
                 xref = int(info.get("xref", 0)) or -(block_number + 1)
                 data = block.get("image", b"")
                 if len(data) > 32 * 1024 * 1024:
@@ -152,11 +158,13 @@ def extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[
                 if len(data) > 32 * 1024 * 1024:
                     raise ResourceLimitError("PDF raster with mask exceeds 32 MiB")
                 images.append(ExtractedPdfImage(
-                    bbox=info.get("bbox", block.get("bbox", (0.0, 0.0, 0.0, 0.0))), number=block_number,
+                    bbox=clipped[0] if clipped else info.get("bbox", block.get("bbox", (0.0, 0.0, 0.0, 0.0))),
+                    number=block_number,
                     width=int(block.get("width", 0)), height=int(block.get("height", 0)),
                     extension=extension, colorspace=str(block.get("colorspace", "")),
                     data=data, xref=xref, page=page_number, smask_xref=masks.get(xref, 0),
-                    transform=tuple(block.get("transform", ())),
+                    transform=clipped[1] if clipped else tuple(block.get("transform", ())),
+                    crop=clipped[2] if clipped else None,
                 ))
 
     images.sort(key=lambda img: (img.page, img.number))

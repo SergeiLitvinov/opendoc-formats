@@ -19,6 +19,29 @@ def test_txt_empty_lines_and_native_json(tmp_path):
     assert document_from_json(document_to_json(result.document)).source_format == "txt"
 
 
+def test_model_outline_survives_public_json_cycles(tmp_path):
+    from opendoc_model import Outline, OutlineEntry, OutlineTarget, get_outline, set_outline
+
+    from opendoc_formats import write_document
+
+    document = DocumentModel(sections=[Section(blocks=[Paragraph(content=[TextRun("Own outline")])])])
+    outline = Outline(entries=(
+        OutlineEntry("root", "Root", 0, extra={"vendor": {"unknown": None}}),
+        OutlineEntry("child", "External", 2, parent_id="root",
+                     target=OutlineTarget("external", uri="https://example.invalid/inert")),
+    ), extra={"unknown": [1, None]})
+    set_outline(document, outline)
+    before = document_to_json(document)
+    for cycle in range(2):
+        path = tmp_path / f"outline-{cycle}.json"
+        assert write_document(document, path).success
+        result = read_document(path)
+        assert result.success, result.issues
+        document = result.document
+        assert get_outline(document) == outline
+        assert document_to_json(document) == before
+
+
 @pytest.mark.parametrize("value", [1, 0, "yes", None])
 def test_epub_nonlinear_option_requires_boolean(value):
     with pytest.raises(ValueError, match="epub_include_nonlinear must be boolean"):
