@@ -57,6 +57,22 @@ TXT сохраняет только основной текст; byte roundtrip 
 
 ### Отчёт импорта
 
+Нелинейные главы EPUB импортируются при явном выборе:
+
+```python
+from opendoc_formats import ImportOptions, read_document
+
+result = read_document("book.epub", options=ImportOptions(epub_include_nonlinear=True))
+```
+
+Для прямого reader доступен `read_epub_model("book.epub", include_nonlinear=True)`.
+По умолчанию `linear=no` пропускается с `nonlinear-spine` diagnostic. При включении
+главы импортируются в порядке исходного spine; признак сохраняется в
+`section.properties["epub"]["linear"]`. Metadata `epub.source_spine` содержит все
+исходные idref/href/linear, а `epub.include_nonlinear` — выбранный режим, включая JSON.
+Режим не добавляет поддержку nav или других неподдержанных spine item types;
+оценка EPUB по-прежнему явно неполная.
+
 EPUB также импортирует изображения вне абзацев и inline SVG в исходном порядке.
 SVG очищается общим безопасным XML-путём и хранится как vector image resource;
 ledger отмечает `opaque` с `resource_id`, поскольку редактируемые фигуры не построены.

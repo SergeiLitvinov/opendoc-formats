@@ -63,11 +63,11 @@ def read_epub(path: Union[str, Path], *, backend: str = "native") -> Text:
     )
 
 
-def read_epub_model(path: Union[str, Path], *, backend: str = "native") -> od.DocumentModel:
+def read_epub_model(path: Union[str, Path], *, backend: str = "native", include_nonlinear: bool = False) -> od.DocumentModel:
     """Import EPUB spine chapters, links, media, and basic CSS into DocumentModel."""
     from opendoc_formats.readers.epub_model import read_epub_model as read_model
 
-    return read_model(path, backend=backend)
+    return read_model(path, backend=backend, include_nonlinear=include_nonlinear)
 
 
 __all__ = ["read_epub", "read_epub_model"]

@@ -18,6 +18,12 @@ def test_txt_empty_lines_and_native_json(tmp_path):
     assert [block.plain_text for block in result.document.sections[0].blocks] == ["First", "", "Last"]
     assert document_from_json(document_to_json(result.document)).source_format == "txt"
 
+
+@pytest.mark.parametrize("value", [1, 0, "yes", None])
+def test_epub_nonlinear_option_requires_boolean(value):
+    with pytest.raises(ValueError, match="epub_include_nonlinear must be boolean"):
+        ImportOptions(epub_include_nonlinear=value)
+
 def test_html_actual_parser_and_diagnostics(tmp_path):
     path = tmp_path / "input.html"
     path.write_text('<h1>Title</h1><p><b>Bold</b></p><script>alert(1)</script>', encoding="utf-8")

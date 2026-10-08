@@ -14,18 +14,18 @@ Document format readers and writers built on the OpenDoc model.
 Format reader registry using the OpenDoc model and validation contract.
 
 - `ImportOptions` — [строка 18](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L18)
-- `ImportResult` — [строка 45](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L45)
-- `success(self) -> bool` — [строка 51](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L51)
-- `assessment_complete(self) -> bool` — [строка 55](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L55)
-- `lossless(self) -> bool` — [строка 66](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L66)
-- `AdapterSpec` — [строка 83](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L83)
-- `AdapterRegistry` — [строка 103](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L103)
-- `__init__(self) -> None` — [строка 104](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L104)
-- `register(self, adapter: AdapterSpec) -> None` — [строка 108](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L108)
-- `adapters(self) -> tuple[AdapterSpec, ...]` — [строка 116](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L116)
-- `read(self, path: str | Path, *, format_id: str | None=None, options: ImportOptions | None=None) -> ImportResult` — [строка 119](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L119)
-- `default_registry() -> AdapterRegistry` — [строка 211](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L211)
-- `read_document(path: str | Path, *, format_id: str | None=None, options: ImportOptions | None=None) -> ImportResult` — [строка 224](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L224)
+- `ImportResult` — [строка 48](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L48)
+- `success(self) -> bool` — [строка 54](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L54)
+- `assessment_complete(self) -> bool` — [строка 58](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L58)
+- `lossless(self) -> bool` — [строка 69](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L69)
+- `AdapterSpec` — [строка 86](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L86)
+- `AdapterRegistry` — [строка 106](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L106)
+- `__init__(self) -> None` — [строка 107](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L107)
+- `register(self, adapter: AdapterSpec) -> None` — [строка 111](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L111)
+- `adapters(self) -> tuple[AdapterSpec, ...]` — [строка 119](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L119)
+- `read(self, path: str | Path, *, format_id: str | None=None, options: ImportOptions | None=None) -> ImportResult` — [строка 122](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L122)
+- `default_registry() -> AdapterRegistry` — [строка 214](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L214)
+- `read_document(path: str | Path, *, format_id: str | None=None, options: ImportOptions | None=None) -> ImportResult` — [строка 227](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L227)
 
 Импорты: `__future__`, `collections.abc`, `dataclasses`, `importlib`, `opendoc_formats.errors`, `opendoc_formats.support.backends`, `opendoc_formats.text_profile`, `opendoc_model`, `pathlib`, `typing`
 
@@ -365,7 +365,7 @@ DOCX table importer for spans, geometry, fills, margins, and styles.
 EPUB → Text.
 
 - `read_epub(path: Union[str, Path], *, backend: str='native') -> Text` — [строка 16](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub.py#L16)
-- `read_epub_model(path: Union[str, Path], *, backend: str='native') -> od.DocumentModel` — [строка 66](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub.py#L66)
+- `read_epub_model(path: Union[str, Path], *, backend: str='native', include_nonlinear: bool=False) -> od.DocumentModel` — [строка 66](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub.py#L66)
 
 Импорты: `__future__`, `bs4`, `opendoc_formats.readers.epub_model`, `opendoc_formats.readers.epub_package`, `opendoc_formats.types`, `pathlib`, `typing`
 
@@ -388,7 +388,7 @@ Located, partial EPUB preservation assessment using the OpenDoc contract.
 
 Rich EPUB spine importer with links, media, and a small deterministic CSS cascade.
 
-- `read_epub_model(path: str | Path, *, backend: str='native') -> DocumentModel` — [строка 33](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_model.py#L33)
+- `read_epub_model(path: str | Path, *, backend: str='native', include_nonlinear: bool=False) -> DocumentModel` — [строка 33](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_model.py#L33)
 
 Импорты: `__future__`, `bs4`, `collections.abc`, `opendoc_formats.readers.epub_diagnostics`, `opendoc_formats.readers.epub_package`, `opendoc_formats.readers.html_resources`, `opendoc_model.document_model`, `pathlib`, `typing`, `urllib.parse`
 

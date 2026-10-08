@@ -94,13 +94,15 @@ def main() -> None:
                   <container xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles>
                   <rootfile full-path="book.opf" media-type="application/oebps-package+xml"/></rootfiles></container>''')
                 archive.writestr("book.opf", '''<package xmlns="http://www.idpf.org/2007/opf"><metadata/>
-                  <manifest><item id="c" href="c.xhtml" media-type="application/xhtml+xml"/></manifest>
-                  <spine><itemref idref="c"/></spine></package>''')
+                  <manifest><item id="c" href="c.xhtml" media-type="application/xhtml+xml"/>
+                  <item id="appendix" href="appendix.xhtml" media-type="application/xhtml+xml"/></manifest>
+                  <spine><itemref idref="c"/><itemref idref="appendix" linear="no"/></spine></package>''')
                 archive.writestr("c.xhtml", '''<html><body><p>Native EPUB 123</p>
                     <table><tr><td colspan="2">Own cell</td></tr></table>
                     <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>x</mi></math>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>
                     </body></html>''')
+                archive.writestr("appendix.xhtml", "<html><body><p>Own nonlinear appendix</p></body></html>")
             result = read_document(source)
             assert result.success, result.issues
             assert result.document.sections[0].blocks[0].plain_text == "Native EPUB 123"
@@ -109,6 +111,11 @@ def main() -> None:
             assert isinstance(result.document.sections[0].blocks[2].content[0], Formula)
             vector = result.document.sections[0].blocks[3].content[0]
             assert result.document.resources[vector.resource_id].media_type == "image/svg+xml"
+            assert len(result.document.sections) == 1
+            inclusive = read_document(source, options=ImportOptions(epub_include_nonlinear=True))
+            assert inclusive.success and len(inclusive.document.sections) == 2
+            assert inclusive.document.sections[1].blocks[0].plain_text == "Own nonlinear appendix"
+            assert inclusive.document.sections[1].properties["epub"]["linear"] == "no"
             assert all(name not in sys.modules for name in ("lxml", "ebooklib"))
         math_path = root / "math.html"
         math = DocumentModel(sections=[Section(blocks=[Formula(

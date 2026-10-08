@@ -48,8 +48,19 @@ def test_epub_table_math_are_semantic_but_nonlinear_content_is_lost(tmp_path):
     assert {issue.code for issue in result.issues} == {"epub.spine"}
     assert all(issue.severity.value == "loss" and str(source) in issue.location for issue in result.issues)
     assert any("appendix.xhtml" in issue.location and issue.reason == "nonlinear-spine" for issue in result.issues)
+    from opendoc_formats import ImportOptions
+
+    inclusive = read_document(source, options=ImportOptions(epub_include_nonlinear=True))
+    assert inclusive.success and "NonlinearOnly" in str(inclusive.document)
+    assert not any(issue.reason == "nonlinear-spine" for issue in inclusive.issues)
+    assert inclusive.document.sections[1].properties["epub"]["linear"] == "no"
+    assert inclusive.document.metadata["epub"]["source_spine"] == document.metadata["epub"]["source_spine"]
     from opendoc_model import document_from_json, document_to_json, get_integration
 
+    inclusive_restored = document_from_json(document_to_json(inclusive.document))
+    assert inclusive_restored.metadata["epub"]["include_nonlinear"] is True
+    assert inclusive_restored.sections[1].properties["epub"]["linear"] == "no"
+    assert inclusive_restored.sections[1].blocks[0].plain_text == "NonlinearOnly"
     restored = document_from_json(document_to_json(document))
     ledger = get_integration(restored)
     assert ledger == get_integration(document)

@@ -30,13 +30,15 @@ _SIZE = re.compile(r"^([0-9.]+)(pt|px|em|rem|%)$")
 _BLOCKS = {"p", "h1", "h2", "h3", "h4", "h5", "h6", "li", "blockquote", "pre", "figcaption"}
 
 
-def read_epub_model(path: str | Path, *, backend: str = "native") -> DocumentModel:
+def read_epub_model(path: str | Path, *, backend: str = "native", include_nonlinear: bool = False) -> DocumentModel:
     from bs4 import BeautifulSoup
 
     from opendoc_formats.readers.epub_diagnostics import EpubDiagnostics
     from opendoc_formats.readers.epub_package import read_ebooklib_package, read_epub_package
 
     source = Path(path)
+    if type(include_nonlinear) is not bool:
+        raise ValueError("include_nonlinear must be boolean")
     if not source.is_file():
         raise FileNotFoundError(source)
     if backend not in {"native", "ebooklib"}:
@@ -61,7 +63,7 @@ def read_epub_model(path: str | Path, *, backend: str = "native") -> DocumentMod
     sections, warnings, styles = [], [], {}
     for idref, linear in book.spine:
         item = book.items.get(idref)
-        if str(linear).lower() == "no":
+        if str(linear).lower() == "no" and not include_nonlinear:
             diagnostics.lost("epub.spine", "nonlinear-spine", "Nonlinear spine item is skipped", item.name if item else idref)
             continue
         if item is None or item.media_type != "application/xhtml+xml" or "nav" in item.properties:
@@ -85,6 +87,7 @@ def read_epub_model(path: str | Path, *, backend: str = "native") -> DocumentMod
                     "epub": {
                         "id": idref,
                         "href": item.name,
+                        "linear": str(linear),
                         "title": titles.get(posixpath.normpath(item.name))
                         or (blocks[0].plain_text if blocks and isinstance(blocks[0], Paragraph) and blocks[0].style_id else ""),
                     },
@@ -98,7 +101,15 @@ def read_epub_model(path: str | Path, *, backend: str = "native") -> DocumentMod
         "identifier": book.metadata["identifier"],
         "engine": book.engine,
         "source_name": source.name,
-        "epub": {"spine": [section.properties["epub"]["href"] for section in sections], "warnings": warnings},
+        "epub": {
+            "spine": [section.properties["epub"]["href"] for section in sections],
+            "warnings": warnings,
+            "include_nonlinear": include_nonlinear,
+            "source_spine": [
+                {"idref": idref, "linear": str(linear), "href": book.items[idref].name if idref in book.items else None}
+                for idref, linear in book.spine
+            ],
+        },
     }
     document = DocumentModel(sections=sections, resources=resources, styles=styles, metadata=metadata, source_format="epub")
     diagnostics.attach(document)

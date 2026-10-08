@@ -85,7 +85,9 @@
   и MathML Formula; mixed cell text сохраняет порядок, JSON и HTML экспорт проверены.
 - Реализовано: standalone images, безопасный inline SVG resource (opaque);
   исходные font/audio/video bytes удерживаются в inert attachments.
-- Остаётся: пропуск `linear=no`, семантика CSS font-face/обфускации шрифтов,
+- Реализовано: явный `epub_include_nonlinear`/`include_nonlinear` для глав `linear=no`,
+  source spine descriptor и линейность разделов сохраняются через JSON.
+- Остаётся: семантика CSS font-face/обфускации шрифтов,
   редактируемые SVG shapes и playback/media contracts,
   fixed-layout и полный CSS; таблицы внутри текстовых блоков диагностируются как flattened.
 - Разбирать XHTML общим структурным путём: таблицы с объединениями, MathML, SVG,

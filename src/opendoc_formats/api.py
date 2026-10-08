@@ -23,8 +23,11 @@ class ImportOptions:
     ocr_engine_factory: Callable[..., object] | None = None
     cancelled: Callable[[], bool] | None = None
     txt_profile: TextProfile = field(default_factory=TextProfile)
+    epub_include_nonlinear: bool = False
 
     def __post_init__(self) -> None:
+        if type(self.epub_include_nonlinear) is not bool:
+            raise ValueError("epub_include_nonlinear must be boolean")
         if not isinstance(self.txt_profile, TextProfile):
             raise ValueError("txt_profile must be TextProfile")
         if type(self.max_input_bytes) is not int or self.max_input_bytes < 1:
@@ -236,8 +239,8 @@ def _pptx(path: Path, options: ImportOptions) -> DocumentModel:
 
 
 def _epub(path: Path, options: ImportOptions) -> DocumentModel:
-    reader = cast(Callable[[Path], DocumentModel], import_module("opendoc_formats.readers.epub_model").read_epub_model)
-    return reader(path)
+    reader = cast(Callable[..., DocumentModel], import_module("opendoc_formats.readers.epub_model").read_epub_model)
+    return reader(path, include_nonlinear=options.epub_include_nonlinear)
 
 
 def _pdf(path: Path, options: ImportOptions) -> DocumentModel:
