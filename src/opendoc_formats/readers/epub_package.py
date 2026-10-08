@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
+from opendoc_formats.epub_metadata import read_dc_values
 from opendoc_formats.support.io import check_archive_safety
 
 _CONTAINER = "urn:oasis:names:tc:opendocument:xmlns:container"
@@ -40,6 +41,7 @@ class EpubPackage:
     source_parts: dict[str, bytes] = field(default_factory=dict)
     metadata_entries: tuple[str, ...] = ()
     package_properties: dict[str, str] = field(default_factory=dict)
+    dc_values: dict[str, tuple[str, ...]] = field(default_factory=dict)
 
 
 def _source_snapshot(archive: zipfile.ZipFile, opf_name: str) -> tuple[dict[str, bytes], tuple[str, ...], dict[str, str]]:
@@ -172,6 +174,7 @@ def read_epub_package(path: str | Path) -> EpubPackage:
             source_parts=parts,
             metadata_entries=entries,
             package_properties=properties,
+            dc_values=read_dc_values(opf),
         )
 
 
@@ -219,4 +222,5 @@ def read_ebooklib_package(path: str | Path) -> EpubPackage:
         source_parts=parts,
         metadata_entries=entries,
         package_properties=properties,
+        dc_values=read_dc_values(_xml(parts[opf_name])),
     )

@@ -39,11 +39,14 @@ def fixtures() -> dict[str, DocumentModel]:
     books = {
         "plain": DocumentModel(sections=[Section(blocks=[Paragraph([TextRun("Own plain book")])])]),
         "rich": DocumentModel(
-            metadata={"title": "Own & book", "language": "en"},
-            styles={"Heading 1": TextStyle()},
+            metadata={"title": "Own & book", "language": "en", "identifier": "urn:example:own-book",
+                      "creator": ["Author One", "Author Two"], "publisher": "Own publisher",
+                      "description": "Own description", "rights": "Own rights", "subject": ["Test", "Books"]},
+            styles={"Heading 1": TextStyle(), "Heading 2": TextStyle()},
             resources={"pic": Resource("pic", ResourceKind.VECTOR_IMAGE, "image/svg+xml", data=svg)},
             sections=[Section(blocks=[
                 Paragraph([TextRun("Chapter")], style_id="Heading 1", properties={"anchor_id": "chapter"}),
+                Paragraph([TextRun("Subchapter")], style_id="Heading 2"),
                 Paragraph([TextRun("Bold", TextStyle(bold=True)), TextRun(" Link", link="#target")]),
                 Paragraph([TextRun("List item")], properties={"list_kind": "bullet", "list_level": 0}),
                 Table([TableRow([TableCell([Paragraph([TextRun("Merged")])], column_span=2)])]),

@@ -45,7 +45,7 @@
 Из [GitHub Release](https://github.com/SergeiLitvinov/opendoc-formats/releases), без зависимости от публикации на PyPI:
 
 ```sh
-python -m pip install "opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.3.0/opendoc_model-0.3.0-py3-none-any.whl" "opendoc-formats[docx,html] @ https://github.com/SergeiLitvinov/opendoc-formats/releases/download/v0.13.0/opendoc_formats-0.13.0-py3-none-any.whl"
+python -m pip install "opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.3.0/opendoc_model-0.3.0-py3-none-any.whl" "opendoc-formats[docx,html] @ https://github.com/SergeiLitvinov/opendoc-formats/releases/download/v0.14.0/opendoc_formats-0.14.0-py3-none-any.whl"
 ```
 
 Необязательные движки импортируются только при выборе обработчика. TXT/JSON работают с базовой установкой.

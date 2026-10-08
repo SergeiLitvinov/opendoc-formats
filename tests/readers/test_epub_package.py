@@ -33,6 +33,19 @@ def _package(path, *, href="text/chapter%20one.xhtml", extra_manifest="", contai
           </navPoint></navMap></ncx>''')
 
 
+def test_repeated_dc_values_have_backend_parity_and_source_snapshot(tmp_path):
+    from opendoc_formats.readers.epub_package import read_ebooklib_package
+
+    source = tmp_path / "metadata.epub"
+    _package(source, metadata_extra='<dc:creator id="author">One</dc:creator><dc:creator>Two</dc:creator>'
+             '<dc:subject>Books</dc:subject><dc:rights>Own rights</dc:rights>')
+    native, legacy = read_epub_package(source), read_ebooklib_package(source)
+    assert native.dc_values == legacy.dc_values
+    assert native.dc_values["creator"] == ("One", "Two")
+    assert native.dc_values["subject"] == ("Books",) and native.dc_values["rights"] == ("Own rights",)
+    assert any('id="author"' in value for value in native.metadata_entries)
+
+
 @pytest.mark.parametrize("nav", [True, False])
 def test_native_spine_nav_ncx_and_metadata_without_ebooklib_or_lxml(tmp_path, monkeypatch, nav):
     source = tmp_path / "native.epub"

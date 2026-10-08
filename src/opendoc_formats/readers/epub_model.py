@@ -137,6 +137,7 @@ def read_epub_model(path: str | Path, *, backend: str = "native", include_nonlin
             "include_nonlinear": include_nonlinear,
             "source_xml_resources": source_resources,
             "metadata_entries": list(book.metadata_entries),
+            "dc": {name: list(values) for name, values in book.dc_values.items()},
             "package_properties": book.package_properties,
             "source_spine": [
                 {"idref": idref, "linear": str(linear), "href": book.items[idref].name if idref in book.items else None}

@@ -177,3 +177,63 @@ def test_missing_internal_link_is_inert_and_diagnosed(tmp_path):
     with ZipFile(output) as archive:
         chapter = ET.fromstring(archive.read("OPS/chapter.xhtml"))
         assert chapter.find(".//{http://www.w3.org/1999/xhtml}a").get("href") is None
+
+
+def test_repeated_metadata_and_nested_navigation_roundtrip(tmp_path):
+    dc = {"creator": ["Автор & один", "Author two"], "subject": ["Books", "Math"],
+          "publisher": ["Own publisher"], "description": ["Own <description>"], "rights": ["Own rights"]}
+    model = DocumentModel(metadata={"identifier": "urn:example:stable", "title": "Own book", "language": "en",
+                                    "epub": {"dc": dc}},
+                          styles={f"Heading {i}": TextStyle() for i in range(1, 4)},
+                          sections=[Section(blocks=[Paragraph([TextRun(label)], style_id=f"Heading {level}")
+                                                    for label, level in [
+                                                        ("Root", 1), ("Child", 3), ("Sibling", 2), ("Next", 1),
+                                                    ]])])
+    output = tmp_path / "metadata.epub"
+    assert write_document(model, output).success
+    with ZipFile(output) as archive:
+        ns = {"h": "http://www.w3.org/1999/xhtml"}
+        nav = ET.fromstring(archive.read("OPS/nav.xhtml"))
+        listing = nav.find(".//h:nav/h:ol", ns)
+        assert [item.find("h:a", ns).text for item in listing] == ["Root", "Next"]
+        assert [item.find("h:a", ns).text for item in listing[0].find("h:ol", ns)] == ["Child", "Sibling"]
+    imported = read_document(output)
+    assert imported.success and imported.document.metadata["identifier"] == "urn:example:stable"
+    for name, values in dc.items():
+        assert imported.document.metadata["epub"]["dc"][name] == values
+    restored = document_from_json(document_to_json(imported.document))
+    copied = tmp_path / "copy.epub"
+    assert write_document(restored, copied).success
+    result = read_document(copied)
+    assert result.success
+    assert result.document.metadata["epub"]["dc"] == imported.document.metadata["epub"]["dc"]
+
+
+@pytest.mark.parametrize("value", [42, {}, ["valid", 42], "bad\x00text", "x" * 65_537],
+                         ids=["number", "mapping", "mixed-list", "xml-control", "too-long"])
+def test_invalid_dc_metadata_preserves_previous_file(tmp_path, value):
+    output = tmp_path / "existing.epub"
+    output.write_bytes(b"previous")
+    report = write_document(DocumentModel(metadata={"creator": value}), output)
+    assert not report.success and report.issues[-1].feature == "epub.write"
+    assert output.read_bytes() == b"previous"
+
+
+def test_primary_dc_lists_use_first_value_for_xhtml_and_root_overrides_source(tmp_path):
+    model = DocumentModel(metadata={"title": ["First title", "Other title"], "language": ["en", "ru"],
+                                    "creator": "New author", "epub": {"dc": {"creator": ["Old author"], "unknown": ["Data"]}}})
+    output = tmp_path / "primary.epub"
+    report = write_document(model, output)
+    assert report.success and any(issue.feature == "epub.metadata-field" for issue in report.issues)
+    with ZipFile(output) as archive:
+        chapter = ET.fromstring(archive.read("OPS/chapter.xhtml"))
+        assert chapter.get("lang") == "en"
+        assert chapter.find("{http://www.w3.org/1999/xhtml}head/{http://www.w3.org/1999/xhtml}title").text == "First title"
+    dc = read_epub_package(output).dc_values
+    assert dc["title"] == ("First title", "Other title") and dc["language"] == ("en", "ru")
+    assert dc["creator"] == ("New author",) and "unknown" not in dc
+    assert model.metadata["title"] == ["First title", "Other title"]
+    imported = read_document(output)
+    copied = tmp_path / "primary-copy.epub"
+    assert write_document(imported.document, copied).success
+    assert read_epub_package(copied).dc_values == dc

@@ -7,6 +7,7 @@ import hashlib
 import io
 import xml.etree.ElementTree as ET
 from copy import deepcopy
+from dataclasses import replace
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
@@ -16,6 +17,7 @@ from zipfile import ZIP_STORED, ZipFile
 
 from opendoc_model import ConversionReport, DocumentModel, IssueSeverity, PreservationState, get_integration
 
+from opendoc_formats.epub_metadata import export_dc_values
 from opendoc_formats.support.io import atomic_write_bytes
 from opendoc_formats.writers.html_resources import document_images
 from opendoc_formats.writers.html_writer import write_html_model
@@ -159,6 +161,7 @@ def _navigation(chapters: list[tuple[str, ET.Element]], title: str, language: st
     for chapter_index, (name, chapter) in enumerate(chapters):
         headings = [node for node in chapter.iter() if node.tag in {f"h{i}" for i in range(1, 7)}]
         used = {node.get("id") for node in chapter.iter() if node.get("id")}
+        parents: list[tuple[int, ET.Element]] = []
         for index, heading in enumerate(headings):
             anchor = heading.get("id")
             if not anchor:
@@ -167,7 +170,16 @@ def _navigation(chapters: list[tuple[str, ET.Element]], title: str, language: st
                     anchor += "-"
                 heading.set("id", anchor)
                 used.add(anchor)
-            item = ET.SubElement(listing, "li")
+            level = int(heading.tag[1])
+            while parents and parents[-1][0] >= level:
+                parents.pop()
+            target_list = listing
+            if parents:
+                target_list = parents[-1][1].find("ol")
+                if target_list is None:
+                    target_list = ET.SubElement(parents[-1][1], "ol")
+            item = ET.SubElement(target_list, "li")
+            parents.append((level, item))
             ET.SubElement(item, "a", {"href": name + "#" + quote(anchor, safe="")}).text = "".join(heading.itertext()) or title
         if not headings:
             item = ET.SubElement(listing, "li")
@@ -185,6 +197,9 @@ def write_epub_model(document: DocumentModel, output_path: str | Path) -> Conver
     output.parent.mkdir(parents=True, exist_ok=True)
     report = ConversionReport(output)
     try:
+        dc = export_dc_values(document.metadata, {"title": "Document", "language": "ru"}, report)
+        title, language = dc["title"][0], dc["language"][0]
+        rendered_document = replace(document, metadata={**document.metadata, "title": title, "language": language})
         requested = {image.resource_id for image, _ in document_images(document)}
         image_bytes = 0
         for resource_id in requested:
@@ -198,7 +213,7 @@ def write_epub_model(document: DocumentModel, output_path: str | Path) -> Conver
                 raise ValueError("EPUB input images exceed 64 MiB")
         with TemporaryDirectory(prefix=".opendoc-formats-epub-", dir=output.parent) as directory:
             html = Path(directory) / "chapter.html"
-            rendered = write_html_model(document, html)
+            rendered = write_html_model(rendered_document, html)
             report.issues.extend(rendered.issues)
             if not rendered.success:
                 return report
@@ -210,8 +225,6 @@ def write_epub_model(document: DocumentModel, output_path: str | Path) -> Conver
         chapter = parser.root
         if chapter is None or parser.stack:
             raise ValueError("Incomplete EPUB XHTML")
-        title = str(document.metadata.get("title") or "Document")
-        language = str(document.metadata.get("language") or "ru")
         chapters = _chapters(chapter, report)
         nav = _navigation(chapters, title, language)
         chapter_bytes = {}
@@ -225,9 +238,11 @@ def write_epub_model(document: DocumentModel, output_path: str | Path) -> Conver
         package = ET.Element(f"{{{_OPF}}}package", {"version": "3.0", "unique-identifier": "book-id"})
         metadata = ET.SubElement(package, f"{{{_OPF}}}metadata")
         identifier = "urn:sha256:" + hashlib.sha256(b"".join(chapter_bytes.values())).hexdigest()
-        ET.SubElement(metadata, f"{{{_DC}}}identifier", {"id": "book-id"}).text = identifier
-        ET.SubElement(metadata, f"{{{_DC}}}title").text = title
-        ET.SubElement(metadata, f"{{{_DC}}}language").text = language
+        dc.setdefault("identifier", (identifier,))
+        for name, values in dc.items():
+            for index, value in enumerate(values):
+                attributes = {"id": "book-id"} if name == "identifier" and index == 0 else {}
+                ET.SubElement(metadata, f"{{{_DC}}}{name}", attributes).text = value
         ET.SubElement(metadata, f"{{{_OPF}}}meta", {"property": "dcterms:modified"}).text = datetime.now(timezone.utc).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
         )

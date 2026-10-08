@@ -26,6 +26,8 @@
 `write_document(model, "book.epub")` использует собственный MIT writer и стандартную
 библиотеку Python; `epub`, EbookLib и lxml для записи не нужны. EPUB 3 содержит
 container/OPF/nav, XHTML документ на каждую секцию в spine и оглавление из заголовков.
+Оглавление вложено по уровням заголовков; пропущенные уровни прикрепляются к
+ближайшему предыдущему заголовку меньшего уровня.
 Секции идут последовательно как главы; ссылки между ними переписываются.
 Missing/ambiguous fragment targets становятся inert links с диагностикой потери.
 Абзацы, стили, списки, таблицы с объединениями,
@@ -45,7 +47,33 @@ MathML и внутренние ссылки используют общий HTML
 Шрифты следуют общему font preflight/embedding profile и правам на конкретный font asset.
 Обычный и rich fixture с двумя главами проходят отдельную
 [EPUBCheck acceptance](../development/epubcheck.md) в CI. Расширение metadata/navigation
-profiles остаётся в OF09.
+profiles для исходных EPUB (refinements, page-list/landmarks, fixed layout) относится к OF08.
+
+### Метаданные EPUB
+
+`metadata.epub.dc` содержит списки текстовых значений Dublin Core; повторяющиеся
+значения сохраняются через EPUB/JSON. Writer поддерживает title, language, identifier,
+creator, contributor, subject, description, publisher, date, type, format, source,
+relation, coverage и rights. Явные одноимённые поля в `DocumentModel.metadata`
+переопределяют импортированные значения; совпадающие primary title/language/identifier
+сохраняют дополнительные значения. Первый title/language используется в XHTML.
+При отсутствии identifier создаётся SHA-256 identifier содержимого глав.
+
+```python
+model.metadata.update({
+    "title": "Моя книга", "language": "ru", "identifier": "urn:example:my-book",
+    "creator": ["Первый автор", "Второй автор"],
+    "publisher": "Издатель", "subject": ["Документы", "Форматы"],
+    "description": "Описание книги", "rights": "Права на эту книгу",
+})
+```
+
+Допускаются строки или непустые списки строк, не более 1024 значений, 65 536 символов
+в одном значении и 1 MiB суммарного UTF-8 текста. Недопустимые XML characters и
+некорректные типы дают error; неизвестные ключи внутри `epub.dc` — loss с location.
+Атрибуты и OPF refinements остаются в original XML snapshot и не объявляются
+восстановленными семантически. Язык должен быть корректным языковым тегом EPUB;
+исчерпывающую conformance проверку выполняет внешний EPUBCheck профиль.
 Структура ориентирована на [спецификацию EPUB 3.3](https://www.w3.org/TR/epub-33/).
 
 ### Профиль TXT

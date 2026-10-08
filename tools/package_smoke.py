@@ -76,9 +76,12 @@ def main() -> None:
         book = root / "base-writer.epub"
         from opendoc_formats.readers.epub_package import read_epub_package
 
-        book_report = write_document(DocumentModel(sections=[Section(blocks=[Paragraph(content=[TextRun("Own EPUB")])])]), book)
+        book_report = write_document(DocumentModel(metadata={"creator": ["Own author"], "identifier": "urn:example:installed"},
+                                                    sections=[Section(blocks=[Paragraph(content=[TextRun("Own EPUB")])])]), book)
         assert book_report.success and book_report.metrics["output_verified"], book_report.to_dict()
         assert read_epub_package(book).spine == (("chapter", "yes"),)
+        assert read_epub_package(book).dc_values["creator"] == ("Own author",)
+        assert read_epub_package(book).metadata["identifier"] == "urn:example:installed"
         for encoding in ("utf-8", "utf-16-le", "utf-16-be", "cp1251"):
             source = root / "profile.txt"
             original = "Первая\r\nВторая\rПоследняя\n".encode(encoding)

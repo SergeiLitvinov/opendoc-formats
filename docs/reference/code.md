@@ -65,6 +65,15 @@ Public immutable DOCX snapshots and transactional native text editing.
 
 Тесты: [test_docx_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_access.py#L1)
 
+## src/opendoc_formats/epub_metadata.py
+
+Finite Dublin Core text metadata profile shared by EPUB readers and writers.
+
+- `read_dc_values(package: ET.Element) -> dict[str, tuple[str, ...]]` — [строка 19](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/epub_metadata.py#L19)
+- `export_dc_values(metadata: Mapping[str, Any], defaults: Mapping[str, str], report: ConversionReport) -> dict[str, tuple[str, ...]]` — [строка 29](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/epub_metadata.py#L29)
+
+Импорты: `__future__`, `collections.abc`, `opendoc_model`, `typing`
+
 ## src/opendoc_formats/errors.py
 
 Format-specific errors, independent of consumers.
@@ -398,12 +407,12 @@ Rich EPUB spine importer with links, media, and a small deterministic CSS cascad
 
 Original, bounded EPUB container reader; no network or XML entity expansion.
 
-- `EpubItem` — [строка 24](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L24)
-- `EpubPackage` — [строка 33](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L33)
-- `read_epub_package(path: str | Path) -> EpubPackage` — [строка 98](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L98)
-- `read_ebooklib_package(path: str | Path) -> EpubPackage` — [строка 178](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L178)
+- `EpubItem` — [строка 25](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L25)
+- `EpubPackage` — [строка 34](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L34)
+- `read_epub_package(path: str | Path) -> EpubPackage` — [строка 100](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L100)
+- `read_ebooklib_package(path: str | Path) -> EpubPackage` — [строка 181](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L181)
 
-Импорты: `__future__`, `dataclasses`, `ebooklib`, `opendoc_formats.support.io`, `pathlib`, `urllib.parse`
+Импорты: `__future__`, `dataclasses`, `ebooklib`, `opendoc_formats.epub_metadata`, `opendoc_formats.support.io`, `pathlib`, `urllib.parse`
 
 Тесты: [test_epub_package.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_package.py#L1), [test_epub_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_epub_writer.py#L1)
 
@@ -1020,9 +1029,9 @@ DOCX table exporter for spans, geometry, fills, margins, and styles.
 
 Finite EPUB 3 export using the shared HTML renderer and Python's standard library.
 
-- `write_epub_model(document: DocumentModel, output_path: str | Path) -> ConversionReport` — [строка 178](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/epub_writer.py#L178)
+- `write_epub_model(document: DocumentModel, output_path: str | Path) -> ConversionReport` — [строка 190](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/epub_writer.py#L190)
 
-Импорты: `__future__`, `copy`, `datetime`, `html.parser`, `opendoc_formats.support.io`, `opendoc_formats.writers.html_resources`, `opendoc_formats.writers.html_writer`, `opendoc_model`, `pathlib`, `tempfile`, `urllib.parse`, `zipfile`
+Импорты: `__future__`, `copy`, `dataclasses`, `datetime`, `html.parser`, `opendoc_formats.epub_metadata`, `opendoc_formats.support.io`, `opendoc_formats.writers.html_resources`, `opendoc_formats.writers.html_writer`, `opendoc_model`, `pathlib`, `tempfile`, `urllib.parse`, `zipfile`
 
 Тесты: [test_epub_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_epub_writer.py#L1)
 
