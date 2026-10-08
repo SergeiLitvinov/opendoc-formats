@@ -302,10 +302,10 @@ Plain-text input without application types or optional dependencies.
 
 ## src/opendoc_formats/readers/docx.py
 
-DOCX → Text.
+DOCX readers for extracted text and editable OpenDoc documents.
 
-- `read_docx(path: Union[str, Path], *, include_tables: bool=True) -> Text` — [строка 44](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx.py#L44)
-- `read_docx_model(path: Union[str, Path], *, mode: ConversionMode=ConversionMode.BALANCED) -> DocumentModel` — [строка 78](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx.py#L78)
+- `read_docx(path: Union[str, Path], *, include_tables: bool=True) -> Text` — [строка 40](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx.py#L40)
+- `read_docx_model(path: Union[str, Path], *, mode: ConversionMode=ConversionMode.BALANCED) -> DocumentModel` — [строка 74](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx.py#L74)
 
 Импорты: `__future__`, `collections.abc`, `docx`, `docx.oxml.ns`, `docx.oxml.table`, `docx.oxml.text.paragraph`, `docx.table`, `docx.text.paragraph`, `lxml`, `opendoc_formats.ooxml.package`, `opendoc_formats.readers.docx_diagnostics`, `opendoc_formats.readers.docx_features`, `opendoc_formats.readers.docx_section`, `opendoc_formats.readers.docx_style`, `opendoc_formats.readers.docx_table`, `opendoc_formats.readers.docx_text`, `opendoc_formats.support.io`, `opendoc_formats.types`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
 

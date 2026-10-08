@@ -1,8 +1,4 @@
-"""DOCX → Text.
-
-Единый ридер DOCX; раньше было две копии (extract/text.py и
-organize/extractors/docx.py).
-"""
+"""DOCX readers for extracted text and editable OpenDoc documents."""
 
 from __future__ import annotations
 
