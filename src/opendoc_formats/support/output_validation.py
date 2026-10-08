@@ -37,6 +37,21 @@ def validate_output(path: Path, format_id: str) -> None:
         parser.close()
         if not {"html", "head", "body"} <= parser.tags:
             raise ValueError("HTML export is missing the document structure")
+    elif format_id == "epub":
+        from opendoc_formats.readers.epub_package import read_epub_package
+
+        package = read_epub_package(path)
+        with ZipFile(path) as archive:
+            first = archive.infolist()[0]
+            if first.filename != "mimetype" or first.compress_type != 0 or first.extra:
+                raise ValueError("EPUB mimetype must be first, stored and without extra fields")
+            if archive.testzip():
+                raise ValueError("EPUB ZIP checksum failed")
+        if not package.spine:
+            raise ValueError("EPUB export has no spine")
+        for item in package.items.values():
+            if item.media_type in {"application/xhtml+xml", "image/svg+xml"}:
+                ET.fromstring(item.content)
     elif format_id in {"docx", "pptx"}:
         part = "word/document.xml" if format_id == "docx" else "ppt/presentation.xml"
         with ZipFile(path) as archive:

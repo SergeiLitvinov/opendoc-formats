@@ -47,6 +47,7 @@ def test_registry_declares_all_existing_model_routes():
         "djvu",
     }
     assert {adapter.id for adapter in default_exporter_registry().exporters()} == {
+        "epub",
         "txt",
         "html",
         "docx",

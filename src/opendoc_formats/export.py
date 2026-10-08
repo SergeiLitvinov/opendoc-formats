@@ -175,6 +175,7 @@ def default_exporter_registry() -> ExporterRegistry:
     for identifier, suffixes, requirements in (
         ("txt", (".txt",), ()),
         ("html", (".html", ".htm"), ()),
+        ("epub", (".epub",), ()),
         ("docx", (".docx",), ("docx",)),
         ("pptx", (".pptx",), ("pptx",)),
         ("pdf", (".pdf",), ("fitz",)),

@@ -1,5 +1,10 @@
 # Зависимости и движки
 
+Экспорт EPUB входит в базовый профиль: собственный writer **MIT**, модель OpenDoc
+**MIT**, ZIP/XML/HTML parsing — стандартная библиотека Python (**PSF License Agreement**).
+EbookLib, lxml и BeautifulSoup для записи не используются. Extra `epub` нужен для импорта;
+лицензия каждого такого профиля указана ниже. EPUBCheck пока не подключён.
+
 Единственная обязательная зависимость — **OpenDoc Model 0.3.0 (MIT)**: модель,
 ресурсы, единицы, диагностика, JSON и валидация. Исходники приложений не используются.
 Базовый пакет читает и пишет TXT/JSON без дополнительных движков.
@@ -68,7 +73,7 @@ OMML в MathML и OOXML-маршруты имеют отдельные треб�
 
 | Профиль | Лицензии и существенные условия зависимостей | Для открытого проекта |
 | --- | --- | --- |
-| Базовый, TXT/JSON | MIT у библиотеки и OpenDoc | Сохранить MIT/copyright; разрешены permissive и совместимые copyleft-проекты |
+| Базовый, TXT/JSON и EPUB writer | MIT у библиотеки и OpenDoc; PSF License Agreement стандартной библиотеки Python | Сохранить MIT/copyright; разрешены permissive и совместимые copyleft-проекты; EPUB экспорт без extras |
 | `pdf-text` | MIT + BSD-3-Clause у pypdf | Сохранить notices; это извлечение текста, не полный rich PDF профиль |
 | `pdf-rich` | MIT библиотеки; PyMuPDF AGPL-3.0 либо commercial | Чтение модели, геометрия, рендер и PDF writer. Соблюдать выбранные условия PyMuPDF; lxml и его XSL-ресурсы не устанавливаются |
 | `pdf-layout` | MIT, MIT-0, BSD-3-Clause, Apache-2.0; MIT-CMU Pillow и bundled notices; PDFium BUILD_LICENSES; CC-BY-4.0 документации pypdfium2 | Извлечение через pdfplumber, не универсальный rich reader. Сохранить notices; lxml/PyMuPDF не устанавливаются |

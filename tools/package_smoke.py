@@ -73,6 +73,12 @@ def main() -> None:
         assert text.engine == "pypdf" and text.pages == 2 and "Native PDF" in text.plain, text
     with TemporaryDirectory(prefix="opendoc-formats-installed-") as directory:
         root = Path(directory)
+        book = root / "base-writer.epub"
+        from opendoc_formats.readers.epub_package import read_epub_package
+
+        book_report = write_document(DocumentModel(sections=[Section(blocks=[Paragraph(content=[TextRun("Own EPUB")])])]), book)
+        assert book_report.success and book_report.metrics["output_verified"], book_report.to_dict()
+        assert read_epub_package(book).spine == (("chapter", "yes"),)
         for encoding in ("utf-8", "utf-16-le", "utf-16-be", "cp1251"):
             source = root / "profile.txt"
             original = "Первая\r\nВторая\rПоследняя\n".encode(encoding)
@@ -149,7 +155,7 @@ def main() -> None:
                     assert pdf.page_count > 0 and pdf.page_info(0).width > 0
                     rendered = pdf.render_page(0, max_dimension=512)
                     assert rendered.png.startswith(b"\x89PNG") and rendered.effective_scale > 0
-    print(f"Installed wheel smoke passed: {', '.join(formats)}")
+    print(f"Installed wheel smoke passed: epub writer, {', '.join(formats)}")
 
 
 if __name__ == "__main__":

@@ -73,7 +73,10 @@ def test_epub_table_math_are_semantic_but_nonlinear_content_is_lost(tmp_path):
     with zipfile.ZipFile(source) as archive:
         assert all(record.provenance.package_part.lstrip("/") in archive.namelist() for record in ledger.preservation)
     report = write_document(document, tmp_path / "output.epub")
-    assert not report.success and report.issues[0].feature == "export.unsupported-format"
+    assert report.success and not report.lossless and report.metrics["output_verified"]
+    assert any(issue.feature == "epub.spine" for issue in report.issues)
+    copied = read_document(tmp_path / "output.epub")
+    assert copied.success and "TableOnly" in str(copied.document) and "NonlinearOnly" not in str(copied.document)
 
 
 def test_pptx_import_does_not_preserve_original_package(tmp_path):
