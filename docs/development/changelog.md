@@ -1,5 +1,15 @@
 # Улучшения версии
 
+## 0.11.3 — улучшения относительно 0.11.2
+
+- EPUB диагностирует неподдержанные CSS selectors/declarations, at-rules/nesting,
+  malformed stylesheet и font-size, var/calc/URL/important значения, а также missing/remote stylesheets.
+  Поддержанные простые правила рядом с at-rules сохраняются; условия media не игнорируются молча.
+- Для внешнего CSS часть источника и подтверждённый raw resource отражаются как opaque;
+  для inline CSS неподдержанная семантика отмечена lost с ID/строкой источника.
+  Ledger сохраняется через JSON. Внешний URL не подхватывает локальный stylesheet.
+  Новых зависимостей нет; это диагностика конечного профиля, не полный CSS parser.
+
 ## 0.11.2 — улучшения относительно 0.11.1
 
 - EPUB сохраняет оригинальные container/OPF/nav/NCX как inert XML attachments:

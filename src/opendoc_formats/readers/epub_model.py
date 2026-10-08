@@ -24,9 +24,18 @@ from opendoc_model.document_model import (
     TextStyle,
 )
 
-_RULE = re.compile(r"([^{}]+)\{([^{}]*)\}")
 _DECLARATION = re.compile(r"([\w-]+)\s*:\s*([^;]+)")
-_SIZE = re.compile(r"^([0-9.]+)(pt|px|em|rem|%)$")
+_SIZE = re.compile(r"^((?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+))(pt|px|em|rem|%)$")
+_CSS_PROPERTIES = {
+    "font-family",
+    "font-size",
+    "font-weight",
+    "font-style",
+    "text-decoration",
+    "vertical-align",
+    "color",
+    "background-color",
+}
 _BLOCKS = {"p", "h1", "h2", "h3", "h4", "h5", "h6", "li", "blockquote", "pre", "figcaption"}
 
 
@@ -96,7 +105,7 @@ def read_epub_model(path: str | Path, *, backend: str = "native", include_nonlin
             )
             continue
         soup = BeautifulSoup(item.content, "html.parser")
-        rules = _chapter_rules(book, item, soup)
+        rules = _chapter_rules(book, item, soup, diagnostics)
         body = soup.body or soup
         diagnostics.chapter(body, item.name, _BLOCKS | {"table"})
         blocks = _chapter_blocks(body, rules, item.name, item_names, diagnostics, styles)
@@ -294,23 +303,85 @@ def _resources(book: Any, source: Path) -> tuple[dict[str, od.Resource], dict[st
     return resources, names
 
 
-def _chapter_rules(book: Any, item: Any, soup: Any) -> list[tuple[str, dict[str, str], int]]:
+def _chapter_rules(book: Any, item: Any, soup: Any, diagnostics: Any) -> list[tuple[str, dict[str, str], int]]:
     css = []
-    hrefs = [link["href"] for link in soup.find_all("link", href=True)]
-    for href in dict.fromkeys(hrefs):
+    for link in soup.find_all("link", href=True):
+        if "stylesheet" not in [str(value).lower() for value in link.get("rel", [])]:
+            continue
+        href = link["href"]
+        if urlsplit(href).scheme or urlsplit(href).netloc:
+            diagnostics.lost("epub.css", "external-stylesheet", "External stylesheet is not loaded", item.name, link)
+            continue
         name = _resolve(item.name, href)
         linked = next((entry for entry in book.items.values() if posixpath.normpath(entry.name) == name), None)
         if linked is not None and linked.media_type == "text/css":
-            css.append(linked.content.decode("utf-8", errors="replace"))
-    css.extend(style.get_text() for style in soup.find_all("style"))
+            css.append((linked.content.decode("utf-8", errors="replace"), linked.name, f"epub-{linked.id}", None))
+        else:
+            diagnostics.lost(
+                "epub.css", "missing-stylesheet", "Local stylesheet is missing or has another media type", item.name, link
+            )
+    css.extend((style.get_text(), item.name, None, style) for style in soup.find_all("style"))
     rules = []
-    for order, match in enumerate(_RULE.finditer("\n".join(css))):
-        declarations = _declarations(match.group(2))
-        for selector in match.group(1).split(","):
-            selector = selector.strip()
-            if re.fullmatch(r"(?:[a-zA-Z][\w-]*)?(?:\.[\w-]+|#[\w-]+)?", selector):
-                rules.append((selector, declarations, order))
+    order = 0
+    for text, part, resource_id, node in css:
+
+        def warn(reason: str, message: str) -> None:
+            if resource_id:
+                diagnostics.opaque("epub.css", reason, message, part, resource_id)
+            else:
+                diagnostics.lost("epub.css", reason, message, part, node)
+
+        text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
+        for selector_text, declaration_text in _css_rules(text, warn):
+            declarations = _declarations(declaration_text, warn)
+            for selector in selector_text.split(","):
+                selector = selector.strip()
+                if selector and re.fullmatch(r"(?:[a-zA-Z][\w-]*)?(?:\.[\w-]+|#[\w-]+)?", selector):
+                    rules.append((selector, declarations, order))
+                    order += 1
+                else:
+                    warn("unsupported-selector", f"CSS selector is outside the profile: {selector[:160]}")
     return rules
+
+
+def _css_rules(text: str, warn: Any) -> Iterator[tuple[str, str]]:
+    start, opening, depth = 0, 0, 0
+    quote, escaped = "", False
+    for index, char in enumerate(text):
+        if escaped:
+            escaped = False
+            continue
+        if char == "\\":
+            escaped = True
+            continue
+        if quote:
+            if char == quote:
+                quote = ""
+            continue
+        if char in "\"'":
+            quote = char
+        elif char == "{":
+            if depth == 0:
+                opening = index
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                selector, body = text[start:opening].strip(), text[opening + 1 : index]
+                if selector.startswith("@") or "{" in body:
+                    warn("complex-stylesheet", "At-rules or nested CSS are outside the profile")
+                else:
+                    yield selector, body
+                start = index + 1
+            elif depth < 0:
+                warn("malformed-stylesheet", "Unmatched CSS closing brace")
+                depth, start = 0, index + 1
+        elif char == ";" and depth == 0:
+            if text[start:index].strip():
+                warn("complex-stylesheet", "Top-level CSS statement is outside the profile")
+            start = index + 1
+    if depth or quote or text[start:].strip():
+        warn("malformed-stylesheet", "Incomplete or unparsed CSS source")
 
 
 def _inline_content(
@@ -341,7 +412,11 @@ def _inline_content(
         style = dict(inherited)
         for _, declarations, _ in sorted(_matching_rules(node, rules), key=lambda value: (value[0], value[2])):
             style.update(declarations)
-        style.update(_declarations(node.get("style", "")))
+
+        def css_warn(reason: str, message: str) -> None:
+            diagnostics.lost("epub.css", reason, message, chapter_name, node)
+
+        style.update(_declarations(node.get("style", ""), css_warn))
         _semantic_style(node.name, style)
         child_link = _resolve_link(chapter_name, node.get("href")) if node.name == "a" else link
         if node.name in {"math", "svg"}:
@@ -448,8 +523,23 @@ def _matching_rules(tag: Any, rules: list[tuple[str, dict[str, str], int]]) -> I
             yield specificity, declarations, order
 
 
-def _declarations(value: str) -> dict[str, str]:
-    return {name.lower(): content.strip() for name, content in _DECLARATION.findall(value)}
+def _declarations(value: str, warn: Any = None) -> dict[str, str]:
+    result = {}
+    for name, content in _DECLARATION.findall(value):
+        name, content = name.lower(), content.strip()
+        reason = None
+        if name not in _CSS_PROPERTIES:
+            reason = "unsupported-declaration"
+        elif "!" in content or re.search(r"(?:var|calc|url)\s*\(", content, re.I):
+            reason = "unsupported-css-value"
+        elif name == "font-size" and not _SIZE.fullmatch(content):
+            reason = "invalid-font-size"
+        if reason:
+            if warn:
+                warn(reason, f"CSS declaration is outside the profile: {name}: {content[:160]}")
+            continue
+        result[name] = content
+    return result
 
 
 def _semantic_style(name: str, style: dict[str, str]) -> None:

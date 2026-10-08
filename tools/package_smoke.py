@@ -97,7 +97,7 @@ def main() -> None:
                   <manifest><item id="c" href="c.xhtml" media-type="application/xhtml+xml"/>
                   <item id="appendix" href="appendix.xhtml" media-type="application/xhtml+xml"/></manifest>
                   <spine><itemref idref="c"/><itemref idref="appendix" linear="no"/></spine></package>''')
-                archive.writestr("c.xhtml", '''<html><body><p>Native EPUB 123</p>
+                archive.writestr("c.xhtml", '''<html><body><p style="position:absolute;font-size:12pt">Native EPUB 123</p>
                     <table><tr><td colspan="2">Own cell</td></tr></table>
                     <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>x</mi></math>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>
@@ -106,6 +106,7 @@ def main() -> None:
             result = read_document(source)
             assert result.success, result.issues
             assert result.document.sections[0].blocks[0].plain_text == "Native EPUB 123"
+            assert any(issue.reason == "unsupported-declaration" for issue in result.issues)
             assert isinstance(result.document.sections[0].blocks[1], Table)
             assert result.document.sections[0].blocks[1].rows[0].cells[0].column_span == 2
             assert isinstance(result.document.sections[0].blocks[2].content[0], Formula)

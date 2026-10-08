@@ -89,6 +89,9 @@
   source spine descriptor и линейность разделов сохраняются через JSON.
 - Реализовано: исходные container/OPF/nav/NCX bytes удерживаются opaque;
   все metadata XML entries и package attributes сохраняются через JSON.
+- Реализовано: диагностика выходов за конечный CSS profile для selectors/declarations,
+  at-rules/nesting, var/calc/important/URL и invalid font-size; missing/remote stylesheet.
+  Поддержанные плоские правила сохраняются; linked CSS подтверждён raw resource.
 - Остаётся: семантика CSS font-face/обфускации шрифтов,
   редактируемые SVG shapes и playback/media contracts,
   семантика nav/OPF metadata, fixed-layout и полный CSS;

@@ -388,7 +388,7 @@ Located, partial EPUB preservation assessment using the OpenDoc contract.
 
 Rich EPUB spine importer with links, media, and a small deterministic CSS cascade.
 
-- `read_epub_model(path: str | Path, *, backend: str='native', include_nonlinear: bool=False) -> DocumentModel` — [строка 33](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_model.py#L33)
+- `read_epub_model(path: str | Path, *, backend: str='native', include_nonlinear: bool=False) -> DocumentModel` — [строка 42](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_model.py#L42)
 
 Импорты: `__future__`, `bs4`, `collections.abc`, `opendoc_formats.readers.epub_diagnostics`, `opendoc_formats.readers.epub_package`, `opendoc_formats.readers.html_resources`, `opendoc_model.document_model`, `pathlib`, `typing`, `urllib.parse`
 

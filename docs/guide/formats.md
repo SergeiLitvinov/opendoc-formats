@@ -57,6 +57,16 @@ TXT сохраняет только основной текст; byte roundtrip 
 
 ### Отчёт импорта
 
+EPUB использует конечный CSS profile: простые element/class/id selectors и текстовые
+свойства font-family/font-size/font-weight/font-style/text-decoration/vertical-align,
+color/background-color. Неподдержанные selectors/properties, at-rules/nesting,
+malformed source, invalid font-size, var/calc/URL/important values и missing/remote
+stylesheets диагностируются как `epub.css`. Поддержанные плоские правила сохраняются
+рядом с неподдержанными группами; содержимое `@media` не применяется безусловно.
+Linked CSS удерживается в raw resource (`opaque` с `resource_id`), ограничения inline
+CSS отмечаются `lost` с исходным ID/строкой. Это частичная оценка, не полный CSS parser
+или browser layout. Внешний stylesheet URL не загружается и не заменяется локальным файлом.
+
 EPUB удерживает оригинальные `META-INF/container.xml`, OPF и manifest nav/NCX
 как XML attachments. `metadata["epub"]["source_xml_resources"]` связывает действительное
 имя части ZIP с resource ID; исходные байты и provenance сохраняются через JSON.

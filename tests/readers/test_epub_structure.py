@@ -193,3 +193,49 @@ def test_inline_svg_resource_collision_preserves_manifest_asset(tmp_path):
     assert images[0].resource_id == images[1].resource_id and images[0].resource_id != "epub-" + item_id
     assert len(resources) == 4
     assert b"rect" in resources[images[0].resource_id].data
+
+
+def test_css_profile_preserves_supported_rules_and_locates_unsupported_source(tmp_path):
+    source = tmp_path / "css.epub"
+    css = (
+        b".keep {color:#123456} @media print {p {color:red}} "
+        b".keep {position:absolute; font-size:1.2.3pt} p > span {font-weight:bold}"
+    )
+    _book(
+        source,
+        """<link rel="stylesheet" href="style.css"/><p id="first" class="keep">Own text</p>
+      <p id="inline" style="display:grid; font-size:calc(12pt)">Other</p>""",
+        assets=(("css", "style.css", "text/css", css),),
+    )
+    result = read_document(source)
+    assert result.success
+    text = result.document.sections[0].blocks[0].content[0]
+    assert text.style.color == "#123456" and text.style.font_size is None
+    records = [record for record in get_integration(result.document).preservation if record.issue.code == "epub.css"]
+    assert {record.issue.reason for record in records} == {
+        "complex-stylesheet",
+        "unsupported-declaration",
+        "invalid-font-size",
+        "unsupported-selector",
+        "unsupported-css-value",
+    }
+    source_css = [record for record in records if record.state.value == "opaque"]
+    assert len(source_css) == 4 and all(record.provenance.package_part == "/OPS/style.css" for record in source_css)
+    assert all(record.extra["resource_id"] == "epub-css" for record in source_css)
+    assert result.document.resources["epub-css"].data == css
+    inline = [record for record in records if record.state.value == "lost"]
+    assert len(inline) == 2 and all(record.issue.location.endswith("chapter.xhtml#inline") for record in inline)
+    restored = document_from_json(document_to_json(result.document))
+    assert get_integration(restored) == get_integration(result.document)
+
+
+def test_external_stylesheet_does_not_alias_local_css(tmp_path):
+    source = tmp_path / "external-css.epub"
+    _book(
+        source,
+        '<link rel="stylesheet" href="https:style.css"/><p>Own text</p>',
+        assets=(("css", "style.css", "text/css", b"p {color:red}"),),
+    )
+    result = read_document(source)
+    assert result.success and result.document.sections[0].blocks[0].content[0].style.color is None
+    assert any(issue.reason == "external-stylesheet" for issue in result.issues)
