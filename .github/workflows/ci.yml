@@ -86,6 +86,12 @@ jobs:
           version=$(python -m tools.release version)
           uv pip install --python .opendoc-formats/installed/bin/python ".opendoc-formats/from-sdist/opendoc_formats-${version}-py3-none-any.whl[docx,html,pdf,pptx]"
           .opendoc-formats/installed/bin/python -I tools/package_smoke.py --all-formats
+      - name: Exercise minimal HTML profile in a fresh environment
+        run: |
+          version=$(python -m tools.release version)
+          uv venv .opendoc-formats/html-profile
+          uv pip install --constraint .opendoc-formats/profile-constraints.txt --python .opendoc-formats/html-profile/bin/python 'opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.3.0/opendoc_model-0.3.0-py3-none-any.whl' ".opendoc-formats/from-sdist/opendoc_formats-${version}-py3-none-any.whl[html]"
+          .opendoc-formats/html-profile/bin/python -I tools/html_profile_smoke.py
       - name: Exercise each PDF profile in a fresh environment
         run: |
           version=$(python -m tools.release version)

@@ -441,12 +441,13 @@ Original, bounded EPUB container reader; no network or XML entity expansion.
 Static HTML to editable document blocks, without browser or network execution.
 
 - `read_html_model(path: str | Path, *, resource_root: str | Path | None=None) -> DocumentModel` — [строка 35](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html.py#L35)
-- `HtmlReader` — [строка 71](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html.py#L71)
-- `__init__(self, soup: Any, source: Path, resource_root: str | Path | None) -> None` — [строка 72](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html.py#L72)
-- `blocks(self, root: Any) -> list[od.Block]` — [строка 80](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html.py#L80)
-- `link(self, href: str | None) -> str | None` — [строка 198](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html.py#L198)
-- `list_blocks(self, node: Any) -> list[od.Block]` — [строка 206](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html.py#L206)
-- `table(self, node: Any) -> od.Table` — [строка 239](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html.py#L239)
+- `HtmlReader` — [строка 76](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html.py#L76)
+- `__init__(self, soup: Any, source: Path, resource_root: str | Path | None) -> None` — [строка 77](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html.py#L77)
+- `language(node: Any) -> str | None` — [строка 86](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html.py#L86)
+- `blocks(self, root: Any) -> list[od.Block]` — [строка 92](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html.py#L92)
+- `link(self, href: str | None) -> str | None` — [строка 215](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html.py#L215)
+- `list_blocks(self, node: Any) -> list[od.Block]` — [строка 223](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html.py#L223)
+- `table(self, node: Any) -> od.Table` — [строка 256](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html.py#L256)
 
 Импорты: `__future__`, `bs4`, `opendoc_formats.readers.html_css`, `opendoc_formats.readers.html_diagnostics`, `opendoc_formats.readers.html_resources`, `opendoc_model`, `pathlib`, `typing`, `urllib.parse`
 

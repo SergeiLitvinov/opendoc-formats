@@ -124,6 +124,10 @@
 ## Приоритет P2: статический HTML/CSS (OF10)
 
 - Основание: ограниченное подмножество CSS и отсутствие полного browser layout.
+- Проверены два JSON roundtrip для lang, caption с inline styles/ссылками,
+  th/td, scope col/row/rowgroup, headers/IDs и групп строк. ARIA/role/dir
+  вне профиля диагностируются; colgroup, дерево доступности браузера,
+  экранный диктор и responsive layout остаются открытыми.
 - Опубликовать feature profile; расширять cascade/inheritance, CSS variables,
   table layout, flex/grid и paged media конечными подмножествами.
   Сохранять lang/alt/roles и смысл accessibility, оригинальный unsupported fragment.

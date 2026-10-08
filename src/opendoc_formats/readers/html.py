@@ -51,6 +51,9 @@ def read_html_model(path: str | Path, *, resource_root: str | Path | None = None
             reader.warn("html-content", f"Обработчики событий не перенесены: {node.name}", node)
         if node.name == "img" and any(key in node.attrs for key in ("srcset", "width", "height")):
             reader.warn("html-resource", "Размеры и адаптивный выбор img не перенесены; используется исходное изображение.", node)
+        if any(key == "role" or key == "dir" or key.startswith("aria-") for key in node.attrs
+               if not (node.name == "svg" and key == "aria-label")):
+            reader.warn("html-accessibility", "ARIA/role/dir вне статического профиля не перенесены.", node)
     blocks = reader.blocks(soup.body or soup)
     document = DocumentModel(
         sections=[Section(blocks=blocks)],
@@ -64,6 +67,8 @@ def read_html_model(path: str | Path, *, resource_root: str | Path | None = None
             "html": reader.diagnostics.finish(),
         },
     )
+    language = reader.language(soup.html or soup)
+    document.metadata["language"] = language if language is not None else ""
     reader.diagnostics.attach(document, source, data)
     return document
 
@@ -76,6 +81,13 @@ class HtmlReader:
         self.css = Cascade(soup, self.warn)
         self.resources = Resources(self.warn, resource_root)
         self.styles = {}
+
+    @staticmethod
+    def language(node: Any) -> str | None:
+        for owner in [node, *node.parents]:
+            if owner.has_attr("lang"):
+                return str(owner["lang"])
+        return None
 
     def blocks(self, root: Any) -> list[od.Block]:
         from bs4 import Comment, NavigableString, Tag
@@ -135,10 +147,12 @@ class HtmlReader:
                     content_nodes.append(node)
                     anchor = node.find_parent("a")
                     href = self.link(anchor.get("href")) if anchor else None
+                    style = self.css.text_style(css, node.parent)
+                    style.language = self.language(node.parent)
                     content.append(
                         TextRun(
                             value,
-                            self.css.text_style(css, node.parent),
+                            style,
                             link=href,
                             properties={"html_preserve_space": css.get("white-space") in {"pre", "pre-wrap"}},
                         )
@@ -157,8 +171,11 @@ class HtmlReader:
             elif node.name == "table":
                 flush()
                 caption = node.find("caption", recursive=False)
-                if caption:
-                    result.extend(self.blocks(caption))
+                if caption is not None:
+                    caption_blocks = self.blocks(caption) or [Paragraph()]
+                    for block in caption_blocks:
+                        block.properties["html_table_caption"] = True
+                    result.extend(caption_blocks)
                 result.append(self.table(node))
             elif node.name == "br":
                 content.append(TextRun("\n"))
@@ -238,6 +255,7 @@ class HtmlReader:
 
     def table(self, node: Any) -> od.Table:
         rows = []
+        groups = {}
         for row in node.find_all("tr"):
             if row.find_parent("table") is not node:
                 continue
@@ -253,8 +271,25 @@ class HtmlReader:
                         span = 1
                         self.warn("html-table", f"Некорректное {key} заменено единицей.", cell)
                     spans.append(span)
-                cells.append(TableCell(self.blocks(cell), row_span=spans[0], column_span=spans[1]))
-            rows.append(TableRow(cells))
+                props = {"html_cell_tag": cell.name}
+                if cell.get("id"):
+                    props["anchor_id"] = str(cell["id"])
+                if cell.has_attr("headers"):
+                    headers = cell["headers"]
+                    props["html_headers"] = " ".join(headers) if isinstance(headers, list) else str(headers)
+                if cell.has_attr("scope"):
+                    if cell.name == "th" and cell["scope"] in {"row", "col", "rowgroup"}:
+                        props["html_scope"] = cell["scope"]
+                    else:
+                        self.warn("html-accessibility", "Scope ячейки вне поддержанного профиля не перенесён.", cell)
+                cell_blocks = self.blocks(cell)
+                for block in cell_blocks:
+                    if block.properties.get("html", {}).get("tag") == cell.name:
+                        block.properties.pop("anchor_id", None)
+                cells.append(TableCell(cell_blocks, row_span=spans[0], column_span=spans[1], properties=props))
+            group = row.parent.name if row.parent.name in {"thead", "tbody", "tfoot"} else "tbody"
+            group_id = groups.setdefault(id(row.parent), len(groups))
+            rows.append(TableRow(cells, properties={"html_row_group": group, "html_row_group_id": group_id}))
         table = Table(rows, properties={"anchor_id": node["id"]} if node.get("id") else {})
         self.diagnostics.bind(table, node)
         return table

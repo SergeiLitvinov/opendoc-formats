@@ -143,6 +143,26 @@ def main() -> None:
         assert "<mi>x</mi>" in math_path.read_text(encoding="utf-8")
         if not args.all_formats:
             assert "lxml" not in sys.modules
+        if args.all_formats:
+            from bs4 import BeautifulSoup
+            from opendoc_model.document_codec import document_from_json, document_to_json
+
+            source = root / "semantic.html"
+            source.write_text('<html lang="en"><body><table><caption>Own measurements</caption>'
+                              '<thead><tr><th id="value" scope="col">Value</th></tr></thead>'
+                              '<tbody><tr><td headers="value">12</td></tr></tbody></table></body></html>')
+            for cycle in range(2):
+                imported = read_document(source)
+                assert imported.success, imported.issues
+                restored = document_from_json(document_to_json(imported.document))
+                target = root / f"semantic-{cycle}.html"
+                assert write_document(restored, target).success
+                parsed = BeautifulSoup(target.read_text(encoding="utf-8"), "html.parser")
+                assert parsed.html["lang"] == "en"
+                assert parsed.table.caption.get_text() == "Own measurements"
+                assert parsed.table.th["scope"] == "col"
+                assert parsed.table.td["headers"] == ["value"]
+                source = target
         formats = ("txt", "json", "html", "docx", "pptx", "pdf", "latex") if args.all_formats else ("txt", "json", "html")
         for format_id in formats:
             path = root / ("document." + ("tex" if format_id == "latex" else format_id))

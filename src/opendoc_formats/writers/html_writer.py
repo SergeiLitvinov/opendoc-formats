@@ -133,7 +133,8 @@ def write_html_model(document: DocumentModel, output_path: str | Path) -> Conver
     body = renderer.render()
     font_styles = embedded_font_stylesheet(document, report)
     title = escape(str(document.metadata.get("title") or "Document"))
-    language = escape(str(document.metadata.get("language") or "ru"), quote=True)
+    language_value = document.metadata.get("language")
+    language = escape(str(language_value if language_value is not None else "ru"), quote=True)
     html = (
         "<!doctype html>\n"
         f'<html lang="{language}">\n<head>\n<meta charset="utf-8">\n'
@@ -239,7 +240,27 @@ class _HtmlRenderer:
     def _blocks(self, blocks: list[Block], location: str) -> str:
         from opendoc_formats.writers.html_lists import render_blocks
 
-        return render_blocks(blocks, lambda block, index: self._block(block, f"{location}[{index}]"))
+        overrides = {}
+        pending = []
+        for index, block in enumerate(blocks):
+            if block.properties.get("html_table_caption") is True:
+                pending.append(index)
+                continue
+            if pending:
+                if isinstance(block, Table):
+                    caption = render_blocks([blocks[i] for i in pending], lambda block, offset:
+                                            self._block(block, f"{location}[{pending[offset]}]"))
+                    overrides.update({i: "" for i in pending})
+                    overrides[index] = self._table(block, f"{location}[{index}]", caption=caption)
+                else:
+                    self.report.add(IssueSeverity.LOSS, "html-accessibility", "Caption has no adjacent table", location)
+                pending.clear()
+        if pending:
+            self.report.add(IssueSeverity.LOSS, "html-accessibility", "Caption has no adjacent table", location)
+        visible = [(index, block) for index, block in enumerate(blocks) if overrides.get(index) != ""]
+        return render_blocks([block for _, block in visible], lambda block, offset:
+                             overrides[visible[offset][0]] if visible[offset][0] in overrides
+                             else self._block(block, f"{location}[{visible[offset][0]}]"))
 
     def _block(self, block: Block, location: str) -> str:
         if isinstance(block, Paragraph):
@@ -334,7 +355,7 @@ class _HtmlRenderer:
         link = normalized.get("link", run.link)
         if anchor:
             attributes += f' id="{escape(anchor, quote=True)}"'
-        if run.style.language:
+        if run.style.language is not None:
             attributes += f' lang="{escape(run.style.language, quote=True)}"'
         if link:
             href = _safe_link(link)
@@ -380,10 +401,20 @@ class _HtmlRenderer:
         tag = f'<img src="{uri}" alt="{escape(image.alt_text, quote=True)}"{_style_attribute(styles)} loading="eager">'
         return f'<div class="ta-image">{tag}</div>' if block_level else tag
 
-    def _table(self, table: Table, location: str) -> str:
+    def _table(self, table: Table, location: str, *, caption: str | None = None) -> str:
         self.metrics["tables"] += 1
         rows = []
+        group = None
         for row_index, row in enumerate(table.rows):
+            next_group = row.properties.get("html_row_group", "tbody")
+            if not isinstance(next_group, str) or next_group not in {"thead", "tbody", "tfoot"}:
+                next_group = "tbody"
+            next_identity = (next_group, row.properties.get("html_row_group_id"))
+            if next_identity != group:
+                if group is not None:
+                    rows.append(f"</{group[0]}>")
+                rows.append(f"<{next_group}>")
+                group = next_identity
             cells = []
             for cell_index, cell in enumerate(row.cells):
                 attributes = ""
@@ -391,13 +422,23 @@ class _HtmlRenderer:
                     attributes += f' rowspan="{cell.row_span}"'
                 if cell.column_span > 1:
                     attributes += f' colspan="{cell.column_span}"'
+                tag = "th" if cell.properties.get("html_cell_tag") == "th" else "td"
+                scope = cell.properties.get("html_scope")
+                if tag == "th" and isinstance(scope, str) and scope in {"row", "col", "rowgroup"}:
+                    attributes += f' scope="{scope}"'
+                for key, attribute in (("anchor_id", "id"), ("html_headers", "headers")):
+                    if key in cell.properties:
+                        attributes += f' {attribute}="{escape(str(cell.properties[key]), quote=True)}"'
                 content = self._blocks(cell.blocks, f"{location}.rows[{row_index}].cells[{cell_index}].blocks")
-                cells.append(f"<td{attributes}>{content}</td>")
+                cells.append(f"<{tag}{attributes}>{content}</{tag}>")
             rows.append("<tr>" + "".join(cells) + "</tr>")
         styles = self._geometry_style(table.box, table.properties, positioned=True)
         anchor = table.properties.get("anchor_id")
         anchor_attr = f' id="{escape(str(anchor), quote=True)}"' if anchor else ""
-        return f"<table{anchor_attr}{_style_attribute(styles)}><tbody>{''.join(rows)}</tbody></table>"
+        if group is not None:
+            rows.append(f"</{group[0]}>")
+        caption_html = f"<caption>{caption}</caption>" if caption is not None else ""
+        return f"<table{anchor_attr}{_style_attribute(styles)}>{caption_html}{''.join(rows)}</table>"
 
     @staticmethod
     def _text_style(style: TextStyle) -> list[str]:
