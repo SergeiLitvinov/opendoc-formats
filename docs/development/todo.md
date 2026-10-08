@@ -80,8 +80,10 @@
 
 ## Приоритет P1: содержимое EPUB (OF08)
 
-- Основание: ограниченный `_BLOCKS`, пропуск `linear=no`, отсутствие ресурсов шрифтов;
-  MathML сводится к тексту, таблица не превращается в `Table`.
+- Реализовано: конечный профиль XHTML tables/captions/rowspan/colspan/nested tables
+  и MathML Formula; mixed cell text сохраняет порядок, JSON и HTML экспорт проверены.
+- Остаётся: пропуск `linear=no`, отсутствие ресурсов шрифтов, SVG/standalone media,
+  fixed-layout и полный CSS; таблицы внутри текстовых блоков диагностируются как flattened.
 - Разбирать XHTML общим структурным путём: таблицы с объединениями, MathML, SVG,
   standalone media; сохранить весь spine/nav/OPF metadata, font assets и fixed-layout
   признаки. Нелинейные документы учитывать отдельным явным режимом.

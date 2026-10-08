@@ -389,7 +389,7 @@ Rich EPUB spine importer with links, media, and a small deterministic CSS cascad
 
 - `read_epub_model(path: str | Path, *, backend: str='native') -> DocumentModel` — [строка 32](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_model.py#L32)
 
-Импорты: `__future__`, `bs4`, `collections.abc`, `opendoc_formats.readers.epub_diagnostics`, `opendoc_formats.readers.epub_package`, `opendoc_model.document_model`, `pathlib`, `typing`, `urllib.parse`
+Импорты: `__future__`, `bs4`, `collections.abc`, `opendoc_formats.readers.epub_diagnostics`, `opendoc_formats.readers.epub_package`, `opendoc_formats.readers.html_resources`, `opendoc_model.document_model`, `pathlib`, `typing`, `urllib.parse`
 
 Тесты: [test_source_coverage.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_source_coverage.py#L1)
 

@@ -16,7 +16,7 @@ def test_tex_source_has_no_reader(tmp_path):
         assert result.issues[0].code == "import.unsupported-format"
 
 
-def test_epub_table_math_and_nonlinear_content_are_not_semantic(tmp_path):
+def test_epub_table_math_are_semantic_but_nonlinear_content_is_lost(tmp_path):
     from ebooklib import epub
 
     book = epub.EpubBook()
@@ -38,16 +38,16 @@ def test_epub_table_math_and_nonlinear_content_are_not_semantic(tmp_path):
     epub.write_epub(str(source), book)
     document = read_epub_model(source)
     blocks = [block for section in document.sections for block in section.blocks]
-    text = " ".join(block.plain_text for block in blocks)
-    assert "Visible" in text and "TableOnly" not in text and "NonlinearOnly" not in text
-    assert not any(isinstance(block, Table) for block in blocks)
-    assert not any(isinstance(inline, Formula) for block in blocks for inline in block.content)
+    text = str(document)
+    assert "Visible" in text and "TableOnly" in text and "NonlinearOnly" not in text
+    table = next(block for block in blocks if isinstance(block, Table))
+    assert table.rows[0].cells[0].blocks[0].plain_text == "TableOnly"
+    assert isinstance(blocks[0].content[1], Formula)
     result = read_document(source)
     assert result.success and not result.lossless and not result.assessment_complete
-    assert {issue.code for issue in result.issues} == {"epub.table", "epub.math", "epub.spine"}
+    assert {issue.code for issue in result.issues} == {"epub.spine"}
     assert all(issue.severity.value == "loss" and str(source) in issue.location for issue in result.issues)
     assert any("appendix.xhtml" in issue.location and issue.reason == "nonlinear-spine" for issue in result.issues)
-    assert any("#line=" in issue.location for issue in result.issues if issue.code == "epub.table")
     from opendoc_model import document_from_json, document_to_json, get_integration
 
     restored = document_from_json(document_to_json(document))

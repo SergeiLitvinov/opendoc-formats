@@ -96,10 +96,15 @@ def main() -> None:
                 archive.writestr("book.opf", '''<package xmlns="http://www.idpf.org/2007/opf"><metadata/>
                   <manifest><item id="c" href="c.xhtml" media-type="application/xhtml+xml"/></manifest>
                   <spine><itemref idref="c"/></spine></package>''')
-                archive.writestr("c.xhtml", "<html><body><p>Native EPUB 123</p></body></html>")
+                archive.writestr("c.xhtml", '''<html><body><p>Native EPUB 123</p>
+                    <table><tr><td colspan="2">Own cell</td></tr></table>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>x</mi></math></body></html>''')
             result = read_document(source)
             assert result.success, result.issues
             assert result.document.sections[0].blocks[0].plain_text == "Native EPUB 123"
+            assert isinstance(result.document.sections[0].blocks[1], Table)
+            assert result.document.sections[0].blocks[1].rows[0].cells[0].column_span == 2
+            assert isinstance(result.document.sections[0].blocks[2].content[0], Formula)
             assert all(name not in sys.modules for name in ("lxml", "ebooklib"))
         math_path = root / "math.html"
         math = DocumentModel(sections=[Section(blocks=[Formula(

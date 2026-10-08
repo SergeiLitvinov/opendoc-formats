@@ -45,7 +45,9 @@ def read_epub_model(path: str | Path, *, backend: str = "native") -> DocumentMod
     resources, item_names = _resources(book, source)
     for item in book.items.values():
         if item.media_type.startswith(("font/", "audio/", "video/")) or item.media_type in {
-            "application/vnd.ms-opentype", "application/font-sfnt", "application/font-woff",
+            "application/vnd.ms-opentype",
+            "application/font-sfnt",
+            "application/font-woff",
         }:
             diagnostics.lost("epub.asset", "unsupported-asset", "Font or media asset is not retained", item.name)
     titles = book.titles
@@ -57,38 +59,17 @@ def read_epub_model(path: str | Path, *, backend: str = "native") -> DocumentMod
             continue
         if item is None or item.media_type != "application/xhtml+xml" or "nav" in item.properties:
             diagnostics.lost(
-                "epub.spine", "unsupported-spine-item", "Spine item has no content section", item.name if item else idref,
+                "epub.spine",
+                "unsupported-spine-item",
+                "Spine item has no content section",
+                item.name if item else idref,
             )
             continue
         soup = BeautifulSoup(item.content, "html.parser")
         rules = _chapter_rules(book, item, soup)
-        blocks = []
         body = soup.body or soup
-        diagnostics.chapter(body, item.name, _BLOCKS)
-        for tag in body.find_all(_BLOCKS):
-            if tag.find_parent(_BLOCKS):
-                continue
-            content = _inline_content(tag, rules, item.name, item_names, diagnostics)
-            if content or tag.name in {"p", "li"}:
-                properties = {"epub": {"tag": tag.name}}
-                if tag.get("id"):
-                    properties["anchor_id"] = _anchor_id(item.name, tag["id"])
-                if tag.name == "li":
-                    properties["list_level"] = len(tag.find_parents(["ul", "ol"])) - 1
-                    parent = tag.find_parent(["ul", "ol"])
-                    properties["list_kind"] = "ordered" if parent and parent.name == "ol" else "unordered"
-                heading_style = None
-                if tag.name in {"h1", "h2", "h3", "h4", "h5", "h6"}:
-                    heading_style = f"Heading{tag.name[1:]}"
-                    styles.setdefault(heading_style, TextStyle(properties={"style_type": "paragraph"}))
-                blocks.append(
-                    Paragraph(
-                        content=content,
-                        style_id=heading_style,
-                        properties=properties,
-                        provenance=_provenance(source, item.name, tag.get("id")),
-                    )
-                )
+        diagnostics.chapter(body, item.name, _BLOCKS | {"table"})
+        blocks = _chapter_blocks(body, rules, item.name, item_names, diagnostics, styles)
         sections.append(
             Section(
                 blocks=blocks,
@@ -98,10 +79,10 @@ def read_epub_model(path: str | Path, *, backend: str = "native") -> DocumentMod
                         "id": idref,
                         "href": item.name,
                         "title": titles.get(posixpath.normpath(item.name))
-                        or (blocks[0].plain_text if blocks and blocks[0].style_id else ""),
+                        or (blocks[0].plain_text if blocks and isinstance(blocks[0], Paragraph) and blocks[0].style_id else ""),
                     },
                 },
-                provenance=_provenance(source, item.name),
+                provenance=_provenance(source, item.name, root_directory=book.root_directory),
             )
         )
     metadata = {
@@ -115,6 +96,128 @@ def read_epub_model(path: str | Path, *, backend: str = "native") -> DocumentMod
     document = DocumentModel(sections=sections, resources=resources, styles=styles, metadata=metadata, source_format="epub")
     diagnostics.attach(document)
     return document
+
+
+def _chapter_blocks(
+    root: Any,
+    rules: Any,
+    chapter: str,
+    names: dict[str, str],
+    diagnostics: Any,
+    styles: dict[str, TextStyle],
+    depth: int = 0,
+    *,
+    include_root: bool = False,
+) -> list[od.Block]:
+    if depth > 16:
+        raise ValueError("EPUB table nesting exceeds profile limit")
+    blocks = []
+    candidates = _BLOCKS | {"table", "math"}
+    for tag in [root] if include_root else root.find_all(candidates):
+        ancestors = []
+        for parent in () if tag is root else tag.parents:
+            if parent is root:
+                break
+            ancestors.append(parent.name)
+        if any(name in candidates for name in ancestors):
+            continue
+        if tag.name == "table":
+            caption = tag.find("caption", recursive=False)
+            if caption is not None:
+                blocks.append(_paragraph(caption, rules, chapter, names, diagnostics, styles))
+            rows, count = [], 0
+            for row in tag.find_all("tr"):
+                if row.find_parent("table") is not tag:
+                    continue
+                cells = []
+                for cell in row.find_all(["td", "th"], recursive=False):
+                    count += 1
+                    if count > 10_000:
+                        raise ValueError("EPUB table cells exceed profile limit")
+                    spans = []
+                    for key in ("rowspan", "colspan"):
+                        try:
+                            span = int(cell.get(key, 1))
+                            if not 1 <= span <= 100:
+                                raise ValueError
+                        except ValueError:
+                            span = 1
+                            diagnostics.lost("epub.table", "invalid-cell-span", f"Invalid {key} replaced by one", chapter, cell)
+                        spans.append(span)
+                    child_blocks = _cell_blocks(cell, rules, chapter, names, diagnostics, styles, depth + 1)
+                    cells.append(od.TableCell(child_blocks, row_span=spans[0], column_span=spans[1]))
+                rows.append(od.TableRow(cells))
+            blocks.append(
+                od.Table(
+                    rows,
+                    properties={"anchor_id": _anchor_id(chapter, tag["id"])} if tag.get("id") else {},
+                    provenance=_provenance(diagnostics.source, chapter, tag.get("id"), diagnostics.root_directory),
+                )
+            )
+        else:
+            paragraph = _paragraph(tag, rules, chapter, names, diagnostics, styles)
+            if paragraph.content or tag.name in {"p", "li"}:
+                blocks.append(paragraph)
+    return blocks
+
+
+def _cell_blocks(
+    cell: Any, rules: Any, chapter: str, names: dict[str, str], diagnostics: Any, styles: dict[str, TextStyle], depth: int
+) -> list[od.Block]:
+    blocks, pending = [], []
+    structural = _BLOCKS | {"table"}
+
+    def flush() -> None:
+        if pending:
+            paragraph = _paragraph(cell, rules, chapter, names, diagnostics, styles, nodes=list(pending))
+            if paragraph.content:
+                blocks.append(paragraph)
+            pending.clear()
+
+    def visit(node: Any, level: int = 0) -> None:
+        if level > 64:
+            raise ValueError("EPUB cell container nesting exceeds profile limit")
+        if getattr(node, "name", None) in structural:
+            flush()
+            blocks.extend(_chapter_blocks(node, rules, chapter, names, diagnostics, styles, depth, include_root=True))
+        elif getattr(node, "name", None) and node.find(structural):
+            for child in node.children:
+                visit(child, level + 1)
+        else:
+            pending.append(node)
+
+    for child in cell.children:
+        visit(child)
+    flush()
+    return blocks or [Paragraph()]
+
+
+def _paragraph(
+    tag: Any,
+    rules: Any,
+    chapter: str,
+    names: dict[str, str],
+    diagnostics: Any,
+    styles: dict[str, TextStyle],
+    *,
+    nodes: Any = None,
+) -> Paragraph:
+    properties = {"epub": {"tag": tag.name}}
+    if tag.get("id"):
+        properties["anchor_id"] = _anchor_id(chapter, tag["id"])
+    if tag.name == "li":
+        properties["list_level"] = len(tag.find_parents(["ul", "ol"])) - 1
+        parent = tag.find_parent(["ul", "ol"])
+        properties["list_kind"] = "ordered" if parent and parent.name == "ol" else "unordered"
+    heading = f"Heading{tag.name[1:]}" if tag.name in {"h1", "h2", "h3", "h4", "h5", "h6"} else None
+    if heading:
+        styles.setdefault(heading, TextStyle(properties={"style_type": "paragraph"}))
+    return Paragraph(
+        _inline_content(tag, rules, chapter, names, diagnostics, nodes=nodes),
+        style_id=heading,
+        properties=properties,
+        provenance=_provenance(diagnostics.source, chapter, tag.get("id"), diagnostics.root_directory),
+    )
 
 
 def _resources(book: Any, source: Path) -> tuple[dict[str, od.Resource], dict[str, str]]:
@@ -137,7 +240,7 @@ def _resources(book: Any, source: Path) -> tuple[dict[str, od.Resource], dict[st
             data=item.content,
             filename=posixpath.basename(name),
             properties={"epub": {"href": name, "item_id": item.id}},
-            provenance=_provenance(source, name, item.id),
+            provenance=_provenance(source, name, item.id, book.root_directory),
         )
     return resources, names
 
@@ -162,13 +265,21 @@ def _chapter_rules(book: Any, item: Any, soup: Any) -> list[tuple[str, dict[str,
 
 
 def _inline_content(
-    root: Any, rules: list[tuple[str, dict[str, str], int]], chapter_name: str, item_names: dict[str, str], diagnostics: Any
+    root: Any,
+    rules: list[tuple[str, dict[str, str], int]],
+    chapter_name: str,
+    item_names: dict[str, str],
+    diagnostics: Any,
+    *,
+    nodes: Any = None,
 ) -> list[od.Inline]:
-    from bs4 import NavigableString, Tag
+    from bs4 import Comment, NavigableString, Tag
 
     result = []
 
     def visit(node: Any, inherited: dict[str, str], link: str | None = None) -> None:
+        if isinstance(node, Comment):
+            return
         if isinstance(node, NavigableString):
             value = str(node)
             if value.strip() or value == " ":
@@ -176,13 +287,34 @@ def _inline_content(
             return
         if not isinstance(node, Tag):
             return
+        if node.name in {"script", "style", "iframe", "object", "embed"}:
+            return
         style = dict(inherited)
         for _, declarations, _ in sorted(_matching_rules(node, rules), key=lambda value: (value[0], value[2])):
             style.update(declarations)
         style.update(_declarations(node.get("style", "")))
         _semantic_style(node.name, style)
         child_link = _resolve_link(chapter_name, node.get("href")) if node.name == "a" else link
-        if node.name == "br":
+        if node.name == "math":
+            from opendoc_formats.readers.html_resources import clean_xml
+
+            def warn(feature: str, message: str) -> None:
+                diagnostics.lost("epub.math", "math-profile-sanitized", message, chapter_name, node)
+
+            safe = clean_xml(str(node), "math", warn)
+            if safe:
+                import xml.etree.ElementTree as ET
+
+                result.append(
+                    od.Formula(
+                        safe,
+                        od.FormulaFormat.MATHML,
+                        display=node.get("display") == "block",
+                        fallback_text="".join(ET.fromstring(safe).itertext()),
+                        provenance=_provenance(diagnostics.source, chapter_name, node.get("id"), diagnostics.root_directory),
+                    )
+                )
+        elif node.name == "br":
             result.append(TextRun("\n", _text_style(style), link=child_link))
         elif node.name == "img":
             name = _resolve(chapter_name, node.get("src", ""))
@@ -194,7 +326,7 @@ def _inline_content(
                 if node.get("alt"):
                     result.append(TextRun(node["alt"], _text_style(style), link=child_link))
         else:
-            for child in node.children:
+            for child in nodes if node is root and nodes is not None else node.children:
                 visit(child, style, child_link)
 
     visit(root, {})
@@ -221,7 +353,7 @@ def _declarations(value: str) -> dict[str, str]:
 
 
 def _semantic_style(name: str, style: dict[str, str]) -> None:
-    if name in {"b", "strong"}:
+    if name in {"b", "strong", "th"}:
         style["font-weight"] = "bold"
     elif name in {"i", "em"}:
         style["font-style"] = "italic"
@@ -275,5 +407,6 @@ def _anchor_id(chapter: str, fragment: str = "") -> str:
     return "epub-" + re.sub(r"[^a-zA-Z0-9_.:-]+", "-", value).strip("-")
 
 
-def _provenance(source: Path, part: str, object_id: str | None = None) -> od.Provenance:
+def _provenance(source: Path, part: str, object_id: str | None = None, root_directory: str = "") -> od.Provenance:
+    part = posixpath.normpath(posixpath.join(root_directory, part))
     return Provenance("epub", str(source), object_id=object_id, package_part="/" + part.lstrip("/"))

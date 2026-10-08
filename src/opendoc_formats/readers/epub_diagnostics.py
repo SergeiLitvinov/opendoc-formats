@@ -47,8 +47,6 @@ class EpubDiagnostics:
 
     def chapter(self, body: Any, part: str, blocks: set[str]) -> None:
         features = {
-            "table": ("epub.table", "unsupported-table", "Table structure is not imported; nested paragraphs may survive"),
-            "math": ("epub.math", "flattened-math", "MathML has no formula model; only text within supported blocks may survive"),
             "svg": ("epub.inline-svg", "unsupported-inline-svg", "Inline SVG geometry is not imported"),
             "audio": ("epub.media", "unsupported-media", "Audio playback and source references are not imported"),
             "video": ("epub.media", "unsupported-media", "Video playback and source references are not imported"),
@@ -56,7 +54,10 @@ class EpubDiagnostics:
             "script": ("epub.script", "inactive-script", "Script is never executed and has no semantic model"),
         }
         for node in body.find_all(True):
-            if node.name in features:
+            if node.name == "table" and node.find_parent(blocks - {"table"}):
+                self.lost("epub.table", "nested-table-block",
+                          "Table inside a text block is flattened by this profile", part, node)
+            elif node.name in features:
                 self.lost(*features[node.name], part, node)
             elif node.name == "img" and not node.find_parent(blocks):
                 self.lost("epub.image", "standalone-image", "Image outside supported text blocks is not imported", part, node)
