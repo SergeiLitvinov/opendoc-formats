@@ -71,6 +71,10 @@
 
 - Основание: `read_pptx_model` не заполняет `DocumentModel.package`; группы уплощаются,
   анимация/медиа/transition не имеют семантического маршрута.
+- Проверены effective solid background slide/layout/master, редактируемые осевые
+  freeform paths и отсутствие пустого `solidFill` для наследуемого текста.
+  Два JSON roundtrip подтверждены нативными свойствами PowerPoint.
+  Исходная иерархия фона, style matrix/bgRef и полный table/theme inheritance остаются.
 - Сохранить original package и связи; отдельно моделировать группы, master/layout/theme,
   embedded workbooks/OLE, transition/timing и audio/video без запуска содержимого.
 - Приёмка: набор с группами, наследованием темы, диаграммой, анимацией и медиа → JSON

@@ -548,7 +548,14 @@ def _collect_shape_element(
             state.diagnostics.record("pptx.shape", "missing-geometry", "Shape without resolvable geometry is skipped", element)
         return
     left, top, width, height = _apply_transform(transform, *xfrm[:4])
-    if (width <= 0 or height <= 0) and not (tag == "cxnSp" and width >= 0 and height >= 0):
+    custom_geometry = element.find(f"{_p('spPr')}/{_a('custGeom')}/{_a('pathLst')}/{_a('path')}")
+    preset_geometry = element.find(f"{_p('spPr')}/{_a('prstGeom')}")
+    line_geometry = tag == "cxnSp" or (
+        tag == "sp" and (custom_geometry is not None or (
+            preset_geometry is not None and preset_geometry.get("prst") == "line"
+        )) and (width > 0 or height > 0)
+    )
+    if (width <= 0 or height <= 0) and not (line_geometry and width >= 0 and height >= 0):
         if state.diagnostics:
             state.diagnostics.record("pptx.shape", "nonpositive-geometry", "Shape with nonpositive extent is skipped", element)
         return
@@ -1684,9 +1691,22 @@ def _cell_text(tc: Any) -> str:
     return "\n".join(part for part in parts if part)
 
 
+def _effective_background(slide: Any) -> Any:
+    """Select the nearest declared background without creating local XML."""
+    layout = getattr(slide, "slide_layout", None)
+    master = getattr(layout, "slide_master", None)
+    for owner in (slide, layout, master):
+        if owner is None:
+            continue
+        c_sld = owner._element.find(_p("cSld"))
+        bg = c_sld.find(_p("bg")) if c_sld is not None else None
+        if bg is not None:
+            return bg
+    return None
+
+
 def _background_color(slide: Any, theme_colors: dict[str, str] | None = None) -> ColorValue | None:
-    c_sld = slide._element.find(_p("cSld"))
-    bg = c_sld.find(_p("bg")) if c_sld is not None else None
+    bg = _effective_background(slide)
     if bg is None:
         return None
     bg_ref = bg.find(_a("bgRef"))
@@ -1714,8 +1734,7 @@ def _background_color(slide: Any, theme_colors: dict[str, str] | None = None) ->
 
 
 def _background_gradient(slide: Any, theme_colors: dict[str, str] | None = None) -> list[dict[str, Any]]:
-    c_sld = slide._element.find(_p("cSld"))
-    bg = c_sld.find(_p("bg")) if c_sld is not None else None
+    bg = _effective_background(slide)
     bg_pr = bg.find(_p("bgPr")) if bg is not None else None
     gradient = bg_pr.find(_a("gradFill")) if bg_pr is not None else None
     return _gradient_colors(gradient, theme_colors) if gradient is not None else []

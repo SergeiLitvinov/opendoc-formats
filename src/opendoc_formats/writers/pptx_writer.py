@@ -53,8 +53,12 @@ def write_pptx_model(document: DocumentModel, output_path: str | Path) -> Conver
                 max(1, page.width.pt - section.page.margin_left.pt - section.page.margin_right.pt),
                 48,
             )
-            connector = block.properties.get("pptx", {}).get("shape", {}).get("kind") == "cxnSp"
-            minimum = 0 if connector else 1
+            shape_meta = block.properties.get("pptx", {}).get("shape", {})
+            line_geometry = shape_meta.get("kind") == "cxnSp" or (
+                shape_meta.get("kind") == "sp" and shape_meta.get("geometry_xml")
+                and shape_meta.get("prst") in (None, "line") and (box.width > 0 or box.height > 0)
+            )
+            minimum = 0 if line_geometry else 1
             geometry = tuple(Pt(value) for value in (box.x, box.y, max(minimum, box.width), max(minimum, box.height)))
             block_location = f"{location}.blocks[{number}]"
             previous_count = len(slide.shapes)

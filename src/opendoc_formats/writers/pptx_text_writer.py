@@ -67,7 +67,8 @@ def write_text(frame: Any, block: od.Block, report: od.ConversionReport, locatio
                 run.font.size = Pt(style.font_size.pt) if style.font_size else None
                 run.font.bold, run.font.italic = style.bold, style.italic
                 run.font.underline = style.underline
-                set_color(run.font.color, style.color, report, location)
+                if style.color is not None:
+                    set_color(run.font.color, style.color, report, location)
                 if style.superscript or style.subscript:
                     run._r.get_or_add_rPr().set("baseline", "30000" if style.superscript else "-25000")
                 if item.link:

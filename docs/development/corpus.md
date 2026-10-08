@@ -103,3 +103,24 @@ uv run --frozen pytest tests/readers/test_docx_layout_roundtrip.py --basetemp=.o
 
 Word — отдельная локальная программа; её отсутствие не заменяет проверку XML
 и не означает выполненной нативной приёмки в CI.
+
+## PPTX: нативные свойства фона, линий и таблицы
+
+`tests/readers/test_pptx_visual_roundtrip.py` создаёт собственные слайды со
+сплошным фоном в slide/layout/master, двумя осевыми freeform paths и таблицей
+с наследуемым цветом текста. Проверяются два JSON roundtrip, приоритет ближайшего
+фона, отсутствие мутации источника, размеры и сохранение editable custGeom,
+отсутствие пустого `solidFill` для неуказанного цвета.
+
+Microsoft PowerPoint 16.0 build 17932 подтвердил равенство нативных свойств
+во всех трёх файлах каждого случая: RGB фона, типы/позиции/размеры фигур,
+текст и цвета ячеек. Источники открываются read-only, SHA-256 не меняется.
+Это не пиксельная или полная семантическая приёмка и не проверка всех тем Office.
+
+```powershell
+uv run --frozen pytest tests/readers/test_pptx_visual_roundtrip.py --basetemp=.opendoc-formats/pptx-native
+./tools/pptx_visual_acceptance.ps1 -FixtureRoot .opendoc-formats/pptx-native
+```
+
+PowerPoint устанавливается отдельно; CI выполняет проверки XML и модели,
+а локальная нативная проверка требует установленной программы.
