@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 from typing import Union
 
@@ -29,44 +30,15 @@ def read_txt(path: Union[str, Path], *, profile: TextProfile | None = None) -> T
     )
 
 
-def read_djvu(path: Union[str, Path]) -> Text:
-    import subprocess
+def read_djvu(
+    path: Union[str, Path], *, timeout: float = 30,
+    max_output_bytes: int = 10 * 1024 * 1024,
+    cancelled: Callable[[], bool] | None = None,
+) -> Text:
+    """Read the UTF-8 hidden text layer with bounded, cancellable DjVuLibre."""
+    from opendoc_formats.readers._djvu_text import extract_djvu_text
 
-    p = Path(path)
-    if not p.is_file():
-        raise FileNotFoundError(p)
-    try:
-        result = subprocess.run(
-            ["djvutxt", str(p)],
-            capture_output=True,
-            text=True,
-            timeout=30,
-        )
-    except FileNotFoundError:
-        return Text(
-            source_format=DocFormat.DJVU,
-            engine="djvutxt",
-            warnings=["djvutxt not found in PATH"],
-        )
-    except subprocess.TimeoutExpired:
-        return Text(
-            source_format=DocFormat.DJVU,
-            engine="djvutxt",
-            warnings=["djvutxt timeout"],
-        )
-    if result.returncode != 0:
-        return Text(
-            source_format=DocFormat.DJVU,
-            engine="djvutxt",
-            warnings=[f"djvutxt rc={result.returncode}"],
-        )
-    text = result.stdout
-    return Text(
-        blocks=[Block(type=BlockType.PARAGRAPH, text=text)],
-        plain=text,
-        source_format=DocFormat.DJVU,
-        engine="djvutxt",
-    )
+    return extract_djvu_text(path, timeout=timeout, max_output_bytes=max_output_bytes, cancelled=cancelled)
 
 
 __all__ = ["read_txt", "read_txt_model", "read_djvu"]

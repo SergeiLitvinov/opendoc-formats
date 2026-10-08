@@ -34,7 +34,7 @@ jobs:
       - run: uv sync --frozen --all-extras
       - name: Install office converter for real acceptance
         if: matrix.os == 'ubuntu-latest' && matrix.python == '3.12'
-        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libreoffice-writer
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libreoffice-writer djvulibre-bin
       - run: uv run --frozen ruff check
       - run: uv run --frozen mypy
       - run: uv run --frozen python -m tools.audit

@@ -29,6 +29,8 @@ Format reader registry using the OpenDoc model and validation contract.
 
 Импорты: `__future__`, `collections.abc`, `dataclasses`, `importlib`, `opendoc_formats.errors`, `opendoc_formats.readers.tex_model`, `opendoc_formats.support.backends`, `opendoc_formats.text_profile`, `opendoc_model`, `pathlib`, `typing`
 
+Тесты: [test_djvu_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_djvu_text.py#L1)
+
 ## src/opendoc_formats/docx.py
 
 Public immutable DOCX snapshots and transactional native text editing.
@@ -95,7 +97,7 @@ Format-specific errors, independent of consumers.
 
 Импорты: отсутствуют
 
-Тесты: [test_docx_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_access.py#L1), [test_office_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_office_access.py#L1), [test_package_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_package_resources.py#L1), [test_pdf_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_access.py#L1), [test_fix_encoding.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_fix_encoding.py#L1), [test_tex_model.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_tex_model.py#L1)
+Тесты: [test_docx_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_access.py#L1), [test_office_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_office_access.py#L1), [test_package_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_package_resources.py#L1), [test_pdf_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_access.py#L1), [test_djvu_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_djvu_text.py#L1), [test_fix_encoding.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_fix_encoding.py#L1), [test_tex_model.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_tex_model.py#L1)
 
 ## src/opendoc_formats/export.py
 
@@ -279,6 +281,14 @@ Optional backends are imported only when selected.
 
 
 Импорты: отсутствуют
+
+## src/opendoc_formats/readers/_djvu_text.py
+
+Bounded external DjVu text extraction, using only the standard library.
+
+- `extract_djvu_text(path: str | Path, *, timeout: float, max_output_bytes: int, cancelled: Callable[[], bool] | None) -> Text` — [строка 17](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/_djvu_text.py#L17)
+
+Импорты: `__future__`, `collections.abc`, `opendoc_formats.errors`, `opendoc_formats.types`, `pathlib`, `typing`
 
 ## src/opendoc_formats/readers/_txt_model.py
 
@@ -778,12 +788,12 @@ Bounded lexical LaTeX source reader; no TeX engine, file commands or macro execu
 
 TXT и DjVu → Text.
 
-- `read_txt(path: Union[str, Path], *, profile: TextProfile | None=None) -> Text` — [строка 13](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/txt.py#L13)
-- `read_djvu(path: Union[str, Path]) -> Text` — [строка 32](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/txt.py#L32)
+- `read_txt(path: Union[str, Path], *, profile: TextProfile | None=None) -> Text` — [строка 14](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/txt.py#L14)
+- `read_djvu(path: Union[str, Path], *, timeout: float=30, max_output_bytes: int=10 * 1024 * 1024, cancelled: Callable[[], bool] | None=None) -> Text` — [строка 33](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/txt.py#L33)
 
-Импорты: `__future__`, `opendoc_formats.readers._txt_model`, `opendoc_formats.text_profile`, `opendoc_formats.types`, `pathlib`, `typing`
+Импорты: `__future__`, `collections.abc`, `opendoc_formats.readers._djvu_text`, `opendoc_formats.readers._txt_model`, `opendoc_formats.text_profile`, `opendoc_formats.types`, `pathlib`, `typing`
 
-Тесты: [test_text_profile.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_text_profile.py#L1)
+Тесты: [test_djvu_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_djvu_text.py#L1), [test_text_profile.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_text_profile.py#L1)
 
 ## src/opendoc_formats/support/__init__.py
 
