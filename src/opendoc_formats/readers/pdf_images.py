@@ -38,6 +38,7 @@ class ExtractedPdfImage:
     xref: int
     page: int
     smask_xref: int = 0
+    transform: tuple[float, ...] = ()
 
     @property
     def media_type(self) -> str:
@@ -110,9 +111,7 @@ def extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[
     retrieve the actual bytes of every image embedded in the PDF.  Returns
     a flat list of ``ExtractedPdfImage`` sorted by (page, number).
 
-    Images are deduplicated by xref — if the same image is referenced
-    multiple times on a page (or across pages), only the first occurrence
-    holds the pixel data; subsequent occurrences reference the same ``xref``.
+    Every painted occurrence is retained, including repeated xrefs and inline images.
     """
     import fitz
 
@@ -122,46 +121,43 @@ def extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[
 
     images: list[ExtractedPdfImage] = []
     warnings: list[str] = []
-    seen_xrefs: set[int] = set()
 
     with fitz.open(str(source)) as document:
         for page_number, page in enumerate(document, start=1):
             page_dict = page.get_text("dict", sort=False) or {}
             image_blocks = [block for block in page_dict.get("blocks", []) if block.get("type") == 1]
-
+            infos = {item["number"]: item for item in page.get_image_info(xrefs=True)}
+            masks = {int(item[0]): int(item[1]) for item in page.get_images(full=True)}
             for block_index, block in enumerate(image_blocks):
+                from opendoc_formats.errors import ResourceLimitError
+
+                width, height = int(block.get("width", 0)), int(block.get("height", 0))
+                if width * height > 128_000_000 or max(width, height) > 32768 or len(images) >= 10000:
+                    raise ResourceLimitError("PDF raster exceeds pixel or placement limits")
                 block_number = int(block.get("number", block_index))
-                image_info_list = page.get_images(full=True)
-
-                for item in image_info_list:
-                    xref = int(item[0])
-                    if xref in seen_xrefs:
-                        continue
-                    seen_xrefs.add(xref)
-                    try:
-                        extracted = document.extract_image(xref)
-                    except Exception as exc:  # noqa: BLE001
-                        warnings.append(f"page {page_number} image xref {xref}: {type(exc).__name__}: {exc}")
-                        continue
-
-                    data = extracted.get("image", b"")
-                    if not data:
-                        continue
-
-                    images.append(
-                        ExtractedPdfImage(
-                            bbox=block.get("bbox", (0.0, 0.0, 0.0, 0.0)),
-                            number=block_number,
-                            width=int(extracted.get("width", 0)),
-                            height=int(extracted.get("height", 0)),
-                            extension=str(extracted.get("ext", "")),
-                            colorspace=str(extracted.get("colorspace", "")),
-                            data=data,
-                            xref=xref,
-                            page=page_number,
-                            smask_xref=int(item[1]) if item[1] > 0 else 0,
-                        )
-                    )
+                info = infos.get(block_number, {})
+                xref = int(info.get("xref", 0)) or -(block_number + 1)
+                data = block.get("image", b"")
+                if len(data) > 32 * 1024 * 1024:
+                    raise ResourceLimitError("PDF raster exceeds 32 MiB")
+                if not data:
+                    warnings.append(f"page {page_number} image {block_number}: missing image bytes")
+                    continue
+                extension = str(block.get("ext", "png"))
+                if block.get("mask"):
+                    base = fitz.Pixmap(data)
+                    mask = fitz.Pixmap(block["mask"])
+                    data = fitz.Pixmap(base, mask).tobytes("png")
+                    extension = "png"
+                if len(data) > 32 * 1024 * 1024:
+                    raise ResourceLimitError("PDF raster with mask exceeds 32 MiB")
+                images.append(ExtractedPdfImage(
+                    bbox=info.get("bbox", block.get("bbox", (0.0, 0.0, 0.0, 0.0))), number=block_number,
+                    width=int(block.get("width", 0)), height=int(block.get("height", 0)),
+                    extension=extension, colorspace=str(block.get("colorspace", "")),
+                    data=data, xref=xref, page=page_number, smask_xref=masks.get(xref, 0),
+                    transform=tuple(block.get("transform", ())),
+                ))
 
     images.sort(key=lambda img: (img.page, img.number))
     return images, warnings

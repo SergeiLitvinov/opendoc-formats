@@ -52,6 +52,11 @@ def write_pdf_model(
     if not report.success:
         return report
     document = prepared.value
+    from opendoc_formats.writers.pdf_rasters import draw_rasters, prepare_rasters
+
+    document, rasters = prepare_rasters(document, report, check_cancelled)
+    if not report.success:
+        return report
     document = prepare_fonts(document, report)
     preflight_colors(document, report, target="pdf")
     target = fitz.open()
@@ -67,8 +72,14 @@ def write_pdf_model(
                 raise ValueError("Invalid PDF source page rotation")
             section_pdf, renderer = _render_section(document, section, section_index, report)
             section_vectors = vectors[section_index] if section_index < len(vectors) else []
+            if section_vectors and rasters[section_index]:
+                report.add(IssueSeverity.LOSS, "pdf-raster-compositing", "Source raster/vector paint order is not reconstructed",
+                           f"sections[{section_index}]")
             try:
                 for page_number, page in enumerate(section_pdf):
+                    placed_rasters = [r for r in rasters[section_index]
+                                      if page_number == 0 or ".headers[" in r.location or ".footers[" in r.location]
+                    draw_rasters(page, placed_rasters, check_cancelled)
                     placed = [v for v in section_vectors
                               if page_number == 0 or ".headers[" in v.location or ".footers[" in v.location]
                     draw_vectors(page, placed, check_cancelled)
@@ -79,6 +90,7 @@ def write_pdf_model(
             for key in ("paragraphs", "tables", "images", "formulas"):
                 totals[key] += renderer.metrics[key]
             totals["images"] += len(section_vectors)
+            totals["images"] += len(rasters[section_index])
             for page in section_pdf:
                 page.set_rotation(rotation)
             target.insert_pdf(section_pdf)

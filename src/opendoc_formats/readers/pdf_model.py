@@ -219,7 +219,10 @@ def read_pdf_model(
             image_origin = origin(f"image-xref-{img.xref}", detail="placed extracted raster image")
             blocks.append(
                 Paragraph(
-                    content=[RichImage(resource_id=resource_id, box=box, provenance=image_origin)],
+                    content=[RichImage(
+                        resource_id=resource_id, box=box, provenance=image_origin,
+                        properties={"pdf_image_transform": list(img.transform)} if img.transform else {},
+                    )],
                     provenance=image_origin,
                 )
             )

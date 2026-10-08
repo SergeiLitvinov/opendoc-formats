@@ -85,6 +85,10 @@
 
 - Реализовано: конечный import links/notes/highlights и simple forms, inert actions,
   outline extension и opaque source для неподдержанных объектов; JSON и поворот страниц.
+- Проверен позиционированный растр: все повторные xref/inline размещения,
+  soft mask, полная геометрия до viewport crop, четвертьобороты и отдельный масштаб
+  осей. Два JSON roundtrip совпадают по RGB-рендеру на собственных страницах.
+  Смешанный paint order диагностируется; полный affine/clipping остаётся открытым.
 - Остаётся: semantic structure tree и optional content; полный clipping/masks/blend,
   семантический outline contract, XFA/signatures/radio groups и полный annotation appearance.
 - Подзадачи: marked content и reading order; расширение форм/аннотаций и их writer;

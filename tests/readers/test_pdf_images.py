@@ -75,7 +75,7 @@ class TestExtractPdfImages:
 
         images, warnings = extract_pdf_images(str(path))
 
-        assert len(images) >= 1
+        assert len(images) == 3
         assert all(img.page == 1 for img in images)
         assert all(len(img.data) > 0 for img in images)
 

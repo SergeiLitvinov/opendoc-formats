@@ -75,6 +75,34 @@ def main() -> None:
             assert restored.resources == vector.document.resources
             vector_report = write_document(vector.document, output / "vector.pdf")
             assert vector_report.success and vector_report.metrics["pdf_vectors"]["native"] == 1, vector_report.to_dict()
+            raster_source = output / "raster-source.pdf"
+            with fitz.open() as fixture:
+                pixels = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, 20, 30), False)
+                pixels.clear_with(128)
+                pixels.set_pixel(0, 0, (255, 0, 0))
+                for rotation in (0, 90):
+                    page = fixture.new_page(width=120, height=180)
+                    page.insert_image(page.rect, stream=pixels.tobytes("png"), keep_proportion=False)
+                    page.set_rotation(rotation)
+                fixture.save(raster_source)
+
+            def raster_snapshot(path):
+                with fitz.open(path) as fixture:
+                    return [(tuple(page.rect), page.rotation,
+                             [tuple(item["bbox"]) for item in page.get_image_info()],
+                             page.get_pixmap(alpha=False).samples) for page in fixture]
+
+            expected_raster = raster_snapshot(raster_source)
+            raster_path = raster_source
+            for cycle in range(2):
+                raster = read_document(raster_path)
+                assert raster.success, raster.issues
+                raster_model = document_from_json(document_to_json(raster.document))
+                assert all(len(section.blocks) == 1 for section in raster_model.sections)
+                raster_path = output / f"raster-{cycle}.pdf"
+                raster_report = write_document(raster_model, raster_path)
+                assert raster_report.success and raster_report.metrics["pdf_rasters"]["native"] == 2
+                assert raster_snapshot(raster_path) == expected_raster
             assert not read_document(source, options=ImportOptions(cancelled=lambda: True)).success
             target = output / "cancelled.pdf"
             target.write_bytes(b"existing")
