@@ -80,3 +80,26 @@ PPTX and EMF fixtures remain generated during tests and require no office suite.
 
 Файлы являются тестовыми входами, а не временными сборками. Контрольные SHA-256
 вычисляются тестами для проверки неизменности частей и транзакций.
+
+## DOCX: исходные ширины и smartTag
+
+`tests/readers/test_docx_layout_roundtrip.py` создаёт собственные smartTag и таблицу
+20×3 с колонками 10/80/10, длинным текстом средней колонки и фиксированным layout.
+Два JSON roundtrip проверяются независимым чтением `word/document.xml`:
+видимый текст, оболочка, `tblW`, `tcW` и grid widths. Отдельно проверены
+`auto`, `nil`, процентная запись и явное изменение ширины ячейки.
+
+Локальная приёмка Microsoft Word 16.0 build 16.0.17932 подтвердила одну страницу
+во всех трёх файлах каждого случая, совпадение текста и ширины 48/384/48 pt
+в таблице. Исходники открываются только для чтения, их SHA-256 не меняется.
+Проверка не является полной визуальной приёмкой или проверкой произвольного DOCX.
+
+Повторить при установленном Word:
+
+```powershell
+uv run --frozen pytest tests/readers/test_docx_layout_roundtrip.py --basetemp=.opendoc-formats/docx-word
+./tools/docx_word_acceptance.ps1 -FixtureRoot .opendoc-formats/docx-word
+```
+
+Word — отдельная локальная программа; её отсутствие не заменяет проверку XML
+и не означает выполненной нативной приёмки в CI.

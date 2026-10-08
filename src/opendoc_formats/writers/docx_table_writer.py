@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable
 from typing import Any
 
@@ -93,6 +94,7 @@ def _set_table_style_id(table: Any, style_id: str) -> None:
 
 def _apply_table_properties(table: Any, properties: TableProperties) -> None:
     from docx.enum.table import WD_TABLE_ALIGNMENT
+    from docx.oxml import OxmlElement
     from docx.oxml.ns import qn
 
     if properties.autofit is not None:
@@ -104,6 +106,39 @@ def _apply_table_properties(table: Any, properties: TableProperties) -> None:
     columns = table._tbl.xpath("./w:tblGrid/w:gridCol")
     for column, width in zip(columns, properties.grid_widths_twips, strict=False):
         column.set(qn("w:w"), str(width))
+    if "docx_preferred_width" in properties:
+        width = table._tbl.tblPr.find(qn("w:tblW"))
+        if width is None:
+            width = OxmlElement("w:tblW")
+            table._tbl.tblPr.append(width)
+        _apply_preferred_width(width, properties["docx_preferred_width"])
+
+
+def _apply_preferred_width(node: Any, value: object) -> None:
+    """Restore native width units; never convert percentages into absolute widths."""
+    from docx.oxml.ns import qn
+
+    from opendoc_formats.errors import ConvertError
+
+    if not isinstance(value, dict) or set(value) != {"type", "value"}:
+        raise ConvertError("docx_preferred_width must contain type and value")
+    if value["type"] not in (None, "auto", "dxa", "nil", "pct"):
+        raise ConvertError("Unsupported DOCX preferred width type")
+    if value["value"] is not None and (not isinstance(value["value"], str) or len(value["value"]) > 128):
+        raise ConvertError("DOCX preferred width value must be a bounded string or null")
+    if value["value"] is not None:
+        pattern = r"[+-]?[0-9]+"
+        if value["type"] == "pct":
+            pattern += r"|[+-]?[0-9]+(?:\.[0-9]+)?%"
+        elif value["type"] == "dxa":
+            pattern += r"|[+-]?[0-9]+(?:\.[0-9]+)?(?:mm|cm|in|pt|pc|pi)"
+        if re.fullmatch(pattern, value["value"]) is None:
+            raise ConvertError("Invalid DOCX preferred width value")
+    for attribute, item in (("type", value["type"]), ("w", value["value"])):
+        if item is None:
+            node.attrib.pop(qn("w:" + attribute), None)
+        else:
+            node.set(qn("w:" + attribute), item)
 
 
 def _apply_row_properties(row: Any, properties: TableRowProperties) -> None:
@@ -130,6 +165,8 @@ def _apply_cell_properties(cell: Any, properties: TableCellProperties) -> None:
         width = cell_properties.get_or_add_tcW()
         width.set(qn("w:type"), "dxa")
         width.set(qn("w:w"), str(properties.width_twips))
+    elif "docx_preferred_width" in properties:
+        _apply_preferred_width(cell_properties.get_or_add_tcW(), properties["docx_preferred_width"])
     if properties.margins_twips:
         margin_node = cell_properties.first_child_found_in("w:tcMar")
         if margin_node is None:

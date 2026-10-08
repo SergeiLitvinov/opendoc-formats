@@ -42,6 +42,11 @@ def read_table(table: Any, model: DocumentModel, read_blocks: BlockReader) -> Ta
     style_id = table.style.style_id if table.style is not None else None
     properties: dict[str, Any] = {"style_name": table.style.name} if table.style is not None else {}
     properties["autofit"] = bool(table.autofit)
+    width = table._tbl.xpath("./w:tblPr/w:tblW")
+    if width:
+        properties["docx_preferred_width"] = {
+            "type": width[0].get(qn("w:type")), "value": width[0].get(qn("w:w")),
+        }
     if table.alignment is not None:
         properties["alignment"] = table.alignment.name.lower()
     grid_widths = [int(column.get(qn("w:w"))) for column in table._tbl.xpath("./w:tblGrid/w:gridCol") if column.get(qn("w:w"))]
@@ -61,6 +66,10 @@ def _cell_properties(cell: Any) -> dict[str, Any]:
         if fill and fill.lower() != "auto":
             properties["fill"] = fill
     width = cell._tc.xpath("./w:tcPr/w:tcW")
+    if width:
+        properties["docx_preferred_width"] = {
+            "type": width[0].get(qn("w:type")), "value": width[0].get(qn("w:w")),
+        }
     if width and width[0].get(qn("w:type")) == "dxa":
         properties["width_twips"] = int(width[0].get(qn("w:w"), 0))
     margins = cell._tc.xpath("./w:tcPr/w:tcMar")

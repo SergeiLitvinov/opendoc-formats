@@ -78,6 +78,7 @@ def read_paragraph(paragraph: Any, model: DocumentModel) -> Paragraph:
             "moveFrom",
             "moveTo",
             "sdt",
+            "smartTag",
         }:
             content.append(_preserved_inline_ooxml(child))
         index += 1

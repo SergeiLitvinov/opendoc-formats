@@ -57,6 +57,9 @@
 
 - Основание: native OOXML inventory и сохранение package не дают семантического
   представления comments/revisions/content controls/SmartArt/OLE.
+- Проверены два JSON roundtrip для текста в `smartTag` и preferred widths
+  таблиц/ячеек (`dxa`, `pct`, `auto`, `nil`). Собственные документы проверены в Word:
+  текст, одна страница и колонки 10/80/10 сохраняются. `smartTag` остаётся opaque.
 - Подзадачи с отдельными fixtures: диапазоны комментариев и ответов; tracked changes
   с режимами отображения; fields и ссылочные поля; content controls;
   text boxes/SmartArt/embedded objects с документированным fallback.

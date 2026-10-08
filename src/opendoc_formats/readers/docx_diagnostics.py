@@ -34,6 +34,7 @@ _TAGS = {
     V + "textpath": "wordart", W14 + "textFill": "wordart", W14 + "textOutline": "wordart",
     OFFICE + "OLEObject": "embedded-ole", DGM + "relIds": "smartart",
     W + "documentProtection": "protection", W + "fldSimple": "fields",
+    W + "smartTag": "smart-tags",
 }
 _XML_KEYS = {"docx_raw_inline_xml", "docx_raw_block_xml", "field_xml", "vml_xml", "document_protection_xml"}
 
