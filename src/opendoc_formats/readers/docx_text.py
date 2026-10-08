@@ -6,6 +6,7 @@ from typing import Any
 
 from opendoc_model.document_model import DocumentModel, Formula, FormulaFormat, Image, Paragraph, TextRun
 
+from opendoc_formats.ooxml.headings import import_heading
 from opendoc_formats.readers.docx_drawing import read_run_images, read_run_vml_colors
 from opendoc_formats.readers.docx_notes import append_note_references
 from opendoc_formats.readers.docx_style import read_paragraph_properties, read_run_style
@@ -84,12 +85,14 @@ def read_paragraph(paragraph: Any, model: DocumentModel) -> Paragraph:
         index += 1
 
     alignment = paragraph.alignment
-    return Paragraph(
+    result = Paragraph(
         content=content,
         style_id=paragraph.style.style_id if paragraph.style is not None else None,
         alignment=alignment.name.lower() if alignment is not None else None,
         properties=read_paragraph_properties(paragraph),
     )
+    import_heading(paragraph, result)
+    return result
 
 
 def read_block_ooxml(element: Any) -> Paragraph:

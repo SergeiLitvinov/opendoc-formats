@@ -60,6 +60,11 @@
 - Проверены два JSON roundtrip для текста в `smartTag` и preferred widths
   таблиц/ячеек (`dxa`, `pct`, `auto`, `nil`). Собственные документы проверены в Word:
   текст, одна страница и колонки 10/80/10 сохраняются. `smartTag` остаётся opaque.
+- Формальная роль Heading 1–9 переносится через нативные outline levels,
+  включая наследование и основной текст. Два JSON цикла и явная смена/удаление
+  роли проверены в Word; производные стили сохраняются в package.
+- Модель предоставляет типизированные preferred widths; заполнить их из native
+  DOCX вместе с обратной записью и миграцией сохранённых форматных расширений.
 - Подзадачи с отдельными fixtures: диапазоны комментариев и ответов; tracked changes
   с режимами отображения; fields и ссылочные поля; content controls;
   text boxes/SmartArt/embedded objects с документированным fallback.
@@ -125,9 +130,13 @@
 
 - Основание: ограниченное подмножество CSS и отсутствие полного browser layout.
 - Проверены два JSON roundtrip для lang, caption с inline styles/ссылками,
-  th/td, scope col/row/rowgroup, headers/IDs и групп строк. ARIA/role/dir
-  вне профиля диагностируются; colgroup, дерево доступности браузера,
+  th/td, scope col/row/rowgroup, headers/IDs и групп строк. Независимая приёмка
+  в Chromium 151 подтверждает имя таблицы, columnheader/rowheader и навигацию
+  в двух циклах при 375/1280; при 375 остаётся горизонтальная прокрутка.
+  ARIA/role/dir вне профиля диагностируются; colgroup, полное дерево доступности,
   экранный диктор и responsive layout остаются открытыми.
+- Использовать общие Table/Row/Cell semantics модели для уже проверенных caption,
+  roles/headers и групп; сохранить чтение прежних форматных расширений и JSON.
 - Опубликовать feature profile; расширять cascade/inheritance, CSS variables,
   table layout, flex/grid и paged media конечными подмножествами.
   Сохранять lang/alt/roles и смысл accessibility, оригинальный unsupported fragment.

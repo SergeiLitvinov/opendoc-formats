@@ -236,6 +236,16 @@ Shared OOXML DrawingML color resolution.
 
 Тесты: [test_ooxml_color.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_ooxml_color.py#L1)
 
+## src/opendoc_formats/ooxml/headings.py
+
+Map native Word outline levels to OpenDoc's explicit heading contract.
+
+- `import_heading(native: Any, paragraph: Paragraph) -> None` — [строка 18](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/headings.py#L18)
+- `export_heading(paragraph: Paragraph, native: Any) -> None` — [строка 52](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/headings.py#L52)
+- `retain_derived_styles(part: Any, graph: PackageGraph) -> PackageGraph` — [строка 91](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/headings.py#L91)
+
+Импорты: `__future__`, `copy`, `dataclasses`, `docx.enum.style`, `docx.oxml`, `docx.oxml.ns`, `lxml`, `opendoc_formats.ooxml.package`, `opendoc_model`, `typing`
+
 ## src/opendoc_formats/ooxml/package.py
 
 Reusable helpers for importing and restoring OOXML package topology.
@@ -376,10 +386,10 @@ DOCX table importer for spans, geometry, fills, margins, and styles.
 
 Чтение абзацев и строчного содержимого DOCX.
 
-- `read_paragraph(paragraph: Any, model: DocumentModel) -> Paragraph` — [строка 14](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_text.py#L14)
-- `read_block_ooxml(element: Any) -> Paragraph` — [строка 95](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_text.py#L95)
+- `read_paragraph(paragraph: Any, model: DocumentModel) -> Paragraph` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_text.py#L15)
+- `read_block_ooxml(element: Any) -> Paragraph` — [строка 98](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_text.py#L98)
 
-Импорты: `__future__`, `docx.oxml.ns`, `docx.text.hyperlink`, `docx.text.run`, `lxml`, `opendoc_formats.readers.docx_drawing`, `opendoc_formats.readers.docx_notes`, `opendoc_formats.readers.docx_style`, `opendoc_model.document_model`, `typing`
+Импорты: `__future__`, `docx.oxml.ns`, `docx.text.hyperlink`, `docx.text.run`, `lxml`, `opendoc_formats.ooxml.headings`, `opendoc_formats.readers.docx_drawing`, `opendoc_formats.readers.docx_notes`, `opendoc_formats.readers.docx_style`, `opendoc_model.document_model`, `typing`
 
 ## src/opendoc_formats/readers/epub.py
 
@@ -1032,11 +1042,11 @@ DOCX table exporter for spans, geometry, fills, margins, and styles.
 
 Запись абзацев и строчного содержимого в DOCX.
 
-- `add_paragraph(container: Any, source: Paragraph, document: DocumentModel, report: ConversionReport, location: str) -> Any` — [строка 16](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_text_writer.py#L16)
-- `write_paragraph_content(paragraph: Any, source: Paragraph, document: DocumentModel, report: ConversionReport, location: str, counters: dict[str, int]) -> None` — [строка 57](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_text_writer.py#L57)
-- `write_formula(paragraph: Any, formula: Formula, report: ConversionReport, location: str) -> None` — [строка 107](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_text_writer.py#L107)
+- `add_paragraph(container: Any, source: Paragraph, document: DocumentModel, report: ConversionReport, location: str) -> Any` — [строка 17](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_text_writer.py#L17)
+- `write_paragraph_content(paragraph: Any, source: Paragraph, document: DocumentModel, report: ConversionReport, location: str, counters: dict[str, int]) -> None` — [строка 59](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_text_writer.py#L59)
+- `write_formula(paragraph: Any, formula: Formula, report: ConversionReport, location: str) -> None` — [строка 109](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_text_writer.py#L109)
 
-Импорты: `__future__`, `docx.enum.text`, `docx.opc.constants`, `docx.oxml`, `docx.oxml.ns`, `opendoc_formats.ooxml.package`, `opendoc_formats.writers.docx_drawing_writer`, `opendoc_formats.writers.docx_html_links`, `opendoc_formats.writers.docx_html_lists`, `opendoc_formats.writers.docx_notes_writer`, `opendoc_formats.writers.docx_style_writer`, `opendoc_formats.writers.mathml_to_omml`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `typing`, `urllib.parse`
+Импорты: `__future__`, `docx.enum.text`, `docx.opc.constants`, `docx.oxml`, `docx.oxml.ns`, `opendoc_formats.ooxml.headings`, `opendoc_formats.ooxml.package`, `opendoc_formats.writers.docx_drawing_writer`, `opendoc_formats.writers.docx_html_links`, `opendoc_formats.writers.docx_html_lists`, `opendoc_formats.writers.docx_notes_writer`, `opendoc_formats.writers.docx_style_writer`, `opendoc_formats.writers.mathml_to_omml`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `typing`, `urllib.parse`
 
 ## src/opendoc_formats/writers/docx_to_latex.py
 
@@ -1054,9 +1064,9 @@ DOCX table exporter for spans, geometry, fills, margins, and styles.
 
 Экспорт богатой промежуточной модели в редактируемый DOCX.
 
-- `write_docx_model(document: DocumentModel, output_path: str | Path) -> ConversionReport` — [строка 30](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_writer.py#L30)
+- `write_docx_model(document: DocumentModel, output_path: str | Path) -> ConversionReport` — [строка 31](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_writer.py#L31)
 
-Импорты: `__future__`, `docx`, `docx.enum.section`, `docx.oxml`, `opendoc_formats.fonts.docx_embedding`, `opendoc_formats.ooxml.package`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.io`, `opendoc_formats.writers.color_preflight`, `opendoc_formats.writers.docx_drawing_writer`, `opendoc_formats.writers.docx_section_writer`, `opendoc_formats.writers.docx_style_writer`, `opendoc_formats.writers.docx_table_writer`, `opendoc_formats.writers.docx_text_writer`, `opendoc_formats.writers.font_preflight`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`, `typing`
+Импорты: `__future__`, `docx`, `docx.enum.section`, `docx.oxml`, `opendoc_formats.fonts.docx_embedding`, `opendoc_formats.ooxml.headings`, `opendoc_formats.ooxml.package`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.io`, `opendoc_formats.writers.color_preflight`, `opendoc_formats.writers.docx_drawing_writer`, `opendoc_formats.writers.docx_section_writer`, `opendoc_formats.writers.docx_style_writer`, `opendoc_formats.writers.docx_table_writer`, `opendoc_formats.writers.docx_text_writer`, `opendoc_formats.writers.font_preflight`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`, `typing`
 
 Тесты: [test_format_audit.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_format_audit.py#L1), [test_docx_layout_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_layout_roundtrip.py#L1), [test_docx_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_docx_writer.py#L1), [test_html_normalize.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_normalize.py#L1)
 

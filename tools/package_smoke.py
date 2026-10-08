@@ -36,7 +36,7 @@ def main() -> None:
     from opendoc_formats.pdf import PdfDocument
 
     assert opendoc_formats.__version__ == version("opendoc-formats")
-    assert version("opendoc-model") == "0.3.0"
+    assert version("opendoc-model") == "0.6.0"
     engines = ("bs4", "fitz", "pymupdf", "lxml", "docx", "pptx", "ebooklib", "fontTools")
     assert all(name not in sys.modules for name in engines)
     installed = Path(opendoc_formats.__file__).resolve().parent
@@ -175,6 +175,20 @@ def main() -> None:
                 assert result.document.validate() == []
                 assert "Cell" in str(result.document)
             if args.all_formats and format_id == "docx":
+                from opendoc_model import Heading, get_heading, set_heading
+                from opendoc_model.document_codec import document_from_json, document_to_json
+
+                heading = Paragraph([TextRun("Own formal heading")])
+                set_heading(heading, Heading(2))
+                heading_model = DocumentModel(sections=[Section(blocks=[heading])])
+                for cycle in range(2):
+                    heading_target = root / f"heading-{cycle}.docx"
+                    restored = document_from_json(document_to_json(heading_model))
+                    assert write_document(restored, heading_target).success
+                    heading_result = read_document(heading_target)
+                    assert heading_result.success, heading_result.issues
+                    heading_model = heading_result.document
+                    assert get_heading(heading_model.sections[0].blocks[0]) == Heading(2)
                 with DocxPackage(path) as package:
                     paragraph = next(p for p in package.paragraphs if p.is_body and p.text)
                     updated = package.to_bytes([ReplaceTextSpan(paragraph.id, 0, 0, "Native ")])

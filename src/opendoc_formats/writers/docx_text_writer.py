@@ -7,6 +7,7 @@ from typing import Any
 from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import DocumentModel, Formula, FormulaFormat, Image, Paragraph, TextRun
 
+from opendoc_formats.ooxml.headings import export_heading
 from opendoc_formats.ooxml.package import RELATIONSHIP_TYPE
 from opendoc_formats.writers.docx_drawing_writer import write_image
 from opendoc_formats.writers.docx_notes_writer import write_note_reference
@@ -35,6 +36,7 @@ def add_paragraph(
         if alignment is not None:
             paragraph.alignment = alignment
     apply_paragraph_format(paragraph.paragraph_format, source.properties)
+    export_heading(source, paragraph)
     preserves_style_numbering = (
         source.properties.get("numbering_source") == "style"
         and source.properties.get("numbering_source_style_id") == source.style_id

@@ -148,3 +148,19 @@ PowerPoint устанавливается отдельно; CI выполняе�
 проверены отдельно; опасные символы в атрибутах экранируются. ARIA вне профиля
 получает расположенный loss. Это структурная приёмка, без доказательства
 браузерного accessibility tree или работы экранного диктора.
+
+## DOCX: формальная роль заголовка
+
+`tests/readers/test_docx_headings.py` создаёт собственные документы с уровнями
+1/2/3/9 без именованного стиля, native Heading 2, наследуемым пользовательским
+стилем, прямым override и основным текстом. Проверяются JSON и два DOCX цикла,
+document defaults, смена/удаление роли, неверные уровни и защита старого результата.
+`tools/docx_heading_acceptance.ps1` открывает исходник и два результата read-only
+в установленном Word, сверяет уровни структуры. Для явно изменённых ролей
+сравнивает текст, имя/размер/цвет шрифта и интервалы с исходником. SHA-256 файлов
+не меняется. Это конечная проверка свойств, без полной визуальной приёмки Word.
+
+```powershell
+uv run --frozen pytest tests/readers/test_docx_headings.py --basetemp=.opendoc-formats/heading-native
+./tools/docx_heading_acceptance.ps1 -FixtureRoot .opendoc-formats/heading-native
+```

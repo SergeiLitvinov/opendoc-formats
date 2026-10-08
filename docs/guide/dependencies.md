@@ -7,7 +7,7 @@ EbookLib, lxml и BeautifulSoup для записи не используютс�
 [EPUBCheck](../development/epubcheck.md): BSD-3-Clause самого checker,
 отдельные условия его JAR dependencies, включая MPL-2.0 Saxon-HE; в пакет не включается.
 
-Единственная обязательная зависимость — **OpenDoc Model 0.3.0 (MIT)**: модель,
+Единственная обязательная зависимость — **OpenDoc Model 0.6.0 (MIT)**: модель,
 ресурсы, единицы, диагностика, JSON и валидация. Исходники приложений не используются.
 Базовый пакет читает и пишет TXT/JSON, читает конечный LaTeX source profile и пишет EPUB без дополнительных движков. Собственный LaTeX parser — MIT; стандартная библиотека Python имеет PSF License Agreement. LaTeX distribution не включается.
 
@@ -18,7 +18,7 @@ EbookLib, lxml и BeautifulSoup для записи не используютс�
 
 | Пакет / версия | Extra | Назначение | Лицензия / особенность |
 | --- | --- | --- | --- |
-| opendoc-model 0.3.0 | обязательный | Общий контракт документа; официальный release wheel | MIT |
+| opendoc-model 0.6.0 | обязательный | Общий контракт документа; официальный release wheel | MIT |
 | pypdf 6.19.0 | pdf-text, pdf | Низкоуровневое извлечение текста и отдельные PDF-конвертеры | BSD-3-Clause |
 | PyMuPDF 1.28.2 | pdf-rich, pdf; транзитивно pdf-docx | Богатый импорт, геометрия, вектор/растр, рендер и PDF writer | AGPL-3.0 или коммерческая лицензия Artifex |
 | pdf2docx 0.5.13 | pdf-docx, pdf | Отдельный прямой PDF → DOCX маршрут | MIT; зависит от AGPL/commercial PyMuPDF и OpenCV; upstream помечен как не поддерживаемый активно |

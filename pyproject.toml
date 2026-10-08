@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "opendoc-formats"
-version = "0.15.5"
+version = "0.16.0"
 description = "Document format readers and writers built on OpenDoc: formats, structure, transition"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -23,7 +23,7 @@ classifiers = [
     "Typing :: Typed",
     "Topic :: Text Processing :: General",
 ]
-dependencies = ["opendoc-model==0.3.0"]
+dependencies = ["opendoc-model==0.6.0"]
 
 [project.optional-dependencies]
 pdf-text = ["pypdf>=4"]
@@ -51,7 +51,7 @@ Changelog = "https://github.com/SergeiLitvinov/opendoc-formats/blob/main/docs/de
 where = ["src"]
 
 [tool.uv.sources]
-opendoc-model = { url = "https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.3.0/opendoc_model-0.3.0-py3-none-any.whl" }
+opendoc-model = { url = "https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.6.0/opendoc_model-0.6.0-py3-none-any.whl" }
 
 [tool.ruff]
 line-length = 130

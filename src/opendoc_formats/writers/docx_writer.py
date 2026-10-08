@@ -17,6 +17,7 @@ from opendoc_model.document_model import (
 )
 
 from opendoc_formats.fonts.docx_embedding import embed_docx_fonts, verify_docx_font_embedding
+from opendoc_formats.ooxml.headings import retain_derived_styles
 from opendoc_formats.ooxml.package import restore_package_graph
 from opendoc_formats.writers.color_preflight import preflight_colors
 from opendoc_formats.writers.docx_drawing_writer import write_image
@@ -92,7 +93,7 @@ def _restore_package_graph(target: Any, document: DocumentModel, report: Convers
     if graph is None or graph.format != "ooxml":
         return
     try:
-        restore_package_graph(target.part, graph)
+        restore_package_graph(target.part, retain_derived_styles(target.part, graph))
     except Exception as error:  # noqa: BLE001 - foreign package parts are a diagnostic boundary
         report.add(IssueSeverity.LOSS, "package-graph", f"OOXML package graph could not be restored: {error}")
 
