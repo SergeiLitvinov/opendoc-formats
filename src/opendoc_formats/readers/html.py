@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from collections import Counter
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
@@ -22,6 +23,7 @@ from opendoc_model import (
     TextStyle,
 )
 
+from opendoc_formats.html_tables import import_caption_semantics, import_table_semantics
 from opendoc_formats.readers.html_css import Cascade
 from opendoc_formats.readers.html_diagnostics import HtmlDiagnostics
 from opendoc_formats.readers.html_resources import LIMIT, Resources, clean_xml
@@ -81,6 +83,18 @@ class HtmlReader:
         self.css = Cascade(soup, self.warn)
         self.resources = Resources(self.warn, resource_root)
         self.styles = {}
+        source_ids = Counter(str(node['id']) for node in soup.find_all(id=True))
+        self.semantic_ids = set(source_ids)
+        self.ambiguous_ids = frozenset(identifier for identifier, count in source_ids.items() if count > 1)
+        self.semantic_count = 0
+
+    def semantic_id(self) -> str:
+        while True:
+            self.semantic_count += 1
+            identifier = f"opendoc-html-{self.semantic_count}"
+            if identifier not in self.semantic_ids:
+                self.semantic_ids.add(identifier)
+                return identifier
 
     @staticmethod
     def language(node: Any) -> str | None:
@@ -96,7 +110,8 @@ class HtmlReader:
 
         def flush() -> None:
             has_image = any(getattr(node, "name", None) == "img" for node in content_nodes)
-            if not content and not has_image:
+            empty_anchor = bool(root.get("id")) and root.name in PARAGRAPHS | {"caption"} and not result
+            if not content and not has_image and not empty_anchor:
                 return
             preserve = self.css.style(root).get("white-space") in {"pre", "pre-wrap"}
             visible = [item for item in content if not (isinstance(item, TextRun) and not item.text)]
@@ -106,7 +121,7 @@ class HtmlReader:
                 if visible and isinstance(visible[-1], TextRun) and not visible[-1].properties.get("html_preserve_space"):
                     visible[-1].text = visible[-1].text.rstrip(" \t\r\n")
             has_anchor = any(isinstance(item, TextRun) and item.properties.get("anchor_id") for item in content)
-            if has_image or has_anchor or any(not isinstance(item, TextRun) or item.text for item in content):
+            if has_image or has_anchor or empty_anchor or any(not isinstance(item, TextRun) or item.text for item in content):
                 css = self.css.style(root)
                 props = {"html": {"tag": root.name}}
                 if root.get("id") and not result:
@@ -171,12 +186,21 @@ class HtmlReader:
             elif node.name == "table":
                 flush()
                 caption = node.find("caption", recursive=False)
+                caption_blocks = []
                 if caption is not None:
                     caption_blocks = self.blocks(caption) or [Paragraph()]
                     for block in caption_blocks:
                         block.properties["html_table_caption"] = True
                     result.extend(caption_blocks)
-                result.append(self.table(node))
+                table = self.table(node)
+                if caption is not None:
+                    error = import_caption_semantics(
+                        table, caption_blocks, identifier=self.semantic_id, resources=self.resources.items, styles=self.styles,
+                        ambiguous_ids=self.ambiguous_ids,
+                    )
+                    if error:
+                        self.warn("html-table-semantics", f"Общая подпись таблицы не заполнена: {error}", caption)
+                result.append(table)
             elif node.name == "br":
                 content.append(TextRun("\n"))
             elif node.name == "img":
@@ -291,5 +315,11 @@ class HtmlReader:
             group_id = groups.setdefault(id(row.parent), len(groups))
             rows.append(TableRow(cells, properties={"html_row_group": group, "html_row_group_id": group_id}))
         table = Table(rows, properties={"anchor_id": node["id"]} if node.get("id") else {})
+        error = import_table_semantics(
+            table, identifier=self.semantic_id, resources=self.resources.items, styles=self.styles,
+            ambiguous_ids=self.ambiguous_ids,
+        )
+        if error:
+            self.warn("html-table-semantics", f"Общая семантика таблицы не заполнена: {error}", node)
         self.diagnostics.bind(table, node)
         return table

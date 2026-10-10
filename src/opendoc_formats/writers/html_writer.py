@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Callable
 from urllib.parse import quote, urlsplit
 
+from opendoc_model import get_anchor, get_table_cell_semantics, get_table_row_semantics, get_table_semantics, walk_model
 from opendoc_model.color import ColorValue, color_to_css
 from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import (
@@ -28,6 +29,7 @@ from opendoc_model.document_model import (
 from opendoc_model.units import points_to_css_px
 
 from opendoc_formats.fonts.html_embedding import embedded_font_stylesheet
+from opendoc_formats.html_tables import IMPORTED, SCOPE_TO_HTML
 from opendoc_formats.writers.color_preflight import preflight_colors
 from opendoc_formats.writers.font_preflight import prepare_fonts
 from opendoc_formats.writers.html_layout import HtmlLayoutStage, geometry_styles
@@ -161,6 +163,18 @@ class _HtmlRenderer:
         self.html_prepared = html_prepared
         self.metrics = {"paragraphs": 0, "tables": 0, "images": 0, "formulas": 0}
         self.embedded_resources: set[str] = set()
+        self.caption_nodes = {}
+        self.caption_ids = set()
+        self.caption_owners = set()
+        for reference in walk_model(document):
+            node = reference.node
+            if isinstance(node, Paragraph) and (anchor := get_anchor(node)) is not None:
+                self.caption_nodes[anchor.id] = (node, reference.path)
+            elif isinstance(node, Table):
+                if isinstance(owner := node.properties.get("html_caption_owner"), str):
+                    self.caption_owners.add(owner)
+                if (semantics := get_table_semantics(node)) is not None:
+                    self.caption_ids.update(semantics.caption_ids)
 
     def stylesheet(self, *, include_page_rules: bool = True) -> str:
         pages = []
@@ -243,7 +257,17 @@ class _HtmlRenderer:
         overrides = {}
         pending = []
         for index, block in enumerate(blocks):
-            if block.properties.get("html_table_caption") is True:
+            anchor = get_anchor(block) if isinstance(block, (Paragraph, Table)) else None
+            if anchor is not None and anchor.id in self.caption_ids:
+                overrides[index] = ""
+                continue
+            if block.properties.get("html_caption_semantics_imported") and isinstance(block, Paragraph):
+                owner = block.properties.get("html_caption_owner")
+                if not isinstance(owner, str) or owner not in self.caption_owners:
+                    self.report.add(
+                        IssueSeverity.LOSS, "html-accessibility", "Caption owner table is absent", f"{location}[{index}]",
+                    )
+            if block.properties.get("html_table_caption") is True and not block.properties.get("html_caption_semantics_imported"):
                 pending.append(index)
                 continue
             if pending:
@@ -334,6 +358,9 @@ class _HtmlRenderer:
             self._inline(item, f"{location}.content[{index}]") for index, item in enumerate(paragraph.content)
         )
         anchor = paragraph.properties.get("anchor_id")
+        common_anchor = get_anchor(paragraph)
+        if common_anchor is not None or paragraph.properties.get("html_anchor_imported"):
+            anchor = common_anchor.id if common_anchor else None
         anchor_attr = f' id="{escape(str(anchor), quote=True)}"' if anchor else ""
         return f"<{tag}{anchor_attr}{_style_attribute(styles)}>{content}</{tag}>"
 
@@ -402,14 +429,28 @@ class _HtmlRenderer:
         return f'<div class="ta-image">{tag}</div>' if block_level else tag
 
     def _table(self, table: Table, location: str, *, caption: str | None = None) -> str:
+        semantics = get_table_semantics(table)
+        if semantics is not None and semantics.caption_ids:
+            from opendoc_formats.writers.html_lists import render_blocks
+
+            captions = [self.caption_nodes[key] for key in semantics.caption_ids]
+            caption = render_blocks([node for node, _ in captions], lambda node, index: self._block(node, captions[index][1]))
         self.metrics["tables"] += 1
         rows = []
         group = None
+        groups = {item.id: item.kind for item in semantics.row_groups} if semantics else {}
         for row_index, row in enumerate(table.rows):
             next_group = row.properties.get("html_row_group", "tbody")
             if not isinstance(next_group, str) or next_group not in {"thead", "tbody", "tfoot"}:
                 next_group = "tbody"
             next_identity = (next_group, row.properties.get("html_row_group_id"))
+            row_semantics = get_table_row_semantics(row)
+            if row_semantics is not None:
+                next_group = {"head": "thead", "body": "tbody", "foot": "tfoot"}.get(groups.get(row_semantics.group_id), "tbody")
+                next_identity = (next_group, row_semantics.group_id)
+            elif row.properties.get(IMPORTED):
+                next_group = "tbody"
+                next_identity = ("tbody", None)
             if next_identity != group:
                 if group is not None:
                     rows.append(f"</{group[0]}>")
@@ -424,9 +465,21 @@ class _HtmlRenderer:
                     attributes += f' colspan="{cell.column_span}"'
                 tag = "th" if cell.properties.get("html_cell_tag") == "th" else "td"
                 scope = cell.properties.get("html_scope")
+                cell_semantics = get_table_cell_semantics(cell)
+                typed = cell_semantics is not None or cell.properties.get(IMPORTED)
+                if typed:
+                    tag = "th" if cell_semantics is not None and cell_semantics.role == "header" else "td"
+                    scope = SCOPE_TO_HTML.get(cell_semantics.scope) if cell_semantics else None
                 if tag == "th" and isinstance(scope, str) and scope in {"row", "col", "rowgroup"}:
                     attributes += f' scope="{scope}"'
                 for key, attribute in (("anchor_id", "id"), ("html_headers", "headers")):
+                    if typed:
+                        value = cell_semantics.id if cell_semantics and key == "anchor_id" else (
+                            " ".join(cell_semantics.headers) if cell_semantics and key == "html_headers" else ""
+                        )
+                        if value:
+                            attributes += f' {attribute}="{escape(value, quote=True)}"'
+                        continue
                     if key in cell.properties:
                         attributes += f' {attribute}="{escape(str(cell.properties[key]), quote=True)}"'
                 content = self._blocks(cell.blocks, f"{location}.rows[{row_index}].cells[{cell_index}].blocks")
@@ -434,6 +487,9 @@ class _HtmlRenderer:
             rows.append("<tr>" + "".join(cells) + "</tr>")
         styles = self._geometry_style(table.box, table.properties, positioned=True)
         anchor = table.properties.get("anchor_id")
+        common_anchor = get_anchor(table)
+        if common_anchor is not None or table.properties.get("html_anchor_imported"):
+            anchor = common_anchor.id if common_anchor else None
         anchor_attr = f' id="{escape(str(anchor), quote=True)}"' if anchor else ""
         if group is not None:
             rows.append(f"</{group[0]}>")

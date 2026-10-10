@@ -248,6 +248,8 @@ def read_pdf_model(
                         "dashes": vec.dashes,
                         "line_join": vec.line_join,
                         "line_cap": vec.line_cap,
+                        "clip_rects": [list(rectangle) for rectangle in vec.clip_rects],
+                        "graphics_state_unsupported": vec.graphics_state_unsupported,
                     },
                     provenance=origin(f"vector-{vec.number}", detail="extracted PDF drawing operators"),
                 )

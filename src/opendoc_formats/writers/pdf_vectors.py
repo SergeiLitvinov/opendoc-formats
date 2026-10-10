@@ -35,6 +35,17 @@ def _validate(image: Image, resource: Resource) -> None:
     for value in (image.box.x, image.box.y, image.box.width, image.box.height):
         _number(value)
     props = resource.properties
+    clips = props.get("clip_rects", ())
+    if not isinstance(clips, (list, tuple)) or len(clips) > 64:
+        raise ValueError("invalid or excessive vector clipping stack")
+    for clip in clips:
+        if not isinstance(clip, (list, tuple)) or len(clip) != 4:
+            raise ValueError("invalid vector clip rectangle")
+        x0, y0, x1, y1 = map(_number, clip)
+        if x1 < x0 or y1 < y0:
+            raise ValueError("inverted vector clip rectangle")
+    if props.get("graphics_state_unsupported"):
+        raise ValueError("source vector clip path or graphics group requires a visual surrogate")
     items = props.get("items")
     if not isinstance(items, (list, tuple)) or not items or len(items) > MAX_VECTOR_COMMANDS:
         raise ValueError("invalid or excessive vector command count")
@@ -121,7 +132,7 @@ def prepare_vectors(
                 return image
             try:
                 _validate(image, resource)
-                count += len(resource.properties["items"])
+                count += len(resource.properties["items"]) + len(resource.properties.get("clip_rects", ()))
                 if count > MAX_VECTOR_COMMANDS:
                     raise ValueError("document vector command limit exceeded")
             except (ValueError, TypeError, KeyError) as error:
@@ -220,4 +231,14 @@ def draw_vectors(page: Any, vectors: list[PdfVector], cancelled: Callable[[], bo
                      even_odd=props.get("even_odd", False), closePath=props.get("close_path", True),
                      dashes=re.sub(_DASH_NUMBER, lambda m: f"{float(m[0]) * scale:g}", props.get("dashes", "[] 0")),
                      lineCap=props.get("line_cap", 0), lineJoin=props.get("line_join", 0))
+        clips = props.get("clip_rects", ())
+        if clips:
+            prefix = "q\n"
+            inverse = ~page.transformation_matrix
+            for x0, y0, x1, y1 in clips:
+                first, last = point((x0, y0)) * inverse, point((x1, y1)) * inverse
+                left, bottom = min(first.x, last.x), min(first.y, last.y)
+                width, height = abs(last.x-first.x), abs(last.y-first.y)
+                prefix += f"{left:.12g} {bottom:.12g} {width:.12g} {height:.12g} re W n\n"
+            shape.totalcont = prefix + shape.totalcont + "\nQ\n"
         shape.commit()

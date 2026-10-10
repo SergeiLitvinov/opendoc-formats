@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from opendoc_model import ImageCrop
+from opendoc_model import ArtifactLimitError, ImageCrop
 from opendoc_model.color import ColorValue
 
 from opendoc_formats.readers.pdf_geometry import (
@@ -82,6 +82,8 @@ class PdfVectorDrawing:
     dashes: str = ""
     line_join: int = 0
     line_cap: int = 0
+    clip_rects: tuple[PdfBox, ...] = ()
+    graphics_state_unsupported: bool = False
 
     @property
     def is_path(self) -> bool:
@@ -189,13 +191,38 @@ def extract_pdf_vector_drawings(path: str | Path) -> tuple[list[PdfVectorDrawing
 
     with fitz.open(str(source)) as document:
         for page_number, page in enumerate(document, start=1):
+            # Annotation appearances belong to the interaction ledger, not page paths.
+            # Only this disposable in-memory document is changed; never save it.
+            objects = 0
+            for accessor, delete in ((page.annots, page.delete_annot), (page.widgets, page.delete_widget)):
+                for annotation in accessor() or ():
+                    objects += 1
+                    if objects > 10_000:
+                        raise ArtifactLimitError(f"PDF interaction objects exceed 10000 on page {page_number}")
+                    delete(annotation)
             try:
-                raw = page.get_drawings()
+                raw = page.get_drawings(extended=True)
             except Exception as exc:  # noqa: BLE001
                 warnings.append(f"page {page_number} get_drawings: {type(exc).__name__}: {exc}")
                 continue
 
-            for draw_index, draw in enumerate(raw):
+            states = []
+            draw_index = 0
+            for draw in raw:
+                level = draw.get("level", 0)
+                while states and states[-1][0] >= level:
+                    states.pop()
+                if draw.get("type") in {"clip", "group"}:
+                    commands = draw.get("items", [])
+                    rectangle = (
+                        tuple(float(value) for value in commands[0][1])
+                        if draw["type"] == "clip" and len(commands) == 1 and commands[0][0] == "re" else None
+                    )
+                    states.append((level, rectangle))
+                    if len(states) > 64:
+                        raise ArtifactLimitError(f"PDF graphics state nesting exceeds 64 on page {page_number}")
+                    continue
+                draw_index += 1
                 rect = draw.get("rect")
                 bbox = (
                     (
@@ -217,7 +244,7 @@ def extract_pdf_vector_drawings(path: str | Path) -> tuple[list[PdfVectorDrawing
                 drawings.append(
                     PdfVectorDrawing(
                         bbox=bbox,
-                        number=draw_index + 1,
+                        number=draw_index,
                         page=page_number,
                         items=items,
                         fill=fill_color,
@@ -230,6 +257,8 @@ def extract_pdf_vector_drawings(path: str | Path) -> tuple[list[PdfVectorDrawing
                         dashes=str(draw.get("dashes") or "[] 0"),
                         line_join=_to_int(draw.get("lineJoin", 0)),
                         line_cap=_to_int(draw.get("lineCap", 0)),
+                        clip_rects=tuple(rectangle for _, rectangle in states if rectangle is not None),
+                        graphics_state_unsupported=any(rectangle is None for _, rectangle in states),
                     )
                 )
 

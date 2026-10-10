@@ -259,6 +259,20 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path) -> None:
                     "unsupported-" + key,
                     f"Catalog {key} retained only in source PDF",
                 )
+    for resource in model.resources.values():
+        if resource.media_type != "application/pdf+vector" or not resource.properties.get("graphics_state_unsupported"):
+            continue
+        count += 1
+        if count > MAX_OBJECTS:
+            raise ValueError("PDF interaction objects exceed profile limit")
+        preserve_source = True
+        records.append(PreservationRecord(
+            issue=DiagnosticIssue(
+                "pdf.vector-graphics-state", IssueSeverity.LOSS,
+                "Vector clip path or graphics group retained only in source PDF",
+                f"resources[{resource.id!r}]", {"source_resource_id": resource.id}, "unsupported-graphics-state",
+            ), state=PreservationState.OPAQUE, provenance=resource.provenance,
+        ))
     if preserve_source:
         with source.open("rb") as stream:
             snapshot = stream.read(MAX_SOURCE_BYTES + 1)

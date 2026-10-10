@@ -43,9 +43,11 @@ def _source(path, *, rotation=0):
 def test_pdf_interactions_and_inert_actions_survive_json(tmp_path, rotation):
     source = tmp_path / "interactive.pdf"
     _source(source, rotation=rotation)
+    original = source.read_bytes()
     result = read_document(source)
     assert result.success and not result.lossless and not result.assessment_complete
     model = result.document
+    assert not any(resource.media_type == 'application/pdf+vector' for resource in model.resources.values())
     ledger = get_integration(model)
     assert len(ledger.pages) == 2 and ledger.pages[0].width == 300 and ledger.pages[0].height == 400
     assert ledger.pages[0].extra["pdf_rotation"] == rotation
@@ -66,7 +68,14 @@ def test_pdf_interactions_and_inert_actions_survive_json(tmp_path, rotation):
     assert model.resources[ledger.extra["pdf_source_resource_id"]].data == source.read_bytes()
     assert any(item.state.value == "opaque" and item.issue.reason == "unsupported-annotation" for item in ledger.preservation)
     with fitz.open(source) as pdf:
-        assert all(int(item.provenance.object_id.removeprefix("xref-")) < pdf.xref_length() for item in ledger.preservation)
+        for item in ledger.preservation:
+            if item.issue.code == "pdf.vector-graphics-state":
+                resource = model.resources[item.issue.measurement["source_resource_id"]]
+                assert item.provenance == resource.provenance
+                assert resource.properties["graphics_state_unsupported"] is True
+                assert item.issue.location == f"resources[{resource.id!r}]"
+            else:
+                assert int(item.provenance.object_id.removeprefix("xref-")) < pdf.xref_length()
     restored = document_from_json(document_to_json(model))
     assert get_integration(restored) == ledger
     transport = tmp_path / "transport.json"
@@ -80,6 +89,7 @@ def test_pdf_interactions_and_inert_actions_survive_json(tmp_path, rotation):
         assert not list(pdf[0].widgets() or ()) and not list(pdf[0].annots() or ())
         assert pdf[0].rotation == rotation
         assert pdf[0].rect.width == (400 if rotation else 300)
+    assert source.read_bytes() == original
 
 
 def test_pdf_catalog_structure_and_layers_are_opaque_without_reading_order_claim(tmp_path):
