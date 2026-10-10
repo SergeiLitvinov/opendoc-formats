@@ -162,7 +162,8 @@ def migrate_html_tables(document: DocumentModel, *, limits: DocumentLimits | Non
             continue
         nodes = [table, *table.rows, *(cell for row in table.rows for cell in row.cells)]
         if any(node.properties.get(IMPORTED) or node.properties.get('html_table_semantics_migration_attempted')
-               or any(key.startswith('opendoc.table-') for key in node.properties) for node in nodes):
+               or {'opendoc.table-semantics', 'opendoc.table-row-semantics', 'opendoc.table-cell-semantics'}
+               .intersection(node.properties) for node in nodes):
             continue
         if not any('html_cell_tag' in cell.properties for row in table.rows for cell in row.cells):
             continue

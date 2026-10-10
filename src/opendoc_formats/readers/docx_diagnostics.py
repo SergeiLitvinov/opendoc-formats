@@ -20,6 +20,7 @@ from opendoc_model import (
     set_integration,
 )
 
+from opendoc_formats.ooxml.borders import native_only
 from opendoc_formats.readers.docx_features import _relationship_feature
 
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
@@ -40,6 +41,11 @@ _XML_KEYS = {"docx_raw_inline_xml", "docx_raw_block_xml", "field_xml", "vml_xml"
 
 
 def _feature(node: Any) -> str | None:
+    if node.tag in {W + 'tblBorders', W + 'tcBorders'}:
+        parent = node.getparent()
+        owner = parent.getparent() if parent is not None else None
+        if owner is not None and owner.tag in {W + 'tbl', W + 'tc'} and native_only(node):
+            return 'table-borders'
     if node.tag == W + "fldChar" and node.get(W + "fldCharType") == "begin":
         return "fields"
     return _TAGS.get(node.tag)

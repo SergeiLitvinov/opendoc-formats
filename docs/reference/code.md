@@ -110,8 +110,8 @@ Extensible model export with validation and atomic publication.
 - `register(self, exporter: ExporterSpec) -> None` — [строка 70](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L70)
 - `exporters(self) -> tuple[ExporterSpec, ...]` — [строка 78](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L78)
 - `write(self, document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport` — [строка 81](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L81)
-- `default_exporter_registry() -> ExporterRegistry` — [строка 173](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L173)
-- `write_document(document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport` — [строка 197](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L197)
+- `default_exporter_registry() -> ExporterRegistry` — [строка 180](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L180)
+- `write_document(document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport` — [строка 204](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L204)
 
 Импорты: `__future__`, `collections.abc`, `dataclasses`, `importlib`, `opendoc_formats.support.backends`, `opendoc_formats.support.output_validation`, `opendoc_formats.text_profile`, `opendoc_formats.writers.txt_writer`, `opendoc_model`, `pathlib`, `tempfile`, `typing`
 
@@ -179,7 +179,7 @@ Bridge explicit HTML table declarations to the common model contract.
 
 - `import_table_semantics(table: Table, *, identifier: Callable[[], str], resources: dict, styles: dict, ambiguous_ids: frozenset[str]=frozenset()) -> str | None` — [строка 29](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/html_tables.py#L29)
 - `migrate_html_tables(document: DocumentModel, *, limits: DocumentLimits | None=None) -> None` — [строка 101](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/html_tables.py#L101)
-- `import_caption_semantics(table: Table, captions: list, *, identifier: Callable[[], str], resources: dict, styles: dict, ambiguous_ids: frozenset[str]=frozenset()) -> str | None` — [строка 195](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/html_tables.py#L195)
+- `import_caption_semantics(table: Table, captions: list, *, identifier: Callable[[], str], resources: dict, styles: dict, ambiguous_ids: frozenset[str]=frozenset()) -> str | None` — [строка 196](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/html_tables.py#L196)
 
 Импорты: `__future__`, `collections`, `collections.abc`, `dataclasses`, `opendoc_model`, `typing`
 
@@ -235,6 +235,16 @@ Shared OOXML package, relationship, namespace, and unit helpers.
 
 
 Импорты: `opendoc_formats.ooxml.package`
+
+## src/opendoc_formats/ooxml/borders.py
+
+Direct OOXML borders through the common model, with inert native extras.
+
+- `native_only(node: Any) -> bool` — [строка 29](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/borders.py#L29)
+- `import_borders(source: Table | TableCell, owner: Any) -> None` — [строка 60](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/borders.py#L60)
+- `export_borders(source: Table | TableCell, owner: Any, report: Any, location: str) -> None` — [строка 135](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/borders.py#L135)
+
+Импорты: `__future__`, `collections`, `dataclasses`, `docx.oxml`, `lxml`, `opendoc_model`, `typing`
 
 ## src/opendoc_formats/ooxml/color.py
 
@@ -364,9 +374,9 @@ DOCX readers for extracted text and editable OpenDoc documents.
 
 Evidence-based partial preservation assessment of advanced DOCX objects.
 
-- `attach_docx_diagnostics(document: Any, model: DocumentModel, source: Path) -> None` — [строка 82](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_diagnostics.py#L82)
+- `attach_docx_diagnostics(document: Any, model: DocumentModel, source: Path) -> None` — [строка 88](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_diagnostics.py#L88)
 
-Импорты: `__future__`, `collections`, `dataclasses`, `lxml`, `opendoc_formats.readers.docx_features`, `opendoc_model`, `pathlib`, `typing`
+Импорты: `__future__`, `collections`, `dataclasses`, `lxml`, `opendoc_formats.ooxml.borders`, `opendoc_formats.readers.docx_features`, `opendoc_model`, `pathlib`, `typing`
 
 ## src/opendoc_formats/readers/docx_drawing.py
 
@@ -417,9 +427,9 @@ DOCX style resolver for inheritance, themes, defaults, and numbering.
 
 DOCX table importer for spans, geometry, fills, margins, and styles.
 
-- `read_table(table: Any, model: DocumentModel, read_blocks: BlockReader) -> Table` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_table.py#L15)
+- `read_table(table: Any, model: DocumentModel, read_blocks: BlockReader) -> Table` — [строка 16](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_table.py#L16)
 
-Импорты: `__future__`, `collections.abc`, `docx.oxml.ns`, `lxml`, `opendoc_formats.ooxml.widths`, `opendoc_model.document_model`, `typing`
+Импорты: `__future__`, `collections.abc`, `docx.oxml.ns`, `lxml`, `opendoc_formats.ooxml.borders`, `opendoc_formats.ooxml.widths`, `opendoc_model.document_model`, `typing`
 
 ## src/opendoc_formats/readers/docx_text.py
 
@@ -1083,9 +1093,9 @@ DOCX style exporter for definitions, font formatting, and numbering.
 
 DOCX table exporter for spans, geometry, fills, margins, and styles.
 
-- `write_table(container: Any, source: Table, document: DocumentModel, report: ConversionReport, location: str, counters: dict[str, int], write_blocks: BlockWriter) -> None` — [строка 20](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_table_writer.py#L20)
+- `write_table(container: Any, source: Table, document: DocumentModel, report: ConversionReport, location: str, counters: dict[str, int], write_blocks: BlockWriter) -> None` — [строка 21](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_table_writer.py#L21)
 
-Импорты: `__future__`, `collections.abc`, `docx.enum.table`, `docx.oxml`, `docx.oxml.ns`, `docx.shared`, `lxml`, `opendoc_formats.ooxml.widths`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `opendoc_model.properties`, `typing`
+Импорты: `__future__`, `collections.abc`, `docx.enum.table`, `docx.oxml`, `docx.oxml.ns`, `docx.shared`, `lxml`, `opendoc_formats.ooxml.borders`, `opendoc_formats.ooxml.widths`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `opendoc_model.properties`, `typing`
 
 ## src/opendoc_formats/writers/docx_text_writer.py
 

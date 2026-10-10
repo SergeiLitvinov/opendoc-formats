@@ -119,6 +119,13 @@ class ExporterRegistry:
                 return fail("export.invalid-result", "Writer did not return an OpenDoc ConversionReport")
             report = written
             report.output_path = output
+            if identifier in {'html', 'pdf', 'pptx', 'epub', 'latex', 'txt'}:
+                from opendoc_model import Table, TableCell, get_borders, walk_model
+
+                for reference in walk_model(document, limits=options.document_limits):
+                    if isinstance(reference.node, (Table, TableCell)) and get_borders(reference.node) is not None:
+                        report.add(IssueSeverity.LOSS, 'table-borders',
+                                   f'{identifier.upper()} writer does not preserve common border declarations', reference.path)
             if not report.success:
                 return report
             if options.cancelled and options.cancelled():

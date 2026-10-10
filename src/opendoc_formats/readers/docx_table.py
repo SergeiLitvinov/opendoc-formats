@@ -7,6 +7,7 @@ from typing import Any
 
 from opendoc_model.document_model import Block, DocumentModel, Table, TableCell, TableRow
 
+from opendoc_formats.ooxml.borders import import_borders
 from opendoc_formats.ooxml.widths import import_width
 
 BlockReader = Callable[[Any, DocumentModel], list[Block]]
@@ -36,6 +37,7 @@ def read_table(table: Any, model: DocumentModel, read_blocks: BlockReader) -> Ta
                 properties=properties,
             )
             import_width(parsed_cell)
+            import_borders(parsed_cell, cell._tc.tcPr)
             cells.append(parsed_cell)
         row_properties: dict[str, Any] = {}
         if row._tr.xpath("./w:trPr/w:tblHeader"):
@@ -56,6 +58,7 @@ def read_table(table: Any, model: DocumentModel, read_blocks: BlockReader) -> Ta
         properties["grid_widths_twips"] = grid_widths
     result = Table(rows=rows, style_id=style_id, properties=properties)
     import_width(result)
+    import_borders(result, table._tbl.tblPr)
     return result
 
 

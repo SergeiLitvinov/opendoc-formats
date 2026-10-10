@@ -9,6 +9,7 @@ from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import Block, DocumentModel, Table
 from opendoc_model.properties import TableCellProperties, TableProperties, TableRowProperties
 
+from opendoc_formats.ooxml.borders import export_borders
 from opendoc_formats.ooxml.widths import export_width
 
 BlockWriter = Callable[
@@ -36,6 +37,7 @@ def write_table(
         target = container.add_table(rows=row_count, cols=column_count, width=Inches(6))
     _apply_table_properties(target, source.properties)
     export_width(source, target._tbl.tblPr, "w:tblW")
+    export_borders(source, target._tbl.tblPr, report, location)
     if source.style_id:
         _set_table_style_id(target, source.style_id)
     elif source.properties.style_name:
@@ -58,6 +60,8 @@ def write_table(
                 target_cell = target_cell.merge(target.cell(row_index, min(column_index + span - 1, column_count - 1)))
             _apply_cell_properties(target_cell, source_cell.properties)
             export_width(source_cell, target_cell._tc.get_or_add_tcPr(), "w:tcW")
+            export_borders(source_cell, target_cell._tc.get_or_add_tcPr(), report,
+                           f"{location}.rows[{row_index}].cells[{cell_index}]")
             _clear_container(target_cell)
             write_blocks(
                 target_cell,
