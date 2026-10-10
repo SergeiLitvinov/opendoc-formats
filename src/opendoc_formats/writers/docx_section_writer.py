@@ -99,6 +99,9 @@ def _write_header_footer(
         if linked:
             continue
         _clear_container(container)
+        source_part = source.properties.get("docx_running_parts", {}).get(collection_name)
+        if source_part:
+            container.part._opendoc_source_part = str(source_part)
         write_blocks(
             container,
             blocks,

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Collection
+from collections.abc import Callable, Collection, Mapping
 from pathlib import PurePosixPath
 from typing import Any
 
@@ -80,21 +80,32 @@ def package_part_for_relationship(graph: PackageGraph | None, relationship_type:
     return graph.related_part(graph.root, relationship_type)
 
 
-def restore_package_graph(root_part: Any, graph: PackageGraph, *, protected_roots: Collection[Any] = ()) -> None:
+def restore_package_graph(
+    root_part: Any, graph: PackageGraph, *, protected_roots: Collection[Any] = (),
+    source_parts: Mapping[str, Any] | None = None,
+) -> None:
     """Restore graph parts and relationships into a python-opc root part."""
 
     pack_uri_type, part_type = _opc_types(root_part)
 
     package = root_part.package
-    source_ids = {edge.id for edge in graph.relationships if edge.source == graph.root}
-    for root in protected_roots:
-        for node in root.iter():
-            for attribute, value in node.attrib.items():
-                if attribute.startswith("{" + _RELATIONSHIP_BASE + "}") and value not in source_ids:
-                    raise ValueError(f"Opaque OOXML refers to an unretained source relationship: {value}")
+    source_parts = dict(source_parts or {})
+    scopes = [(graph.root, root_part, protected_roots)] + [
+        (name, part, getattr(part, "_opendoc_opaque_roots", ())) for name, part in source_parts.items()
+    ]
+    for name, _, roots in scopes:
+        source_ids = {edge.id for edge in graph.relationships if edge.source == name}
+        for root in roots:
+            for node in root.iter():
+                for attribute, value in node.attrib.items():
+                    if attribute.startswith("{" + _RELATIONSHIP_BASE + "}") and value not in source_ids:
+                        raise ValueError(f"Opaque OOXML refers to an unretained source relationship: {name}#{value}")
     parts = {name: part_type(pack_uri_type(part.name), part.media_type, part.data, package) for name, part in graph.parts.items()}
+    parts.update(source_parts)
+    running_types = {f"{_RELATIONSHIP_BASE}/{name}" for name in ("header", "footer")}
     root_relationship_types = {
-        relationship.relationship_type for relationship in graph.relationships if relationship.source == graph.root
+        relationship.relationship_type for relationship in graph.relationships
+        if relationship.source == graph.root and relationship.relationship_type not in running_types
     }
     for relationship_id, relationship in list(root_part.rels.items()):
         if relationship.reltype in root_relationship_types and relationship.reltype != f"{_RELATIONSHIP_BASE}/image":
@@ -111,6 +122,8 @@ def restore_package_graph(root_part: Any, graph: PackageGraph, *, protected_root
         part.partname = pack_uri_type(candidate)
         occupied.add(candidate)
     for relationship in graph.relationships:
+        if relationship.source == graph.root and relationship.relationship_type in running_types:
+            continue  # section content and bindings are generated from the editable model
         source = root_part if relationship.source == graph.root else parts[relationship.source]
         destination = relationship.target if relationship.external else parts[relationship.target]
         if source is root_part:
@@ -122,6 +135,8 @@ def restore_package_graph(root_part: Any, graph: PackageGraph, *, protected_root
                 is_external=relationship.external,
             )
         else:
+            if relationship.source in source_parts:
+                _reserve_relationship_id(source, relationship.id, getattr(source, "_opendoc_opaque_roots", ()))
             source.rels.add_relationship(
                 relationship.relationship_type,
                 destination,

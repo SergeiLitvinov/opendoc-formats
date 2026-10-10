@@ -21,6 +21,14 @@ def read_section(
 ) -> Section:
     properties = _section_properties(source)
     properties["odd_and_even_pages_header_footer"] = odd_and_even_pages
+    properties["docx_running_parts"] = {
+        name: str(container.part.partname)
+        for name, container in (
+            ("headers", source.header), ("footers", source.footer),
+            ("first_page_headers", source.first_page_header), ("first_page_footers", source.first_page_footer),
+            ("even_page_headers", source.even_page_header), ("even_page_footers", source.even_page_footer),
+        ) if not container.is_linked_to_previous
+    }
     return Section(
         blocks=blocks,
         page=_page_settings(source),

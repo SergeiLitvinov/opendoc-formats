@@ -15,15 +15,20 @@ R = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships'
 
 
 @pytest.mark.parametrize('kind', ['ole', 'smartart'])
-def test_opaque_object_parts_and_reference_targets_survive_two_cycles(tmp_path, kind):
+@pytest.mark.parametrize('scope', ['body', 'header', 'footer', 'first_page_header', 'first_page_footer', 'even_page_header',
+                                  'even_page_footer'])
+def test_opaque_object_parts_and_reference_targets_survive_two_cycles(tmp_path, kind, scope):
     document = Document()
+    owner = document if scope == 'body' else getattr(document.sections[0], scope)
+    if scope != 'body':
+        owner.is_linked_to_previous = False
     package = document.part.package
     expected = {}
 
     def part(name, media_type, data, relationship):
         expected[name.lstrip('/')] = data
         item = Part(PackURI(name), media_type, data, package)
-        return document.part.relate_to(item, relationship)
+        return owner.part.relate_to(item, relationship)
 
     if kind == 'ole':
         preview = part('/word/media/own.emf', 'image/x-emf', b'own inert preview', R + '/image')
@@ -39,27 +44,35 @@ def test_opaque_object_parts_and_reference_targets_survive_two_cycles(tmp_path, 
         content = ('<w:drawing><d:relIds xmlns:d="http://schemas.openxmlformats.org/drawingml/2006/diagram" '
                    + ' '.join(f'r:{key}="{value}"' for key, value in zip(('dm', 'lo', 'qs', 'cs'), ids))
                    + '/></w:drawing>')
-    document.add_paragraph()._p.append(parse_xml(
+    owner.add_paragraph()._p.append(parse_xml(
         f'<w:r xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="{R}">{content}</w:r>'
     ))
     source = tmp_path / 'source.docx'
     document.save(source)
     original = source.read_bytes()
     original_doc = Document(source)
-    targets = {rel.rId: rel.target_ref for rel in original_doc.part.rels.values()}
+    original_owner = original_doc if scope == 'body' else getattr(original_doc.sections[0], scope)
+    targets = {rel.rId: str(rel.target_part.partname) for rel in original_owner.part.rels.values()}
     path = source
     for cycle in range(2):
         result = read_document(path)
         assert result.success
+        if scope != 'body':
+            from opendoc_model import Paragraph, TextRun
+
+            getattr(result.document.sections[0], scope + 's').append(Paragraph(content=[TextRun(f'Own edit {cycle}')]))
         transport = tmp_path / f'cycle-{cycle}.json'
         assert write_document(result.document, transport).success
         path = transport.with_suffix('.docx')
         assert write_document(read_document(transport).document, path).success
         reopened = Document(path)
-        for node in reopened.element.iter():
+        reopened_owner = reopened if scope == 'body' else getattr(reopened.sections[0], scope)
+        if scope != 'body':
+            assert any(paragraph.text == f'Own edit {cycle}' for paragraph in reopened_owner.paragraphs)
+        for node in reopened_owner.part.element.iter():
             for key, value in node.attrib.items():
                 if key.startswith('{' + R + '}'):
-                    assert reopened.part.rels[value].target_ref == targets[value]
+                    assert str(reopened_owner.part.rels[value].target_part.partname) == targets[value]
         with zipfile.ZipFile(path) as archive:
             assert all(archive.read(name) == data for name, data in expected.items())
             etree.fromstring(archive.read('word/document.xml'))

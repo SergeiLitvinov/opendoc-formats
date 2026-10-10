@@ -92,11 +92,24 @@ def _write_metadata(target: Any, metadata: dict[str, Any]) -> None:
 
 def _restore_package_graph(target: Any, document: DocumentModel, report: ConversionReport) -> None:
     graph = document.package
+    source_parts = {
+        part._opendoc_source_part: part for part in target.part.package.iter_parts()
+        if getattr(part, "_opendoc_source_part", None)
+    }
+    relationship_namespace = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
+    for part in target.part.package.iter_parts():
+        has_references = any(
+            key.startswith(relationship_namespace)
+            for root in getattr(part, "_opendoc_opaque_roots", ()) for node in root.iter() for key in node.attrib
+        )
+        if part is not target.part and has_references and not getattr(part, "_opendoc_source_part", None):
+            report.add(IssueSeverity.ERROR, "package-graph", "Opaque running content has no source part binding")
+            return
     if graph is None or graph.format != "ooxml":
-        relationship_namespace = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
         if any(
             key.startswith(relationship_namespace)
-            for root in getattr(target.part, "_opendoc_opaque_roots", ())
+            for part in target.part.package.iter_parts()
+            for root in getattr(part, "_opendoc_opaque_roots", ())
             for node in root.iter() for key in node.attrib
         ):
             report.add(IssueSeverity.ERROR, "package-graph", "Opaque OOXML relationships require their source package graph")
@@ -105,6 +118,7 @@ def _restore_package_graph(target: Any, document: DocumentModel, report: Convers
         restore_package_graph(
             target.part, retain_derived_styles(target.part, graph),
             protected_roots=getattr(target.part, "_opendoc_opaque_roots", ()),
+            source_parts=source_parts,
         )
     except Exception as error:  # noqa: BLE001 - foreign package parts are a diagnostic boundary
         report.add(IssueSeverity.ERROR, "package-graph", f"OOXML package graph could not be restored: {error}")

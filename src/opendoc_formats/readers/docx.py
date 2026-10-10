@@ -191,6 +191,11 @@ def _attach_docx_provenance(model: DocumentModel, source: Path) -> None:
 
 def _load_docx_package_graph(document: Any) -> PackageGraph | None:
     supported = set(RELATIONSHIP_TYPE.values())
+    running_types = {
+        "http://schemas.openxmlformats.org/officeDocument/2006/relationships/" + name
+        for name in ("header", "footer")
+    }
+    supported.update(running_types)
     # VML previews use root image relationships, independently of the OLE payload.
     image_type = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image"
     supported.add(image_type)
@@ -207,6 +212,7 @@ def _load_docx_package_graph(document: Any) -> PackageGraph | None:
         RELATIONSHIP_TYPE["ole_object"],
         RELATIONSHIP_TYPE["package"],
     }
+    recursive.update(running_types)
     return load_package_graph(
         document.part,
         format_name="ooxml",
