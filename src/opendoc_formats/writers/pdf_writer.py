@@ -27,7 +27,7 @@ def write_pdf_model(
 
     output = Path(output_path)
     report = ConversionReport(output)
-    from opendoc_model import PreservationState, get_integration
+    from opendoc_model import PreservationState, get_integration, get_page_geometry
 
     outline_document = document
     integration = get_integration(document)
@@ -67,6 +67,8 @@ def write_pdf_model(
     outline_pages: dict[str, tuple[int, tuple[float, float], bool]] = {}
     ambiguous_pages: set[str] = set()
     outline_anchors: dict[str, tuple[int, tuple[float, float]]] = {}
+    outline_source_origins: dict[int, tuple[float, float]] = {}
+    used_geometry_ids: set[str] = set()
 
     try:
         for section_index, section in enumerate(document.sections or [Section()]):
@@ -74,6 +76,13 @@ def write_pdf_model(
             if not isinstance(pdf_profile, dict):
                 raise ValueError("Invalid PDF section profile")
             rotation = pdf_profile.get("source_rotation", 0)
+            source_page_id = pdf_profile.get("page_id")
+            source_page = next((p for p in integration.pages if p.id == source_page_id), None) if integration else None
+            page_geometry = get_page_geometry(source_page) if source_page else None
+            if page_geometry is not None:
+                rotation = page_geometry.rotation
+            elif source_page and source_page.extra.get("pdf_page_geometry_imported"):
+                rotation = 0
             if type(rotation) is not int or rotation not in (0, 90, 180, 270):
                 raise ValueError("Invalid PDF source page rotation")
             flow_positions: dict[tuple[str, int], tuple[float, ...]] = {}
@@ -81,7 +90,11 @@ def write_pdf_model(
             flow_ids = {r.location: r.flow_id for r in rasters[section_index] if r.flow_id is not None}
             section_pdf, renderer = _render_section(document, section, section_index, report, flow_positions, flow_ids,
                                                     anchor_positions)
-            source_page_id = pdf_profile.get("page_id")
+            if page_geometry is not None:
+                used_geometry_ids.add(source_page_id)
+                if section_pdf.page_count != 1:
+                    report.add(IssueSeverity.LOSS, "pdf.page-geometry-pagination",
+                               "Source page was repaginated; regions apply to each output page", f"sections[{section_index}]")
             if source_page_id:
                 if source_page_id in outline_pages:
                     ambiguous_pages.add(source_page_id)
@@ -90,11 +103,18 @@ def write_pdf_model(
                         or any(type(v) not in (int, float) or not math.isfinite(v) for v in origin)):
                     section_pdf.close()
                     raise ValueError("Invalid PDF outline crop origin")
-                source_page = next((p for p in integration.pages if p.id == source_page_id), None) if integration else None
+                if page_geometry is not None:
+                    area = page_geometry.crop_box or page_geometry.media_box
+                    outline_origin = area.x, area.y
+                    source_width, source_height = area.width, area.height
+                else:
+                    outline_origin = tuple(origin)
+                    source_width, source_height = (source_page.width, source_page.height) if source_page else (0, 0)
                 stable = (section_pdf.page_count == 1 and source_page is not None
-                          and math.isclose(source_page.width, section.page.width.pt, abs_tol=0.01)
-                          and math.isclose(source_page.height, section.page.height.pt, abs_tol=0.01))
-                outline_pages[source_page_id] = target.page_count, tuple(origin), stable
+                          and (page_geometry is not None
+                               or (math.isclose(source_width, section.page.width.pt, abs_tol=0.01)
+                                   and math.isclose(source_height, section.page.height.pt, abs_tol=0.01))))
+                outline_pages[source_page_id] = target.page_count, outline_origin, stable
             for identifier, (number, position) in anchor_positions.items():
                 outline_anchors.setdefault(identifier, (target.page_count + number, position))
             section_vectors = vectors[section_index] if section_index < len(vectors) else []
@@ -145,15 +165,31 @@ def write_pdf_model(
                 totals[key] += renderer.metrics[key]
             totals["images"] += len(section_vectors)
             totals["images"] += len(rasters[section_index])
-            for page in section_pdf:
-                page.set_rotation(rotation)
+            from opendoc_formats.pdf_page_geometry import apply_page_geometry, translate_generated_links
+
+            placements = {}
+            generated_links = {}
+            for page_number, page in enumerate(section_pdf):
+                if page_geometry is not None:
+                    generated_links[page.xref] = [int(link["xref"]) for link in page.get_links() if link.get("xref")]
+                    origin = pdf_profile.get("crop_origin", (page_geometry.media_box.x, page_geometry.media_box.y))
+                    outline_source_origins[target.page_count + page_number] = tuple(origin)
+                    placements[page.xref] = apply_page_geometry(page, page_geometry, tuple(origin))
+                else:
+                    page.set_rotation(rotation)
+            translate_generated_links(section_pdf, placements, generated_links)
             target.insert_pdf(section_pdf)
             section_pdf.close()
         from opendoc_formats.writers.pdf_outline import write_outline
 
+        if integration:
+            for source_page in integration.pages:
+                if get_page_geometry(source_page) is not None and source_page.id not in used_geometry_ids:
+                    report.add(IssueSeverity.LOSS, "pdf.page-geometry",
+                               "Page geometry has no explicit section binding", f"pages[{source_page.id}]")
         for identifier in ambiguous_pages:
             outline_pages.pop(identifier, None)
-        write_outline(target, outline_document, report, outline_pages, outline_anchors)
+        write_outline(target, outline_document, report, outline_pages, outline_anchors, outline_source_origins)
         _set_metadata(target, document.metadata)
         from opendoc_formats.support.artifacts import ArtifactWorkspace
         from opendoc_formats.support.io import atomic_copy

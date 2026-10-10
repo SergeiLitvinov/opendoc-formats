@@ -210,3 +210,15 @@ page/URI/unknown destinations, точками, zoom и bold. Два PDF → JSON
 Прежний JSON мигрирует один раз, сохраняет native raw данные и не восстанавливает
 явно удалённый outline. Минимальный установленный pdf-rich профиль проверяет
 настоящие закладки без дополнительных движков.
+
+## PDF: отдельные MediaBox/CropBox
+
+`tests/writers/test_pdf_page_geometry.py` создаёт собственный растровый документ
+с нулевым, положительным и отрицательным native MediaBox origin, crop и всеми
+четырьмя поворотами. Два PDF → JSON → PDF цикла сравнивают MediaBox, CropBox,
+viewport rect, rotation и все RGB bytes; источник и модель не меняются.
+Typed crop/rotation edits сравниваются с независимо изменённым native PDF.
+Удалённая декларация не восстанавливает старые области/поворот. Layout links
+сохраняют native rectangles и internal destinations при переносе; unknown null
+outline points остаются unknown вместо NaN или произвольной точки backend-а.
+Минимальный installed pdf-rich профиль проверяет общий тип и реальные crop cycles.

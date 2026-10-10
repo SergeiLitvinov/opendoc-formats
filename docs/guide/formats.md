@@ -115,6 +115,37 @@ clipping, blend/masks graphics state и точная исходная струк
 обрезку и прозрачность. Независимый Form-reference подтверждает поворот/обрезку;
 различия антиалиасинга допустимы только на границе clip.
 
+### Общая геометрия страниц PDF
+
+`get_page_geometry(get_integration(model).pages[i])` возвращает общий
+`PageGeometry`: MediaBox, необязательный CropBox и поворот до отображения.
+`DocumentPage.width/height` равны размерам media до поворота, а не viewport.
+Source coordinates заданы x=PDF x, y=-PDF y: ось y направлена вниз, начала
+могут быть ненулевыми и отрицательными. Рамки элементов и аннотаций сохраняют
+прежние crop-local координаты; явное преобразование не происходит автоматически.
+
+Native writer помещает собственное отрисованное содержимое в исходные области,
+сохраняя MediaBox/CropBox и поворот. Общая декларация имеет приоритет над
+`source_rotation`; typed crop/rotation edits применяются как обрезка/поворот,
+без принудительного переноса координат модели. `with_page_geometry(page, None)`
+не восстанавливает прежние native поля: выход использует плоский viewport без
+исходного поворота. Физическая страница связана с секцией через native
+`section.properties["pdf"]["page_id"]`; непривязанный общий page получает
+`pdf.page-geometry` LOSS. Repagination получает `pdf.page-geometry-pagination` LOSS.
+
+Старый JSON без исходных MediaBox не позволяет восстановить скрытые размеры:
+декларация остаётся неизвестной, прежние fields/JSON сохранены. Новые JSON
+сохраняют tagged geometry, неизвестные extra и явное удаление. Полные
+UserUnit, ArtBox/TrimBox/BleedBox и содержание вне прежнего viewport остаются в OF07.
+При UserUnit ≠ 1 reader сохраняет исходный PDF и записывает located opaque
+`pdf.page-geometry`/`unsupported-user-unit`; неверная tagged geometry не создаётся.
+Для собственного растрового профиля сравниваются два PDF/JSON цикла: native
+regions, page rect/rotation и все RGB pixels, включая отрицательные origins.
+
+[PyMuPDF о MediaBox/CropBox](https://pymupdf.readthedocs.io/en/latest/glossary.html#mediabox)
+описывает разные координатные соглашения backend-а; адаптер преобразует их
+в общий top-down контракт явно, без зависимости от layout engine heuristics.
+
 ### Оглавление и закладки PDF
 
 Reader заполняет общий `Outline` модели: иерархию, sibling order, page/external
@@ -126,7 +157,8 @@ section profile. Неизвестные destination fields остаются в e
 Writer создаёт native PDF bookmarks, сохраняя title/hierarchy и конечные
 appearance fields bold/italic/color/collapse. Page IDs связываются с выходными
 секциями; point применяется только при проверенной одностраничной геометрии.
-Если геометрия изменилась, page destination сохраняется, а пропуск point получает
+Если исходный layout repaginated или его координатная связь неизвестна,
+page destination сохраняется, а пропуск point получает
 `pdf.outline-point` LOSS. Paragraph anchor использует действительную позицию
 в основном потоке Story; другие kinds/нерасположенные anchors остаются без
 назначения с `pdf.outline-target` LOSS. Неизвестное назначение не заменяется

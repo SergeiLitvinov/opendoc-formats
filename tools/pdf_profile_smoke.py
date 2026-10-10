@@ -30,7 +30,7 @@ def main() -> None:
         output = Path(directory)
         if args.profile == "pdf-rich":
             import fitz
-            from opendoc_model import get_integration, get_outline
+            from opendoc_model import Rect2D, get_integration, get_outline, get_page_geometry
 
             from opendoc_formats.pdf import PdfDocument
 
@@ -66,6 +66,7 @@ def main() -> None:
             assert len(interaction.annotations) == 2 and interaction.forms[0].value == "Own value"
             assert interaction_model.resources["pdf-original-source"].data == interactive_source.read_bytes()
             assert get_outline(interaction_model).entries[0].target.target_id == "pdf-page-1"
+            assert get_page_geometry(interaction.pages[0]).media_box == Rect2D(0, -400, 300, 400)
             interaction_report = write_document(interaction_model, output / "interactive-export.pdf")
             assert interaction_report.success and not interaction_report.lossless, interaction_report.to_dict()
             with fitz.open(output / "interactive-export.pdf") as converted:
@@ -86,6 +87,7 @@ def main() -> None:
                 for rotation in (0, 90):
                     page = fixture.new_page(width=120, height=180)
                     page.insert_image(page.rect, stream=pixels.tobytes("png"), keep_proportion=False)
+                    page.set_cropbox(fitz.Rect(10, 20, 110, 160))
                     page.set_rotation(rotation)
                 fixture.save(raster_source)
 

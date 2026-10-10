@@ -64,8 +64,11 @@ IDs/headers и два цикла JSON. Адаптер сохраняет их в
 PDF заполняет общий outline и мигрирует прежние extensions при публичном JSON
 импорте; конечный native writer сохраняет hierarchy, page points/zoom, URI и
 body paragraph anchors. Полные actions/named destinations остаются в OF07;
-исходная навигация EPUB — в OF08. Аналогично `PageGeometry` доступен,
-но перенос прежних форматных полей и проверка media/crop остаются в OF07.
+исходная навигация EPUB — в OF08. PDF заполняет общий `PageGeometry` и нативно
+восстанавливает media/crop/rotation с typed edits и удалением. Source coordinates:
+x=PDF x, y=-PDF y, без смешения viewport с media dimensions. Legacy JSON без
+исходных MediaBox сохраняет неизвестность, а не получает предполагаемые размеры.
+Полные page boxes/UserUnit и скрытая структура остаются в OF07.
 
 ## Контракт поворота изображения
 

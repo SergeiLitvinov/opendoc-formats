@@ -105,13 +105,20 @@
   Смешанный paint order диагностируется; полный graphics state/clipping остаётся открытым.
 - Остаётся: semantic structure tree и optional content; полный clipping/masks/blend,
   полный профиль outline actions/named destinations и anchors остальных узлов,
-  перенос на общий `PageGeometry` модели с миграцией прежних JSON,
+  полный профиль page boxes/UserUnit/inherited нестандартных областей и legacy
+  JSON без исходных media dimensions (неизвестное не угадывается),
   XFA/signatures/radio groups и полный annotation appearance.
 - Подзадачи: marked content и reading order; расширение форм/аннотаций и их writer;
   слои; clipping, transform, masks, blend и ICC/output intents с сохранением оригинала.
 - Приёмка: tagged PDF и PDF с формой, слоями и обтравкой → JSON;
   сохраняемые данные проверены структурно, визуальные — рендером с допусками.
   OCR/эвристики обозначены в provenance; активные actions не исполняются.
+
+Общий `PageGeometry` заполняется и нативно записывается: media/crop до поворота,
+source coordinate convention, все четвертьобороты, typed crop/rotation edits и
+удаление проверены. Два PDF/JSON цикла сохраняют исходные области и RGB viewport,
+включая ненулевые и отрицательные native origins. Непривязанные pages и repagination
+диагностируются; это не полный PDF graphics state и не восстановление скрытого текста.
 
 ## Приоритет P1: содержимое EPUB (OF08)
 

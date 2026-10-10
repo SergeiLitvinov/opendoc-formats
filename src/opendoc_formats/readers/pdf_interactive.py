@@ -11,7 +11,6 @@ from opendoc_model import (
     Box,
     DiagnosticIssue,
     DocumentModel,
-    DocumentPage,
     FormControl,
     IntegrationModel,
     IssueSeverity,
@@ -94,6 +93,8 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path) -> None:
         )
 
     with fitz.open(source) as pdf:
+        from opendoc_formats.pdf_page_geometry import read_page_geometry
+
         note_types = {fitz.PDF_ANNOT_TEXT: "note", fitz.PDF_ANNOT_FREE_TEXT: "note", fitz.PDF_ANNOT_HIGHLIGHT: "highlight"}
         form_types = {
             fitz.PDF_WIDGET_TYPE_TEXT: "text",
@@ -104,18 +105,18 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path) -> None:
         }
         for index, page in enumerate(pdf, 1):
             page_id = f"pdf-page-{index}"
+            native_page = read_page_geometry(page, page_id)
+            unsupported_geometry = native_page.extra.get("pdf_page_geometry_unsupported")
+            unit = native_page.extra.get("pdf_user_unit", 1)
             if index <= len(model.sections):
                 model.sections[index - 1].properties.setdefault("pdf", {}).update(
-                    page_id=page_id, crop_origin=[page.cropbox.x0, page.cropbox.y0],
+                    page_id=page_id, crop_origin=([page.cropbox.x0*unit, page.cropbox.y0*unit] if unsupported_geometry
+                                               else [page.cropbox.x0, page.cropbox.y0-page.mediabox.y1]),
                 )
-            pages.append(
-                DocumentPage(
-                    page_id,
-                    float(page.cropbox.width),
-                    float(page.cropbox.height),
-                    extra={"pdf_rotation": int(page.rotation), "coordinate_space": "pymupdf-unrotated"},
-                )
-            )
+            pages.append(native_page)
+            if unsupported_geometry:
+                record("pdf.page-geometry", PreservationState.OPAQUE, index, page.xref, "unsupported-user-unit",
+                       "UserUnit geometry retained in source PDF; shared regions are not inferred")
             for ordinal, link in enumerate(page.get_links(), 1):
                 xref = int(link.get("xref", 0))
                 target = link.get("uri") or (f"#pdf-page-{link['page'] + 1}" if link.get("page", -1) >= 0 else None)
@@ -225,7 +226,17 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path) -> None:
                     "parsed-form",
                     "Finite form profile imported; scripts remain inert",
                 )
-        outline = _plain(pdf.get_toc(simple=False))
+        native_outline = pdf.get_toc(simple=False)
+        from opendoc_formats.pdf_page_geometry import native_xyz_destination
+
+        for entry in native_outline:
+            destination = entry[3]
+            if destination.get("kind") == fitz.LINK_GOTO:
+                xyz = native_xyz_destination(pdf, int(destination.get("xref", 0)))
+                if xyz is not None and (xyz[1] is None or xyz[2] is None):
+                    # A valid PDF null coordinate is unknown, not a floating-point NaN.
+                    destination["to"] = None
+        outline = _plain(native_outline)
         if len(outline) > MAX_OBJECTS:
             raise ValueError("PDF outline exceeds profile limit")
         if outline:

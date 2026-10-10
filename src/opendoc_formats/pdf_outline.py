@@ -14,6 +14,7 @@ from opendoc_model import (
     Point2D,
     Provenance,
     get_integration,
+    get_page_geometry,
     set_outline,
 )
 
@@ -56,7 +57,18 @@ def import_pdf_outline(
 
                     page = pdf[page_index]
                     native = pymupdf.Point(*position) * page.derotation_matrix
-                    point = Point2D(native.x + page.cropbox.x0, native.y + page.cropbox.y0)
+                    geometry = get_page_geometry(integration.pages[page_index])
+                    area = (geometry.crop_box or geometry.media_box) if geometry else None
+                    origin = (area.x, area.y) if area else (page.cropbox.x0, page.cropbox.y0)
+                    point = Point2D(native.x + origin[0], native.y + origin[1])
+                    if geometry is not None:
+                        from opendoc_formats.pdf_page_geometry import native_xyz_destination
+
+                        xyz = native_xyz_destination(pdf, int(destination.get("xref", 0)))
+                        point = (Point2D(xyz[1], -xyz[2]) if xyz and xyz[1] is not None and xyz[2] is not None
+                                 and xyz[0] == pdf.page_xref(page_index) else None)
+                    elif integration.pages[page_index].extra.get("pdf_page_geometry_unsupported"):
+                        point = None
                 zoom = destination.get("zoom")
                 zoom = zoom if type(zoom) in (int, float) and math.isfinite(zoom) and zoom > 0 else None
                 target = OutlineTarget("page", target_id=integration.pages[page_index].id, point=point, zoom=zoom)

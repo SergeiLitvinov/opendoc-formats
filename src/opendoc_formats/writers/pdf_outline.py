@@ -22,6 +22,7 @@ def write_outline(
     pdf: Any, document: DocumentModel, report: ConversionReport,
     pages: dict[str, tuple[int, tuple[float, float], bool]],
     anchors: dict[str, tuple[int, tuple[float, float]]],
+    source_origins: dict[int, tuple[float, float]] | None = None,
 ) -> None:
     """Unknown or unmapped destinations remain untargeted, with a located loss."""
     import pymupdf
@@ -33,6 +34,8 @@ def write_outline(
     for entry in outline.entries:
         children.setdefault(entry.parent_id, []).append(entry)
     toc = []
+    native_points: dict[int, Any] = {}
+    source_origins = source_origins or {}
 
     def visit(parent: str | None, level: int) -> None:
         for entry in sorted(children.get(parent, []), key=lambda item: item.order):
@@ -50,6 +53,8 @@ def write_outline(
                     if target.point is not None and stable:
                         point = pymupdf.Point(target.point.x-origin[0], target.point.y-origin[1])
                         destination["to"] = point
+                        if page_index in source_origins:
+                            native_points[len(toc)] = pymupdf.Point(target.point.x, -target.point.y)
                     elif target.point is not None:
                         report.add(IssueSeverity.LOSS, "pdf.outline-point",
                                    "Changed page layout has no verified source point mapping", location)
@@ -58,6 +63,9 @@ def write_outline(
                     page_number = page_index + 1
                     destination = {"kind": pymupdf.LINK_GOTO, "page": page_index,
                                    "to": pymupdf.Point(*position)}
+                    if page_index in source_origins:
+                        origin = source_origins[page_index]
+                        native_points[len(toc)] = pymupdf.Point(position[0]+origin[0], -position[1]-origin[1])
                 else:
                     report.add(IssueSeverity.LOSS, "pdf.outline-target",
                                "Destination has no supported safe mapping; entry remains untargeted", location)
@@ -83,12 +91,15 @@ def write_outline(
     outline_xrefs = pdf.get_outline_xrefs()
     for index, item in enumerate(toc):
         destination = item[3]
-        if destination["kind"] == pymupdf.LINK_GOTO and "to" in destination:
+        if destination["kind"] == pymupdf.LINK_GOTO:
             page = pdf[destination["page"]]
-            point = destination["to"] * ~page.transformation_matrix
-            if any(not math.isfinite(v) or abs(v) > 1_000_000 for v in point):
-                raise ValueError("Excessive PDF outline destination point")
+            point = None
+            if "to" in destination:
+                point = native_points.get(index, destination["to"] * ~page.transformation_matrix)
+                if any(not math.isfinite(v) or abs(v) > 1_000_000 for v in point):
+                    raise ValueError("Excessive PDF outline destination point")
+            position = f"{point.x:.10f} {point.y:.10f}" if point is not None else "null null"
             action = (f"<< /S /GoTo /D [{pdf.page_xref(destination['page'])} 0 R /XYZ "
-                      f"{point.x:.10f} {point.y:.10f} {destination.get('zoom', 0):.10f}] >>")
+                      f"{position} {destination.get('zoom', 0):.10f}] >>")
             pdf.xref_set_key(outline_xrefs[index], "A", action)
     report.metrics["pdf_outline"] = {"entries": len(toc)}

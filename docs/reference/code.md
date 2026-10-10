@@ -301,9 +301,20 @@ Public, bounded PDF page access without exposing the optional rendering engine.
 
 Bridge inert native PDF outlines to the shared Model contract.
 
-- `import_pdf_outline(document: DocumentModel, *, pdf: Any=None, source: str='', limits: DocumentLimits | None=None) -> None` — [строка 21](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_outline.py#L21)
+- `import_pdf_outline(document: DocumentModel, *, pdf: Any=None, source: str='', limits: DocumentLimits | None=None) -> None` — [строка 22](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_outline.py#L22)
 
-Импорты: `__future__`, `dataclasses`, `opendoc_model`, `typing`
+Импорты: `__future__`, `dataclasses`, `opendoc_formats.pdf_page_geometry`, `opendoc_model`, `typing`
+
+## src/opendoc_formats/pdf_page_geometry.py
+
+Native PDF regions in the shared top-down source coordinate contract.
+
+- `native_xyz_destination(pdf: Any, xref: int) -> tuple[int, float | None, float | None, float | None] | None` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_page_geometry.py#L15)
+- `read_page_geometry(page: Any, identifier: str) -> DocumentPage` — [строка 28](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_page_geometry.py#L28)
+- `apply_page_geometry(page: Any, geometry: PageGeometry, source_origin: tuple[float, float]) -> tuple[float, float]` — [строка 51](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_page_geometry.py#L51)
+- `translate_generated_links(pdf: Any, placements: dict[int, tuple[float, float]], links: dict[int, list[int]]) -> None` — [строка 80](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_page_geometry.py#L80)
+
+Импорты: `__future__`, `opendoc_model`, `typing`
 
 ## src/opendoc_formats/readers/__init__.py
 
@@ -619,9 +630,9 @@ Extract raster images and vector drawings from PDF pages.
 
 Finite PDF interaction profile; actions are inert data, never executed.
 
-- `attach_pdf_interactions(model: DocumentModel, source: str | Path) -> None` — [строка 68](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_interactive.py#L68)
+- `attach_pdf_interactions(model: DocumentModel, source: str | Path) -> None` — [строка 67](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_interactive.py#L67)
 
-Импорты: `__future__`, `opendoc_formats.pdf_outline`, `opendoc_model`, `pathlib`, `typing`
+Импорты: `__future__`, `opendoc_formats.pdf_outline`, `opendoc_formats.pdf_page_geometry`, `opendoc_model`, `pathlib`, `typing`
 
 ## src/opendoc_formats/readers/pdf_layout.py
 
@@ -1220,7 +1231,7 @@ Reserve inline image space and capture its actual Story page position.
 
 Write shared outline hierarchy with explicit page and anchor destination maps.
 
-- `write_outline(pdf: Any, document: DocumentModel, report: ConversionReport, pages: dict[str, tuple[int, tuple[float, float], bool]], anchors: dict[str, tuple[int, tuple[float, float]]]) -> None` — [строка 21](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_outline.py#L21)
+- `write_outline(pdf: Any, document: DocumentModel, report: ConversionReport, pages: dict[str, tuple[int, tuple[float, float], bool]], anchors: dict[str, tuple[int, tuple[float, float]]], source_origins: dict[int, tuple[float, float]] | None=None) -> None` — [строка 21](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_outline.py#L21)
 
 Импорты: `__future__`, `opendoc_model`, `typing`, `urllib.parse`
 
@@ -1284,7 +1295,7 @@ Bounded native PDF paths, separated from raster HTML resources.
 
 - `write_pdf_model(document: DocumentModel, output_path: str | Path, *, cancelled: Callable[[], bool] | None=None) -> ConversionReport` — [строка 21](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_writer.py#L21)
 
-Импорты: `__future__`, `dataclasses`, `opendoc_formats.fonts.embedding`, `opendoc_formats.fonts.html_embedding`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.io`, `opendoc_formats.writers.color_preflight`, `opendoc_formats.writers.font_preflight`, `opendoc_formats.writers.html_writer`, `opendoc_formats.writers.pdf_flow`, `opendoc_formats.writers.pdf_outline`, `opendoc_formats.writers.pdf_rasters`, `opendoc_formats.writers.pdf_resources`, `opendoc_formats.writers.pdf_vectors`, `opendoc_formats.writers.stages`, `opendoc_model`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`, `typing`
+Импорты: `__future__`, `dataclasses`, `opendoc_formats.fonts.embedding`, `opendoc_formats.fonts.html_embedding`, `opendoc_formats.pdf_page_geometry`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.io`, `opendoc_formats.writers.color_preflight`, `opendoc_formats.writers.font_preflight`, `opendoc_formats.writers.html_writer`, `opendoc_formats.writers.pdf_flow`, `opendoc_formats.writers.pdf_outline`, `opendoc_formats.writers.pdf_rasters`, `opendoc_formats.writers.pdf_resources`, `opendoc_formats.writers.pdf_vectors`, `opendoc_formats.writers.stages`, `opendoc_model`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`, `typing`
 
 Тесты: [test_pdf_raster_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_raster_roundtrip.py#L1), [test_pdf_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_resources.py#L1), [test_pdf_vectors.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_vectors.py#L1), [test_pdf_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_writer.py#L1)
 
