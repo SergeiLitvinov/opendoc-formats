@@ -27,7 +27,7 @@ Format reader registry using the OpenDoc model and validation contract.
 - `default_registry() -> AdapterRegistry` — [строка 214](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L214)
 - `read_document(path: str | Path, *, format_id: str | None=None, options: ImportOptions | None=None) -> ImportResult` — [строка 228](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L228)
 
-Импорты: `__future__`, `collections.abc`, `dataclasses`, `importlib`, `opendoc_formats.errors`, `opendoc_formats.ooxml.widths`, `opendoc_formats.pdf_outline`, `opendoc_formats.readers.tex_model`, `opendoc_formats.support.backends`, `opendoc_formats.text_profile`, `opendoc_model`, `pathlib`, `typing`
+Импорты: `__future__`, `collections.abc`, `dataclasses`, `importlib`, `opendoc_formats.errors`, `opendoc_formats.html_tables`, `opendoc_formats.ooxml.widths`, `opendoc_formats.pdf_outline`, `opendoc_formats.readers.tex_model`, `opendoc_formats.support.backends`, `opendoc_formats.text_profile`, `opendoc_model`, `pathlib`, `typing`
 
 Тесты: [test_djvu_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_djvu_text.py#L1), [test_docx_layout_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_layout_roundtrip.py#L1), [test_docx_typed_widths.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_typed_widths.py#L1)
 
@@ -177,10 +177,11 @@ Cross-platform font registry and metric-aware deterministic substitutions.
 
 Bridge explicit HTML table declarations to the common model contract.
 
-- `import_table_semantics(table: Table, *, identifier: Callable[[], str], resources: dict, styles: dict, ambiguous_ids: frozenset[str]=frozenset()) -> str | None` — [строка 27](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/html_tables.py#L27)
-- `import_caption_semantics(table: Table, captions: list, *, identifier: Callable[[], str], resources: dict, styles: dict, ambiguous_ids: frozenset[str]=frozenset()) -> str | None` — [строка 67](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/html_tables.py#L67)
+- `import_table_semantics(table: Table, *, identifier: Callable[[], str], resources: dict, styles: dict, ambiguous_ids: frozenset[str]=frozenset()) -> str | None` — [строка 29](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/html_tables.py#L29)
+- `migrate_html_tables(document: DocumentModel, *, limits: DocumentLimits | None=None) -> None` — [строка 101](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/html_tables.py#L101)
+- `import_caption_semantics(table: Table, captions: list, *, identifier: Callable[[], str], resources: dict, styles: dict, ambiguous_ids: frozenset[str]=frozenset()) -> str | None` — [строка 195](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/html_tables.py#L195)
 
-Импорты: `__future__`, `collections.abc`, `dataclasses`, `opendoc_model`, `typing`
+Импорты: `__future__`, `collections`, `collections.abc`, `dataclasses`, `opendoc_model`, `typing`
 
 ## src/opendoc_formats/native/__init__.py
 

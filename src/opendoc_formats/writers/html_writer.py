@@ -470,7 +470,7 @@ class _HtmlRenderer:
                 if typed:
                     tag = "th" if cell_semantics is not None and cell_semantics.role == "header" else "td"
                     scope = SCOPE_TO_HTML.get(cell_semantics.scope) if cell_semantics else None
-                if tag == "th" and isinstance(scope, str) and scope in {"row", "col", "rowgroup"}:
+                if tag == "th" and isinstance(scope, str) and scope in {"row", "col", "rowgroup", "colgroup"}:
                     attributes += f' scope="{scope}"'
                 for key, attribute in (("anchor_id", "id"), ("html_headers", "headers")):
                     if typed:
@@ -494,7 +494,19 @@ class _HtmlRenderer:
         if group is not None:
             rows.append(f"</{group[0]}>")
         caption_html = f"<caption>{caption}</caption>" if caption is not None else ""
-        return f"<table{anchor_attr}{_style_attribute(styles)}>{caption_html}{''.join(rows)}</table>"
+        columns = []
+        position = 0
+        definitions = semantics.column_groups if semantics else ()
+        for definition in sorted(definitions, key=lambda value: value.start):
+            if definition.start + definition.span > 10_000:
+                self.report.add(IssueSeverity.ERROR, 'html-table-columns',
+                                'Column groups exceed the bounded HTML profile', location)
+                break
+            if definition.start > position:
+                columns.append(f'<col span="{definition.start - position}">')
+            columns.append(f'<colgroup id="{escape(definition.id, quote=True)}" span="{definition.span}"></colgroup>')
+            position = definition.start + definition.span
+        return f"<table{anchor_attr}{_style_attribute(styles)}>{caption_html}{''.join(columns)}{''.join(rows)}</table>"
 
     @staticmethod
     def _text_style(style: TextStyle) -> list[str]:

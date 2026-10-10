@@ -302,7 +302,7 @@ class HtmlReader:
                     headers = cell["headers"]
                     props["html_headers"] = " ".join(headers) if isinstance(headers, list) else str(headers)
                 if cell.has_attr("scope"):
-                    if cell.name == "th" and cell["scope"] in {"row", "col", "rowgroup"}:
+                    if cell.name == "th" and cell["scope"] in {"row", "col", "rowgroup", "colgroup"}:
                         props["html_scope"] = cell["scope"]
                     else:
                         self.warn("html-accessibility", "Scope ячейки вне поддержанного профиля не перенесён.", cell)
@@ -315,10 +315,31 @@ class HtmlReader:
             group_id = groups.setdefault(id(row.parent), len(groups))
             rows.append(TableRow(cells, properties={"html_row_group": group, "html_row_group_id": group_id}))
         table = Table(rows, properties={"anchor_id": node["id"]} if node.get("id") else {})
+        columns = []
+        column = 0
+        for group in node.find_all(['colgroup', 'col'], recursive=False):
+            children = group.find_all('col', recursive=False) if group.name == 'colgroup' else []
+            try:
+                spans = [int(child.get('span', 1)) for child in children] if children else [int(group.get('span', 1))]
+                if any(not 1 <= span <= 10_000 for span in spans) or column + sum(spans) > 10_000:
+                    raise ValueError
+            except (ValueError, TypeError):
+                self.warn('html-table-semantics', 'Некорректная или чрезмерная группа столбцов не перенесена.', group)
+                table.properties['html_column_groups_invalid'] = True
+                break
+            if group.name == 'colgroup':
+                columns.append({'id': str(group.get('id') or self.semantic_id()), 'start': column, 'span': sum(spans)})
+            for element in [group, *children]:
+                if any(key not in {'span', 'id'} for key in element.attrs) or (element is not group and element.get('id')):
+                    self.warn('html-table', 'Оформление и отдельные ID столбцов вне профиля не перенесены.', element)
+            column += sum(spans)
+        if columns:
+            table.properties['html_column_groups'] = columns
         error = import_table_semantics(
             table, identifier=self.semantic_id, resources=self.resources.items, styles=self.styles,
             ambiguous_ids=self.ambiguous_ids,
         )
+        table.properties['html_table_semantics_migration_attempted'] = True
         if error:
             self.warn("html-table-semantics", f"Общая семантика таблицы не заполнена: {error}", node)
         self.diagnostics.bind(table, node)

@@ -180,7 +180,7 @@ source coordinate convention, все четвертьобороты, typed crop/
   th/td, scope col/row/rowgroup, headers/IDs и групп строк. Независимая приёмка
   в Chromium 151 подтверждает имя таблицы, columnheader/rowheader и навигацию
   в двух циклах при 375/1280; при 375 остаётся горизонтальная прокрутка.
-  ARIA/role/dir вне профиля диагностируются; colgroup, полное дерево доступности,
+  ARIA/role/dir вне профиля диагностируются; полное дерево доступности,
   экранный диктор и responsive layout остаются открытыми.
 - Общие Table/Row/Cell semantics заполняют роли, scope, headers и группы строк.
   Типизированные правки имеют приоритет; удаление не возвращает legacy атрибуты.
@@ -188,10 +188,10 @@ source coordinate convention, все четвертьобороты, typed crop/
 - Caption paragraphs и таблица имеют общие anchors; caption_ids задают явную
   привязку, включая перенос к несоседнему абзацу, удаление связи и пустую подпись.
   Текст/списки/ссылки сохранены; неизвестные caption blocks остаются в source profile.
-- Перенести column groups в общий контракт и реализовать однократную миграцию
-  прежних HTML JSON в Table/Row/Cell semantics. Маркеры импорта должны отличать
-  legacy данные от явного удаления; неоднозначные IDs и headers не исправлять
-  молча. Чтение прежних форматных расширений остаётся доступным.
+- Column groups и `scope=colgroup` используют общие логические интервалы;
+  два цикла с объединениями, правками/удалением и необъявленными столбцами проверены.
+  Прежние HTML JSON мигрируют однократно; неоднозначные связи получают диагностику,
+  удалённые общие данные не возвращаются из legacy расширений.
 - Опубликовать feature profile; расширять cascade/inheritance, CSS variables,
   table layout, flex/grid и paged media конечными подмножествами.
   Сохранять lang/alt/roles и смысл accessibility, оригинальный unsupported fragment.
