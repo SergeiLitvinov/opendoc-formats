@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Collection
+from pathlib import PurePosixPath
 from typing import Any
 
 from opendoc_model.document_model import PackageGraph, PackagePart, PackageRelationship
@@ -29,6 +30,7 @@ RELATIONSHIP_TYPE = {
     "diagram_layout": f"{_RELATIONSHIP_BASE}/diagramLayout",
     "diagram_colors": f"{_RELATIONSHIP_BASE}/diagramColors",
     "diagram_quick_style": f"{_RELATIONSHIP_BASE}/diagramQuickStyle",
+    "diagram_drawing": "http://schemas.microsoft.com/office/2007/relationships/diagramDrawing",
     "ole_object": f"{_RELATIONSHIP_BASE}/oleObject",
     "package": f"{_RELATIONSHIP_BASE}/package",
     "endnotes": f"{_RELATIONSHIP_BASE}/endnotes",
@@ -78,24 +80,41 @@ def package_part_for_relationship(graph: PackageGraph | None, relationship_type:
     return graph.related_part(graph.root, relationship_type)
 
 
-def restore_package_graph(root_part: Any, graph: PackageGraph) -> None:
+def restore_package_graph(root_part: Any, graph: PackageGraph, *, protected_roots: Collection[Any] = ()) -> None:
     """Restore graph parts and relationships into a python-opc root part."""
 
     pack_uri_type, part_type = _opc_types(root_part)
 
     package = root_part.package
+    source_ids = {edge.id for edge in graph.relationships if edge.source == graph.root}
+    for root in protected_roots:
+        for node in root.iter():
+            for attribute, value in node.attrib.items():
+                if attribute.startswith("{" + _RELATIONSHIP_BASE + "}") and value not in source_ids:
+                    raise ValueError(f"Opaque OOXML refers to an unretained source relationship: {value}")
     parts = {name: part_type(pack_uri_type(part.name), part.media_type, part.data, package) for name, part in graph.parts.items()}
     root_relationship_types = {
         relationship.relationship_type for relationship in graph.relationships if relationship.source == graph.root
     }
     for relationship_id, relationship in list(root_part.rels.items()):
-        if relationship.reltype in root_relationship_types:
+        if relationship.reltype in root_relationship_types and relationship.reltype != f"{_RELATIONSHIP_BASE}/image":
             root_part.drop_rel(relationship_id)
+    occupied = set(graph.parts) | {str(part.partname) for part in package.iter_parts()}
+    for part in list(package.iter_parts()):
+        name = str(part.partname)
+        if name not in graph.parts:
+            continue
+        path = PurePosixPath(name)
+        index = 1
+        while (candidate := str(path.with_name(f"{path.stem}-opendoc{index}{path.suffix}"))) in occupied:
+            index += 1
+        part.partname = pack_uri_type(candidate)
+        occupied.add(candidate)
     for relationship in graph.relationships:
         source = root_part if relationship.source == graph.root else parts[relationship.source]
         destination = relationship.target if relationship.external else parts[relationship.target]
         if source is root_part:
-            _reserve_relationship_id(source, relationship.id)
+            _reserve_relationship_id(source, relationship.id, protected_roots)
             source.rels.add_relationship(
                 relationship.relationship_type,
                 destination,
@@ -111,7 +130,7 @@ def restore_package_graph(root_part: Any, graph: PackageGraph) -> None:
             )
 
 
-def _reserve_relationship_id(root_part: Any, relationship_id: str) -> None:
+def _reserve_relationship_id(root_part: Any, relationship_id: str, protected_roots: Collection[Any] = ()) -> None:
     """Free an imported rId, moving a generated relationship without changing its references."""
 
     existing = root_part.rels.get(relationship_id)
@@ -128,9 +147,12 @@ def _reserve_relationship_id(root_part: Any, relationship_id: str) -> None:
     element = getattr(root_part, "element", None)
     if element is None:
         return
+    protected = {node for root in protected_roots for node in root.iter()}
     for node in element.iter():
+        if node in protected:
+            continue
         for attribute, value in list(node.attrib.items()):
-            if value == relationship_id:
+            if value == relationship_id and attribute.startswith("{" + _RELATIONSHIP_BASE + "}"):
                 node.set(attribute, replacement_id)
 
 

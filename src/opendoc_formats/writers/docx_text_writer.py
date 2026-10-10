@@ -208,7 +208,11 @@ def _write_raw_inline(paragraph: Any, raw_xml: str, report: ConversionReport, lo
     from docx.oxml import parse_xml
 
     try:
-        paragraph._p.append(parse_xml(raw_xml))
+        element = parse_xml(raw_xml)
+        paragraph._p.append(element)
+        roots = getattr(paragraph.part, "_opendoc_opaque_roots", [])
+        roots.append(element)
+        paragraph.part._opendoc_opaque_roots = roots
     except Exception as error:  # noqa: BLE001 - foreign OOXML is a diagnostic boundary
         report.add(IssueSeverity.LOSS, "docx-inline-ooxml", f"raw inline OOXML could not be restored: {error}", location)
 

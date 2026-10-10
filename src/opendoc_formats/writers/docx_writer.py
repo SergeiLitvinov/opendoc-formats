@@ -61,6 +61,8 @@ def write_docx_model(document: DocumentModel, output_path: str | Path) -> Conver
 
     embed_docx_fonts(target, document, report)
     _restore_package_graph(target, document, report)
+    if not report.success:
+        return report
     try:
         from opendoc_formats.support.artifacts import ArtifactWorkspace
         from opendoc_formats.support.io import atomic_copy
@@ -91,11 +93,21 @@ def _write_metadata(target: Any, metadata: dict[str, Any]) -> None:
 def _restore_package_graph(target: Any, document: DocumentModel, report: ConversionReport) -> None:
     graph = document.package
     if graph is None or graph.format != "ooxml":
+        relationship_namespace = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
+        if any(
+            key.startswith(relationship_namespace)
+            for root in getattr(target.part, "_opendoc_opaque_roots", ())
+            for node in root.iter() for key in node.attrib
+        ):
+            report.add(IssueSeverity.ERROR, "package-graph", "Opaque OOXML relationships require their source package graph")
         return
     try:
-        restore_package_graph(target.part, retain_derived_styles(target.part, graph))
+        restore_package_graph(
+            target.part, retain_derived_styles(target.part, graph),
+            protected_roots=getattr(target.part, "_opendoc_opaque_roots", ()),
+        )
     except Exception as error:  # noqa: BLE001 - foreign package parts are a diagnostic boundary
-        report.add(IssueSeverity.LOSS, "package-graph", f"OOXML package graph could not be restored: {error}")
+        report.add(IssueSeverity.ERROR, "package-graph", f"OOXML package graph could not be restored: {error}")
 
 
 def _restore_document_protection(target: Any, metadata: dict[str, Any], report: ConversionReport) -> None:
@@ -161,6 +173,9 @@ def _write_raw_block(container: Any, raw_xml: str, report: ConversionReport, loc
             root.append(element)
         else:
             section_properties.addprevious(element)
+        roots = getattr(container.part, "_opendoc_opaque_roots", [])
+        roots.append(element)
+        container.part._opendoc_opaque_roots = roots
     except Exception as error:  # noqa: BLE001 - foreign OOXML is a diagnostic boundary
         report.add(IssueSeverity.LOSS, "docx-block-ooxml", f"raw block OOXML could not be restored: {error}", location)
 

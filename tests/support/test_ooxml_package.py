@@ -147,6 +147,10 @@ def test_restore_package_graph_preserves_imported_id_and_rewrites_collision():
     hyperlink = OxmlElement("w:hyperlink")
     hyperlink.set(qn("r:id"), hyperlink_id)
     paragraph._p.append(hyperlink)
+    opaque = OxmlElement("w:hyperlink")
+    opaque.set(qn("r:id"), hyperlink_id)
+    opaque.set(qn("w:id"), hyperlink_id)
+    paragraph._p.append(opaque)
     graph = PackageGraph(format="ooxml", root="/word/document.xml")
     graph.add_part(PackagePart("/word/comments.xml", "application/xml", b"<w:comments xmlns:w='x'/>") )
     graph.add_relationship(
@@ -158,9 +162,31 @@ def test_restore_package_graph_preserves_imported_id_and_rewrites_collision():
         )
     )
 
-    restore_package_graph(target.part, graph)
+    restore_package_graph(target.part, graph, protected_roots=(opaque,))
 
     assert target.part.rels[hyperlink_id].reltype == RELATIONSHIP_TYPE["comments"]
     moved = next(rel for rel in target.part.rels.values() if rel.reltype == DOCX_RELATIONSHIP_TYPE.HYPERLINK)
     assert moved.rId != hyperlink_id
     assert hyperlink.get(qn("r:id")) == moved.rId
+    assert opaque.get(qn("r:id")) == hyperlink_id
+    assert opaque.get(qn("w:id")) == hyperlink_id
+
+
+def test_restore_does_not_overwrite_generated_part_with_same_name():
+    from docx import Document
+    from docx.opc.packuri import PackURI
+    from docx.opc.part import Part
+
+    target = Document()
+    image_type = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/image'
+    generated = Part(PackURI('/word/media/image1.png'), 'image/png', b'generated', target.part.package)
+    generated_id = target.part.relate_to(generated, image_type)
+    graph = PackageGraph(format='ooxml', root='/word/document.xml')
+    graph.add_part(PackagePart('/word/media/image1.png', 'image/png', b'source'))
+    graph.add_relationship(PackageRelationship(
+        id='rIdSource', relationship_type=image_type, source=graph.root, target='/word/media/image1.png',
+    ))
+    restore_package_graph(target.part, graph)
+    assert target.part.rels[generated_id].target_part.blob == b'generated'
+    assert target.part.rels['rIdSource'].target_part.blob == b'source'
+    assert generated.partname != target.part.rels['rIdSource'].target_part.partname
