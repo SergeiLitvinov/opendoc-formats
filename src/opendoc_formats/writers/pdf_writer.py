@@ -93,6 +93,9 @@ def write_pdf_model(
             from opendoc_formats.writers.pdf_text_verify import verify_section_text
 
             try:
+                from opendoc_formats.writers.pdf_unicode import restore_ligature_unicode
+
+                restore_ligature_unicode(section_pdf, report, f'sections[{section_index}]')
                 verify_section_text(section_pdf, section, report, f'sections[{section_index}]')
             except Exception:
                 section_pdf.close()

@@ -1,5 +1,10 @@
 # Document quality corpus
 
+`tests/writers/test_pdf_unicode.py` constructs a project-owned OpenType font at
+runtime with `fi` and `ti` ligatures. Its native Story PDF checks repeated text
+and exact RGB pixel equality before/after ToUnicode restoration. No third-party
+font is shipped; ambiguous or unknown glyph decompositions are negative controls.
+
 The primary corpus is generated from source instead of storing opaque binary fixtures. Run:
 
 ```powershell
