@@ -180,7 +180,7 @@ def extract_pdf_vector_drawings(path: str | Path) -> tuple[list[PdfVectorDrawing
     fills, strokes, and clipping regions.  Returns a flat list of
     ``PdfVectorDrawing`` sorted by (page, number).
     """
-    import fitz
+    from opendoc_formats.readers.pdf_content import content_only_pdf
 
     source = Path(path)
     if not source.is_file():
@@ -189,17 +189,8 @@ def extract_pdf_vector_drawings(path: str | Path) -> tuple[list[PdfVectorDrawing
     drawings: list[PdfVectorDrawing] = []
     warnings: list[str] = []
 
-    with fitz.open(str(source)) as document:
+    with content_only_pdf(source) as document:
         for page_number, page in enumerate(document, start=1):
-            # Annotation appearances belong to the interaction ledger, not page paths.
-            # Only this disposable in-memory document is changed; never save it.
-            objects = 0
-            for accessor, delete in ((page.annots, page.delete_annot), (page.widgets, page.delete_widget)):
-                for annotation in accessor() or ():
-                    objects += 1
-                    if objects > 10_000:
-                        raise ArtifactLimitError(f"PDF interaction objects exceed 10000 on page {page_number}")
-                    delete(annotation)
             try:
                 raw = page.get_drawings(extended=True)
             except Exception as exc:  # noqa: BLE001

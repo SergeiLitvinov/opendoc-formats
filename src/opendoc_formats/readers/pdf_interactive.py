@@ -106,6 +106,9 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path) -> None:
         for index, page in enumerate(pdf, 1):
             page_id = f"pdf-page-{index}"
             native_page = read_page_geometry(page, page_id)
+            source_rotation = page.rotation
+            page.set_rotation(0)
+            page = pdf.reload_page(page)
             unsupported_geometry = native_page.extra.get("pdf_page_geometry_unsupported")
             unit = native_page.extra.get("pdf_user_unit", 1)
             if index <= len(model.sections):
@@ -128,7 +131,7 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path) -> None:
                         target=target,
                         action={"destination": _plain(link), **(_actions(pdf, xref) if xref else {})},
                         box=_box(link["from"]),
-                        extra={"source_xref": xref},
+                        extra={"source_xref": xref, "pdf_uri_action_complete": _simple_uri_action(pdf, xref)},
                     )
                 )
                 record(
@@ -162,6 +165,8 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path) -> None:
                             "colors": _plain(annotation.colors),
                             "opacity": float(annotation.opacity),
                             "vertices": _plain(annotation.vertices),
+                            "pdf_source_box": [annotation.rect.x0, annotation.rect.y0,
+                                               annotation.rect.width, annotation.rect.height],
                         },
                     )
                 )
@@ -215,6 +220,12 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path) -> None:
                             "field_flags": int(widget.field_flags),
                             "pdf_type": kind,
                             "pdf_choices": _plain(choices),
+                            "pdf_action_profile": "javascript-A-v1" if _simple_script_action(pdf, xref, actions) else None,
+                            "pdf_source_action": actions.get("A"),
+                            "pdf_widget_appearance": {key: _plain(getattr(widget, key)) for key in (
+                                "border_color", "border_style", "border_width", "border_dashes", "fill_color",
+                                "text_color", "text_font", "text_fontsize", "text_maxlen",
+                            )},
                         },
                     )
                 )
@@ -226,6 +237,7 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path) -> None:
                     "parsed-form",
                     "Finite form profile imported; scripts remain inert",
                 )
+            page.set_rotation(source_rotation)
         native_outline = pdf.get_toc(simple=False)
         from opendoc_formats.pdf_page_geometry import native_xyz_destination
 
@@ -304,3 +316,32 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path) -> None:
 
     with fitz.open(source) as pdf:
         import_pdf_outline(model, pdf=pdf, source=str(source))
+
+
+def _simple_script_action(pdf: Any, xref: int, actions: dict[str, Any]) -> bool:
+    if not actions:
+        return True
+    if set(actions) != {'A', 'script'}:
+        return False
+    kind, value = pdf.xref_get_key(xref, 'A')
+    if kind != 'xref':
+        return False
+    action_xref = int(value.split()[0])
+    return (pdf.xref_get_key(action_xref, 'S') == ('name', '/JavaScript')
+            and set(pdf.xref_get_keys(action_xref)).issubset({'Type', 'S', 'JS'}))
+
+
+def _simple_uri_action(pdf: Any, xref: int) -> bool:
+    import pymupdf
+
+    if not xref or pdf.xref_get_key(xref, 'AA')[0] != 'null':
+        return False
+    kind, value = pdf.xref_get_key(xref, 'A')
+    if kind == 'dict':
+        uri_kind, uri = pdf.xref_get_key(xref, 'A/URI')
+        return (uri_kind == 'string' and value == '<</S/URI/URI' + pymupdf.get_pdf_str(uri) + '>>')
+    if kind != 'xref':
+        return False
+    action_xref = int(value.split()[0])
+    return (pdf.xref_get_key(action_xref, 'S') == ('name', '/URI')
+            and set(pdf.xref_get_keys(action_xref)).issubset({'Type', 'S', 'URI'}))

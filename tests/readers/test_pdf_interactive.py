@@ -84,9 +84,13 @@ def test_pdf_interactions_and_inert_actions_survive_json(tmp_path, rotation):
     output = tmp_path / "layout.pdf"
     report = write_document(restored, output)
     assert report.success and not report.lossless
-    assert {issue.feature for issue in report.issues} >= {"pdf.annotations", "pdf.forms", "pdf.outline", "pdf.annotation"}
+    assert {issue.feature for issue in report.issues} >= {"pdf.link-action", "pdf.form-type", "pdf.outline", "pdf.annotation"}
     with fitz.open(output) as pdf:
-        assert not list(pdf[0].widgets() or ()) and not list(pdf[0].annots() or ())
+        page = pdf[0]
+        assert [(w.field_name, w.field_value, w.script) for w in page.widgets()] == [
+            ('own-text', 'Value 0', "throw new Error('fixture action must remain inert');")
+        ]
+        assert {a.type[1] for a in page.annots()} == {'Text', 'Highlight'}
         assert pdf[0].rotation == rotation
         assert pdf[0].rect.width == (400 if rotation else 300)
     assert source.read_bytes() == original

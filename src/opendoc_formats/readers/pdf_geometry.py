@@ -106,7 +106,7 @@ class PdfGeometryDocument:
     warnings: list[str] = field(default_factory=list)
 
 
-def extract_pdf_geometry(path: str | Path) -> PdfGeometryDocument:
+def extract_pdf_geometry(path: str | Path, *, exclude_interactions: bool = False) -> PdfGeometryDocument:
     """Извлечь координатную структуру PDF через PyMuPDF."""
 
     import fitz  # type: ignore[import-not-found]
@@ -115,7 +115,9 @@ def extract_pdf_geometry(path: str | Path) -> PdfGeometryDocument:
     if not source.is_file():
         raise FileNotFoundError(source)
     pages: list[PdfPageGeometry] = []
-    with fitz.open(str(source)) as document:
+    from opendoc_formats.readers.pdf_content import content_only_pdf
+
+    with (content_only_pdf(source) if exclude_interactions else fitz.open(str(source))) as document:
         metadata = {str(key): str(value or "") for key, value in (document.metadata or {}).items()}
         warnings: list[str] = []
         for page_index, page in enumerate(document):

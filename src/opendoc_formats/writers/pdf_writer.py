@@ -32,9 +32,6 @@ def write_pdf_model(
     outline_document = document
     integration = get_integration(document)
     if integration is not None:
-        for feature, values in (("pdf.annotations", integration.annotations), ("pdf.forms", integration.forms)):
-            if values:
-                report.add(IssueSeverity.LOSS, feature, "Interactive objects are not recreated by the PDF layout writer")
         if integration.extra.get("pdf_outline") and not integration.extra.get("pdf_outline_imported"):
             report.add(IssueSeverity.LOSS, "pdf.outline", "Source outline is not recreated by the PDF layout writer")
         for record in integration.preservation:
@@ -193,7 +190,12 @@ def write_pdf_model(
             translate_generated_links(section_pdf, placements, generated_links)
             target.insert_pdf(section_pdf)
             section_pdf.close()
+        from opendoc_formats.writers.pdf_interactive import write_interactions
         from opendoc_formats.writers.pdf_outline import write_outline
+
+        write_interactions(target, outline_document, report, outline_pages, check_cancelled)
+        if not report.success:
+            return report
 
         if integration:
             for source_page in integration.pages:

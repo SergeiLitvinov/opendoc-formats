@@ -154,6 +154,13 @@
   несохраняемой копии PDF. Они учитываются interaction ledger, не дублируются
   как содержимое страницы; исходные bytes не меняются. Группы прозрачности
   самого page content по-прежнему требуют поддержки или явного отказа.
+- Конечный writer URI links/Text notes/highlights/text fields проверен двумя
+  публичными циклами относительно оригинала, canonical fields/widgets, native edit,
+  typed edit/delete и отменой на восьми вариантах геометрии. Основной текст не
+  дублирует widget appearances; рабочая копия не меняет source bytes.
+  Остаются полное дерево полей (включая orphan/inherited/default values), дополнительные
+  actions, полная приёмка лимитов/бюджетов и самостоятельный inspection text scope;
+  весь C-PDF-01 не закрыт.
 - Реализовано: конечный import links/notes/highlights и simple forms, inert actions,
   общий `Outline` с иерархией и page/external destinations, native outline extension
   и opaque source для неподдержанных объектов; JSON и поворот страниц.

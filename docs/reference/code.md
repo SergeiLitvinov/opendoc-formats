@@ -599,6 +599,14 @@ Lazy public HTML readers.
 
 Импорты: `__future__`, `collections`, `dataclasses`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.types`
 
+## src/opendoc_formats/readers/pdf_content.py
+
+Disposable native content view without interactive appearances or stale caches.
+
+- `content_only_pdf(path: str | Path) -> Iterator[Any]` — [строка 14](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_content.py#L14)
+
+Импорты: `__future__`, `collections.abc`, `contextlib`, `opendoc_model`, `pathlib`, `typing`
+
 ## src/opendoc_formats/readers/pdf_geometry.py
 
 Геометрический слой импорта PDF без семантических эвристик.
@@ -616,9 +624,9 @@ Lazy public HTML readers.
 - `column_count(self) -> int` — [строка 84](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L84)
 - `PdfPageGeometry` — [строка 89](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L89)
 - `PdfGeometryDocument` — [строка 102](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L102)
-- `extract_pdf_geometry(path: str | Path) -> PdfGeometryDocument` — [строка 109](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L109)
+- `extract_pdf_geometry(path: str | Path, *, exclude_interactions: bool=False) -> PdfGeometryDocument` — [строка 109](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L109)
 
-Импорты: `__future__`, `dataclasses`, `pathlib`, `statistics`, `typing`
+Импорты: `__future__`, `dataclasses`, `opendoc_formats.readers.pdf_content`, `pathlib`, `statistics`, `typing`
 
 Тесты: [test_pdf_geometry.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_geometry.py#L1), [test_pdf_images.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_images.py#L1), [test_pdf_ocr_merge.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_ocr_merge.py#L1)
 
@@ -641,9 +649,9 @@ Extract raster images and vector drawings from PDF pages.
 - `is_path(self) -> bool` — [строка 89](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L89)
 - `extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[str]]` — [строка 111](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L111)
 - `extract_pdf_vector_drawings(path: str | Path) -> tuple[list[PdfVectorDrawing], list[str]]` — [строка 176](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L176)
-- `enrich_geometry_with_images(geometry: PdfGeometryDocument, images: list[ExtractedPdfImage] | None=None, vector_drawings: list[PdfVectorDrawing] | None=None) -> PdfGeometryDocument` — [строка 277](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L277)
+- `enrich_geometry_with_images(geometry: PdfGeometryDocument, images: list[ExtractedPdfImage] | None=None, vector_drawings: list[PdfVectorDrawing] | None=None) -> PdfGeometryDocument` — [строка 268](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L268)
 
-Импорты: `__future__`, `dataclasses`, `opendoc_formats.errors`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_image_clips`, `opendoc_model`, `opendoc_model.color`, `pathlib`, `typing`
+Импорты: `__future__`, `dataclasses`, `opendoc_formats.errors`, `opendoc_formats.readers.pdf_content`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_image_clips`, `opendoc_model`, `opendoc_model.color`, `pathlib`, `typing`
 
 Тесты: [test_format_audit.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_format_audit.py#L1), [test_pdf_images.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_images.py#L1)
 
@@ -672,7 +680,7 @@ PDF → модель OpenDoc: геометрия, семантические б�
 
 - `read_pdf_model(*, path: str | Path, use_ocr: bool=False, ocr_backend: str='', handwriting: bool=False, use_gpu: bool=False, mode: str | None=None, ocr_engine_factory: Callable[..., Any] | None=None) -> DocumentModel` — [строка 44](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_model.py#L44)
 
-Импорты: `__future__`, `collections.abc`, `opendoc_formats.readers.pdf`, `opendoc_formats.readers.pdf_images`, `opendoc_formats.readers.pdf_interactive`, `opendoc_formats.readers.pdf_ocr_merge`, `opendoc_formats.types`, `opendoc_model.color`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
+Импорты: `__future__`, `collections.abc`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_images`, `opendoc_formats.readers.pdf_interactive`, `opendoc_formats.readers.pdf_ocr_merge`, `opendoc_formats.types`, `opendoc_model.color`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
 
 ## src/opendoc_formats/readers/pdf_ocr_merge.py
 
@@ -1256,6 +1264,14 @@ Reserve inline image space and capture its actual Story page position.
 
 Импорты: `__future__`, `dataclasses`, `opendoc_formats.writers.html_writer`, `opendoc_model`, `typing`
 
+## src/opendoc_formats/writers/pdf_interactive.py
+
+Bounded native PDF interactions; source actions are never executed.
+
+- `write_interactions(pdf: Any, document: DocumentModel, report: ConversionReport, pages: dict[str, tuple[int, tuple[float, float], bool]], cancelled: Callable[[], bool]) -> None` — [строка 13](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_interactive.py#L13)
+
+Импорты: `__future__`, `opendoc_formats.writers.pdf_outline`, `opendoc_model`, `typing`
+
 ## src/opendoc_formats/writers/pdf_outline.py
 
 Write shared outline hierarchy with explicit page and anchor destination maps.
@@ -1344,7 +1360,7 @@ Bounded native PDF paths, separated from raster HTML resources.
 
 - `write_pdf_model(document: DocumentModel, output_path: str | Path, *, cancelled: Callable[[], bool] | None=None) -> ConversionReport` — [строка 21](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_writer.py#L21)
 
-Импорты: `__future__`, `dataclasses`, `opendoc_formats.fonts.embedding`, `opendoc_formats.fonts.html_embedding`, `opendoc_formats.pdf_page_geometry`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.io`, `opendoc_formats.writers.color_preflight`, `opendoc_formats.writers.font_preflight`, `opendoc_formats.writers.html_writer`, `opendoc_formats.writers.pdf_flow`, `opendoc_formats.writers.pdf_outline`, `opendoc_formats.writers.pdf_rasters`, `opendoc_formats.writers.pdf_resources`, `opendoc_formats.writers.pdf_text_verify`, `opendoc_formats.writers.pdf_unicode`, `opendoc_formats.writers.pdf_vectors`, `opendoc_formats.writers.stages`, `opendoc_model`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`, `typing`
+Импорты: `__future__`, `dataclasses`, `opendoc_formats.fonts.embedding`, `opendoc_formats.fonts.html_embedding`, `opendoc_formats.pdf_page_geometry`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.io`, `opendoc_formats.writers.color_preflight`, `opendoc_formats.writers.font_preflight`, `opendoc_formats.writers.html_writer`, `opendoc_formats.writers.pdf_flow`, `opendoc_formats.writers.pdf_interactive`, `opendoc_formats.writers.pdf_outline`, `opendoc_formats.writers.pdf_rasters`, `opendoc_formats.writers.pdf_resources`, `opendoc_formats.writers.pdf_text_verify`, `opendoc_formats.writers.pdf_unicode`, `opendoc_formats.writers.pdf_vectors`, `opendoc_formats.writers.stages`, `opendoc_model`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`, `typing`
 
 Тесты: [test_pdf_raster_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_raster_roundtrip.py#L1), [test_pdf_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_resources.py#L1), [test_pdf_vectors.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_vectors.py#L1), [test_pdf_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_writer.py#L1)
 

@@ -579,8 +579,26 @@ links с inert destination, Text/FreeText notes, highlights с исходным�
 text/checkbox/choice/button widgets с именем, value, choices и flags. Scripts и
 сырые `A`/`AA` сохраняются как строки/данные, не исполняются и не разыменовываются
 во внешние файлы/URL. Это конечный профиль; сложное appearance и редактируемая
-иерархия полей не обещаются. Outline сохранён в `extra.pdf_outline`, пока нет
-общего typed outline контракта.
+иерархия полей не обещаются. Outline имеет отдельный общий контракт и нативный профиль.
+
+Writer создаёт URI links, Text notes, highlights с подтверждёнными quadrilaterals
+и текстовые поля AcroForm при однозначной связи исходной страницы с единственной
+выходной страницей. Совпадение canonical field values и widgets проверяется
+независимыми движками. Два PDF/JSON цикла относительно оригинала и нативная правка
+поля проверены на обычной/240×200 pt странице при всех четырёх поворотах.
+Прямые изменения текста/значения и удаление объектов не восстанавливаются из backup.
+Исходные номера xref не переносятся. Поддержанный одиночный JavaScript `A` текстового
+поля переносится как inert source data; цепочки и дополнительные actions получают
+расположенный LOSS. Код библиотека не исполняет. Неподдержанные виды полей/аннотаций
+и неизвестная геометрическая связь имеют отдельную диагностику.
+
+Rich import извлекает основной текст и векторы из отдельной несохраняемой копии
+без widget/annotation appearances, чтобы не дублировать их при следующей записи.
+Повторное открытие этой копии сбрасывает нативные caches, включая cross-page links.
+Content view ограничен 128 MiB исходного файла, 256 MiB снимка и 10 000 objects.
+Полный AcroForm field tree, все appearances/actions, legacy vertices без исходной
+геометрии и независимый inspection text scope требуют дополнительной приёмки;
+конечный C-PDF-01 остаётся открытым.
 
 Неизвестные типы annotations/widgets, structure tree, layers и catalog actions
 получают состояние `opaque`, а исходный PDF сохраняется в Attachment
@@ -592,7 +610,8 @@ Plain PDF без таких объектов не получает дополн�
 
 Page/xref provenance и backup сохраняются через JSON. `assessment_complete=False`:
 наличие source-копии не означает полного семантического чтения PDF. Layout writer
-пока не восстанавливает annotations/forms/outline и opaque features; сообщает `LOSS`.
+поддерживает перечисленные конечные interactions и отдельный outline profile;
+остальные виды и opaque features имеют `LOSS`.
 Другие writer profiles не получают обещания переноса этих объектов.
 
 Координаты — точки в неповёрнутом cropbox; rotation находится в page extra и

@@ -80,7 +80,7 @@ def read_pdf_model(
     if scenario not in PDF_SCENARIO_MODES:
         raise ValueError(f"unknown PDF scenario mode {scenario!r}; expected one of {PDF_SCENARIO_MODES}")
 
-    from opendoc_formats.readers.pdf import read_pdf_geometry
+    from opendoc_formats.readers.pdf_geometry import extract_pdf_geometry
     from opendoc_formats.readers.pdf_images import (
         enrich_geometry_with_images,
         extract_pdf_images,
@@ -88,7 +88,7 @@ def read_pdf_model(
     )
 
     path = str(path)
-    geometry = read_pdf_geometry(path)
+    geometry = extract_pdf_geometry(path, exclude_interactions=True)
     engine = f"pymupdf+{scenario}+document-model"
     ocr_pages = None
 
