@@ -6,7 +6,7 @@ import math
 from dataclasses import replace
 from typing import Any
 
-from opendoc_model import ConversionReport, DocumentModel, Image, Paragraph, get_anchor
+from opendoc_model import ConversionReport, DocumentModel, Image, IssueSeverity, Paragraph, get_anchor
 
 from opendoc_formats.writers.html_writer import _HtmlRenderer
 
@@ -17,6 +17,13 @@ class PdfFlowRenderer(_HtmlRenderer):
         self.flow_ids = flow_ids
 
     def _paragraph(self, paragraph: Paragraph, location: str) -> str:
+        if paragraph.box is not None and paragraph.provenance is not None and paragraph.provenance.source_format == 'pdf':
+            # Extracted glyph bounds are observations, not a layout constraint for a substituted font.
+            paragraph = replace(paragraph, box=None)
+            self.report.add(
+                IssueSeverity.LOSS,
+                'pdf-text-layout', 'Source PDF text is reflowed; original glyph bounds are not reproduced', location,
+            )
         anchor = get_anchor(paragraph)
         if anchor is not None:
             paragraph = replace(paragraph, properties={**paragraph.properties, "anchor_id": anchor.id})

@@ -90,6 +90,16 @@ def write_pdf_model(
             flow_ids = {r.location: r.flow_id for r in rasters[section_index] if r.flow_id is not None}
             section_pdf, renderer = _render_section(document, section, section_index, report, flow_positions, flow_ids,
                                                     anchor_positions)
+            from opendoc_formats.writers.pdf_text_verify import verify_section_text
+
+            try:
+                verify_section_text(section_pdf, section, report, f'sections[{section_index}]')
+            except Exception:
+                section_pdf.close()
+                raise
+            if not report.success:
+                section_pdf.close()
+                return report
             if page_geometry is not None:
                 used_geometry_ids.add(source_page_id)
                 if section_pdf.page_count != 1:
