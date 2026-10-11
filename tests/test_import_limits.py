@@ -10,6 +10,47 @@ from pptx.util import Inches
 from opendoc_formats import ExportOptions, ImportOptions, read_document, write_document
 
 
+@pytest.mark.parametrize('path,quota,maximum', [
+    ('$.sections[0]', 'nodes', 125), (None, 'work', 0), ('$.resources', None, None),
+])
+def test_structured_sdk_quota_overrides_message_without_inventing_fields(tmp_path, path, quota, maximum):
+    from opendoc_model import ArtifactLimitError, ConversionReport
+
+    from opendoc_formats.export import ExporterRegistry, ExporterSpec
+
+    registry = ExporterRegistry()
+
+    def writer(document, destination):
+        destination.write_bytes(b'partial output')
+        raise ArtifactLimitError('misleading: bytes quota exceeded (999)', path=path, quota=quota, maximum=maximum)
+
+    registry.register(ExporterSpec('own', ('.own',), writer))
+    destination = tmp_path / 'structured.own'
+    destination.write_bytes(b'previous destination')
+    model = DocumentModel(sections=[Section(blocks=[Paragraph([TextRun('Own quota')])])])
+    report = registry.write(model, destination)
+    assert isinstance(report, ConversionReport) and not report.success
+    assert destination.read_bytes() == b'previous destination'
+    issue = next(i for i in report.issues if i.feature == 'export.document-limit')
+    assert issue.message == 'misleading: bytes quota exceeded (999)'
+    assert issue.location == str(destination) + ('#' + path if path is not None else '')
+    measured = report.metrics['document_limit']
+    assert measured.get('quota') == quota and measured.get('maximum') == maximum
+    assert ('quota' in measured) == (quota is not None)
+    assert ('maximum' in measured) == (maximum is not None)
+
+
+def test_legacy_sdk_quota_preserves_previous_location_and_measurement():
+    from opendoc_model import ArtifactLimitError
+
+    from opendoc_formats.support.document_limits import limit_diagnostic
+
+    issue = limit_diagnostic(ArtifactLimitError('$.sections[0]: nodes quota exceeded (123)'),
+                             DocumentLimits(), 'own.docx', 'import.document-limit')
+    assert issue.location == 'own.docx#$.sections[0]'
+    assert issue.measurement['quota'] == 'nodes' and issue.measurement['maximum'] == 123
+
+
 @pytest.mark.parametrize('rule,value', [('minimum', 14), ('exact', 18), ('relative', 1.15)])
 def test_model_line_spacing_two_public_json_cycles_and_native_loss(tmp_path, rule, value):
     from opendoc_model import IssueSeverity, LineSpacing, get_line_spacing, set_line_spacing

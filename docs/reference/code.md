@@ -115,7 +115,7 @@ Extensible model export with validation and atomic publication.
 
 Импорты: `__future__`, `collections.abc`, `dataclasses`, `importlib`, `opendoc_formats.support.backends`, `opendoc_formats.support.document_limits`, `opendoc_formats.support.object_mapping`, `opendoc_formats.support.output_validation`, `opendoc_formats.text_profile`, `opendoc_formats.writers.txt_writer`, `opendoc_model`, `pathlib`, `tempfile`, `typing`
 
-Тесты: [test_docx_layout_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_layout_roundtrip.py#L1)
+Тесты: [test_docx_layout_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_layout_roundtrip.py#L1), [test_import_limits.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_import_limits.py#L1)
 
 ## src/opendoc_formats/fonts/__init__.py
 
@@ -973,6 +973,8 @@ Located SDK quota failures, preserving unknown error text without guessed fields
 - `limit_diagnostic(error: ArtifactLimitError, limits: DocumentLimits, source: str, code: str) -> DiagnosticIssue` — [строка 10](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/document_limits.py#L10)
 
 Импорты: `__future__`, `opendoc_model`
+
+Тесты: [test_import_limits.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_import_limits.py#L1)
 
 ## src/opendoc_formats/support/inspection.py
 

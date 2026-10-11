@@ -14,8 +14,15 @@ def limit_diagnostic(error: ArtifactLimitError, limits: DocumentLimits, source: 
         'max_nodes': limits.max_nodes, 'max_embedded_bytes': limits.max_embedded_bytes,
     }}
     location = source
-    match = re.fullmatch(r'([^\r\n]+): ([\w ]+) quota exceeded \((\d+)\)', message)
-    if match:
-        location += '#' + match[1]
-        measurement.update({'quota': match[2], 'maximum': int(match[3])})
+    if error.path is not None:
+        location += '#' + error.path
+    if error.quota is not None:
+        measurement['quota'] = error.quota
+    if error.maximum is not None:
+        measurement['maximum'] = error.maximum
+    if error.path is None and error.quota is None and error.maximum is None:
+        match = re.fullmatch(r'([^\r\n]+): ([\w ]+) quota exceeded \((\d+)\)', message)
+        if match:
+            location += '#' + match[1]
+            measurement.update({'quota': match[2], 'maximum': int(match[3])})
     return DiagnosticIssue(code, IssueSeverity.ERROR, message, location, measurement, 'document-limit')
