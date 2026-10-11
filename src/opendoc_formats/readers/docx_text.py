@@ -92,6 +92,9 @@ def read_paragraph(paragraph: Any, model: DocumentModel) -> Paragraph:
         properties=read_paragraph_properties(paragraph),
     )
     import_heading(paragraph, result)
+    from opendoc_formats.ooxml.layout import import_common_layout
+
+    import_common_layout(result)
     return result
 
 

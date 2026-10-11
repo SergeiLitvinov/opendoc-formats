@@ -115,8 +115,10 @@ def _restore_package_graph(target: Any, document: DocumentModel, report: Convers
             report.add(IssueSeverity.ERROR, "package-graph", "Opaque OOXML relationships require their source package graph")
         return
     try:
+        from opendoc_formats.ooxml.layout import retain_layout_styles
+
         restore_package_graph(
-            target.part, retain_derived_styles(target.part, graph),
+            target.part, retain_layout_styles(retain_derived_styles(target.part, graph), document.styles, report),
             protected_roots=getattr(target.part, "_opendoc_opaque_roots", ()),
             source_parts=source_parts,
         )

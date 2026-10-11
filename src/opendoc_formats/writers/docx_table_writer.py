@@ -36,6 +36,9 @@ def write_table(
 
         target = container.add_table(rows=row_count, cols=column_count, width=Inches(6))
     _apply_table_properties(target, source.properties)
+    from opendoc_formats.ooxml.layout import export_layout
+
+    export_layout(source.properties, target._tbl.tblPr, report, location, table=True)
     export_width(source, target._tbl.tblPr, "w:tblW")
     export_borders(source, target._tbl.tblPr, report, location)
     if source.style_id:

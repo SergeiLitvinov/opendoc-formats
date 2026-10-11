@@ -36,6 +36,9 @@ def write_styles(target: Any, styles: dict[str, TextStyle], report: ConversionRe
         _apply_style_language(style, source.language)
         if style_type == WD_STYLE_TYPE.PARAGRAPH:
             apply_paragraph_format(style.paragraph_format, properties)
+            from opendoc_formats.ooxml.layout import export_layout
+
+            export_layout(properties, style.element.get_or_add_pPr(), report, f'styles[{style_id}]')
             apply_numbering(style.element.get_or_add_pPr(), properties)
         if properties.hidden is not None:
             style.hidden = properties.hidden

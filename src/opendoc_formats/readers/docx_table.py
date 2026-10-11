@@ -8,6 +8,7 @@ from typing import Any
 from opendoc_model.document_model import Block, DocumentModel, Table, TableCell, TableRow
 
 from opendoc_formats.ooxml.borders import import_borders
+from opendoc_formats.ooxml.layout import import_common_layout, import_layout
 from opendoc_formats.ooxml.widths import import_width
 
 BlockReader = Callable[[Any, DocumentModel], list[Block]]
@@ -59,6 +60,8 @@ def read_table(table: Any, model: DocumentModel, read_blocks: BlockReader) -> Ta
     result = Table(rows=rows, style_id=style_id, properties=properties)
     import_width(result)
     import_borders(result, table._tbl.tblPr)
+    import_layout(result.properties, table._tbl.tblPr, table=True)
+    import_common_layout(result)
     return result
 
 

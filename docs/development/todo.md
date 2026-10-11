@@ -26,8 +26,29 @@
 - C-MAP-01 / OF15: типизированная source → visual representation → actual target
   карта для vector→PNG с отдельными occurrences, подтверждёнными/unknown locators,
   полнотой, reason/code и статусом публикации; два цикла, перестановка и удаление.
-- C-DOCX-01/02 / OF05: прямой table indent 600 dxa (30 pt), tab stop 396 pt/right/
-  line leader; сохранить или адресно диагностировать, поддержать правку и удаление.
+- C-DOCX-03 / OF05: проверить effective color: defaults → basedOn/paragraph
+  style → character style → direct formatting, theme RGB/tint/shade, auto/unset.
+  Подтверждён собственный пример: прямой w:color auto в Heading 3 становится
+  унаследованным синим, контроль без прямого цвета сохраняется. Нужны два Word цикла,
+  правка/удаление и расположенные потери. Причина изменения цвета частных документов не считается доказанной;
+  сначала используются существующие ColorValue/properties.
+- C-DOCX-04 / OF05: сохранять правило line spacing вместе с величиной:
+  minimum 14 pt при run 24 pt не превращается в exactly 14 pt. Проверить exact/
+  minimum/relative, два DOCX/JSON и Word цикла, явную правку/удаление, наследование,
+  расположенные потери и нулевой бюджет. Сначала использовать существующие properties.
+- C-PPTX-01 / OF06: конечные собственные слайды для geometry/theme/style/groups/
+  shapes/text; сравнить каждый результат с оригиналом в PowerPoint, затем принять
+  два цикла и нативную правку. Стабильность второго упрощённого цикла не заменяет
+  исходную визуальную приёмку; полный PPTX не объявляется поддержанным.
+- C-LIMIT-01: передавать выбранные DocumentLimits во все Model codec/integration
+  операции. Проверить собственный PPTX из 35 слайдов/6720 runs с max_nodes=200000;
+  лимит default 100000 допустим, игнорирование явно выбранного бюджета — нет.
+  Превышение должно возвращать import refusal с code/location/limit; bytes/depth/
+  nodes/embed/cancel имеют конечную приёмку без слепого повышения defaults.
+- C-HTML-01: публичный ограниченный профиль structural HTML preview с только
+  используемыми font faces/glyphs. Subsetting соблюдает разрешение шрифта;
+  иначе сохраняются полный шрифт или явный отказ. Проверить Unicode/styles/colors,
+  output/memory limits/cancellation. Обычный export не меняется молча.
 
 Общие границы уже проецируются в ограниченный CSS-профиль HTML/EPUB;
 остаются семантический импорт исходных CSS borders, наследование и правила

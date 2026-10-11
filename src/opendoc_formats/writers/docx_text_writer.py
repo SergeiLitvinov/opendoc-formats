@@ -36,6 +36,18 @@ def add_paragraph(
         if alignment is not None:
             paragraph.alignment = alignment
     apply_paragraph_format(paragraph.paragraph_format, source.properties)
+    from opendoc_model import get_tab_stops
+
+    from opendoc_formats.ooxml.layout import export_layout, inherited_tab_positions
+
+    tabs = get_tab_stops(source)
+    try:
+        inherited = inherited_tab_positions(source, document) if tabs is not None and not tabs.inherit else ()
+    except (ValueError, TypeError, KeyError) as error:
+        report.add(IssueSeverity.ERROR, 'docx.tab-stops', str(error), location)
+        inherited = ()
+
+    export_layout(source.properties, paragraph._p.get_or_add_pPr(), report, location, inherited=inherited)
     export_heading(source, paragraph)
     preserves_style_numbering = (
         source.properties.get("numbering_source") == "style"

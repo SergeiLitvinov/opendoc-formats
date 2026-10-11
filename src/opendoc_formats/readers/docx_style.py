@@ -7,6 +7,7 @@ from typing import Any
 from opendoc_model.color import ColorValue
 from opendoc_model.document_model import DocumentModel, Length, TextStyle
 
+from opendoc_formats.ooxml.layout import import_layout
 from opendoc_formats.ooxml.package import OOXML_NAMESPACES, RELATIONSHIP_TYPE, package_part_for_relationship
 
 
@@ -114,6 +115,7 @@ def read_paragraph_properties(paragraph: Any) -> dict[str, Any]:
         [paragraph.paragraph_format, *[style.paragraph_format for style in _style_chain(paragraph.style)]]
     )
     properties.update(_resolved_numbering_properties(paragraph))
+    import_layout(properties, paragraph._p.pPr)
     if paragraph.style is not None:
         properties["style_name"] = paragraph.style.name
     return properties
@@ -358,7 +360,9 @@ def _style_language(style: Any) -> str | None:
 
 
 def _style_paragraph_properties(style: Any) -> dict[str, Any]:
-    return _resolved_paragraph_values([item.paragraph_format for item in _style_chain(style)])
+    result = _resolved_paragraph_values([item.paragraph_format for item in _style_chain(style)])
+    import_layout(result, style.element.pPr)
+    return result
 
 
 def _resolved_paragraph_values(formats: list[Any]) -> dict[str, Any]:

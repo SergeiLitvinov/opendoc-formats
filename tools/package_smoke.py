@@ -36,7 +36,7 @@ def main() -> None:
     from opendoc_formats.pdf import PdfDocument
 
     assert opendoc_formats.__version__ == version("opendoc-formats")
-    assert version("opendoc-model") == "0.10.2"
+    assert version("opendoc-model") == "0.11.2"
     engines = ("bs4", "fitz", "pymupdf", "lxml", "docx", "pptx", "ebooklib", "fontTools")
     assert all(name not in sys.modules for name in engines)
     installed = Path(opendoc_formats.__file__).resolve().parent
@@ -177,18 +177,27 @@ def main() -> None:
             if args.all_formats and format_id == "docx":
                 from opendoc_model import (
                     Heading,
+                    TableIndent,
+                    TabStop,
+                    TabStops,
                     WidthMeasure,
                     get_heading,
                     get_preferred_width,
+                    get_tab_stops,
+                    get_table_indent,
                     set_heading,
                     set_preferred_width,
+                    set_tab_stops,
+                    set_table_indent,
                 )
                 from opendoc_model.document_codec import document_from_json, document_to_json
 
                 heading = Paragraph([TextRun("Own formal heading")])
+                set_tab_stops(heading, TabStops((TabStop(396, alignment='right', leader='line'),)))
                 set_heading(heading, Heading(2))
                 width_cell = TableCell([Paragraph([TextRun("Own typed width")])])
                 width_table = Table([TableRow([width_cell])])
+                set_table_indent(width_table, TableIndent(30))
                 set_preferred_width(width_table, WidthMeasure("relative", 0.8, "ratio", "content"))
                 set_preferred_width(width_cell, WidthMeasure("absolute", 120, "pt"))
                 heading_model = DocumentModel(sections=[Section(blocks=[heading, width_table])])
@@ -200,7 +209,11 @@ def main() -> None:
                     assert heading_result.success, heading_result.issues
                     heading_model = heading_result.document
                     assert get_heading(heading_model.sections[0].blocks[0]) == Heading(2)
+                    assert get_tab_stops(heading_model.sections[0].blocks[0]) == TabStops((
+                        TabStop(396, alignment='right', leader='line'),
+                    ))
                     returned_table = heading_model.sections[0].blocks[1]
+                    assert get_table_indent(returned_table) == TableIndent(30)
                     assert get_preferred_width(returned_table) == WidthMeasure("relative", 0.8, "ratio", "content")
                     assert get_preferred_width(returned_table.rows[0].cells[0]) == WidthMeasure("absolute", 120, "pt")
                 with DocxPackage(path) as package:

@@ -125,9 +125,27 @@ class ExporterRegistry:
             report = written
             report.output_path = output
             if identifier in {'html', 'pdf', 'pptx', 'epub', 'latex', 'txt'}:
-                from opendoc_model import Table, TableCell, get_borders, walk_model
+                from opendoc_model import (
+                    Paragraph,
+                    Table,
+                    TableCell,
+                    TextStyle,
+                    get_borders,
+                    get_tab_stops,
+                    get_table_indent,
+                    walk_model,
+                )
 
                 for reference in walk_model(document, limits=options.document_limits):
+                    if isinstance(reference.node, (Table, Paragraph, TextStyle)):
+                        properties = reference.node.properties
+                        for key, feature in (('docx_table_indent_pt', 'table-indent'), ('docx_tab_stops', 'tab-stops')):
+                            common = (get_table_indent(reference.node) if isinstance(reference.node, Table) and
+                                      feature == 'table-indent' else get_tab_stops(reference.node)
+                                      if isinstance(reference.node, Paragraph) and feature == 'tab-stops' else None)
+                            if common is not None or properties.get(key) or properties.get(key + '_unsupported'):
+                                report.add(IssueSeverity.LOSS, 'docx.' + feature,
+                                           f'{identifier.upper()} does not preserve native Word {feature}', reference.path)
                     if isinstance(reference.node, (Table, TableCell)) and get_borders(reference.node) is not None:
                         report.add(IssueSeverity.LOSS, 'table-borders',
                                    (f'{identifier.upper()} uses a finite visual border profile '

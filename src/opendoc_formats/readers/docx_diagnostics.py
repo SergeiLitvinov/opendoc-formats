@@ -21,6 +21,7 @@ from opendoc_model import (
 )
 
 from opendoc_formats.ooxml.borders import native_only
+from opendoc_formats.ooxml.layout import native_layout_supported
 from opendoc_formats.readers.docx_features import _relationship_feature
 
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
@@ -37,10 +38,15 @@ _TAGS = {
     W + "documentProtection": "protection", W + "fldSimple": "fields",
     W + "smartTag": "smart-tags",
 }
-_XML_KEYS = {"docx_raw_inline_xml", "docx_raw_block_xml", "field_xml", "vml_xml", "document_protection_xml"}
+_XML_KEYS = {"docx_raw_inline_xml", "docx_raw_block_xml", "field_xml", "vml_xml", "document_protection_xml",
+             "docx_tabs_native_xml"}
 
 
 def _feature(node: Any) -> str | None:
+    if node.tag == W + 'tabs' and any(child.get(W + 'val') in ('start', 'end', 'num') for child in node):
+        return 'tab-stops-semantics'
+    if node.tag in {W + 'tblInd', W + 'tabs'} and not native_layout_supported(node):
+        return 'table-indent' if node.tag == W + 'tblInd' else 'tab-stops'
     if node.tag in {W + 'tblBorders', W + 'tcBorders'}:
         parent = node.getparent()
         owner = parent.getparent() if parent is not None else None
@@ -114,6 +120,11 @@ def attach_docx_diagnostics(document: Any, model: DocumentModel, source: Path) -
                 for node in root.iter():
                     feature = _feature(node)
                     if feature is None:
+                        continue
+                    # Unused numbering definitions are deliberately omitted by
+                    # the reader; their tab positions do not affect this document.
+                    if (feature in {'tab-stops', 'tab-stops-semantics', 'table-indent'}
+                            and root.tag == W + 'numbering' and stored is None):
                         continue
                     try:
                         fingerprint = _fingerprint(node)
