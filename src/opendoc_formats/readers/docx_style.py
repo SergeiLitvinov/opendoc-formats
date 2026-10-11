@@ -52,6 +52,10 @@ def read_document_defaults(document: Any, model: DocumentModel) -> TextStyle | N
     vertical = run_properties.find(qn("w:vertAlign")) if run_properties is not None else None
     vertical_value = vertical.get(qn("w:val")) if vertical is not None else None
     language = run_properties.find(qn("w:lang")) if run_properties is not None else None
+    from opendoc_formats.ooxml.spacing import import_spacing_nodes
+
+    spacing_properties: dict[str, Any] = {}
+    import_spacing_nodes(spacing_properties, paragraph_defaults)
     return TextStyle(
         font_family=font_family,
         font_size=Length(int(size.get(qn("w:val"))) / 2) if size is not None and size.get(qn("w:val")) else None,
@@ -68,6 +72,7 @@ def read_document_defaults(document: Any, model: DocumentModel) -> TextStyle | N
             "font_theme": font_theme,
             "docx_color_imported_value": resolved_color.to_dict() if isinstance(resolved_color, ColorValue) else resolved_color,
             **color_properties,
+            **spacing_properties,
             "paragraph_defaults_xml": (etree.tostring(paragraph_defaults[0], encoding="unicode") if paragraph_defaults else None),
         },
     )

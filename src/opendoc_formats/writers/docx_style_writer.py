@@ -5,20 +5,34 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
+from opendoc_model import LINE_SPACING_PROPERTY
 from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import TextStyle
+from opendoc_model.limits import DocumentLimits
 
 
-def write_styles(target: Any, styles: dict[str, TextStyle], report: ConversionReport) -> None:
+def write_styles(
+    target: Any, styles: dict[str, TextStyle], report: ConversionReport, *, limits: DocumentLimits | None = None,
+) -> None:
     from docx.enum.style import WD_STYLE_TYPE
 
     created: dict[str, Any] = {}
     for style_id, source in styles.items():
         properties = source.properties
+        if (LINE_SPACING_PROPERTY in properties
+                and properties.style_type in {'character', 'table'}):
+            report.add(IssueSeverity.ERROR, 'docx.line-spacing',
+                       'Common line spacing requires a paragraph style or document defaults in this Word profile',
+                       f'styles[{style_id}]')
+            continue
         if properties.style_type == "document-default":
             from opendoc_formats.ooxml.word_color import apply_color, default_color_owner
 
             apply_color(default_color_owner(target.styles.element), source)
+            from opendoc_formats.ooxml.spacing import default_spacing_owner, export_spacing
+
+            export_spacing(properties, default_spacing_owner(target.styles.element), report, 'styles[__doc_defaults__]',
+                           limits=limits)
             continue
         style_name = properties.style_name or style_id
         style_type_name = str(properties.style_type or "paragraph").upper()
@@ -38,7 +52,7 @@ def write_styles(target: Any, styles: dict[str, TextStyle], report: ConversionRe
         apply_font_style(style.font, source)
         _apply_style_language(style, source.language)
         if style_type == WD_STYLE_TYPE.PARAGRAPH:
-            apply_paragraph_format(style.paragraph_format, properties, report, f'styles[{style_id}]')
+            apply_paragraph_format(style.paragraph_format, properties, report, f'styles[{style_id}]', limits=limits)
             from opendoc_formats.ooxml.layout import export_layout
 
             export_layout(properties, style.element.get_or_add_pPr(), report, f'styles[{style_id}]')
@@ -57,6 +71,7 @@ def write_styles(target: Any, styles: dict[str, TextStyle], report: ConversionRe
 
 def apply_paragraph_format(
     paragraph_format: Any, properties: Mapping[str, Any], report: ConversionReport, location: str,
+    *, limits: DocumentLimits | None = None,
 ) -> None:
     from docx.shared import Pt
 
@@ -66,7 +81,7 @@ def apply_paragraph_format(
             setattr(paragraph_format, name, Pt(value))
     from opendoc_formats.ooxml.spacing import export_spacing
 
-    export_spacing(properties, paragraph_format._element.get_or_add_pPr(), report, location)
+    export_spacing(properties, paragraph_format._element.get_or_add_pPr(), report, location, limits=limits)
     for name in ("keep_together", "keep_with_next", "page_break_before", "widow_control"):
         if properties.get(name) is not None:
             setattr(paragraph_format, name, bool(properties[name]))

@@ -52,7 +52,7 @@ def test_legacy_sdk_quota_preserves_previous_location_and_measurement():
 
 
 @pytest.mark.parametrize('rule,value', [('minimum', 14), ('exact', 18), ('relative', 1.15)])
-def test_model_line_spacing_two_public_json_cycles_and_native_loss(tmp_path, rule, value):
+def test_model_line_spacing_two_public_json_cycles_and_native_application(tmp_path, rule, value):
     from opendoc_model import IssueSeverity, LineSpacing, get_line_spacing, set_line_spacing
 
     paragraph = Paragraph([TextRun('Own declared spacing')])
@@ -72,9 +72,11 @@ def test_model_line_spacing_two_public_json_cycles_and_native_loss(tmp_path, rul
     report = write_document(model, target, options=ExportOptions(
         quality_gate=lambda report, _: not any(issue.severity is IssueSeverity.LOSS for issue in report.issues),
     ))
-    assert not report.success and target.read_bytes() == b'previous destination'
-    assert any(issue.feature == 'line-spacing' and '.properties.opendoc.line-spacing' in issue.location
-               for issue in report.issues)
+    assert report.success, report.issues
+    for _ in range(2):
+        restored = read_document(target).document
+        assert get_line_spacing(restored.sections[0].blocks[0]) == LineSpacing(rule, value)
+        assert write_document(restored, target).success
     assert document_to_json(model) == expected
 
 

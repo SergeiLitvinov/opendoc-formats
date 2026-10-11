@@ -154,7 +154,7 @@ class ExporterRegistry:
                 return fail("export.invalid-result", "Writer did not return an OpenDoc ConversionReport")
             report = written
             report.output_path = output
-            if isinstance(exporter.writer, _ModelWriter) or exporter.writer is _txt:
+            if identifier != 'docx' and (isinstance(exporter.writer, _ModelWriter) or exporter.writer is _txt):
                 from opendoc_model import LINE_SPACING_PROPERTY, Paragraph, TextStyle, walk_model
 
                 for reference in walk_model(document, limits=options.document_limits):

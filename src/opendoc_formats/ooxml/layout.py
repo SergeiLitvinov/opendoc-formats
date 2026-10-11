@@ -12,6 +12,8 @@ from typing import Any
 from opendoc_model import (
     TAB_STOPS_PROPERTY,
     TABLE_INDENT_PROPERTY,
+    ArtifactLimitError,
+    DocumentLimits,
     DocumentModel,
     IssueSeverity,
     PackageGraph,
@@ -262,13 +264,15 @@ def export_layout(properties: Mapping[str, Any], owner: Any, report: Any, locati
         report.add(IssueSeverity.ERROR, 'docx.' + ('table-indent' if table else 'tab-stops'), str(error), location)
 
 
-def retain_layout_styles(graph: PackageGraph, styles: Mapping[str, TextStyle], report: Any) -> PackageGraph:
+def retain_layout_styles(
+    graph: PackageGraph, styles: Mapping[str, TextStyle], report: Any, *, limits: DocumentLimits | None = None,
+) -> PackageGraph:
     """Patch only owned tab declarations in a copied source style part, retaining unrelated native properties."""
     from docx.oxml import OxmlElement, parse_xml
     from lxml import etree
 
     from opendoc_formats.ooxml.package import RELATIONSHIP_TYPE
-    from opendoc_formats.ooxml.spacing import export_spacing, spacing_needs_patch
+    from opendoc_formats.ooxml.spacing import default_spacing_owner, export_spacing, spacing_needs_patch
     from opendoc_formats.ooxml.word_color import apply_color, color_needs_patch, default_color_owner
 
     selected = {key: style for key, style in styles.items() if any(name in style.properties for name in (
@@ -285,6 +289,9 @@ def retain_layout_styles(graph: PackageGraph, styles: Mapping[str, TextStyle], r
             if style.properties.style_type == 'document-default':
                 if color_needs_patch(style):
                     apply_color(default_color_owner(root), style)
+                if spacing_needs_patch(style.properties):
+                    export_spacing(style.properties, default_spacing_owner(root), report,
+                                   f'styles[{identifier}]', limits=limits)
                 continue
             nodes = [node for node in root.findall(W + 'style') if node.get(W + 'styleId') == identifier]
             if len(nodes) != 1:
@@ -303,10 +310,12 @@ def retain_layout_styles(graph: PackageGraph, styles: Mapping[str, TextStyle], r
                 nodes[0].insert_element_before(owner, 'w:rPr', 'w:tblPr', 'w:trPr', 'w:tcPr', 'w:tblStylePr')
             export_layout(style.properties, owner, report, f'styles[{identifier}]')
             if spacing_needs_patch(style.properties):
-                export_spacing(style.properties, owner, report, f'styles[{identifier}]')
+                export_spacing(style.properties, owner, report, f'styles[{identifier}]', limits=limits)
         parts = dict(graph.parts)
         parts[part.name] = replace(part, data=etree.tostring(root, encoding='UTF-8', xml_declaration=True))
         return replace(graph, parts=parts)
+    except ArtifactLimitError:
+        raise
     except (ValueError, etree.XMLSyntaxError) as error:
         report.add(IssueSeverity.ERROR, 'docx.tab-stops', str(error), 'styles')
         return graph

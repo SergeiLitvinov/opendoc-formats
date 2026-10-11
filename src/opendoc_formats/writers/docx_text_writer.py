@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from typing import Any
 
+from opendoc_model import LINE_SPACING_PROPERTY
 from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import DocumentModel, Formula, FormulaFormat, Image, Paragraph, TextRun
+from opendoc_model.limits import DocumentLimits
 
 from opendoc_formats.ooxml.headings import export_heading
 from opendoc_formats.ooxml.package import RELATIONSHIP_TYPE
@@ -20,6 +22,7 @@ def add_paragraph(
     document: DocumentModel,
     report: ConversionReport,
     location: str,
+    *, limits: DocumentLimits | None = None,
 ) -> Any:
     """Создать и оформить абзац модели в python-docx container."""
 
@@ -39,7 +42,7 @@ def add_paragraph(
         alignment = getattr(WD_ALIGN_PARAGRAPH, source.alignment.upper(), None)
         if alignment is not None:
             paragraph.alignment = alignment
-    apply_paragraph_format(paragraph.paragraph_format, source.properties, report, location)
+    apply_paragraph_format(paragraph.paragraph_format, source.properties, report, location, limits=limits)
     if (document.source_format == 'docx' and 'docx_line_spacing_rule' not in source.properties
             and any(source.properties.get(key) is not None for key in ('line_spacing', 'line_spacing_pt'))):
         report.add(IssueSeverity.LOSS, 'docx.line-spacing-rule',
@@ -105,6 +108,10 @@ def write_paragraph_content(
     for index, item in enumerate(source.content):
         item_location = f"{location}.content[{index}]"
         if isinstance(item, TextRun):
+            if LINE_SPACING_PROPERTY in item.style.properties:
+                report.add(IssueSeverity.ERROR, 'docx.line-spacing',
+                           'An inline run style does not declare paragraph line spacing in Word', item_location + '.style')
+                continue
             if document.source_format == "html" and item.properties.get("anchor_id"):
                 from opendoc_formats.writers.docx_html_links import add_bookmark
 

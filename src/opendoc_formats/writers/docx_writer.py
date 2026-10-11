@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from functools import partial
 from pathlib import Path
 from typing import Any
 
+from opendoc_model import ArtifactLimitError
 from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import (
     Block,
@@ -57,7 +59,7 @@ def write_docx_model(
     target = Document()
     _write_metadata(target, document.metadata)
     _restore_document_protection(target, document.metadata, report)
-    write_styles(target, document.styles, report)
+    write_styles(target, document.styles, report, limits=limits)
     target.settings.odd_and_even_pages_header_footer = any(
         bool(section.properties.odd_and_even_pages_header_footer)
         or bool(section.even_page_headers)
@@ -72,11 +74,12 @@ def write_docx_model(
             target_section = target.sections[0]
         else:
             target_section = target.add_section(section_start_type(source_section, WD_SECTION))
-        configure_section(target_section, source_section, document, report, section_index, counters, _write_blocks)
-        _write_blocks(target, source_section.blocks, document, report, f"sections[{section_index}]", counters)
+        configure_section(target_section, source_section, document, report, section_index, counters,
+                          partial(_write_blocks, limits=limits))
+        _write_blocks(target, source_section.blocks, document, report, f"sections[{section_index}]", counters, limits=limits)
 
     embed_docx_fonts(target, document, report)
-    _restore_package_graph(target, document, report)
+    _restore_package_graph(target, document, report, limits=limits)
     if not report.success:
         return report
     try:
@@ -106,7 +109,9 @@ def _write_metadata(target: Any, metadata: dict[str, Any]) -> None:
             setattr(properties, name, str(value))
 
 
-def _restore_package_graph(target: Any, document: DocumentModel, report: ConversionReport) -> None:
+def _restore_package_graph(
+    target: Any, document: DocumentModel, report: ConversionReport, *, limits: DocumentLimits | None = None,
+) -> None:
     graph = document.package
     source_parts = {
         part._opendoc_source_part: part for part in target.part.package.iter_parts()
@@ -134,10 +139,12 @@ def _restore_package_graph(target: Any, document: DocumentModel, report: Convers
         from opendoc_formats.ooxml.layout import retain_layout_styles
 
         restore_package_graph(
-            target.part, retain_layout_styles(retain_derived_styles(target.part, graph), document.styles, report),
+            target.part, retain_layout_styles(retain_derived_styles(target.part, graph), document.styles, report, limits=limits),
             protected_roots=getattr(target.part, "_opendoc_opaque_roots", ()),
             source_parts=source_parts,
         )
+    except ArtifactLimitError:
+        raise
     except Exception as error:  # noqa: BLE001 - foreign package parts are a diagnostic boundary
         report.add(IssueSeverity.ERROR, "package-graph", f"OOXML package graph could not be restored: {error}")
 
@@ -169,6 +176,7 @@ def _write_blocks(
     report: ConversionReport,
     location: str,
     counters: dict[str, int],
+    *, limits: DocumentLimits | None = None,
 ) -> None:
     for index, block in enumerate(blocks):
         block_location = f"{location}.blocks[{index}]"
@@ -177,11 +185,11 @@ def _write_blocks(
                 _write_raw_block(container, str(block.properties["docx_raw_block_xml"]), report, block_location)
                 counters["paragraphs"] += 1
                 continue
-            paragraph = add_paragraph(container, block, document, report, block_location)
+            paragraph = add_paragraph(container, block, document, report, block_location, limits=limits)
             write_paragraph_content(paragraph, block, document, report, block_location, counters)
             counters["paragraphs"] += 1
         elif isinstance(block, Table):
-            write_table(container, block, document, report, block_location, counters, _write_blocks)
+            write_table(container, block, document, report, block_location, counters, partial(_write_blocks, limits=limits))
             counters["tables"] += 1
         elif isinstance(block, Formula):
             paragraph = container.add_paragraph()
