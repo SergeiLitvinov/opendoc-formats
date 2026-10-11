@@ -22,6 +22,7 @@ from opendoc_model import (
     PreservationRecord,
     PreservationState,
     Provenance,
+    get_anchor,
     get_integration,
     object_mapping_from_dict,
     object_mapping_to_dict,
@@ -192,7 +193,8 @@ def attach_history_map(document: DocumentModel, path: str | Path, matched: list[
         source = history.sources[0]
         sources[source.id] = source
         target_id = f'imported-target-{index}'
-        targets.append(ObjectOccurrence(target_id, resource_id=image.resource_id,
+        anchor = get_anchor(image)
+        targets.append(ObjectOccurrence(target_id, node_id=anchor.id if anchor else None, resource_id=image.resource_id,
                                         native_locator=NativeObjectLocator('pdf', json.dumps(route['locator'], sort_keys=True))))
         ids, first_resource, issue = entries.setdefault(source.id, ([], image.resource_id, history.entries[0].issue))
         ids.append(target_id)

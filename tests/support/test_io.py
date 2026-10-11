@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import zipfile
+from pathlib import Path
 
 import pytest
 
@@ -283,6 +284,91 @@ class TestCheckArchiveSafety:
 
 
 class TestAtomicWrites:
+    @pytest.mark.parametrize('phase', ['backup', 'publish'])
+    def test_directory_transient_windows_lock_retries_without_losing_output(self, tmp_path, monkeypatch, phase):
+        from opendoc_formats.support import io
+
+        source, target = tmp_path / 'staged', tmp_path / 'output'
+        source.mkdir()
+        target.mkdir()
+        (source / 'new').write_bytes(b'new')
+        (target / 'old').write_bytes(b'old')
+        original = os.replace
+        failures = []
+        waits = []
+
+        def locked(src, dst):
+            selected = Path(src) == (target if phase == 'backup' else source)
+            if selected and len(failures) < 2:
+                failures.append(src)
+                error = PermissionError('transient native lock')
+                error.winerror = 32
+                raise error
+            original(src, dst)
+
+        monkeypatch.setattr(io.os, 'replace', locked)
+        monkeypatch.setattr(io.time, 'sleep', waits.append)
+        assert atomic_replace_directory(source, target) == target
+        assert (target / 'new').read_bytes() == b'new'
+        assert not source.exists() and not list(tmp_path.glob('.*.backup'))
+        assert waits == [0.05, 0.1]
+
+    @pytest.mark.parametrize('native', [True, False])
+    def test_directory_permanent_failure_restores_previous_output(self, tmp_path, monkeypatch, native):
+        from opendoc_formats.support import io
+
+        source, target = tmp_path / 'staged', tmp_path / 'output'
+        source.mkdir()
+        target.mkdir()
+        (source / 'new').write_bytes(b'new')
+        (target / 'old').write_bytes(b'old')
+        original = os.replace
+        waits = []
+        attempts = []
+
+        def fail_publish(src, dst):
+            if Path(src) == source:
+                attempts.append(src)
+                error = PermissionError('permanent access failure')
+                if native:
+                    error.winerror = 5
+                raise error
+            original(src, dst)
+
+        monkeypatch.setattr(io.os, 'replace', fail_publish)
+        monkeypatch.setattr(io.time, 'sleep', waits.append)
+        with pytest.raises(PermissionError):
+            atomic_replace_directory(source, target)
+        assert (target / 'old').read_bytes() == b'old'
+        assert (source / 'new').read_bytes() == b'new'
+        assert not list(tmp_path.glob('.*.backup'))
+        assert len(attempts) == (5 if native else 1)
+        assert len(waits) == (4 if native else 0)
+
+    def test_directory_cleanup_failure_reports_committed_output_and_backup(self, tmp_path, monkeypatch, caplog):
+        import shutil
+
+        from opendoc_formats.support import io
+
+        source, target = tmp_path / 'staged', tmp_path / 'output'
+        source.mkdir()
+        target.mkdir()
+        (source / 'new').write_bytes(b'new')
+        (target / 'old').write_bytes(b'old')
+
+        def locked_backup(path):
+            error = PermissionError('backup locked')
+            error.winerror = 33
+            raise error
+
+        monkeypatch.setattr(shutil, 'rmtree', locked_backup)
+        monkeypatch.setattr(io.time, 'sleep', lambda delay: None)
+        assert atomic_replace_directory(source, target) == target
+        assert (target / 'new').read_bytes() == b'new'
+        backups = list(tmp_path.glob('.*.backup'))
+        assert len(backups) == 1 and (backups[0] / 'old').read_bytes() == b'old'
+        assert 'cleanup remains pending' in caplog.text and str(backups[0]) in caplog.text
+
     def test_atomic_write_text_creates_parents(self, tmp_path):
         target = tmp_path / "nested" / "out.txt"
         atomic_write_text(target, "hello", encoding="utf-8")

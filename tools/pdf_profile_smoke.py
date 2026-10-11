@@ -141,11 +141,21 @@ def main() -> None:
             assert svg_mapping.assessment_complete and len(svg_mapping.targets) == 2
             validate_object_mapping(svg_mapping, source=svg_model, target=read_document(svg_output).document)
             svg_origins = {item.id for item in read_pdf_origin_mapping(svg_output).sources}
+            from opendoc_formats import compose_object_mappings
+
+            composed = svg_mapping
             for cycle in range(2):
                 carried = document_from_json(document_to_json(read_document(svg_output).document))
                 svg_output = output / f'svg-cycle-{cycle}.pdf'
                 svg_report = write_document(carried, svg_output)
                 assert svg_report.success, svg_report.to_dict()
+                next_mapping = get_object_mapping(svg_report)
+                source_nodes = {item.node_id: item.id for item in next_mapping.sources}
+                bridges = {item.id: (source_nodes[item.node_id],) for item in composed.targets}
+                composed = compose_object_mappings(
+                    composed, next_mapping, bridges, source=svg_model, target=read_document(svg_output).document,
+                )
+                assert composed.assessment_complete and len(composed.targets) == 2
                 restored = read_pdf_origin_mapping(svg_output)
                 assert restored.assessment_complete and {item.id for item in restored.sources} == svg_origins
             raster_source = output / "raster-source.pdf"

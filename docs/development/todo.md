@@ -19,7 +19,10 @@
   rollback убирают actual target claims. История деклараций подтверждена через
   два полных PDF/JSON цикла, перестановку, удаление и повторный импорт.
   Карта SVG→PNG подтверждена для нативного и потокового размещения,
-  target resources и двух полных циклов. Открыты общая композиция и правила split/merge.
+  target resources и двух полных циклов. Композиция явных bridge relations и
+  connected split/merge реализована, включая неизвестную связь и частичную потерю.
+  Открыты автоматическое подтверждение связи произвольных intermediate snapshots,
+  полный инвентарь объектов и нативные сценарии произвольного split/merge.
 - C-MAP-01 / OF15: типизированная source → visual representation → actual target
   карта для vector→PNG с отдельными occurrences, подтверждёнными/unknown locators,
   полнотой, reason/code и статусом публикации; два цикла, перестановка и удаление.

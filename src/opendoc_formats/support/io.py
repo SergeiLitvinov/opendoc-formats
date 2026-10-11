@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 import os
 import re
+import time
 import uuid
 import zipfile
 from collections import defaultdict
+from collections.abc import Callable
 from pathlib import Path
 from typing import Iterable, Optional, Union
 
@@ -212,6 +215,19 @@ def atomic_copy(src: PathLike, dst: PathLike, *, max_bytes: int | None = 100 * 1
     return target
 
 
+def _directory_operation(operation: Callable[[], None]) -> None:
+    """Retry only native Windows access/sharing failures, at most five attempts."""
+    delays = (0.05, 0.1, 0.2, 0.4)
+    for attempt in range(len(delays) + 1):
+        try:
+            operation()
+            return
+        except OSError as error:
+            if getattr(error, 'winerror', None) not in (5, 32, 33) or attempt == len(delays):
+                raise
+            time.sleep(delays[attempt])
+
+
 def atomic_replace_directory(src: PathLike, dst: PathLike) -> Path:
     """Replace a generated directory with rollback if the final rename fails.
 
@@ -234,17 +250,21 @@ def atomic_replace_directory(src: PathLike, dst: PathLike) -> Path:
         if target.exists():
             if not target.is_dir():
                 raise ValueError("target exists and is not a directory")
-            os.replace(target, backup)
+            _directory_operation(lambda: os.replace(target, backup))
             moved_existing = True
-        os.replace(source, target)
+        _directory_operation(lambda: os.replace(source, target))
         committed = True
     except Exception:
         if moved_existing and backup.exists() and not target.exists():
-            os.replace(backup, target)
+            _directory_operation(lambda: os.replace(backup, target))
         raise
     finally:
         if committed and backup.exists():
-            shutil.rmtree(backup)
+            try:
+                _directory_operation(lambda: shutil.rmtree(backup))
+            except OSError:
+                # The publication is committed: cleanup failure must not falsely report rollback.
+                logging.getLogger(__name__).warning('Directory published; sibling backup cleanup remains pending: %s', backup)
     return target
 
 

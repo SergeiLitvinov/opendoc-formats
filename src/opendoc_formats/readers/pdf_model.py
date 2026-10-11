@@ -123,6 +123,11 @@ def read_pdf_model(
     from opendoc_formats.support.pdf_mapping_history import HISTORY_KEY, attach_history_map, load_history
 
     history_routes, history_issues = load_history(path)
+    from opendoc_model import Anchor, set_anchor
+
+    from opendoc_formats.support.object_mapping import _result_id
+
+    source_identity = _result_id(Path(path)).removeprefix('sha256:')
     matched_history = []
     sections: list[Section] = []
     resources: dict[str, Resource] = {}
@@ -225,6 +230,7 @@ def read_pdf_model(
                 resource_id=resource_id, box=box, provenance=image_origin, crop=img.crop,
                 properties={"pdf_image_transform": list(img.transform)} if img.transform else {},
             )
+            set_anchor(image, Anchor(f'pdf-image-{source_identity}-{page.number}-{img.number}'))
             route = history_routes.get((page.number - 1, img.number))
             if route is not None:
                 image.properties[HISTORY_KEY] = route['history']

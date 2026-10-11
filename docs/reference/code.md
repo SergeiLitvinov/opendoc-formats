@@ -7,7 +7,7 @@
 Document format readers and writers built on the OpenDoc model.
 
 
-Импорты: `api`, `export`, `importlib.metadata`, `support.object_mapping`, `support.pdf_mapping_history`, `text_profile`
+Импорты: `api`, `export`, `importlib.metadata`, `support.mapping_composition`, `support.object_mapping`, `support.pdf_mapping_history`, `text_profile`
 
 ## src/opendoc_formats/api.py
 
@@ -691,7 +691,7 @@ PDF → модель OpenDoc: геометрия, семантические б�
 
 - `read_pdf_model(*, path: str | Path, use_ocr: bool=False, ocr_backend: str='', handwriting: bool=False, use_gpu: bool=False, mode: str | None=None, ocr_engine_factory: Callable[..., Any] | None=None) -> DocumentModel` — [строка 44](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_model.py#L44)
 
-Импорты: `__future__`, `collections.abc`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_images`, `opendoc_formats.readers.pdf_interactive`, `opendoc_formats.readers.pdf_ocr_merge`, `opendoc_formats.support.pdf_mapping_history`, `opendoc_formats.types`, `opendoc_model.color`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
+Импорты: `__future__`, `collections.abc`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_images`, `opendoc_formats.readers.pdf_interactive`, `opendoc_formats.readers.pdf_ocr_merge`, `opendoc_formats.support.object_mapping`, `opendoc_formats.support.pdf_mapping_history`, `opendoc_formats.types`, `opendoc_model`, `opendoc_model.color`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
 
 ## src/opendoc_formats/readers/pdf_ocr_merge.py
 
@@ -943,28 +943,28 @@ Availability checks for optional modules, including missing dotted parents.
 
 Файловые утилиты: хеширование, безопасные архивы и атомарная запись.
 
-- `ArchiveSafetyError` — [строка 21](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L21)
-- `check_archive_safety(path: PathLike, *, max_entries: int=DEFAULT_MAX_ARCHIVE_ENTRIES, max_total_size: int=DEFAULT_MAX_ARCHIVE_SIZE, max_ratio: int=DEFAULT_MAX_COMPRESSION_RATIO) -> None` — [строка 25](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L25)
-- `compute_hash(path: PathLike, algorithm: str='sha256', chunk: int=65536) -> str` — [строка 78](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L78)
-- `find_duplicates_by_paths(paths: Iterable[PathLike]) -> list[set[Path]]` — [строка 88](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L88)
-- `find_duplicates_in_folder(folder: PathLike) -> dict[Path, list[Path]]` — [строка 98](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L98)
-- `sanitize_filename(name: str, replacement: str='_') -> str` — [строка 116](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L116)
-- `sanitize_path(path: str) -> str` — [строка 123](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L123)
-- `ensure_dir(path: PathLike) -> Path` — [строка 128](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L128)
-- `ensure_folder(folder: PathLike) -> Path` — [строка 135](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L135)
-- `read_text_file(path: PathLike) -> str` — [строка 140](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L140)
-- `write_text_file(path: PathLike, content: str) -> None` — [строка 149](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L149)
-- `atomic_write_text(path: PathLike, content: str, encoding: str='utf-8', *, max_bytes: int | None=100 * 1024 * 1024) -> Path` — [строка 161](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L161)
-- `atomic_write_bytes(path: PathLike, data: bytes, *, max_bytes: int | None=100 * 1024 * 1024) -> Path` — [строка 185](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L185)
-- `atomic_copy(src: PathLike, dst: PathLike, *, max_bytes: int | None=100 * 1024 * 1024) -> Path` — [строка 199](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L199)
-- `atomic_replace_directory(src: PathLike, dst: PathLike) -> Path` — [строка 215](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L215)
-- `progress_bar(current: int, total: int, width: int=30) -> str` — [строка 251](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L251)
-- `validate_pdf(file_path: PathLike) -> bool` — [строка 258](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L258)
-- `get_file_info(file_path: PathLike) -> dict` — [строка 271](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L271)
-- `list_files(folder: PathLike, extensions: Optional[list[str]]=None, recursive: bool=False) -> list[dict]` — [строка 285](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L285)
-- `create_zip_archive(files: list[Path], output_path: Path) -> Path` — [строка 303](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L303)
+- `ArchiveSafetyError` — [строка 24](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L24)
+- `check_archive_safety(path: PathLike, *, max_entries: int=DEFAULT_MAX_ARCHIVE_ENTRIES, max_total_size: int=DEFAULT_MAX_ARCHIVE_SIZE, max_ratio: int=DEFAULT_MAX_COMPRESSION_RATIO) -> None` — [строка 28](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L28)
+- `compute_hash(path: PathLike, algorithm: str='sha256', chunk: int=65536) -> str` — [строка 81](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L81)
+- `find_duplicates_by_paths(paths: Iterable[PathLike]) -> list[set[Path]]` — [строка 91](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L91)
+- `find_duplicates_in_folder(folder: PathLike) -> dict[Path, list[Path]]` — [строка 101](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L101)
+- `sanitize_filename(name: str, replacement: str='_') -> str` — [строка 119](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L119)
+- `sanitize_path(path: str) -> str` — [строка 126](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L126)
+- `ensure_dir(path: PathLike) -> Path` — [строка 131](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L131)
+- `ensure_folder(folder: PathLike) -> Path` — [строка 138](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L138)
+- `read_text_file(path: PathLike) -> str` — [строка 143](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L143)
+- `write_text_file(path: PathLike, content: str) -> None` — [строка 152](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L152)
+- `atomic_write_text(path: PathLike, content: str, encoding: str='utf-8', *, max_bytes: int | None=100 * 1024 * 1024) -> Path` — [строка 164](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L164)
+- `atomic_write_bytes(path: PathLike, data: bytes, *, max_bytes: int | None=100 * 1024 * 1024) -> Path` — [строка 188](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L188)
+- `atomic_copy(src: PathLike, dst: PathLike, *, max_bytes: int | None=100 * 1024 * 1024) -> Path` — [строка 202](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L202)
+- `atomic_replace_directory(src: PathLike, dst: PathLike) -> Path` — [строка 231](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L231)
+- `progress_bar(current: int, total: int, width: int=30) -> str` — [строка 271](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L271)
+- `validate_pdf(file_path: PathLike) -> bool` — [строка 278](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L278)
+- `get_file_info(file_path: PathLike) -> dict` — [строка 291](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L291)
+- `list_files(folder: PathLike, extensions: Optional[list[str]]=None, recursive: bool=False) -> list[dict]` — [строка 305](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L305)
+- `create_zip_archive(files: list[Path], output_path: Path) -> Path` — [строка 323](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L323)
 
-Импорты: `__future__`, `collections`, `opendoc_formats.support.artifacts`, `pathlib`, `typing`
+Импорты: `__future__`, `collections`, `collections.abc`, `opendoc_formats.support.artifacts`, `pathlib`, `typing`
 
 Тесты: [test_io.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_io.py#L1)
 
@@ -977,6 +977,14 @@ Availability checks for optional modules, including missing dotted parents.
 Импорты: отсутствуют
 
 Тесты: [test_latex.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_latex.py#L1), [test_full_contract.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_full_contract.py#L1)
+
+## src/opendoc_formats/support/mapping_composition.py
+
+Bounded composition of explicit occurrence relations using OpenDoc's public codec.
+
+- `compose_object_mappings(first: ObjectMapping, second: ObjectMapping, bridges: Mapping[str, tuple[str, ...] | None], *, source: DocumentModel | None=None, target: DocumentModel | None=None) -> ObjectMapping` — [строка 26](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/mapping_composition.py#L26)
+
+Импорты: `__future__`, `collections.abc`, `dataclasses`, `opendoc_model`
 
 ## src/opendoc_formats/support/object_mapping.py
 
@@ -1015,12 +1023,12 @@ Readability checks for staged exports; these do not measure visual fidelity.
 
 Bounded inert vector-origin declarations, bound anew to measured native rasters.
 
-- `origin_history(source: ObjectOccurrence, issue: DiagnosticIssue) -> dict[str, Any]` — [строка 38](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/pdf_mapping_history.py#L38)
-- `checked_history(raw: Any) -> dict[str, Any]` — [строка 51](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/pdf_mapping_history.py#L51)
-- `embed_history(pdf: Any, histories: dict[int, dict[str, Any]], placements: dict[int, list[tuple[int, int, bytes]]]) -> None` — [строка 67](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/pdf_mapping_history.py#L67)
-- `load_history(path: str | Path) -> tuple[dict[tuple[int, int], dict[str, Any]], list[DiagnosticIssue]]` — [строка 122](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/pdf_mapping_history.py#L122)
-- `attach_history_map(document: DocumentModel, path: str | Path, matched: list[tuple[Any, dict[str, Any]]], issues: list[DiagnosticIssue]) -> ObjectMapping | None` — [строка 182](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/pdf_mapping_history.py#L182)
-- `read_pdf_origin_mapping(path: str | Path) -> ObjectMapping | None` — [строка 227](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/pdf_mapping_history.py#L227)
+- `origin_history(source: ObjectOccurrence, issue: DiagnosticIssue) -> dict[str, Any]` — [строка 39](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/pdf_mapping_history.py#L39)
+- `checked_history(raw: Any) -> dict[str, Any]` — [строка 52](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/pdf_mapping_history.py#L52)
+- `embed_history(pdf: Any, histories: dict[int, dict[str, Any]], placements: dict[int, list[tuple[int, int, bytes]]]) -> None` — [строка 68](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/pdf_mapping_history.py#L68)
+- `load_history(path: str | Path) -> tuple[dict[tuple[int, int], dict[str, Any]], list[DiagnosticIssue]]` — [строка 123](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/pdf_mapping_history.py#L123)
+- `attach_history_map(document: DocumentModel, path: str | Path, matched: list[tuple[Any, dict[str, Any]]], issues: list[DiagnosticIssue]) -> ObjectMapping | None` — [строка 183](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/pdf_mapping_history.py#L183)
+- `read_pdf_origin_mapping(path: str | Path) -> ObjectMapping | None` — [строка 229](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/pdf_mapping_history.py#L229)
 
 Импорты: `__future__`, `dataclasses`, `opendoc_formats.readers.pdf_model`, `opendoc_formats.support.object_mapping`, `opendoc_formats.writers.html_resources`, `opendoc_model`, `pathlib`, `typing`
 

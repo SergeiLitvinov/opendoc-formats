@@ -32,6 +32,7 @@ nav:
       - Свои обработчики: guide/extensions.md
       - Архитектура и зависимость: guide/architecture.md
       - Нативный доступ: guide/native-access.md
+      - Карты объектов: guide/object-mapping.md
       - Проверенные возможности: guide/format-audit.md
       - Зависимости: guide/dependencies.md
   - Справочник:

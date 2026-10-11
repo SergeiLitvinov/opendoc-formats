@@ -224,14 +224,17 @@ class PdfFallbackMapping:
         targets: list[ObjectOccurrence] = []
         entries: list[ObjectMappingEntry] = []
         target_resources = {}
-        if self.generated:
+        if self.sources:
             from opendoc_formats.readers.pdf_model import read_pdf_model
             from opendoc_formats.writers.html_resources import document_images
 
             snapshot = read_pdf_model(path=path)
             for image, _ in document_images(snapshot):
                 if image.provenance is not None and 'pdf_mapping_number' in image.properties:
-                    target_resources[image.provenance.page - 1, image.properties['pdf_mapping_number']] = image.resource_id
+                    anchor = get_anchor(image)
+                    target_resources[image.provenance.page - 1, image.properties['pdf_mapping_number']] = (
+                        image.resource_id, anchor.id if anchor else None,
+                    )
         with pymupdf.open(path) as pdf:
             cached: dict[int, list[dict[str, Any]]] = {}
             for index, entry in enumerate(self.entries):
@@ -247,7 +250,7 @@ class PdfFallbackMapping:
                         confirmed = False
                         break
                     native = images[occurrence]
-                    resource_id = target_resources.get((page, native['number'])) if index in self.generated else None
+                    resource_id, node_id = target_resources.get((page, native['number']), (None, None))
                     if index in self.generated and resource_id is None:
                         confirmed = False
                         break
@@ -256,7 +259,7 @@ class PdfFallbackMapping:
                     identifier = f'target-{index}-{number}'
                     locator = json.dumps({'page': page, 'image': occurrence, 'xref': native['xref'],
                                           'bbox': list(native['bbox']), 'digest': digest.hex()}, sort_keys=True)
-                    targets.append(ObjectOccurrence(id=identifier, resource_id=resource_id,
+                    targets.append(ObjectOccurrence(id=identifier, node_id=node_id, resource_id=resource_id,
                                                     native_locator=NativeObjectLocator('pdf', locator)))
                     ids.append(identifier)
                 if not confirmed:
