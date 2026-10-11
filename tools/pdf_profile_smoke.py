@@ -93,7 +93,7 @@ def main() -> None:
             assert vector_report.success and vector_report.metrics["pdf_vectors"]["native"] == 1, vector_report.to_dict()
             from opendoc_model import Resource, ResourceKind, VisualSurrogate
 
-            from opendoc_formats import get_object_mapping
+            from opendoc_formats import get_object_mapping, read_pdf_origin_mapping
             from opendoc_formats.writers.html_resources import document_images
 
             image, _ = next(document_images(restored))
@@ -115,6 +115,17 @@ def main() -> None:
             ))
             assert not rejected.success and mapped_output.read_bytes() == previous
             assert get_object_mapping(rejected).publication == "rejected" and not get_object_mapping(rejected).targets
+            origins = read_pdf_origin_mapping(mapped_output)
+            expected_origins = {item.id for item in origins.sources}
+            for cycle in range(2):
+                imported = read_document(mapped_output)
+                assert imported.success, imported.issues
+                carried = document_from_json(document_to_json(imported.document))
+                mapped_output = output / f"origin-cycle-{cycle}.pdf"
+                report = write_document(carried, mapped_output)
+                assert report.success, report.to_dict()
+                origins = read_pdf_origin_mapping(mapped_output)
+                assert origins.assessment_complete and {item.id for item in origins.sources} == expected_origins
             raster_source = output / "raster-source.pdf"
             with fitz.open() as fixture:
                 pixels = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, 20, 30), False)

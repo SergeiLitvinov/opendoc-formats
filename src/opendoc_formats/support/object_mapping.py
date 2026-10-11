@@ -67,12 +67,14 @@ class PdfFallbackMapping:
 
     def __init__(self, report: ConversionReport) -> None:
         self.report = report
+        self.histories: dict[int, dict[str, Any]] = {}
         self.sources: list[ObjectOccurrence] = []
         self.entries: list[ObjectMappingEntry] = []
         self.bindings: dict[int, tuple[Image, int]] = {}
         self.placements: dict[int, list[tuple[int, int, bytes]]] = {}
 
-    def record(self, image: Image, location: str, replacement_id: str | None, message: str, *, rejected: bool = False) -> int:
+    def record(self, image: Image, location: str, replacement_id: str | None, message: str, *, rejected: bool = False,
+               history: dict[str, Any] | None = None) -> int:
         index = len(self.sources)
         if index >= 10_000:
             raise ValueError('PDF fallback mapping occurrence limit exceeded')
@@ -84,13 +86,21 @@ class PdfFallbackMapping:
         self.entries.append(ObjectMappingEntry(
             id=f'mapping-{index}', source_ids=(f'source-{index}',),
             state=PreservationState.REJECTED if rejected else PreservationState.VISUAL,
-            issue=DiagnosticIssue('pdf.vector-surrogate', IssueSeverity.ERROR if rejected else IssueSeverity.LOSS,
-                                  message, location, reason='unsupported-native-vector'),
+            issue=DiagnosticIssue('pdf.vector-origin' if history is not None else 'pdf.vector-surrogate',
+                                  IssueSeverity.ERROR if rejected else IssueSeverity.LOSS, message, location,
+                                  reason='declared-vector-editability-unavailable' if history is not None
+                                  else 'unsupported-native-vector'),
             replacement=MappingReplacement('raster', replacement_id, 'source') if replacement_id else None,
         ))
+        if not rejected:
+            from opendoc_formats.support.pdf_mapping_history import checked_history, origin_history
+
+            self.histories[index] = checked_history(history) if history is not None else origin_history(
+                self.sources[-1], self.entries[-1].issue
+            )
         self.report.metrics['object_mapping'] = object_mapping_to_dict(ObjectMapping(
             sources=tuple(self.sources), entries=tuple(self.entries), publication='attempted', output_format='pdf',
-            extra={'profile': 'pdf-supplied-vector-surrogate-v1', 'scope': 'declared-fallback-occurrences'},
+            extra={'profile': 'pdf-vector-raster-routing-v1', 'scope': 'declared-fallback-occurrences'},
         ))
 
         return index
@@ -105,6 +115,11 @@ class PdfFallbackMapping:
     def placed(self, index: int | None, page: int, occurrence: int, digest: bytes) -> None:
         if index is not None and 0 <= index < len(self.sources):
             self.placements.setdefault(index, []).append((page, occurrence, digest))
+
+    def embed(self, pdf: Any) -> None:
+        from opendoc_formats.support.pdf_mapping_history import embed_history
+
+        embed_history(pdf, self.histories, self.placements)
 
     def materialize(self, path: Path) -> None:
         if not self.sources:
@@ -143,5 +158,5 @@ class PdfFallbackMapping:
             sources=tuple(self.sources), targets=tuple(targets), entries=tuple(entries), publication='staged',
             output_format='pdf', result_id=_result_id(path),
             assessment_complete=all(entry.target_ids is not None for entry in entries),
-            extra={'profile': 'pdf-supplied-vector-surrogate-v1', 'scope': 'declared-fallback-occurrences'},
+            extra={'profile': 'pdf-vector-raster-routing-v1', 'scope': 'declared-fallback-occurrences'},
         ))

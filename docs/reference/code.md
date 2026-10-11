@@ -7,7 +7,7 @@
 Document format readers and writers built on the OpenDoc model.
 
 
-Импорты: `api`, `export`, `importlib.metadata`, `support.object_mapping`, `text_profile`
+Импорты: `api`, `export`, `importlib.metadata`, `support.object_mapping`, `support.pdf_mapping_history`, `text_profile`
 
 ## src/opendoc_formats/api.py
 
@@ -691,7 +691,7 @@ PDF → модель OpenDoc: геометрия, семантические б�
 
 - `read_pdf_model(*, path: str | Path, use_ocr: bool=False, ocr_backend: str='', handwriting: bool=False, use_gpu: bool=False, mode: str | None=None, ocr_engine_factory: Callable[..., Any] | None=None) -> DocumentModel` — [строка 44](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_model.py#L44)
 
-Импорты: `__future__`, `collections.abc`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_images`, `opendoc_formats.readers.pdf_interactive`, `opendoc_formats.readers.pdf_ocr_merge`, `opendoc_formats.types`, `opendoc_model.color`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
+Импорты: `__future__`, `collections.abc`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_images`, `opendoc_formats.readers.pdf_interactive`, `opendoc_formats.readers.pdf_ocr_merge`, `opendoc_formats.support.pdf_mapping_history`, `opendoc_formats.types`, `opendoc_model.color`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
 
 ## src/opendoc_formats/readers/pdf_ocr_merge.py
 
@@ -987,13 +987,14 @@ Measured PDF fallback occurrences using the public OpenDoc mapping contract.
 - `mapping_result_matches(report: ConversionReport, path: Path) -> bool` — [строка 50](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L50)
 - `PdfFallbackMapping` — [строка 65](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L65)
 - `__init__(self, report: ConversionReport) -> None` — [строка 68](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L68)
-- `record(self, image: Image, location: str, replacement_id: str | None, message: str, *, rejected: bool=False) -> int` — [строка 75](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L75)
-- `bind(self, image: Image, index: int) -> None` — [строка 98](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L98)
-- `source_for(self, image: Image) -> int | None` — [строка 101](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L101)
-- `placed(self, index: int | None, page: int, occurrence: int, digest: bytes) -> None` — [строка 105](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L105)
-- `materialize(self, path: Path) -> None` — [строка 109](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L109)
+- `record(self, image: Image, location: str, replacement_id: str | None, message: str, *, rejected: bool=False, history: dict[str, Any] | None=None) -> int` — [строка 76](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L76)
+- `bind(self, image: Image, index: int) -> None` — [строка 108](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L108)
+- `source_for(self, image: Image) -> int | None` — [строка 111](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L111)
+- `placed(self, index: int | None, page: int, occurrence: int, digest: bytes) -> None` — [строка 115](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L115)
+- `embed(self, pdf: Any) -> None` — [строка 119](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L119)
+- `materialize(self, path: Path) -> None` — [строка 124](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L124)
 
-Импорты: `__future__`, `copy`, `dataclasses`, `opendoc_model`, `opendoc_model.object_mapping`, `pathlib`, `typing`
+Импорты: `__future__`, `copy`, `dataclasses`, `opendoc_formats.support.pdf_mapping_history`, `opendoc_model`, `opendoc_model.object_mapping`, `pathlib`, `typing`
 
 Тесты: [test_pdf_mapping.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_mapping.py#L1)
 
@@ -1006,6 +1007,21 @@ Readability checks for staged exports; these do not measure visual fidelity.
 Импорты: `__future__`, `docx`, `html.parser`, `opendoc_formats.readers.epub_package`, `opendoc_model`, `pathlib`, `pptx`, `zipfile`
 
 Тесты: [test_release_contracts.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_release_contracts.py#L1)
+
+## src/opendoc_formats/support/pdf_mapping_history.py
+
+Bounded inert vector-origin declarations, bound anew to measured native rasters.
+
+- `origin_history(source: ObjectOccurrence, issue: DiagnosticIssue) -> dict[str, Any]` — [строка 38](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/pdf_mapping_history.py#L38)
+- `checked_history(raw: Any) -> dict[str, Any]` — [строка 51](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/pdf_mapping_history.py#L51)
+- `embed_history(pdf: Any, histories: dict[int, dict[str, Any]], placements: dict[int, list[tuple[int, int, bytes]]]) -> None` — [строка 67](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/pdf_mapping_history.py#L67)
+- `load_history(path: str | Path) -> tuple[dict[tuple[int, int], dict[str, Any]], list[DiagnosticIssue]]` — [строка 122](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/pdf_mapping_history.py#L122)
+- `attach_history_map(document: DocumentModel, path: str | Path, matched: list[tuple[Any, dict[str, Any]]], issues: list[DiagnosticIssue]) -> ObjectMapping | None` — [строка 182](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/pdf_mapping_history.py#L182)
+- `read_pdf_origin_mapping(path: str | Path) -> ObjectMapping | None` — [строка 227](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/pdf_mapping_history.py#L227)
+
+Импорты: `__future__`, `dataclasses`, `opendoc_formats.readers.pdf_model`, `opendoc_formats.support.object_mapping`, `opendoc_formats.writers.html_resources`, `opendoc_model`, `pathlib`, `typing`
+
+Тесты: [test_pdf_mapping_history.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_mapping_history.py#L1)
 
 ## src/opendoc_formats/text_profile.py
 
@@ -1245,7 +1261,7 @@ Serialize model list paragraphs as nested semantic HTML lists.
 
 Импорты: `__future__`, `collections.abc`, `dataclasses`, `opendoc_formats.writers.stages`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`
 
-Тесты: [test_html_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_resources.py#L1)
+Тесты: [test_html_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_resources.py#L1), [test_pdf_mapping_history.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_mapping_history.py#L1)
 
 ## src/opendoc_formats/writers/html_verify.py
 
@@ -1316,9 +1332,9 @@ Bounded native raster transforms and placement in PDF page and Story coordinates
 
 - `PdfRaster` — [строка 26](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_rasters.py#L26)
 - `prepare_rasters(document: DocumentModel, report: ConversionReport, cancelled: Callable[[], bool], mapping: Any=None) -> tuple[DocumentModel, list[list[PdfRaster]]]` — [строка 72](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_rasters.py#L72)
-- `draw_rasters(page: Any, rasters: list[PdfRaster], cancelled: Callable[[], bool], *, mapping: Any=None, page_index: int=0) -> None` — [строка 217](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_rasters.py#L217)
+- `draw_rasters(page: Any, rasters: list[PdfRaster], cancelled: Callable[[], bool], *, mapping: Any=None, page_index: int=0) -> None` — [строка 227](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_rasters.py#L227)
 
-Импорты: `__future__`, `collections.abc`, `dataclasses`, `opendoc_model`, `typing`
+Импорты: `__future__`, `collections.abc`, `dataclasses`, `opendoc_formats.support.pdf_mapping_history`, `opendoc_model`, `typing`
 
 ## src/opendoc_formats/writers/pdf_resources.py
 

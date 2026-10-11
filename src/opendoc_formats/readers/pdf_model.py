@@ -120,6 +120,10 @@ def read_pdf_model(
 
     all_warnings: list[str] = list(geometry.warnings) + img_warnings + vec_warnings
 
+    from opendoc_formats.support.pdf_mapping_history import HISTORY_KEY, attach_history_map, load_history
+
+    history_routes, history_issues = load_history(path)
+    matched_history = []
     sections: list[Section] = []
     resources: dict[str, Resource] = {}
 
@@ -217,15 +221,16 @@ def read_pdf_model(
             bbox = img.bbox
             box = Box(x=bbox[0], y=bbox[1], width=bbox[2] - bbox[0], height=bbox[3] - bbox[1]) if len(bbox) == 4 else None
             image_origin = origin(f"image-xref-{img.xref}", detail="placed extracted raster image")
-            blocks.append(
-                Paragraph(
-                    content=[RichImage(
-                        resource_id=resource_id, box=box, provenance=image_origin, crop=img.crop,
-                        properties={"pdf_image_transform": list(img.transform)} if img.transform else {},
-                    )],
-                    provenance=image_origin,
-                )
+            image = RichImage(
+                resource_id=resource_id, box=box, provenance=image_origin, crop=img.crop,
+                properties={"pdf_image_transform": list(img.transform)} if img.transform else {},
             )
+            route = history_routes.get((page.number - 1, img.number))
+            if route is not None:
+                image.properties[HISTORY_KEY] = route['history']
+                image.properties['pdf_mapping_number'] = img.number
+                matched_history.append((image, route))
+            blocks.append(Paragraph(content=[image], provenance=image_origin))
 
         for vec in page.vector_drawings:
             resource_id = f"p{page.number}_vec{vec.number}"
@@ -297,6 +302,7 @@ def read_pdf_model(
     from opendoc_formats.readers.pdf_interactive import attach_pdf_interactions
 
     attach_pdf_interactions(document, path)
+    attach_history_map(document, path, matched_history, history_issues)
     return document
 
 

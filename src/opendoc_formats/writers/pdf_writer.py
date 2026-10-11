@@ -220,6 +220,7 @@ def write_pdf_model(
 
         with ArtifactWorkspace(prefix="opendoc_formats_pdf_writer_") as workspace:
             staged = workspace.artifact_path("output.pdf")
+            mapping.embed(target)
             target.save(staged, garbage=4, deflate=True)
             workspace.validate_artifact(staged)
             with fitz.open(staged) as check:

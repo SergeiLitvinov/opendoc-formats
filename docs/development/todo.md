@@ -16,8 +16,9 @@
   полного object inventory; научный отчёт сохраняет текст либо отказывает по адресу.
 - C-MAP-01 реализован частично: typed source→provided PNG→measured PDF target,
   отдельные occurrences и общий codec; quality/cancel/bytes-change/publication
-  rollback убирают actual target claims. Открыты карта SVG→PNG, история через
-  два PDF/JSON/форматных цикла, повторный импорт, композиция и правила split/merge.
+  rollback убирают actual target claims. История деклараций подтверждена через
+  два полных PDF/JSON цикла, перестановку, удаление и повторный импорт.
+  Открыты карта SVG→PNG, общая композиция и правила split/merge.
 - C-MAP-01 / OF15: типизированная source → visual representation → actual target
   карта для vector→PNG с отдельными occurrences, подтверждёнными/unknown locators,
   полнотой, reason/code и статусом публикации; два цикла, перестановка и удаление.
