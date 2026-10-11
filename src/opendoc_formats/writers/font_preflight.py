@@ -4,12 +4,18 @@ from __future__ import annotations
 
 from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import DocumentModel
+from opendoc_model.limits import DocumentLimits
 
 from opendoc_formats.fonts import FontResolver, prepare_document_fonts
 
 
-def prepare_fonts(document: DocumentModel, report: ConversionReport) -> DocumentModel:
+def prepare_fonts(
+    document: DocumentModel, report: ConversionReport, *, limits: DocumentLimits | None = None,
+) -> DocumentModel:
     prepared, font_report = prepare_document_fonts(document, FontResolver.system())
+    # Canonical input is validated by the registry; native renderers own their
+    # fallback semantics. SDK preflight here enforces the prepared model budget.
+    prepared.validate(limits=limits)
     report.metrics["font_resolution"] = font_report.to_dict()
     for resolution in font_report.substitutions:
         if resolution.path is None:

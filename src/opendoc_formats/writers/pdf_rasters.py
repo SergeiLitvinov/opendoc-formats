@@ -20,6 +20,7 @@ from opendoc_model import (
     get_anchor,
     iter_anchors,
 )
+from opendoc_model.limits import DocumentLimits
 
 
 @dataclass(frozen=True)
@@ -74,11 +75,12 @@ def prepare_rasters(
     report: ConversionReport,
     cancelled: Callable[[], bool],
     mapping: Any = None,
+    *, limits: DocumentLimits | None = None,
 ) -> tuple[DocumentModel, list[list[PdfRaster]]]:
     placements = []
     sections = []
     count = 0
-    anchors = {get_anchor(reference.node).id for reference in iter_anchors(document)}
+    anchors = {get_anchor(reference.node).id for reference in iter_anchors(document, limits=limits)}
     for section_index, section in enumerate(document.sections):
         rasters = []
 

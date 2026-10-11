@@ -6,6 +6,7 @@ import math
 from typing import Any, Callable
 
 from opendoc_model import ConversionReport, DocumentModel, IssueSeverity, get_integration
+from opendoc_model.limits import DocumentLimits
 
 from opendoc_formats.writers.pdf_outline import _safe_uri
 
@@ -13,13 +14,14 @@ from opendoc_formats.writers.pdf_outline import _safe_uri
 def write_interactions(
     pdf: Any, document: DocumentModel, report: ConversionReport,
     pages: dict[str, tuple[int, tuple[float, float], bool]], cancelled: Callable[[], bool],
+    *, limits: DocumentLimits | None = None,
 ) -> None:
     rotations = [page.rotation for page in pdf]
     try:
         for page in pdf:
             page.set_rotation(0)
             pdf.reload_page(page)
-        _write_interactions(pdf, document, report, pages, cancelled)
+        _write_interactions(pdf, document, report, pages, cancelled, limits=limits)
     finally:
         for index, rotation in enumerate(rotations):
             pdf[index].set_rotation(rotation)
@@ -28,10 +30,11 @@ def write_interactions(
 def _write_interactions(
     pdf: Any, document: DocumentModel, report: ConversionReport,
     pages: dict[str, tuple[int, tuple[float, float], bool]], cancelled: Callable[[], bool],
+    *, limits: DocumentLimits | None = None,
 ) -> None:
     import pymupdf as fitz
 
-    integration = get_integration(document)
+    integration = get_integration(document, limits=limits)
     if integration is None:
         return
     if len(integration.annotations) + len(integration.forms) > 10_000:

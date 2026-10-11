@@ -43,6 +43,23 @@ OutputValidator = Callable[[Path], None]
 
 
 @dataclass(frozen=True)
+class _ModelWriter:
+    module: str
+    name: str
+
+    def __call__(
+        self, document: DocumentModel, path: Path, *, limits: DocumentLimits | None = None,
+        cancelled: Callable[[], bool] | None = None,
+    ) -> ConversionReport:
+        writer = cast(Callable[..., ConversionReport], getattr(
+            import_module('opendoc_formats.writers.' + self.module), self.name,
+        ))
+        if self.module == 'pdf_writer':
+            return writer(document, path, limits=limits, cancelled=cancelled)
+        return writer(document, path, limits=limits)
+
+
+@dataclass(frozen=True)
 class ExporterSpec:
     id: str
     extensions: tuple[str, ...]
@@ -93,10 +110,17 @@ class ExporterRegistry:
         identifier = format_id or self._suffixes.get(output.suffix.lower(), "")
         exporter = self._exporters.get(identifier)
 
-        def fail(code: str, message: str) -> ConversionReport:
-            report.add(IssueSeverity.ERROR, code, message)
+        def fail(code: str, message: str, location: str = '') -> ConversionReport:
+            report.add(IssueSeverity.ERROR, code, message, location)
             mapping_publication(report, 'rejected', code=code, reason=code)
             return report
+
+        def limit_failure(error: ArtifactLimitError) -> ConversionReport:
+            from opendoc_formats.support.document_limits import limit_diagnostic
+
+            issue = limit_diagnostic(error, options.document_limits, str(output), 'export.document-limit')
+            report.metrics['document_limit'] = issue.measurement
+            return fail(issue.code, issue.message, issue.location or '')
 
         if exporter is None:
             return fail("export.unsupported-format", "No registered writer for the requested format")
@@ -107,7 +131,7 @@ class ExporterRegistry:
         try:
             errors = document.validate(limits=options.document_limits)
         except ArtifactLimitError as error:
-            return fail("export.document-limit", str(error))
+            return limit_failure(error)
         if errors:
             return fail("export.invalid-model", "; ".join(errors))
         missing = missing_backends(exporter.requirements)
@@ -116,15 +140,29 @@ class ExporterRegistry:
         output.parent.mkdir(parents=True, exist_ok=True)
         with TemporaryDirectory(prefix=".opendoc-formats-export-", dir=output.parent) as directory:
             staged = Path(directory) / output.name
-            written = (
-                _txt(document, staged, profile=options.txt_profile)
-                if exporter.writer is _txt else _json(document, staged, limits=options.document_limits)
-                if exporter.writer is _json else exporter.writer(document, staged)
-            )
+            try:
+                written = (
+                    _txt(document, staged, profile=options.txt_profile)
+                    if exporter.writer is _txt else _json(document, staged, limits=options.document_limits)
+                    if exporter.writer is _json else exporter.writer(
+                        document, staged, limits=options.document_limits, cancelled=options.cancelled,
+                    ) if isinstance(exporter.writer, _ModelWriter) else exporter.writer(document, staged)
+                )
+            except ArtifactLimitError as error:
+                return limit_failure(error)
             if not isinstance(written, ConversionReport):
                 return fail("export.invalid-result", "Writer did not return an OpenDoc ConversionReport")
             report = written
             report.output_path = output
+            if isinstance(exporter.writer, _ModelWriter) or exporter.writer is _txt:
+                from opendoc_model import LINE_SPACING_PROPERTY, Paragraph, TextStyle, walk_model
+
+                for reference in walk_model(document, limits=options.document_limits):
+                    if (isinstance(reference.node, (Paragraph, TextStyle))
+                            and LINE_SPACING_PROPERTY in reference.node.properties):
+                        report.add(IssueSeverity.LOSS, 'line-spacing',
+                                   'Native projection of the common LineSpacing declaration is not implemented',
+                                   reference.path + '.properties.' + LINE_SPACING_PROPERTY)
             if identifier in {'html', 'pdf', 'pptx', 'epub', 'latex', 'txt'}:
                 from opendoc_model import (
                     Paragraph,
@@ -233,11 +271,7 @@ class ExporterRegistry:
 
 
 def _writer(module: str, name: str) -> Writer:
-    def write(document: DocumentModel, path: Path) -> ConversionReport:
-        writer = cast(Writer, getattr(import_module("opendoc_formats.writers." + module), name))
-        return writer(document, path)
-
-    return write
+    return _ModelWriter(module, name)
 
 
 def _json(document: DocumentModel, path: Path, *, limits: DocumentLimits | None = None) -> ConversionReport:

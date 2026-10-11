@@ -7,6 +7,7 @@ from typing import Any
 from urllib.parse import urlsplit
 
 from opendoc_model import ConversionReport, DocumentModel, IssueSeverity, get_outline
+from opendoc_model.limits import DocumentLimits
 
 
 def _safe_uri(value: str | None) -> bool:
@@ -23,11 +24,12 @@ def write_outline(
     pages: dict[str, tuple[int, tuple[float, float], bool]],
     anchors: dict[str, tuple[int, tuple[float, float]]],
     source_origins: dict[int, tuple[float, float]] | None = None,
+    *, limits: DocumentLimits | None = None,
 ) -> None:
     """Unknown or unmapped destinations remain untargeted, with a located loss."""
     import pymupdf
 
-    outline = get_outline(document)
+    outline = get_outline(document, limits=limits)
     if outline is None:
         return
     children: dict[str | None, list] = {}

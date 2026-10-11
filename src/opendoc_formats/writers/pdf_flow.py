@@ -7,13 +7,17 @@ from dataclasses import replace
 from typing import Any
 
 from opendoc_model import ConversionReport, DocumentModel, Image, IssueSeverity, Paragraph, get_anchor
+from opendoc_model.limits import DocumentLimits
 
 from opendoc_formats.writers.html_writer import _HtmlRenderer
 
 
 class PdfFlowRenderer(_HtmlRenderer):
-    def __init__(self, document: DocumentModel, report: ConversionReport, flow_ids: dict[str, str], mapping: Any = None) -> None:
-        super().__init__(document, report)
+    def __init__(
+        self, document: DocumentModel, report: ConversionReport, flow_ids: dict[str, str], mapping: Any = None,
+        *, limits: DocumentLimits | None = None,
+    ) -> None:
+        super().__init__(document, report, limits=limits)
         self.flow_ids = flow_ids
         self.mapping = mapping
 

@@ -32,4 +32,5 @@ def materialize_docx_colors(document: DocumentModel, limits: DocumentLimits | No
             if isinstance(run, TextRun) and run.style.color is None:
                 character = named_color(run.style.properties.base_style_id)
                 run.style.color = deepcopy(character if character is not None else inherited)
+    prepared.validate(limits=limits)
     return prepared

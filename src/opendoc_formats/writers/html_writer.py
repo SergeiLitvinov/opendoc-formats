@@ -26,6 +26,7 @@ from opendoc_model.document_model import (
     TextRun,
     TextStyle,
 )
+from opendoc_model.limits import DocumentLimits
 from opendoc_model.units import points_to_css_px
 
 from opendoc_formats.fonts.html_embedding import embedded_font_stylesheet
@@ -91,7 +92,9 @@ _COLOR_RE = re.compile(r"^(?:#[0-9a-fA-F]{3,8}|[a-zA-Z]{1,24})$")
 _HEADING_RE = re.compile(r"^(?:heading|заголовок)\s*([1-6])$", re.IGNORECASE)
 
 
-def write_html_model(document: DocumentModel, output_path: str | Path) -> ConversionReport:
+def write_html_model(
+    document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None = None,
+) -> ConversionReport:
     """Записать ``DocumentModel`` в один переносимый HTML-файл."""
 
     output = Path(output_path)
@@ -99,7 +102,7 @@ def write_html_model(document: DocumentModel, output_path: str | Path) -> Conver
     report = ConversionReport(output)
     from opendoc_model import PreservationState, get_integration
 
-    integration = get_integration(document)
+    integration = get_integration(document, limits=limits)
     if integration is not None:
         for record in integration.preservation:
             if (
@@ -124,10 +127,12 @@ def write_html_model(document: DocumentModel, output_path: str | Path) -> Conver
     if not report.success:
         return report
     document = prepared.value
-    document = prepare_fonts(document, report)
+    document = prepare_fonts(document, report, limits=limits)
+    if not report.success:
+        return report
     from opendoc_formats.writers.color_inheritance import materialize_docx_colors
 
-    document = materialize_docx_colors(document)
+    document = materialize_docx_colors(document, limits=limits)
     preflight_colors(document, report, target="html")
     layout = HtmlLayoutStage().execute(document, StageContext(output))
     report.issues.extend(layout.report.issues)
@@ -135,7 +140,7 @@ def write_html_model(document: DocumentModel, output_path: str | Path) -> Conver
     if not report.success:
         return report
     document = layout.value
-    renderer = _HtmlRenderer(document, report, html_prepared=True)
+    renderer = _HtmlRenderer(document, report, html_prepared=True, limits=limits)
     body = renderer.render()
     font_styles = embedded_font_stylesheet(document, report)
     title = escape(str(document.metadata.get("title") or "Document"))
@@ -161,7 +166,10 @@ def write_html_model(document: DocumentModel, output_path: str | Path) -> Conver
 
 
 class _HtmlRenderer:
-    def __init__(self, document: DocumentModel, report: ConversionReport, *, html_prepared: bool = False) -> None:
+    def __init__(
+        self, document: DocumentModel, report: ConversionReport, *, html_prepared: bool = False,
+        limits: DocumentLimits | None = None,
+    ) -> None:
         self.document = document
         self.report = report
         self.html_prepared = html_prepared
@@ -170,7 +178,7 @@ class _HtmlRenderer:
         self.caption_nodes = {}
         self.caption_ids = set()
         self.caption_owners = set()
-        for reference in walk_model(document):
+        for reference in walk_model(document, limits=limits):
             node = reference.node
             if isinstance(node, Paragraph) and (anchor := get_anchor(node)) is not None:
                 self.caption_nodes[anchor.id] = (node, reference.path)

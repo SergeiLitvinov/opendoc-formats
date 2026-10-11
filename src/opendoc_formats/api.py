@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from importlib import import_module
@@ -132,22 +131,10 @@ class AdapterRegistry:
             return ImportResult(None, identifier, (DiagnosticIssue(code, IssueSeverity.ERROR, message, str(source)),))
 
         def limit_failure(error: ArtifactLimitError) -> ImportResult:
-            message = str(error)
-            measurement: dict[str, object] = {"limits": {
-                "max_bytes": options.document_limits.max_bytes,
-                "max_depth": options.document_limits.max_depth,
-                "max_nodes": options.document_limits.max_nodes,
-                "max_embedded_bytes": options.document_limits.max_embedded_bytes,
-            }}
-            location = str(source)
-            match = re.fullmatch(r"([^\r\n]+): ([\w ]+) quota exceeded \((\d+)\)", message)
-            if match:
-                location += "#" + match[1]
-                measurement.update({"quota": match[2], "maximum": int(match[3])})
-            return ImportResult(None, identifier, (DiagnosticIssue(
-                "import.document-limit", IssueSeverity.ERROR, message, location,
-                measurement, "document-limit",
-            ),), options.document_limits)
+            from opendoc_formats.support.document_limits import limit_diagnostic
+
+            issue = limit_diagnostic(error, options.document_limits, str(source), 'import.document-limit')
+            return ImportResult(None, identifier, (issue,), options.document_limits)
 
         adapter = self._adapters.get(identifier)
         if adapter is None:

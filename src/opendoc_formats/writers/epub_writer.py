@@ -15,7 +15,15 @@ from tempfile import TemporaryDirectory
 from urllib.parse import quote, unquote, unquote_to_bytes
 from zipfile import ZIP_STORED, ZipFile
 
-from opendoc_model import ConversionReport, DocumentModel, IssueSeverity, PreservationState, get_integration
+from opendoc_model import (
+    ArtifactLimitError,
+    ConversionReport,
+    DocumentLimits,
+    DocumentModel,
+    IssueSeverity,
+    PreservationState,
+    get_integration,
+)
 
 from opendoc_formats.epub_metadata import export_dc_values
 from opendoc_formats.support.io import atomic_write_bytes
@@ -187,7 +195,9 @@ def _navigation(chapters: list[tuple[str, ET.Element]], title: str, language: st
     return root
 
 
-def write_epub_model(document: DocumentModel, output_path: str | Path) -> ConversionReport:
+def write_epub_model(
+    document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None = None,
+) -> ConversionReport:
     """Write one XHTML spine item per section, with TOC, MathML and local assets.
 
     This profile shares HTML diagnostics and presentation; it does not rebuild
@@ -213,7 +223,7 @@ def write_epub_model(document: DocumentModel, output_path: str | Path) -> Conver
                 raise ValueError("EPUB input images exceed 64 MiB")
         with TemporaryDirectory(prefix=".opendoc-formats-epub-", dir=output.parent) as directory:
             html = Path(directory) / "chapter.html"
-            rendered = write_html_model(rendered_document, html)
+            rendered = write_html_model(rendered_document, html, limits=limits)
             report.issues.extend(rendered.issues)
             if not rendered.success:
                 return report
@@ -282,7 +292,7 @@ def write_epub_model(document: DocumentModel, output_path: str | Path) -> Conver
                 archive.writestr("OPS/" + name, raw)
         if buffer.tell() > _MAX_BYTES:
             raise ValueError("EPUB output exceeds 64 MiB")
-        integration = get_integration(document)
+        integration = get_integration(document, limits=limits)
         if integration is not None:
             for record in integration.preservation:
                 if (
@@ -304,6 +314,8 @@ def write_epub_model(document: DocumentModel, output_path: str | Path) -> Conver
         )
         report.metrics.update({"epub_spine_items": len(chapters), "epub_assets": len(parser.assets), "epub_bytes": buffer.tell()})
         atomic_write_bytes(output, buffer.getvalue())
+    except ArtifactLimitError:
+        raise
     except (OSError, ValueError, ET.ParseError) as error:
         report.add(IssueSeverity.ERROR, "epub.write", str(error))
     return report

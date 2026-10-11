@@ -50,7 +50,7 @@
 | [numpy](#numpy-246) | 2.4.6 | pdf, pdf-docx | BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0; wheel: BLAS/GCC runtime exception и bundled notices | Массивы PDF-конвертера |
 | [numpy](#numpy-253) | 2.5.3 | pdf, pdf-docx | BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0; wheel: BLAS/GCC runtime exception и bundled notices | Массивы PDF-конвертера |
 | [opencv-python-headless](#opencv-python-headless-50093) | 5.0.0.93 | pdf, pdf-docx | MIT wrapper + Apache-2.0 OpenCV; FFmpeg LGPL и прочие bundled условия | Обработка изображений PDF-конвертера |
-| [opendoc-model](#opendoc-model-0113) | 0.11.3 | base | MIT | Модель документа, ресурсы и валидация |
+| [opendoc-model](#opendoc-model-0120) | 0.12.0 | base | MIT | Модель документа, ресурсы и валидация |
 | [packaging](#packaging-263) | 26.3 | dev, docs | Apache-2.0 OR BSD-2-Clause | Версии, требования и platform tags |
 | [pathspec](#pathspec-111) | 1.1.1 | dev, docs | MPL-2.0 | Шаблоны файлов mypy |
 | [pdf2docx](#pdf2docx-0513) | 0.5.13 | pdf, pdf-docx | MIT | Прямой PDF → DOCX converter |
@@ -586,13 +586,13 @@ HTTP Range: их SHA-256 вычислен, SHA-256 всего архива ук�
   - `opencv_python_headless-5.0.0.93.dist-info/LICENSE-3RD-PARTY.txt` — `2537f5653345db7231ff12f307bcfa4c89807d45ed1c4bb8ebfb6f26f61b160a`.
   - `opencv_python_headless-5.0.0.93.dist-info/LICENSE.txt` — `09d719058e782ac7bc71ba21c944e1136cde2bb957c0e888121f0218d6b5f02c`.
 
-### opendoc-model 0.11.3
+### opendoc-model 0.12.0
 
-[Метаданные выпуска](https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.11.3/opendoc_model-0.11.3-py3-none-any.whl)
+[Метаданные выпуска](https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.12.0/opendoc_model-0.12.0-py3-none-any.whl)
 
-- [opendoc_model-0.11.3-py3-none-any.whl](https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.11.3/opendoc_model-0.11.3-py3-none-any.whl) — проверен целиком.
-  SHA-256 архива по lockfile: `7a7237f485e255eb7fb3b916b2d1f89ec0c55b6dce270d6a3d127429fa4004cf`.
-  - `opendoc_model-0.11.3.dist-info/licenses/docs/LICENSE` — `3ed05eb4b11d122a12b6d37eb1f695bfbd303b542f067658a1dc43d8f81dcf59`.
+- [opendoc_model-0.12.0-py3-none-any.whl](https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.12.0/opendoc_model-0.12.0-py3-none-any.whl) — проверен целиком.
+  SHA-256 архива по lockfile: `ee42da93d95baac2e450e9e85fa10e17bbd5745d78e8459ce1def128b451fa17`.
+  - `opendoc_model-0.12.0.dist-info/licenses/docs/LICENSE` — `3ed05eb4b11d122a12b6d37eb1f695bfbd303b542f067658a1dc43d8f81dcf59`.
 
 ### packaging 26.3
 

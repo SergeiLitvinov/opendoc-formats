@@ -15,6 +15,7 @@ from opendoc_model.document_model import (
     Section,
     Table,
 )
+from opendoc_model.limits import DocumentLimits
 
 from opendoc_formats.fonts.docx_embedding import embed_docx_fonts, verify_docx_font_embedding
 from opendoc_formats.ooxml.headings import retain_derived_styles
@@ -28,7 +29,9 @@ from opendoc_formats.writers.docx_text_writer import add_paragraph, write_formul
 from opendoc_formats.writers.font_preflight import prepare_fonts
 
 
-def write_docx_model(document: DocumentModel, output_path: str | Path) -> ConversionReport:
+def write_docx_model(
+    document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None = None,
+) -> ConversionReport:
     """Записать ``DocumentModel`` в DOCX и вернуть отчёт о потерях."""
 
     from docx import Document
@@ -36,7 +39,20 @@ def write_docx_model(document: DocumentModel, output_path: str | Path) -> Conver
 
     output = Path(output_path)
     report = ConversionReport(output)
-    document = prepare_fonts(document, report)
+    errors = document.validate(limits=limits)
+    if errors:
+        from opendoc_formats.writers.html_resources import document_images
+
+        for image, location in document_images(document):
+            if image.resource_id not in document.resources:
+                report.add(IssueSeverity.ERROR, 'image', f'Resource {image.resource_id!r} is missing', location)
+    for error in errors:
+        report.add(IssueSeverity.ERROR, 'model', error)
+    if not report.success:
+        return report
+    document = prepare_fonts(document, report, limits=limits)
+    if not report.success:
+        return report
     preflight_colors(document, report, target="docx")
     target = Document()
     _write_metadata(target, document.metadata)

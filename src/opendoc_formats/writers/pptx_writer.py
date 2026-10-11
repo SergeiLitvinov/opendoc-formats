@@ -8,6 +8,7 @@ from typing import Any
 import opendoc_model as od
 from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import Box, DocumentModel, Formula, Image, Paragraph, Section, Table
+from opendoc_model.limits import DocumentLimits
 
 from opendoc_formats.writers.pptx_chart_writer import write_chart
 from opendoc_formats.writers.pptx_geometry_writer import write_shape
@@ -17,19 +18,21 @@ from opendoc_formats.writers.pptx_scene_writer import apply_transform, restore_c
 from opendoc_formats.writers.pptx_text_writer import set_color, write_text
 
 
-def write_pptx_model(document: DocumentModel, output_path: str | Path) -> ConversionReport:
+def write_pptx_model(
+    document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None = None,
+) -> ConversionReport:
     from pptx import Presentation
     from pptx.util import Pt
 
     report = ConversionReport(Path(output_path))
-    errors = document.validate()
+    errors = document.validate(limits=limits)
     if errors:
         for error in errors:
             report.add(IssueSeverity.ERROR, "model", error)
         return report
     from opendoc_formats.writers.color_inheritance import materialize_docx_colors
 
-    document = materialize_docx_colors(document)
+    document = materialize_docx_colors(document, limits=limits)
     from opendoc_formats.writers.color_preflight import preflight_colors
 
     preflight_colors(document, report, target='pptx')

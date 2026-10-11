@@ -7,6 +7,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any, Callable
 
+from opendoc_model import ArtifactLimitError, DocumentLimits
 from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import Block, DocumentModel, Formula, FormulaFormat, Paragraph, Section, Table
 
@@ -20,6 +21,7 @@ from opendoc_formats.writers.stages import StageContext
 
 def write_pdf_model(
     document: DocumentModel, output_path: str | Path, *, cancelled: Callable[[], bool] | None = None,
+    limits: DocumentLimits | None = None,
 ) -> ConversionReport:
     """Записать модель в PDF, сохранив размеры секций и многостраничный поток."""
 
@@ -33,7 +35,7 @@ def write_pdf_model(
 
     mapping = PdfFallbackMapping(report)
     outline_document = document
-    integration = get_integration(document)
+    integration = get_integration(document, limits=limits)
     if integration is not None:
         if integration.extra.get("pdf_outline") and not integration.extra.get("pdf_outline_imported"):
             report.add(IssueSeverity.LOSS, "pdf.outline", "Source outline is not recreated by the PDF layout writer")
@@ -59,7 +61,7 @@ def write_pdf_model(
     document = prepared.value
     from opendoc_formats.writers.pdf_rasters import draw_rasters, prepare_rasters
 
-    document, rasters = prepare_rasters(document, report, check_cancelled, mapping)
+    document, rasters = prepare_rasters(document, report, check_cancelled, mapping, limits=limits)
     if not report.success:
         mapping_publication(report, 'rejected', code='pdf.write-rejected', reason='preparation-failed')
         return report
@@ -69,10 +71,13 @@ def write_pdf_model(
         report.add(IssueSeverity.ERROR, 'pdf.svg-preparation', str(error))
         mapping_publication(report, 'rejected', code='pdf.write-rejected', reason='preparation-failed')
         return report
-    document = prepare_fonts(document, report)
+    document = prepare_fonts(document, report, limits=limits)
+    if not report.success:
+        mapping_publication(report, 'rejected', code='pdf.font-preparation-rejected', reason='preparation-failed')
+        return report
     from opendoc_formats.writers.color_inheritance import materialize_docx_colors
 
-    document = materialize_docx_colors(document)
+    document = materialize_docx_colors(document, limits=limits)
     preflight_colors(document, report, target="pdf")
     target = fitz.open()
     totals = {"paragraphs": 0, "tables": 0, "images": 0, "formulas": 0, "pages": 0}
@@ -101,7 +106,7 @@ def write_pdf_model(
             anchor_positions: dict[str, tuple[int, tuple[float, float]]] = {}
             flow_ids = {r.location: r.flow_id for r in rasters[section_index] if r.flow_id is not None}
             section_pdf, renderer = _render_section(document, section, section_index, report, flow_positions, flow_ids,
-                                                    anchor_positions, mapping)
+                                                    anchor_positions, mapping, limits=limits)
             from opendoc_formats.writers.pdf_text_verify import verify_section_text
 
             try:
@@ -211,7 +216,7 @@ def write_pdf_model(
         from opendoc_formats.writers.pdf_interactive import write_interactions
         from opendoc_formats.writers.pdf_outline import write_outline
 
-        write_interactions(target, outline_document, report, outline_pages, check_cancelled)
+        write_interactions(target, outline_document, report, outline_pages, check_cancelled, limits=limits)
         if not report.success:
             mapping_publication(report, 'rejected', code='pdf.interactions-rejected', reason='interaction-failed')
             return report
@@ -223,7 +228,7 @@ def write_pdf_model(
                                "Page geometry has no explicit section binding", f"pages[{source_page.id}]")
         for identifier in ambiguous_pages:
             outline_pages.pop(identifier, None)
-        write_outline(target, outline_document, report, outline_pages, outline_anchors, outline_source_origins)
+        write_outline(target, outline_document, report, outline_pages, outline_anchors, outline_source_origins, limits=limits)
         _set_metadata(target, document.metadata)
         from opendoc_formats.support.artifacts import ArtifactWorkspace
         from opendoc_formats.support.io import atomic_copy
@@ -245,6 +250,8 @@ def write_pdf_model(
                 raise ValueError("PDF export cancelled before publication")
             atomic_copy(staged, output)
             mapping_publication(report, 'published')
+    except ArtifactLimitError:
+        raise
     except Exception as error:  # noqa: BLE001 - backend failures must be represented in the report
         report.add(IssueSeverity.ERROR, "pdf-write", str(error))
         mapping_publication(report, 'rejected', code='pdf.write-rejected', reason='write-failed')
@@ -267,6 +274,7 @@ def _render_section(
     flow_ids: dict[str, str],
     anchor_positions: dict[str, tuple[int, tuple[float, float]]],
     mapping: Any = None,
+    *, limits: DocumentLimits | None = None,
 ) -> tuple[Any, _HtmlRenderer]:
     import fitz
 
@@ -281,7 +289,7 @@ def _render_section(
     )
     from opendoc_formats.writers.pdf_flow import PdfFlowRenderer, record_position
 
-    renderer = PdfFlowRenderer(section_model, report, flow_ids, mapping)
+    renderer = PdfFlowRenderer(section_model, report, flow_ids, mapping, limits=limits)
     main_html = renderer._blocks(section.blocks, f"sections[{section_index}].blocks")
     header_html = renderer._blocks(section.headers, f"sections[{section_index}].headers")
     footer_html = renderer._blocks(section.footers, f"sections[{section_index}].footers")
