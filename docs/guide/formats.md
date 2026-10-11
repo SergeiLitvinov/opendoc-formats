@@ -247,6 +247,17 @@ Theme color, shadow/frame и неизвестные стили остаются 
 отказывают с расположенным ERROR без замены прежнего файла. Writers других
 форматов сообщают `table-borders` LOSS; JSON сохраняет общий контракт.
 
+Читатель учитывает theme references ASCII/hAnsi при определении Latin family
+на соответствующем уровне run/character/paragraph style. Для конфликтующих
+деклараций темы и literal fallback собственный Calibri 12 bold проверен
+в Word 16.0.17932 относительно оригинала через два DOCX/JSON цикла.
+Прямое оформление и character style перекрывают paragraph style; ссылка
+hAnsiTheme не заменяет отдельную explicit ASCII family. Полные Unicode/language
+font-slot rules, неизвестные темы, перенос между системами без изменения
+семейства и полная визуальная приёмка остаются OF05.
+Правила выбора шрифтов Word описаны в
+[MS-OI29500 §17.3.2.26](https://learn.microsoft.com/en-us/openspecs/office_standards/ms-oi29500/aef3c9a6-5d6c-434b-90b7-85e761fd8e62).
+
 HTML/EPUB используют ограниченную CSS-проекцию: четыре внешние стороны таблицы,
 внутренние горизонтальные/вертикальные разделители и четыре прямые стороны ячейки.
 Прямое оформление ячейки перекрывает соответствующий разделитель; `none`/`nil`

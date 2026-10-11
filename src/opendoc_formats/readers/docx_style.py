@@ -44,10 +44,7 @@ def read_document_defaults(document: Any, model: DocumentModel) -> TextStyle | N
     font_theme = None
     font_family = None
     if fonts is not None:
-        font_family = fonts.get(qn("w:ascii")) or fonts.get(qn("w:hAnsi"))
-        font_theme = fonts.get(qn("w:asciiTheme")) or fonts.get(qn("w:hAnsiTheme"))
-        if font_family is None and font_theme:
-            font_family = _theme_typeface(model, font_theme)
+        font_family, font_theme = _font_record_family(fonts, model)
     size = run_properties.find(qn("w:sz")) if run_properties is not None else None
     color = run_properties.find(qn("w:color")) if run_properties is not None else None
     resolved_color, color_properties = _word_color(color, model)
@@ -94,7 +91,7 @@ def read_run_style(run: Any, paragraph: Any, model: DocumentModel | None = None)
         if _direct_run_value(run, name) is not None
     ]
     return TextStyle(
-        font_family=_first_font_value(sources, "name"),
+        font_family=_font_family(sources, model),
         font_size=_font_size(_first_font_value(sources, "size")),
         bold=_first_font_value(sources, "bold"),
         italic=_first_font_value(sources, "italic"),
@@ -186,7 +183,7 @@ def _resolved_font_style(style: Any, *, properties: dict[str, Any], model: Docum
     sources = [item.font for item in _style_chain(style)]
     properties.update(_font_color_properties(sources, model))
     return TextStyle(
-        font_family=_first_font_value(sources, "name"),
+        font_family=_font_family(sources, model),
         font_size=_font_size(_first_font_value(sources, "size")),
         bold=_first_font_value(sources, "bold"),
         italic=_first_font_value(sources, "italic"),
@@ -216,6 +213,39 @@ def _first_font_value(sources: list[Any], name: str) -> Any:
         if value is not None:
             return value
     return None
+
+
+def _font_family(sources: list[Any], model: DocumentModel | None) -> str | None:
+    """Word theme references override literal fallback names at the same cascade level."""
+
+    for font in sources:
+        records = font._element.xpath('./w:rPr/w:rFonts')
+        if not records:
+            continue
+        family, theme = _font_record_family(records[0], model)
+        if theme:
+            # An unresolved declaration must not invent an effective inherited family.
+            return family
+        if family:
+            return family
+    if model is not None:
+        defaults = model.styles.get('__doc_defaults__')
+        if defaults is not None:
+            return defaults.font_family
+    return None
+
+
+def _font_record_family(record: Any, model: DocumentModel | None) -> tuple[str | None, str | None]:
+    from docx.oxml.ns import qn
+
+    for slot in ('ascii', 'hAnsi'):
+        theme = record.get(qn('w:' + slot + 'Theme'))
+        if theme:
+            return (_theme_typeface(model, theme) if model is not None else None), theme
+        family = record.get(qn('w:' + slot))
+        if family:
+            return family, None
+    return None, None
 
 
 def _font_size(value: Any) -> Length | None:
@@ -285,7 +315,11 @@ def _word_color(node: Any, model: DocumentModel | None) -> tuple[ColorValue | No
 
 def _direct_run_value(run: Any, name: str) -> Any:
     if name == "font_family":
-        return run.font.name
+        from docx.oxml.ns import qn
+
+        fonts = run._r.xpath('./w:rPr/w:rFonts')
+        return (fonts[0].get(qn('w:asciiTheme')) or fonts[0].get(qn('w:hAnsiTheme'))
+                or fonts[0].get(qn('w:ascii')) or fonts[0].get(qn('w:hAnsi'))) if fonts else None
     if name == "font_size":
         return run.font.size
     if name == "color":
