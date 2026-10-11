@@ -18,7 +18,8 @@
   отдельные occurrences и общий codec; quality/cancel/bytes-change/publication
   rollback убирают actual target claims. История деклараций подтверждена через
   два полных PDF/JSON цикла, перестановку, удаление и повторный импорт.
-  Открыты карта SVG→PNG, общая композиция и правила split/merge.
+  Карта SVG→PNG подтверждена для нативного и потокового размещения,
+  target resources и двух полных циклов. Открыты общая композиция и правила split/merge.
 - C-MAP-01 / OF15: типизированная source → visual representation → actual target
   карта для vector→PNG с отдельными occurrences, подтверждёнными/unknown locators,
   полнотой, reason/code и статусом публикации; два цикла, перестановка и удаление.

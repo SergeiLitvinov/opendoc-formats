@@ -126,6 +126,28 @@ def main() -> None:
                 assert report.success, report.to_dict()
                 origins = read_pdf_origin_mapping(mapped_output)
                 assert origins.assessment_complete and {item.id for item in origins.sources} == expected_origins
+            from opendoc_model import DocumentModel, Image, Paragraph, Section, validate_object_mapping
+
+            svg_model = DocumentModel(resources={
+                'own-svg': Resource('own-svg', ResourceKind.VECTOR_IMAGE, 'image/svg+xml', data=(
+                    b'<svg xmlns="http://www.w3.org/2000/svg" width="40" height="20">'
+                    b'<circle cx="20" cy="10" r="8" fill="blue" opacity="0.4"/></svg>'
+                )),
+            }, sections=[Section(blocks=[Paragraph([Image('own-svg')]), Paragraph([Image('own-svg')])])])
+            svg_output = output / 'svg.pdf'
+            svg_report = write_document(svg_model, svg_output)
+            assert svg_report.success, svg_report.to_dict()
+            svg_mapping = get_object_mapping(svg_report)
+            assert svg_mapping.assessment_complete and len(svg_mapping.targets) == 2
+            validate_object_mapping(svg_mapping, source=svg_model, target=read_document(svg_output).document)
+            svg_origins = {item.id for item in read_pdf_origin_mapping(svg_output).sources}
+            for cycle in range(2):
+                carried = document_from_json(document_to_json(read_document(svg_output).document))
+                svg_output = output / f'svg-cycle-{cycle}.pdf'
+                svg_report = write_document(carried, svg_output)
+                assert svg_report.success, svg_report.to_dict()
+                restored = read_pdf_origin_mapping(svg_output)
+                assert restored.assessment_complete and {item.id for item in restored.sources} == svg_origins
             raster_source = output / "raster-source.pdf"
             with fitz.open() as fixture:
                 pixels = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, 20, 30), False)

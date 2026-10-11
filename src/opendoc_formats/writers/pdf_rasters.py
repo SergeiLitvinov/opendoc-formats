@@ -136,18 +136,18 @@ def prepare_rasters(
                 while flow_id is not None and flow_id in anchors:
                     flow_id += "-internal"
                 flow_alignment = value.properties.get("horizontal_align", alignment) if paragraph_anchor else alignment
-                if mapping is not None and mapping.source_for(value) is None:
+                if mapping is not None and mapping.source_for(value, location) is None:
                     from opendoc_formats.support.pdf_mapping_history import HISTORY_KEY
 
                     history = value.properties.get(HISTORY_KEY)
                     if history is not None:
                         index = mapping.record(value, location, resource.id,
                                                'Vector origin retained as a raster declaration', history=history)
-                        mapping.bind(value, index)
+                        mapping.bind(value, index, location)
                         report.add(IssueSeverity.LOSS, 'pdf.vector-origin',
                                    'Raster retains vector origin; editable vector semantics remain unavailable', location)
                 rasters.append(PdfRaster(value, resource, location, _rotation(value), flow_id, flow_alignment,
-                                         mapping.source_for(value) if mapping is not None else None))
+                                         mapping.source_for(value, location) if mapping is not None else None))
                 if paragraph_anchor:
                     report.add(IssueSeverity.LOSS, "pdf-raster-anchor-wrap",
                                "Paragraph anchor follows flow; original floating wrap and overlap rules are not reconstructed",

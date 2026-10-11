@@ -50,7 +50,7 @@ def write_pdf_model(
     if not report.success:
         mapping_publication(report, 'rejected', code='pdf.write-rejected', reason='preparation-failed')
         return report
-    prepared = PdfResourceStage().execute(document, StageContext(output, check_cancelled))
+    prepared = PdfResourceStage(mapping=mapping).execute(document, StageContext(output, check_cancelled))
     report.issues.extend(prepared.report.issues)
     report.metrics.update(prepared.report.metrics)
     if not report.success:
@@ -61,6 +61,12 @@ def write_pdf_model(
 
     document, rasters = prepare_rasters(document, report, check_cancelled, mapping)
     if not report.success:
+        mapping_publication(report, 'rejected', code='pdf.write-rejected', reason='preparation-failed')
+        return report
+    try:
+        mapping.prepare_story(document)
+    except Exception as error:  # noqa: BLE001 - optional native backend has heterogeneous errors
+        report.add(IssueSeverity.ERROR, 'pdf.svg-preparation', str(error))
         mapping_publication(report, 'rejected', code='pdf.write-rejected', reason='preparation-failed')
         return report
     document = prepare_fonts(document, report)
@@ -92,7 +98,7 @@ def write_pdf_model(
             anchor_positions: dict[str, tuple[int, tuple[float, float]]] = {}
             flow_ids = {r.location: r.flow_id for r in rasters[section_index] if r.flow_id is not None}
             section_pdf, renderer = _render_section(document, section, section_index, report, flow_positions, flow_ids,
-                                                    anchor_positions)
+                                                    anchor_positions, mapping)
             from opendoc_formats.writers.pdf_text_verify import verify_section_text
 
             try:
@@ -139,6 +145,7 @@ def write_pdf_model(
                 report.add(IssueSeverity.LOSS, "pdf-raster-compositing", "Source raster/vector paint order is not reconstructed",
                            f"sections[{section_index}]")
             try:
+                mapping.resolve_story(section_pdf, target.page_count)
                 for page_number, page in enumerate(section_pdf):
                     placed_rasters = [r for r in rasters[section_index]
                                       if r.flow_id is None
@@ -256,6 +263,7 @@ def _render_section(
     flow_positions: dict[tuple[str, int], tuple[float, ...]],
     flow_ids: dict[str, str],
     anchor_positions: dict[str, tuple[int, tuple[float, float]]],
+    mapping: Any = None,
 ) -> tuple[Any, _HtmlRenderer]:
     import fitz
 
@@ -270,7 +278,7 @@ def _render_section(
     )
     from opendoc_formats.writers.pdf_flow import PdfFlowRenderer, record_position
 
-    renderer = PdfFlowRenderer(section_model, report, flow_ids)
+    renderer = PdfFlowRenderer(section_model, report, flow_ids, mapping)
     main_html = renderer._blocks(section.blocks, f"sections[{section_index}].blocks")
     header_html = renderer._blocks(section.headers, f"sections[{section_index}].headers")
     footer_html = renderer._blocks(section.footers, f"sections[{section_index}].footers")
@@ -298,7 +306,7 @@ def _render_section(
             font_styles
             + "\n"
             + renderer.stylesheet(include_page_rules=False)
-            + "\nhtml, body { background: white; } body { margin: 0; }"
+            + "\nhtml, body { background: transparent; } body { margin: 0; }"
         )
         archive = fitz.Archive(str(font_workspace.path))
         story = fitz.Story(html=main_html or "<p></p>", user_css=css, archive=archive)

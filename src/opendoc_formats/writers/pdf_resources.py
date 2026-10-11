@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, replace
+from typing import Any
 
 from opendoc_model.diagnostics import IssueSeverity
-from opendoc_model.document_model import DocumentModel, ResourceKind
+from opendoc_model.document_model import DocumentModel, Provenance, ResourceKind
 
 from opendoc_formats.writers.html_resources import HtmlResourceStage, document_images
 from opendoc_formats.writers.stages import StageContext, StageKind, StageResult, StageValue
@@ -18,6 +19,7 @@ class PdfResourceStage:
 
     id: str = "pdf.resources"
     kind: StageKind = StageKind.RESOURCES
+    mapping: Any = None
 
     def execute(self, value: StageValue, context: StageContext) -> StageResult:
         prepared = HtmlResourceStage(id=self.id).execute(value, context)
@@ -54,6 +56,16 @@ class PdfResourceStage:
             png_bytes=png_bytes,
             accepted=report.success,
         )
+        if self.mapping is not None:
+            for image, location in document_images(value):
+                original = value.resources.get(image.resource_id)
+                if original is not None and original.media_type == 'image/svg+xml':
+                    rejected = resources[image.resource_id].media_type != 'image/png'
+                    index = self.mapping.record(image, location, None,
+                                                'SVG converted to a generated PNG representation' if not rejected
+                                                else 'SVG could not be rasterized', rejected=rejected, generated=True,
+                                                provenance=original.provenance or Provenance(source_format='svg'))
+                    self.mapping.bind(image, index, location)
         return StageResult(replace(document, resources=resources), report)
 
 

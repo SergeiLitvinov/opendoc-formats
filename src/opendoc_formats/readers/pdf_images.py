@@ -128,7 +128,9 @@ def extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[
 
     with fitz.open(str(source)) as document:
         for page_number, page in enumerate(document, start=1):
-            page_dict = page.get_text("dict", sort=False) or {}
+            # Match get_image_info's TextPage flags: whitespace filtering can renumber blocks.
+            page_dict = page.get_text("dict", sort=False, flags=fitz.TEXT_PRESERVE_IMAGES,
+                                      clip=fitz.INFINITE_RECT()) or {}
             image_blocks = [block for block in page_dict.get("blocks", []) if block.get("type") == 1]
             infos = {item["number"]: item for item in page.get_image_info(xrefs=True)}
             from opendoc_formats.readers.pdf_image_clips import clipped_image_placement, image_clip_profiles

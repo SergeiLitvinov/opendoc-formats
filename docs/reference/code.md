@@ -659,8 +659,8 @@ Extract raster images and vector drawings from PDF pages.
 - `PdfVectorDrawing` — [строка 64](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L64)
 - `is_path(self) -> bool` — [строка 89](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L89)
 - `extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[str]]` — [строка 111](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L111)
-- `extract_pdf_vector_drawings(path: str | Path) -> tuple[list[PdfVectorDrawing], list[str]]` — [строка 176](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L176)
-- `enrich_geometry_with_images(geometry: PdfGeometryDocument, images: list[ExtractedPdfImage] | None=None, vector_drawings: list[PdfVectorDrawing] | None=None) -> PdfGeometryDocument` — [строка 268](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L268)
+- `extract_pdf_vector_drawings(path: str | Path) -> tuple[list[PdfVectorDrawing], list[str]]` — [строка 178](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L178)
+- `enrich_geometry_with_images(geometry: PdfGeometryDocument, images: list[ExtractedPdfImage] | None=None, vector_drawings: list[PdfVectorDrawing] | None=None) -> PdfGeometryDocument` — [строка 270](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L270)
 
 Импорты: `__future__`, `dataclasses`, `opendoc_formats.errors`, `opendoc_formats.readers.pdf_content`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_image_clips`, `opendoc_model`, `opendoc_model.color`, `pathlib`, `typing`
 
@@ -982,21 +982,24 @@ Availability checks for optional modules, including missing dotted parents.
 
 Measured PDF fallback occurrences using the public OpenDoc mapping contract.
 
-- `get_object_mapping(report: ConversionReport) -> ObjectMapping | None` — [строка 31](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L31)
-- `mapping_publication(report: ConversionReport, state: MappingPublication, *, code: str | None=None, reason: str | None=None) -> None` — [строка 37](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L37)
-- `mapping_result_matches(report: ConversionReport, path: Path) -> bool` — [строка 50](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L50)
-- `PdfFallbackMapping` — [строка 65](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L65)
-- `__init__(self, report: ConversionReport) -> None` — [строка 68](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L68)
-- `record(self, image: Image, location: str, replacement_id: str | None, message: str, *, rejected: bool=False, history: dict[str, Any] | None=None) -> int` — [строка 76](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L76)
-- `bind(self, image: Image, index: int) -> None` — [строка 108](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L108)
-- `source_for(self, image: Image) -> int | None` — [строка 111](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L111)
-- `placed(self, index: int | None, page: int, occurrence: int, digest: bytes) -> None` — [строка 115](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L115)
-- `embed(self, pdf: Any) -> None` — [строка 119](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L119)
-- `materialize(self, path: Path) -> None` — [строка 124](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L124)
+- `get_object_mapping(report: ConversionReport) -> ObjectMapping | None` — [строка 34](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L34)
+- `mapping_publication(report: ConversionReport, state: MappingPublication, *, code: str | None=None, reason: str | None=None) -> None` — [строка 40](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L40)
+- `mapping_result_matches(report: ConversionReport, path: Path) -> bool` — [строка 53](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L53)
+- `PdfFallbackMapping` — [строка 68](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L68)
+- `__init__(self, report: ConversionReport) -> None` — [строка 71](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L71)
+- `record(self, image: Image, location: str, replacement_id: str | None, message: str, *, rejected: bool=False, history: dict[str, Any] | None=None, generated: bool=False, provenance: Provenance | None=None) -> int` — [строка 83](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L83)
+- `bind(self, image: Image, index: int, location: str='') -> None` — [строка 120](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L120)
+- `source_for(self, image: Image, location: str='') -> int | None` — [строка 123](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L123)
+- `placed(self, index: int | None, page: int, occurrence: int, digest: bytes) -> None` — [строка 127](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L127)
+- `embed(self, pdf: Any) -> None` — [строка 131](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L131)
+- `story_resource(self, image: Image, location: str, resource: Resource, *, layout: bool=True) -> Resource` — [строка 136](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L136)
+- `prepare_story(self, document: Any) -> None` — [строка 167](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L167)
+- `resolve_story(self, pdf: Any, page_offset: int) -> None` — [строка 175](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L175)
+- `materialize(self, path: Path) -> None` — [строка 219](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/object_mapping.py#L219)
 
-Импорты: `__future__`, `copy`, `dataclasses`, `opendoc_formats.support.pdf_mapping_history`, `opendoc_model`, `opendoc_model.object_mapping`, `pathlib`, `typing`
+Импорты: `__future__`, `copy`, `dataclasses`, `opendoc_formats.readers.pdf_model`, `opendoc_formats.support.pdf_mapping_history`, `opendoc_formats.writers.html_resources`, `opendoc_model`, `opendoc_model.object_mapping`, `pathlib`, `typing`
 
-Тесты: [test_pdf_mapping.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_mapping.py#L1)
+Тесты: [test_pdf_mapping.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_mapping.py#L1), [test_pdf_svg_mapping.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_svg_mapping.py#L1)
 
 ## src/opendoc_formats/support/output_validation.py
 
@@ -1261,7 +1264,7 @@ Serialize model list paragraphs as nested semantic HTML lists.
 
 Импорты: `__future__`, `collections.abc`, `dataclasses`, `opendoc_formats.writers.stages`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`
 
-Тесты: [test_html_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_resources.py#L1), [test_pdf_mapping_history.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_mapping_history.py#L1)
+Тесты: [test_html_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_resources.py#L1), [test_pdf_mapping_history.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_mapping_history.py#L1), [test_pdf_svg_mapping.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_svg_mapping.py#L1)
 
 ## src/opendoc_formats/writers/html_verify.py
 
@@ -1305,10 +1308,10 @@ Compatibility entry point for the shared MathML-to-Office-Math structure convert
 Reserve inline image space and capture its actual Story page position.
 
 - `PdfFlowRenderer` — [строка 14](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_flow.py#L14)
-- `__init__(self, document: DocumentModel, report: ConversionReport, flow_ids: dict[str, str]) -> None` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_flow.py#L15)
-- `record_position(positions: dict[tuple[str, int], tuple[float, ...]], position: Any) -> None` — [строка 48](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_flow.py#L48)
+- `__init__(self, document: DocumentModel, report: ConversionReport, flow_ids: dict[str, str], mapping: Any=None) -> None` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_flow.py#L15)
+- `record_position(positions: dict[tuple[str, int], tuple[float, ...]], position: Any) -> None` — [строка 58](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_flow.py#L58)
 
-Импорты: `__future__`, `dataclasses`, `opendoc_formats.writers.html_writer`, `opendoc_model`, `typing`
+Импорты: `__future__`, `dataclasses`, `opendoc_formats.writers.html_resources`, `opendoc_formats.writers.html_writer`, `opendoc_model`, `typing`
 
 ## src/opendoc_formats/writers/pdf_interactive.py
 
@@ -1340,12 +1343,12 @@ Bounded native raster transforms and placement in PDF page and Story coordinates
 
 Подготовка изображений для PDF Story без изменения исходной модели.
 
-- `PdfResourceStage` — [строка 16](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_resources.py#L16)
-- `execute(self, value: StageValue, context: StageContext) -> StageResult` — [строка 22](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_resources.py#L22)
+- `PdfResourceStage` — [строка 17](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_resources.py#L17)
+- `execute(self, value: StageValue, context: StageContext) -> StageResult` — [строка 24](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_resources.py#L24)
 
-Импорты: `__future__`, `dataclasses`, `opendoc_formats.writers.html_resources`, `opendoc_formats.writers.stages`, `opendoc_model.diagnostics`, `opendoc_model.document_model`
+Импорты: `__future__`, `dataclasses`, `opendoc_formats.writers.html_resources`, `opendoc_formats.writers.stages`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `typing`
 
-Тесты: [test_pdf_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_resources.py#L1)
+Тесты: [test_pdf_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_resources.py#L1), [test_pdf_svg_mapping.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_svg_mapping.py#L1)
 
 ## src/opendoc_formats/writers/pdf_text_verify.py
 
@@ -1660,7 +1663,7 @@ Public protocols for executable document conversion components.
 
 Импорты: `__future__`, `dataclasses`, `enum`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`, `typing`
 
-Тесты: [test_html_layout.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_layout.py#L1), [test_html_normalize.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_normalize.py#L1), [test_html_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_resources.py#L1), [test_pdf_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_resources.py#L1), [test_stages.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_stages.py#L1)
+Тесты: [test_html_layout.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_layout.py#L1), [test_html_normalize.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_normalize.py#L1), [test_html_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_resources.py#L1), [test_pdf_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_resources.py#L1), [test_pdf_svg_mapping.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_svg_mapping.py#L1), [test_stages.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_stages.py#L1)
 
 ## src/opendoc_formats/writers/text_render.py
 

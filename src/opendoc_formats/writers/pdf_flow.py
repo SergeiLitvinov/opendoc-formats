@@ -12,9 +12,10 @@ from opendoc_formats.writers.html_writer import _HtmlRenderer
 
 
 class PdfFlowRenderer(_HtmlRenderer):
-    def __init__(self, document: DocumentModel, report: ConversionReport, flow_ids: dict[str, str]) -> None:
+    def __init__(self, document: DocumentModel, report: ConversionReport, flow_ids: dict[str, str], mapping: Any = None) -> None:
         super().__init__(document, report)
         self.flow_ids = flow_ids
+        self.mapping = mapping
 
     def _paragraph(self, paragraph: Paragraph, location: str) -> str:
         if paragraph.box is not None and paragraph.provenance is not None and paragraph.provenance.source_format == 'pdf':
@@ -32,7 +33,16 @@ class PdfFlowRenderer(_HtmlRenderer):
     def _image(self, image: Image, location: str, *, block_level: bool) -> str:
         token = self.flow_ids.get(location)
         if not token:
-            return super()._image(image, location, block_level=block_level)
+            rendered = super()._image(image, location, block_level=block_level)
+            resource = self.document.resources.get(image.resource_id)
+            if self.mapping is not None and resource is not None:
+                from opendoc_formats.writers.html_resources import image_data_uri
+
+                temporary = self.mapping.story_resource(image, location, resource)
+                if temporary is not resource:
+                    rendered = rendered.replace(f'src="{image_data_uri(resource)}"',
+                                                f'src="{image_data_uri(temporary)}"', 1)
+            return rendered
         box = image.box
         assert box is not None
         angle = math.radians(box.rotation % 360)
