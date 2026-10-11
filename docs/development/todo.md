@@ -14,6 +14,10 @@
   правки/удаление, четыре поворота и маленькая страница; два цикла относительно
   оригинала. Подтверждённый native text flow в публичной инспекции без ложного
   полного object inventory; научный отчёт сохраняет текст либо отказывает по адресу.
+- C-MAP-01 реализован частично: typed source→provided PNG→measured PDF target,
+  отдельные occurrences и общий codec; quality/cancel/bytes-change/publication
+  rollback убирают actual target claims. Открыты карта SVG→PNG, история через
+  два PDF/JSON/форматных цикла, повторный импорт, композиция и правила split/merge.
 - C-MAP-01 / OF15: типизированная source → visual representation → actual target
   карта для vector→PNG с отдельными occurrences, подтверждёнными/unknown locators,
   полнотой, reason/code и статусом публикации; два цикла, перестановка и удаление.

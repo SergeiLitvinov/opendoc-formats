@@ -9,5 +9,8 @@ __version__ = version("opendoc-formats")
 __all__ = ["AdapterRegistry", "AdapterSpec", "ImportOptions", "ImportResult", "TextProfile", "default_registry", "read_document"]
 
 from .export import ExporterRegistry, ExporterSpec, ExportOptions, default_exporter_registry, write_document
+from .support.object_mapping import get_object_mapping
 
-__all__ += ["ExporterRegistry", "ExporterSpec", "ExportOptions", "default_exporter_registry", "write_document"]
+__all__ += [
+    "ExporterRegistry", "ExporterSpec", "ExportOptions", "default_exporter_registry", "write_document", "get_object_mapping",
+]

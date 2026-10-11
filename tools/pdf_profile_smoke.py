@@ -91,6 +91,30 @@ def main() -> None:
             assert restored.resources == vector.document.resources
             vector_report = write_document(vector.document, output / "vector.pdf")
             assert vector_report.success and vector_report.metrics["pdf_vectors"]["native"] == 1, vector_report.to_dict()
+            from opendoc_model import Resource, ResourceKind, VisualSurrogate
+
+            from opendoc_formats import get_object_mapping
+            from opendoc_formats.writers.html_resources import document_images
+
+            image, _ = next(document_images(restored))
+            restored.resources[image.resource_id].properties["items"] = [["unknown"]]
+            pixels = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, 20, 20), False)
+            pixels.clear_with(128)
+            restored.resources["own-visual"] = Resource(
+                "own-visual", ResourceKind.RASTER_IMAGE, "image/png", data=pixels.tobytes("png")
+            )
+            image.visual_surrogate = VisualSurrogate("own-visual", "unsupported vector", "image/png")
+            mapped_output = output / "mapped.pdf"
+            mapped = write_document(restored, mapped_output)
+            assert mapped.success, mapped.to_dict()
+            mapping = get_object_mapping(mapped)
+            assert mapping.publication == "published" and mapping.assessment_complete and mapping.targets
+            previous = mapped_output.read_bytes()
+            rejected = write_document(restored, mapped_output, options=ExportOptions(
+                quality_gate=lambda report, staged: report.lossless,
+            ))
+            assert not rejected.success and mapped_output.read_bytes() == previous
+            assert get_object_mapping(rejected).publication == "rejected" and not get_object_mapping(rejected).targets
             raster_source = output / "raster-source.pdf"
             with fitz.open() as fixture:
                 pixels = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, 20, 30), False)

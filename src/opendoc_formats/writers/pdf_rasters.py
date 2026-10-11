@@ -30,6 +30,7 @@ class PdfRaster:
     rotation: int | None
     flow_id: str | None = None
     flow_alignment: str | None = None
+    mapping_source: int | None = None
 
 
 def _rotation(image: Image) -> int | None:
@@ -72,6 +73,7 @@ def prepare_rasters(
     document: DocumentModel,
     report: ConversionReport,
     cancelled: Callable[[], bool],
+    mapping: Any = None,
 ) -> tuple[DocumentModel, list[list[PdfRaster]]]:
     placements = []
     sections = []
@@ -134,7 +136,8 @@ def prepare_rasters(
                 while flow_id is not None and flow_id in anchors:
                     flow_id += "-internal"
                 flow_alignment = value.properties.get("horizontal_align", alignment) if paragraph_anchor else alignment
-                rasters.append(PdfRaster(value, resource, location, _rotation(value), flow_id, flow_alignment))
+                rasters.append(PdfRaster(value, resource, location, _rotation(value), flow_id, flow_alignment,
+                                         mapping.source_for(value) if mapping is not None else None))
                 if paragraph_anchor:
                     report.add(IssueSeverity.LOSS, "pdf-raster-anchor-wrap",
                                "Paragraph anchor follows flow; original floating wrap and overlap rules are not reconstructed",
@@ -211,9 +214,12 @@ def prepare_rasters(
     return replace(document, sections=sections), placements
 
 
-def draw_rasters(page: Any, rasters: list[PdfRaster], cancelled: Callable[[], bool]) -> None:
+def draw_rasters(
+    page: Any, rasters: list[PdfRaster], cancelled: Callable[[], bool], *, mapping: Any = None, page_index: int = 0,
+) -> None:
     import fitz
 
+    before = len(page.get_image_info()) if mapping is not None and mapping.sources else 0
     for raster in rasters:
         if cancelled():
             raise ValueError("PDF raster rendering cancelled")
@@ -228,6 +234,13 @@ def draw_rasters(page: Any, rasters: list[PdfRaster], cancelled: Callable[[], bo
             rotate=raster.rotation,
             keep_proportion=False,
         )
+
+    if mapping is not None and mapping.sources:
+        images = page.get_image_info(hashes=True)
+        if len(images) == before + len(rasters):
+            for offset, raster in enumerate(rasters):
+                mapping.placed(raster.mapping_source, page_index,
+                               before + offset, images[before + offset]['digest'])
 
 
 def _draw_affine(page: Any, raster: PdfRaster) -> None:

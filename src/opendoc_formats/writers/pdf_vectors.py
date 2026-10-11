@@ -114,6 +114,7 @@ def _validate(image: Image, resource: Resource) -> None:
 
 def prepare_vectors(
     document: DocumentModel, report: ConversionReport, cancelled: Callable[[], bool],
+    mapping: Any = None,
 ) -> tuple[DocumentModel, list[list[PdfVector]]]:
     """Remove supported fixed vectors from HTML, retaining the untouched source model."""
     count = 0
@@ -147,12 +148,18 @@ def prepare_vectors(
                     if not width or not height or width > 8192 or height > 8192 or width * height > 16_000_000:
                         report.add(IssueSeverity.ERROR, "pdf-vector-surrogate", "PNG surrogate exceeds pixel limits", location)
                         return image
+                    mapping_index = mapping.record(image, location, replacement.id, str(error)) if mapping is not None else None
                     report.add(IssueSeverity.LOSS, "pdf-vector-surrogate", str(error), location)
                     provenance = image.provenance or Provenance(source_format=document.source_format or "pdf")
                     provenance = replace(provenance, events=[*provenance.events, ProvenanceEvent(
                         "export.pdf.vector-surrogate", detail=f"used {replacement.id}", fallback_reason=str(error),
                     )])
-                    return replace(image, resource_id=replacement.id, provenance=provenance)
+                    prepared = replace(image, resource_id=replacement.id, provenance=provenance)
+                    if mapping is not None:
+                        mapping.bind(prepared, mapping_index)
+                    return prepared
+                if mapping is not None:
+                    mapping.record(image, location, None, str(error), rejected=True)
                 report.add(IssueSeverity.ERROR, "pdf-vector-unsupported", str(error), location)
                 return image
             vectors.append(PdfVector(image, resource, location))

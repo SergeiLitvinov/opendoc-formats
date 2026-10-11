@@ -723,3 +723,53 @@ sort=False, flags=TEXTFLAGS_TEXT)` по страницам; сюда могут 
 Цикл, повторное владение, прямой dictionary и неподдержанный тип дают
 `pdf.field-inventory` по `catalog.AcroForm.Fields`; непроверенный `form_fields`
 отсутствует. Это не восстановление полной иерархии, значений и событий AcroForm.
+
+## Карта предоставленного PDF-surrogate
+
+`get_object_mapping(report)` возвращает независимую типизированную копию
+`ObjectMapping` OpenDoc либо `None`, если writer не предоставляет карту.
+JSON в `report.metrics["object_mapping"]` использует общий versioned codec.
+Профиль `pdf-supplied-vector-surrogate-v1` охватывает только вхождения
+неподдержанного PDF-вектора с предоставленным PNG-surrogate, а не весь документ
+и не автоматическую SVG-растеризацию. Исходная модель не меняется.
+
+Source occurrence имеет отдельный report-local ID, исходный resource ID,
+подтверждённый model anchor при наличии и копию provenance. Два вхождения
+одного ресурса имеют разные occurrence IDs. Replacement — raster resource
+в исходном snapshot; редактируемая векторная семантика обозначается потерянной
+через `VISUAL`, LOSS, machine code/reason. Неподдержанный вектор без surrogate
+имеет `REJECTED`. Эти состояния не выводятся из текста сообщения.
+
+PDF writer связывает отдельные нативные вставки с source occurrences, затем
+проверяет их после сохранения/оптимизации. Target locator содержит фактические
+page/image indices, xref, bbox и digest изображения. Target model/resource ID
+не угадывается: native-only occurrence не объявляет такого handle.
+Неподтверждённые targets остаются unknown с адресной диагностикой.
+`assessment_complete` относится только к объявленным fallback occurrences.
+Повтор на нескольких страницах обозначается одной группой с несколькими
+целями; произвольные split/merge не выводятся автоматически.
+
+`result_id` — SHA-256 фактических PDF bytes. Временный путь не служит
+идентичностью. Перенос неизменённого файла сохраняет карту. Внутренний writer
+создаёт staged mapping; успешная атомарная замена переводит её в published.
+Внешний `write_document` проверяет качество в staging до замены файла:
+
+```python
+from opendoc_formats import ExportOptions, get_object_mapping, write_document
+
+report = write_document(document, "output.pdf", options=ExportOptions(
+    quality_gate=lambda report, staged_path: report.lossless,
+))
+mapping = get_object_mapping(report)
+```
+
+Callback должен вернуть bool; false, исключение или ERROR в report запрещают
+публикацию. Cancel/ошибка публикации дают rejected, изменение или удаление
+staged bytes после измерения — invalidated. Actual targets/locators очищаются,
+полнота сбрасывается. Произвольное изменение файла после успешной публикации
+требует новой проверки идентичности, а не автоматического восстановления карты.
+
+Кодек карты проходит два JSON цикла; проверки writer включают перестановку,
+удаление, повторный ресурс, изменение offsets после исключения native-вектора,
+перенос файла и атомарный отказ. Карта пока не встроена в PDF и не восстанавливает
+историю исходного вектора после нового PDF-импорта: это открытая часть C-MAP-01.

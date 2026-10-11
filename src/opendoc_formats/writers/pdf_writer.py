@@ -29,6 +29,9 @@ def write_pdf_model(
     report = ConversionReport(output)
     from opendoc_model import PreservationState, get_integration, get_page_geometry
 
+    from opendoc_formats.support.object_mapping import PdfFallbackMapping, mapping_publication
+
+    mapping = PdfFallbackMapping(report)
     outline_document = document
     integration = get_integration(document)
     if integration is not None:
@@ -43,19 +46,22 @@ def write_pdf_model(
     from opendoc_formats.writers.pdf_vectors import draw_vectors, prepare_vectors
 
     check_cancelled = cancelled or (lambda: False)
-    document, vectors = prepare_vectors(document, report, check_cancelled)
+    document, vectors = prepare_vectors(document, report, check_cancelled, mapping)
     if not report.success:
+        mapping_publication(report, 'rejected', code='pdf.write-rejected', reason='preparation-failed')
         return report
     prepared = PdfResourceStage().execute(document, StageContext(output, check_cancelled))
     report.issues.extend(prepared.report.issues)
     report.metrics.update(prepared.report.metrics)
     if not report.success:
+        mapping_publication(report, 'rejected', code='pdf.write-rejected', reason='preparation-failed')
         return report
     document = prepared.value
     from opendoc_formats.writers.pdf_rasters import draw_rasters, prepare_rasters
 
-    document, rasters = prepare_rasters(document, report, check_cancelled)
+    document, rasters = prepare_rasters(document, report, check_cancelled, mapping)
     if not report.success:
+        mapping_publication(report, 'rejected', code='pdf.write-rejected', reason='preparation-failed')
         return report
     document = prepare_fonts(document, report)
     preflight_colors(document, report, target="pdf")
@@ -99,6 +105,7 @@ def write_pdf_model(
                 raise
             if not report.success:
                 section_pdf.close()
+                mapping_publication(report, 'rejected', code='pdf.text-rejected', reason='text-validation-failed')
                 return report
             if page_geometry is not None:
                 used_geometry_ids.add(source_page_id)
@@ -163,7 +170,8 @@ def write_pdf_model(
                                 x0 = x1 - expected_width
                             placed_box = replace(box, x=(x0 + x1 - box.width) / 2, y=(y0 + y1 - box.height) / 2)
                             placed_rasters.append(replace(raster, image=replace(raster.image, box=placed_box)))
-                    draw_rasters(page, placed_rasters, check_cancelled)
+                    draw_rasters(page, placed_rasters, check_cancelled, mapping=mapping,
+                                 page_index=target.page_count + page_number)
                     placed = [v for v in section_vectors
                               if page_number == 0 or ".headers[" in v.location or ".footers[" in v.location]
                     draw_vectors(page, placed, check_cancelled)
@@ -195,6 +203,7 @@ def write_pdf_model(
 
         write_interactions(target, outline_document, report, outline_pages, check_cancelled)
         if not report.success:
+            mapping_publication(report, 'rejected', code='pdf.interactions-rejected', reason='interaction-failed')
             return report
 
         if integration:
@@ -213,22 +222,25 @@ def write_pdf_model(
             staged = workspace.artifact_path("output.pdf")
             target.save(staged, garbage=4, deflate=True)
             workspace.validate_artifact(staged)
+            with fitz.open(staged) as check:
+                if check.page_count != totals['pages'] or check.page_count == 0:
+                    raise ValueError('Written PDF has an invalid page count')
+                _verify_pdf_font_embedding(check, document, report)
+            if not report.success:
+                mapping_publication(report, 'rejected', code='pdf.validation-rejected', reason='validation-failed')
+                return report
+            mapping.materialize(staged)
             if check_cancelled():
                 raise ValueError("PDF export cancelled before publication")
             atomic_copy(staged, output)
+            mapping_publication(report, 'published')
     except Exception as error:  # noqa: BLE001 - backend failures must be represented in the report
         report.add(IssueSeverity.ERROR, "pdf-write", str(error))
+        mapping_publication(report, 'rejected', code='pdf.write-rejected', reason='write-failed')
         return report
     finally:
         target.close()
 
-    try:
-        with fitz.open(output) as check:
-            if check.page_count != totals["pages"] or check.page_count == 0:
-                report.add(IssueSeverity.ERROR, "pdf-validation", "written PDF has an invalid page count")
-            _verify_pdf_font_embedding(check, document, report)
-    except Exception as error:  # noqa: BLE001 - validation is part of the diagnostic boundary
-        report.add(IssueSeverity.ERROR, "pdf-validation", str(error))
     report.metrics.update(totals)
     report.metrics["sections"] = len(document.sections or [Section()])
     report.metrics["resources"] = len(document.resources)

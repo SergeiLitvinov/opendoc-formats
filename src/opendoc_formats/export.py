@@ -13,6 +13,7 @@ from typing import cast
 from opendoc_model import ArtifactLimitError, ConversionReport, DocumentLimits, DocumentModel, IssueSeverity
 
 from opendoc_formats.support.backends import missing_backends
+from opendoc_formats.support.object_mapping import get_object_mapping, mapping_publication, mapping_result_matches
 from opendoc_formats.text_profile import TextProfile, decode_text
 
 
@@ -22,6 +23,7 @@ class ExportOptions:
     cancelled: Callable[[], bool] | None = None
     verify_output: bool = True
     txt_profile: TextProfile | None = None
+    quality_gate: Callable[[ConversionReport, Path], bool] | None = None
 
     def __post_init__(self) -> None:
         if self.txt_profile is not None and not isinstance(self.txt_profile, TextProfile):
@@ -30,6 +32,8 @@ class ExportOptions:
             raise ValueError("document_limits must be DocumentLimits")
         if self.cancelled is not None and not callable(self.cancelled):
             raise ValueError("cancelled must be callable")
+        if self.quality_gate is not None and not callable(self.quality_gate):
+            raise ValueError('quality_gate must be callable')
         if type(self.verify_output) is not bool:
             raise ValueError("verify_output must be bool")
 
@@ -91,6 +95,7 @@ class ExporterRegistry:
 
         def fail(code: str, message: str) -> ConversionReport:
             report.add(IssueSeverity.ERROR, code, message)
+            mapping_publication(report, 'rejected', code=code, reason=code)
             return report
 
         if exporter is None:
@@ -130,7 +135,10 @@ class ExporterRegistry:
                                     if identifier in {'html', 'epub'} else
                                     f'{identifier.upper()} writer does not preserve common border declarations'), reference.path)
             if not report.success:
+                mapping_publication(report, 'rejected', code='export.writer-rejected', reason='writer-failed')
                 return report
+            if get_object_mapping(report) is not None:
+                mapping_publication(report, 'staged')
             if options.cancelled and options.cancelled():
                 return fail("export.cancelled", "Export cancelled; staged result discarded")
             if not staged.is_file():
@@ -144,9 +152,26 @@ class ExporterRegistry:
                 except Exception as error:  # noqa: BLE001 - third-party validators are a diagnostic boundary
                     return fail("export.invalid-output", str(error))
                 report.metrics["output_verified"] = True
+            if options.quality_gate is not None:
+                try:
+                    accepted = options.quality_gate(report, staged)
+                    if type(accepted) is not bool:
+                        raise ValueError('quality_gate must return bool')
+                except Exception as error:  # noqa: BLE001 - caller quality checks are a diagnostic boundary
+                    return fail('export.quality-check', str(error))
+                if not accepted or not report.success:
+                    return fail('export.quality-rejected', 'Caller quality gate rejected the staged result')
+            if not mapping_result_matches(report, staged):
+                report.add(IssueSeverity.ERROR, 'export.mapping-invalidated', 'Staged bytes changed after mapping measurement')
+                mapping_publication(report, 'invalidated', code='export.mapping-invalidated', reason='result-changed')
+                return report
             if options.cancelled and options.cancelled():
                 return fail("export.cancelled", "Export cancelled before publication")
-            os.replace(staged, output)
+            try:
+                os.replace(staged, output)
+            except OSError as error:
+                return fail('export.publication-failed', str(error))
+            mapping_publication(report, 'published')
         return report
 
 
