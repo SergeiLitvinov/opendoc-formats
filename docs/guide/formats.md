@@ -245,7 +245,7 @@ coordinates для точности при всех четырёх поворо�
 ### Ширины таблиц и smartTag в DOCX
 
 Прямое оформление границ использует `get_borders`/`set_borders`/`set_border`
-из opendoc-model 0.9.1. Таблица хранит четыре внешние и две внутренние стороны;
+из opendoc-model 0.10.1. Таблица хранит четыре внешние и две внутренние стороны;
 ячейка — четыре внешние и две диагонали. Поддержаны solid/dashed/dotted/double/
 dash-dot/dash-dot-dot, RGB, толщина в восьмых пункта, целочисленный отступ,
 различные явные подавления `none` и `nil`. Отсутствующая сторона остаётся
@@ -599,6 +599,20 @@ Content view ограничен 128 MiB исходного файла, 256 MiB �
 Полный AcroForm field tree, все appearances/actions, legacy vertices без исходной
 геометрии и независимый inspection text scope требуют дополнительной приёмки;
 конечный C-PDF-01 остаётся открытым.
+
+AcroForm `/Fields` и `/Kids` проверяются отдельно от page widgets: до 10 000
+узлов и глубины 64, только явные indirect references. Циклы, повторное владение
+и неверные ссылки отклоняют чтение. Parent fields, orphan fields и widgets вне
+canonical tree имеют расположенный `pdf.field-tree` opaque record; иерархия
+не считается восстановленной из совпадения widget values. Дополнительные свойства
+и XFA/calculation order/signature flags имеют отдельные opaque records.
+Строковый `/DV` обычного текстового поля хранится в `extra.pdf_default_value` и
+переносится через JSON. Явное `None` удаляет default. Повторные поля с одинаковым
+именем требуют согласованных value/flags/default; конфликт или default более
+65 536 символов отказывает без замены предыдущего файла. Generated widget получает
+связь `/P` с реальной страницей, чтобы оптимизация не объединила разные occurrences.
+Собственные tests проверяют default/edit/delete, отдельные native xrefs на двух
+страницах, parent/orphan diagnostics, циклы дерева и лимит.
 
 Неизвестные типы annotations/widgets, structure tree, layers и catalog actions
 получают состояние `opaque`, а исходный PDF сохраняется в Attachment

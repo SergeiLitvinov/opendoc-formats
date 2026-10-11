@@ -37,7 +37,7 @@ def _write_interactions(
     if len(integration.annotations) + len(integration.forms) > 10_000:
         report.add(IssueSeverity.ERROR, 'pdf.interaction-limit', 'Interactive objects exceed the finite profile', 'integration')
         return
-    names: dict[str, tuple[str, int]] = {}
+    names: dict[str, tuple[str, int, str | None]] = {}
     for group, values in (('annotations', integration.annotations), ('forms', integration.forms)):
         for item in values:
             location = f'integration.{group}[{item.id}]'
@@ -67,10 +67,14 @@ def _write_interactions(
                 if type(flags) is not int or not 0 <= flags <= 0x7fffffff:
                     report.add(IssueSeverity.ERROR, 'pdf.form-flags', 'Invalid field flags', location)
                     return
-                if name in names and names[name] != (item.value, flags):
+                default = item.extra.get('pdf_default_value')
+                if default is not None and (not isinstance(default, str) or len(default) > 65_536):
+                    report.add(IssueSeverity.ERROR, 'pdf.form-default', 'Invalid or excessive default value', location)
+                    return
+                if name in names and names[name] != (item.value, flags, default):
                     report.add(IssueSeverity.ERROR, 'pdf.form-conflict', 'Shared widgets have conflicting values/flags', location)
                     return
-                names[name] = item.value, flags
+                names[name] = item.value, flags, default
                 widget = fitz.Widget()
                 widget.field_type = fitz.PDF_WIDGET_TYPE_TEXT
                 widget.field_name, widget.field_value, widget.field_flags = name, item.value, flags
@@ -90,7 +94,11 @@ def _write_interactions(
                         report.add(IssueSeverity.ERROR, 'pdf.interaction-limit', 'Invalid or excessive script data', location)
                         return
                     widget.script = script
-                page.add_widget(widget)
+                created = page.add_widget(widget)
+                # Distinct page occurrences must not be merged by save(garbage=4).
+                pdf.xref_set_key(created.xref, 'P', f'{page.xref} 0 R')
+                if default is not None:
+                    pdf.xref_set_key(created.xref, 'DV', fitz.get_pdf_str(default))
             elif item.kind == 'link':
                 if not _safe_uri(item.target):
                     report.add(IssueSeverity.LOSS, 'pdf.link-action', 'Only safe URI destinations are supported', location)

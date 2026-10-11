@@ -220,6 +220,10 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path) -> None:
                             "field_flags": int(widget.field_flags),
                             "pdf_type": kind,
                             "pdf_choices": _plain(choices),
+                            "pdf_default_value": (
+                                _plain(pdf.xref_get_key(xref, 'DV')[1])
+                                if pdf.xref_get_key(xref, 'DV')[0] == 'string' else None
+                            ),
                             "pdf_action_profile": "javascript-A-v1" if _simple_script_action(pdf, xref, actions) else None,
                             "pdf_source_action": actions.get("A"),
                             "pdf_widget_appearance": {key: _plain(getattr(widget, key)) for key in (
@@ -238,6 +242,10 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path) -> None:
                     "Finite form profile imported; scripts remain inert",
                 )
             page.set_rotation(source_rotation)
+        from opendoc_formats.readers.pdf_fields import audit_field_tree
+
+        widget_xrefs = {int(widget.xref) for native_page in pdf for widget in native_page.widgets() or ()}
+        audit_field_tree(pdf, widget_xrefs, record)
         native_outline = pdf.get_toc(simple=False)
         from opendoc_formats.pdf_page_geometry import native_xyz_destination
 

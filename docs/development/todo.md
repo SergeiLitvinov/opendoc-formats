@@ -161,6 +161,12 @@
   Остаются полное дерево полей (включая orphan/inherited/default values), дополнительные
   actions, полная приёмка лимитов/бюджетов и самостоятельный inspection text scope;
   весь C-PDF-01 не закрыт.
+- Canonical field tree имеет самостоятельный bounded аудит parents/orphans,
+  ссылок/cycles/depth и дополнительных свойств с расположенными opaque records.
+  Строковый `/DV` обычного text field переносится; явные edit/delete, конфликт
+  repeated fields и default limit проверены. Отдельный `/P` сохраняет различимость
+  widgets при native object deduplication. Полная реконструкция иерархии/inheritance
+  остаётся открытой; audit не заменяет её реализацию.
 - Реализовано: конечный import links/notes/highlights и simple forms, inert actions,
   общий `Outline` с иерархией и page/external destinations, native outline extension
   и opaque source для неподдержанных объектов; JSON и поворот страниц.

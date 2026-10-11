@@ -607,6 +607,16 @@ Disposable native content view without interactive appearances or stale caches.
 
 Импорты: `__future__`, `collections.abc`, `contextlib`, `opendoc_model`, `pathlib`, `typing`
 
+## src/opendoc_formats/readers/pdf_fields.py
+
+Bounded AcroForm tree audit independent of widget appearance extraction.
+
+- `audit_field_tree(pdf: Any, widgets: set[int], record: Callable[..., None]) -> None` — [строка 25](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_fields.py#L25)
+
+Импорты: `__future__`, `collections.abc`, `opendoc_model`, `typing`
+
+Тесты: [test_pdf_field_tree.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_field_tree.py#L1)
+
 ## src/opendoc_formats/readers/pdf_geometry.py
 
 Геометрический слой импорта PDF без семантических эвристик.
@@ -661,7 +671,7 @@ Finite PDF interaction profile; actions are inert data, never executed.
 
 - `attach_pdf_interactions(model: DocumentModel, source: str | Path) -> None` — [строка 67](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_interactive.py#L67)
 
-Импорты: `__future__`, `opendoc_formats.pdf_outline`, `opendoc_formats.pdf_page_geometry`, `opendoc_model`, `pathlib`, `typing`
+Импорты: `__future__`, `opendoc_formats.pdf_outline`, `opendoc_formats.pdf_page_geometry`, `opendoc_formats.readers.pdf_fields`, `opendoc_model`, `pathlib`, `typing`
 
 ## src/opendoc_formats/readers/pdf_layout.py
 
