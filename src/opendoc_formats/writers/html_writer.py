@@ -32,6 +32,7 @@ from opendoc_formats.fonts.html_embedding import embedded_font_stylesheet
 from opendoc_formats.html_tables import IMPORTED, SCOPE_TO_HTML
 from opendoc_formats.writers.color_preflight import preflight_colors
 from opendoc_formats.writers.font_preflight import prepare_fonts
+from opendoc_formats.writers.html_borders import table_border_styles
 from opendoc_formats.writers.html_layout import HtmlLayoutStage, geometry_styles
 from opendoc_formats.writers.html_normalize import HtmlNormalizeStage
 from opendoc_formats.writers.html_resources import HtmlResourceStage, image_data_uri
@@ -429,6 +430,7 @@ class _HtmlRenderer:
         return f'<div class="ta-image">{tag}</div>' if block_level else tag
 
     def _table(self, table: Table, location: str, *, caption: str | None = None) -> str:
+        border_styles, cell_border_styles = table_border_styles(table, self.report, location)
         semantics = get_table_semantics(table)
         if semantics is not None and semantics.caption_ids:
             from opendoc_formats.writers.html_lists import render_blocks
@@ -483,9 +485,10 @@ class _HtmlRenderer:
                     if key in cell.properties:
                         attributes += f' {attribute}="{escape(str(cell.properties[key]), quote=True)}"'
                 content = self._blocks(cell.blocks, f"{location}.rows[{row_index}].cells[{cell_index}].blocks")
-                cells.append(f"<{tag}{attributes}>{content}</{tag}>")
+                cells.append(f"<{tag}{attributes}{_style_attribute(cell_border_styles.get(id(cell), []))}>{content}</{tag}>")
             rows.append("<tr>" + "".join(cells) + "</tr>")
         styles = self._geometry_style(table.box, table.properties, positioned=True)
+        styles.extend(border_styles)
         anchor = table.properties.get("anchor_id")
         common_anchor = get_anchor(table)
         if common_anchor is not None or table.properties.get("html_anchor_imported"):

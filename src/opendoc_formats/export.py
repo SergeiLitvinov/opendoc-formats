@@ -125,7 +125,10 @@ class ExporterRegistry:
                 for reference in walk_model(document, limits=options.document_limits):
                     if isinstance(reference.node, (Table, TableCell)) and get_borders(reference.node) is not None:
                         report.add(IssueSeverity.LOSS, 'table-borders',
-                                   f'{identifier.upper()} writer does not preserve common border declarations', reference.path)
+                                   (f'{identifier.upper()} uses a finite visual border profile '
+                                    'without preserving native declarations'
+                                    if identifier in {'html', 'epub'} else
+                                    f'{identifier.upper()} writer does not preserve common border declarations'), reference.path)
             if not report.success:
                 return report
             if options.cancelled and options.cancelled():
