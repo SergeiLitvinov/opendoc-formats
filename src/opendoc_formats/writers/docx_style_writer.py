@@ -16,6 +16,9 @@ def write_styles(target: Any, styles: dict[str, TextStyle], report: ConversionRe
     for style_id, source in styles.items():
         properties = source.properties
         if properties.style_type == "document-default":
+            from opendoc_formats.ooxml.word_color import apply_color, default_color_owner
+
+            apply_color(default_color_owner(target.styles.element), source)
             continue
         style_name = properties.style_name or style_id
         style_type_name = str(properties.style_type or "paragraph").upper()
@@ -35,7 +38,7 @@ def write_styles(target: Any, styles: dict[str, TextStyle], report: ConversionRe
         apply_font_style(style.font, source)
         _apply_style_language(style, source.language)
         if style_type == WD_STYLE_TYPE.PARAGRAPH:
-            apply_paragraph_format(style.paragraph_format, properties)
+            apply_paragraph_format(style.paragraph_format, properties, report, f'styles[{style_id}]')
             from opendoc_formats.ooxml.layout import export_layout
 
             export_layout(properties, style.element.get_or_add_pPr(), report, f'styles[{style_id}]')
@@ -52,17 +55,18 @@ def write_styles(target: Any, styles: dict[str, TextStyle], report: ConversionRe
             style.base_style = base_style
 
 
-def apply_paragraph_format(paragraph_format: Any, properties: Mapping[str, Any]) -> None:
+def apply_paragraph_format(
+    paragraph_format: Any, properties: Mapping[str, Any], report: ConversionReport, location: str,
+) -> None:
     from docx.shared import Pt
 
     for name in ("left_indent", "right_indent", "first_line_indent", "space_before", "space_after"):
         value = properties.get(f"{name}_pt")
         if value is not None:
             setattr(paragraph_format, name, Pt(value))
-    if properties.get("line_spacing_pt") is not None:
-        paragraph_format.line_spacing = Pt(properties["line_spacing_pt"])
-    if properties.get("line_spacing") is not None:
-        paragraph_format.line_spacing = properties["line_spacing"]
+    from opendoc_formats.ooxml.spacing import export_spacing
+
+    export_spacing(properties, paragraph_format._element.get_or_add_pPr(), report, location)
     for name in ("keep_together", "keep_with_next", "page_break_before", "widow_control"):
         if properties.get(name) is not None:
             setattr(paragraph_format, name, bool(properties[name]))
@@ -101,9 +105,9 @@ def apply_text_style(run: Any, style: TextStyle) -> None:
 
 
 def apply_font_style(font: Any, style: TextStyle) -> None:
-    from docx.oxml.ns import qn
-    from docx.shared import Pt, RGBColor
-    from opendoc_model.color import ColorValue
+    from docx.shared import Pt
+
+    from opendoc_formats.ooxml.word_color import apply_color
 
     if style.font_family:
         font.name = style.font_family
@@ -114,18 +118,7 @@ def apply_font_style(font: Any, style: TextStyle) -> None:
     font.underline = style.underline
     font.superscript = style.superscript
     font.subscript = style.subscript
-    if style.color:
-        color = style.color.to_hex().removeprefix("#") if isinstance(style.color, ColorValue) else style.color.removeprefix("#")
-        if len(color) == 6:
-            font.color.rgb = RGBColor.from_string(color)
-            color_node = font._element.get_or_add_rPr().find(qn("w:color"))
-            if color_node is not None and style.properties.get("color_theme"):
-                color_node.set(qn("w:themeColor"), str(style.properties["color_theme"]))
-                modifiers = style.properties.get("color_modifiers") or {}
-                for key, attribute in (("tint", "themeTint"), ("shade", "themeShade")):
-                    value = modifiers.get(key)
-                    if isinstance(value, (int, float)):
-                        color_node.set(qn(f"w:{attribute}"), f"{round(max(0.0, min(1.0, value)) * 255):02X}")
+    apply_color(font._element.get_or_add_rPr(), style)
 
 
 def _apply_style_language(style: Any, language_code: str | None) -> None:

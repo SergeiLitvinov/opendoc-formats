@@ -14,6 +14,11 @@ def preflight_colors(document: DocumentModel, report: ConversionReport, *, targe
     supports_blend = target == "html"
     seen: set[tuple[str, str]] = set()
     for location, color in _document_colors(document):
+        if color == 'auto':
+            if target != 'docx':
+                report.add(IssueSeverity.LOSS, 'color-auto',
+                           f'{target.upper()} cannot preserve native automatic color semantics', location)
+            continue
         if color.icc_profile and ("icc", color.icc_profile) not in seen:
             seen.add(("icc", color.icc_profile))
             report.add(
@@ -32,11 +37,11 @@ def preflight_colors(document: DocumentModel, report: ConversionReport, *, targe
             )
 
 
-def _document_colors(document: DocumentModel) -> Iterator[tuple[str, ColorValue]]:
+def _document_colors(document: DocumentModel) -> Iterator[tuple[str, ColorValue | str]]:
     for style_id, style in document.styles.items():
         for field in ("color", "background"):
             value = getattr(style, field)
-            if isinstance(value, ColorValue):
+            if isinstance(value, ColorValue) or value == 'auto':
                 yield f"styles[{style_id!r}].{field}", value
     for section_index, section in enumerate(document.sections):
         for collection_name in (
@@ -52,7 +57,7 @@ def _document_colors(document: DocumentModel) -> Iterator[tuple[str, ColorValue]
             yield from _block_colors(blocks, f"sections[{section_index}].{collection_name}")
 
 
-def _block_colors(blocks: list[Block], location: str) -> Iterator[tuple[str, ColorValue]]:
+def _block_colors(blocks: list[Block], location: str) -> Iterator[tuple[str, ColorValue | str]]:
     for block_index, block in enumerate(blocks):
         block_location = f"{location}[{block_index}]"
         if isinstance(block, Paragraph):
@@ -60,7 +65,7 @@ def _block_colors(blocks: list[Block], location: str) -> Iterator[tuple[str, Col
                 if isinstance(item, TextRun):
                     for field in ("color", "background"):
                         value = getattr(item.style, field)
-                        if isinstance(value, ColorValue):
+                        if isinstance(value, ColorValue) or value == 'auto':
                             yield f"{block_location}.content[{inline_index}].style.{field}", value
         elif isinstance(block, Table):
             for row_index, row in enumerate(block.rows):

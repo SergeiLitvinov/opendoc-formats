@@ -23,7 +23,11 @@ def add_paragraph(
 ) -> Any:
     """Создать и оформить абзац модели в python-docx container."""
 
-    style = source.properties.get("style_name") or source.style_id
+    source_style = document.styles.get(source.style_id) if source.style_id else None
+    style = (source_style.properties.get('style_name') if source_style is not None else None)
+    style = style or source.properties.get("style_name") or source.style_id
+    if source.style_id is None and 'docx_paragraph_style_imported' in source.properties:
+        style = None
     try:
         paragraph = container.add_paragraph(style=style) if style else container.add_paragraph()
     except KeyError:
@@ -35,7 +39,11 @@ def add_paragraph(
         alignment = getattr(WD_ALIGN_PARAGRAPH, source.alignment.upper(), None)
         if alignment is not None:
             paragraph.alignment = alignment
-    apply_paragraph_format(paragraph.paragraph_format, source.properties)
+    apply_paragraph_format(paragraph.paragraph_format, source.properties, report, location)
+    if (document.source_format == 'docx' and 'docx_line_spacing_rule' not in source.properties
+            and any(source.properties.get(key) is not None for key in ('line_spacing', 'line_spacing_pt'))):
+        report.add(IssueSeverity.LOSS, 'docx.line-spacing-rule',
+                   'Legacy DOCX model has no source line-spacing rule; units supply a default', location)
     from opendoc_model import get_tab_stops
 
     from opendoc_formats.ooxml.layout import export_layout, inherited_tab_positions
@@ -48,7 +56,23 @@ def add_paragraph(
         inherited = ()
 
     export_layout(source.properties, paragraph._p.get_or_add_pPr(), report, location, inherited=inherited)
+    original_style_id = paragraph.style.style_id
     export_heading(source, paragraph)
+    if (source.style_id in document.styles and document.package is not None
+            and document.package.related_part(document.package.root, RELATIONSHIP_TYPE['styles']) is not None):
+        from docx.oxml import OxmlElement
+        from docx.oxml.ns import qn
+
+        if paragraph.style.style_id == original_style_id:
+            owner = paragraph._p.get_or_add_pPr()
+            nodes = owner.findall(qn('w:pStyle'))
+            node = nodes[0] if nodes else OxmlElement('w:pStyle')
+            node.set(qn('w:val'), source.style_id)
+            if not nodes:
+                owner.insert(0, node)
+        else:
+            # A newly derived role style must reference the retained source ID.
+            paragraph.style.element.basedOn_val = source.style_id
     preserves_style_numbering = (
         source.properties.get("numbering_source") == "style"
         and source.properties.get("numbering_source_style_id") == source.style_id
@@ -99,6 +123,21 @@ def write_paragraph_content(
                 _write_simple_field(paragraph, item)
             else:
                 run = paragraph.add_run(item.text)
+                character_style = (item.style.properties.base_style_id if 'base_style_id' in item.style.properties
+                                   else item.style.properties.get('docx_character_style_id'))
+                if character_style:
+                    from docx.oxml import OxmlElement
+                    from docx.oxml.ns import qn
+
+                    if character_style not in document.styles:
+                        report.add(IssueSeverity.ERROR, 'docx.character-style',
+                                   'Imported character style is missing', item_location)
+                    elif document.package is not None:
+                        node = OxmlElement('w:rStyle')
+                        node.set(qn('w:val'), character_style)
+                        run._r.get_or_add_rPr().insert(0, node)
+                    else:
+                        run.style = document.styles[character_style].properties.get('style_name') or character_style
                 apply_text_style(run, item.style)
                 if item.link and item.link.startswith("#") and document.source_format == "html":
                     from urllib.parse import unquote

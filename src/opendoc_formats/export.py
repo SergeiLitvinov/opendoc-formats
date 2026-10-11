@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from importlib import import_module
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import cast
+from typing import Any, cast
 
 from opendoc_model import ArtifactLimitError, ConversionReport, DocumentLimits, DocumentModel, IssueSeverity
 
@@ -130,6 +130,7 @@ class ExporterRegistry:
                     Paragraph,
                     Table,
                     TableCell,
+                    TextRun,
                     TextStyle,
                     get_borders,
                     get_tab_stops,
@@ -137,7 +138,40 @@ class ExporterRegistry:
                     walk_model,
                 )
 
+                color_context = DocumentModel(styles=document.styles)
+                inherited_colors: dict[str | None, Any] = {}
                 for reference in walk_model(document, limits=options.document_limits):
+                    if (identifier not in {'html', 'pdf', 'pptx'}
+                            and isinstance(reference.node, TextRun) and reference.node.style.color == 'auto'):
+                        report.add(IssueSeverity.LOSS, 'color-auto',
+                                   f'{identifier.upper()} cannot preserve native automatic color semantics',
+                                   reference.path + '.style.color')
+                    if identifier not in {'html', 'pdf', 'pptx'} and isinstance(reference.node, Paragraph):
+                        from opendoc_model import resolve_style
+
+                        identifiers = {reference.node.style_id}
+                        identifiers.update(run.style.properties.base_style_id for run in reference.node.content
+                                           if isinstance(run, TextRun) and run.style.color is None)
+                        for style_identifier in identifiers:
+                            if style_identifier not in inherited_colors:
+                                inherited_colors[style_identifier] = resolve_style(
+                                    color_context, style_identifier, limits=options.document_limits,
+                                ).color
+                        paragraph_color = inherited_colors[reference.node.style_id]
+                        for index, run in enumerate(reference.node.content):
+                            if not isinstance(run, TextRun) or run.style.color is not None:
+                                continue
+                            character_color = inherited_colors[run.style.properties.base_style_id]
+                            if (character_color if character_color is not None else paragraph_color) == 'auto':
+                                report.add(IssueSeverity.LOSS, 'color-auto',
+                                           f'{identifier.upper()} cannot preserve native automatic color semantics',
+                                           reference.path + f'.content[{index}].style.color')
+                    if isinstance(reference.node, (Paragraph, TextStyle)) and any(
+                        reference.node.properties.get(key) is not None
+                        for key in ('docx_line_spacing_rule', 'docx_line_spacing_unsupported')
+                    ):
+                        report.add(IssueSeverity.LOSS, 'docx.line-spacing-rule',
+                                   f'{identifier.upper()} does not preserve native Word line-spacing rules', reference.path)
                     if isinstance(reference.node, (Table, Paragraph, TextStyle)):
                         properties = reference.node.properties
                         for key, feature in (('docx_table_indent_pt', 'table-indent'), ('docx_tab_stops', 'tab-stops')):

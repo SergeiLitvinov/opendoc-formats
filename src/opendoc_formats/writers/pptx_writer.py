@@ -27,6 +27,12 @@ def write_pptx_model(document: DocumentModel, output_path: str | Path) -> Conver
         for error in errors:
             report.add(IssueSeverity.ERROR, "model", error)
         return report
+    from opendoc_formats.writers.color_inheritance import materialize_docx_colors
+
+    document = materialize_docx_colors(document)
+    from opendoc_formats.writers.color_preflight import preflight_colors
+
+    preflight_colors(document, report, target='pptx')
     target = Presentation()
     sections = document.sections or [Section()]
     page = sections[0].page

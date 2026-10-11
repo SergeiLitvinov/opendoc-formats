@@ -100,6 +100,9 @@ def read_docx_model(
     document_defaults = read_document_defaults(document, model)
     if document_defaults is not None:
         model.styles["__doc_defaults__"] = document_defaults
+        for style in model.styles.values():
+            if style.properties.style_type == 'paragraph' and style.properties.base_style_id is None:
+                style.properties['base_style_id'] = '__doc_defaults__'
 
     section_blocks: list[list[RichBlock]] = [[]]
     for item in _iter_container_content(document):

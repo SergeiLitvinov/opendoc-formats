@@ -66,6 +66,7 @@ def read_document_defaults(document: Any, model: DocumentModel) -> TextStyle | N
             "style_name": "Document Defaults",
             "style_type": "document-default",
             "font_theme": font_theme,
+            "docx_color_imported_value": resolved_color.to_dict() if isinstance(resolved_color, ColorValue) else resolved_color,
             **color_properties,
             "paragraph_defaults_xml": (etree.tostring(paragraph_defaults[0], encoding="unicode") if paragraph_defaults else None),
         },
@@ -91,6 +92,10 @@ def read_run_style(run: Any, paragraph: Any, model: DocumentModel | None = None)
         )
         if _direct_run_value(run, name) is not None
     ]
+    color = _font_color([run.font], model)
+    character_style = run._r.xpath('./w:rPr/w:rStyle')
+    from docx.oxml.ns import qn
+
     return TextStyle(
         font_family=_font_family(sources, model),
         font_size=_font_size(_first_font_value(sources, "size")),
@@ -99,13 +104,17 @@ def read_run_style(run: Any, paragraph: Any, model: DocumentModel | None = None)
         underline=_underline(_first_font_value(sources, "underline")),
         superscript=_first_font_value(sources, "superscript"),
         subscript=_first_font_value(sources, "subscript"),
-        color=_font_color(sources, model),
+        color=color,
         language=_resolved_run_language(run, paragraph),
         properties={
             "style_id": run.style.style_id if run.style is not None else None,
             "style_name": run.style.name if run.style is not None else None,
             "direct_fields": direct_fields,
-            **_font_color_properties(sources, model),
+            "docx_color_imported_value": color.to_dict() if isinstance(color, ColorValue) else color,
+            "docx_color_imported_direct": 'color' in direct_fields,
+            "docx_character_style_id": character_style[0].get(qn('w:val')) if character_style else None,
+            "base_style_id": character_style[0].get(qn('w:val')) if character_style else None,
+            **_font_color_properties([run.font], model),
         },
     )
 
@@ -118,6 +127,7 @@ def read_paragraph_properties(paragraph: Any) -> dict[str, Any]:
     import_layout(properties, paragraph._p.pPr)
     if paragraph.style is not None:
         properties["style_name"] = paragraph.style.name
+        properties['docx_paragraph_style_imported'] = paragraph.style.style_id
     return properties
 
 
@@ -183,7 +193,9 @@ def _xml_underline(parent: Any) -> bool | None:
 
 def _resolved_font_style(style: Any, *, properties: dict[str, Any], model: DocumentModel | None = None) -> TextStyle:
     sources = [item.font for item in _style_chain(style)]
-    properties.update(_font_color_properties(sources, model))
+    color = _font_color([style.font], model)
+    properties.update(_font_color_properties([style.font], model))
+    properties['docx_color_imported_value'] = color.to_dict() if isinstance(color, ColorValue) else color
     return TextStyle(
         font_family=_font_family(sources, model),
         font_size=_font_size(_first_font_value(sources, "size")),
@@ -192,7 +204,7 @@ def _resolved_font_style(style: Any, *, properties: dict[str, Any], model: Docum
         underline=_underline(_first_font_value(sources, "underline")),
         superscript=_first_font_value(sources, "superscript"),
         subscript=_first_font_value(sources, "subscript"),
-        color=_font_color(sources, model),
+        color=color,
         language=_style_language(style),
         properties=properties,
     )
@@ -258,7 +270,7 @@ def _underline(value: Any) -> bool | None:
     return bool(value) if value is not None else None
 
 
-def _font_color(sources: list[Any], model: DocumentModel | None = None) -> ColorValue | None:
+def _font_color(sources: list[Any], model: DocumentModel | None = None) -> ColorValue | str | None:
     for font in sources:
         color, _ = _font_color_value(font, model)
         if color is not None:
@@ -274,8 +286,8 @@ def _font_color_properties(sources: list[Any], model: DocumentModel | None) -> d
     return {}
 
 
-def _font_color_value(font: Any, model: DocumentModel | None) -> tuple[ColorValue | None, dict[str, Any]]:
-    nodes = font._element.xpath(".//w:color") if getattr(font, "_element", None) is not None else []
+def _font_color_value(font: Any, model: DocumentModel | None) -> tuple[ColorValue | str | None, dict[str, Any]]:
+    nodes = font._element.xpath("./w:rPr/w:color") if getattr(font, "_element", None) is not None else []
     if nodes:
         return _word_color(nodes[0], model)
     if font.color is not None and font.color.rgb is not None:
@@ -283,16 +295,19 @@ def _font_color_value(font: Any, model: DocumentModel | None) -> tuple[ColorValu
     return None, {}
 
 
-def _word_color(node: Any, model: DocumentModel | None) -> tuple[ColorValue | None, dict[str, Any]]:
+def _word_color(node: Any, model: DocumentModel | None) -> tuple[ColorValue | str | None, dict[str, Any]]:
     from docx.oxml.ns import qn
 
     if node is None:
         return None, {}
     raw = node.get(qn("w:val"))
+    native_value = raw
     theme = node.get(qn("w:themeColor"))
     if theme and model is not None:
         raw = _theme_color(model, theme) or raw
-    if not raw or raw.lower() == "auto":
+    if raw and raw.lower() == "auto":
+        return "auto", {"color_source": "auto", "color_native_value": native_value}
+    if not raw:
         return None, {}
     try:
         color = ColorValue.from_hex(f"#{raw}")
@@ -307,7 +322,7 @@ def _word_color(node: Any, model: DocumentModel | None) -> tuple[ColorValue | No
     if shade:
         modifiers["shade"] = int(shade, 16) / 255.0
         color = color.transformed(shade=modifiers["shade"])
-    properties: dict[str, Any] = {"color_source": "theme" if theme else "rgb"}
+    properties: dict[str, Any] = {"color_source": "theme" if theme else "rgb", "color_native_value": native_value}
     if theme:
         properties["color_theme"] = theme
     if modifiers:
@@ -367,12 +382,15 @@ def _style_paragraph_properties(style: Any) -> dict[str, Any]:
 
 def _resolved_paragraph_values(formats: list[Any]) -> dict[str, Any]:
     properties: dict[str, Any] = {}
-    for name in ("left_indent", "right_indent", "first_line_indent", "space_before", "space_after", "line_spacing"):
+    for name in ("left_indent", "right_indent", "first_line_indent", "space_before", "space_after"):
         value = next((getattr(item, name) for item in formats if getattr(item, name) is not None), None)
         if hasattr(value, "pt"):
             properties[f"{name}_pt"] = float(value.pt)
         elif value is not None:
             properties[name] = float(value)
+    from opendoc_formats.ooxml.spacing import import_spacing
+
+    import_spacing(properties, formats)
     for name in ("keep_together", "keep_with_next", "page_break_before", "widow_control"):
         value = next((getattr(item, name) for item in formats if getattr(item, name) is not None), None)
         if value is not None:

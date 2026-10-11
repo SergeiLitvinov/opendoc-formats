@@ -125,6 +125,9 @@ def write_html_model(document: DocumentModel, output_path: str | Path) -> Conver
         return report
     document = prepared.value
     document = prepare_fonts(document, report)
+    from opendoc_formats.writers.color_inheritance import materialize_docx_colors
+
+    document = materialize_docx_colors(document)
     preflight_colors(document, report, target="html")
     layout = HtmlLayoutStage().execute(document, StageContext(output))
     report.issues.extend(layout.report.issues)

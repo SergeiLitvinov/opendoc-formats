@@ -268,10 +268,12 @@ def retain_layout_styles(graph: PackageGraph, styles: Mapping[str, TextStyle], r
     from lxml import etree
 
     from opendoc_formats.ooxml.package import RELATIONSHIP_TYPE
+    from opendoc_formats.ooxml.spacing import export_spacing, spacing_needs_patch
+    from opendoc_formats.ooxml.word_color import apply_color, color_needs_patch, default_color_owner
 
     selected = {key: style for key, style in styles.items() if any(name in style.properties for name in (
         'docx_tab_stops', 'docx_tab_stops_imported', 'docx_tab_stops_unsupported',
-    ))}
+    )) or spacing_needs_patch(style.properties) or color_needs_patch(style)}
     part = graph.related_part(graph.root, RELATIONSHIP_TYPE['styles'])
     if not selected or part is None:
         return graph
@@ -280,16 +282,28 @@ def retain_layout_styles(graph: PackageGraph, styles: Mapping[str, TextStyle], r
         if root.tag != W + 'styles':
             raise ValueError('Source styles part has an unexpected root')
         for identifier, style in selected.items():
+            if style.properties.style_type == 'document-default':
+                if color_needs_patch(style):
+                    apply_color(default_color_owner(root), style)
+                continue
             nodes = [node for node in root.findall(W + 'style') if node.get(W + 'styleId') == identifier]
             if len(nodes) != 1:
                 report.add(IssueSeverity.ERROR, 'docx.tab-stops',
                            'Style binding is missing or ambiguous', f'styles[{identifier}]')
+                continue
+            if color_needs_patch(style):
+                apply_color(nodes[0].get_or_add_rPr(), style)
+            if not spacing_needs_patch(style.properties) and not any(name in style.properties for name in (
+                'docx_tab_stops', 'docx_tab_stops_imported', 'docx_tab_stops_unsupported',
+            )):
                 continue
             owner = nodes[0].find(W + 'pPr')
             if owner is None:
                 owner = OxmlElement('w:pPr')
                 nodes[0].insert_element_before(owner, 'w:rPr', 'w:tblPr', 'w:trPr', 'w:tcPr', 'w:tblStylePr')
             export_layout(style.properties, owner, report, f'styles[{identifier}]')
+            if spacing_needs_patch(style.properties):
+                export_spacing(style.properties, owner, report, f'styles[{identifier}]')
         parts = dict(graph.parts)
         parts[part.name] = replace(part, data=etree.tostring(root, encoding='UTF-8', xml_declaration=True))
         return replace(graph, parts=parts)

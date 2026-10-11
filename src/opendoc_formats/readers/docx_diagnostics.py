@@ -23,6 +23,7 @@ from opendoc_model import (
 
 from opendoc_formats.ooxml.borders import native_only
 from opendoc_formats.ooxml.layout import native_layout_supported
+from opendoc_formats.ooxml.spacing import native_spacing_supported
 from opendoc_formats.readers.docx_features import _relationship_feature
 
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
@@ -40,10 +41,12 @@ _TAGS = {
     W + "smartTag": "smart-tags",
 }
 _XML_KEYS = {"docx_raw_inline_xml", "docx_raw_block_xml", "field_xml", "vml_xml", "document_protection_xml",
-             "docx_tabs_native_xml"}
+             "docx_tabs_native_xml", "docx_line_spacing_native_xml"}
 
 
 def _feature(node: Any) -> str | None:
+    if node.tag == W + 'spacing' and not native_spacing_supported(node):
+        return 'line-spacing'
     if node.tag == W + 'tabs' and any(child.get(W + 'val') in ('start', 'end', 'num') for child in node):
         return 'tab-stops-semantics'
     if node.tag in {W + 'tblInd', W + 'tabs'} and not native_layout_supported(node):

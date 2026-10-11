@@ -70,6 +70,9 @@ def write_pdf_model(
         mapping_publication(report, 'rejected', code='pdf.write-rejected', reason='preparation-failed')
         return report
     document = prepare_fonts(document, report)
+    from opendoc_formats.writers.color_inheritance import materialize_docx_colors
+
+    document = materialize_docx_colors(document)
     preflight_colors(document, report, target="pdf")
     target = fitz.open()
     totals = {"paragraphs": 0, "tables": 0, "images": 0, "formulas": 0, "pages": 0}

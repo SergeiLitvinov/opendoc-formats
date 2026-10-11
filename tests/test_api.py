@@ -19,6 +19,26 @@ def test_txt_empty_lines_and_native_json(tmp_path):
     assert document_from_json(document_to_json(result.document)).source_format == "txt"
 
 
+def test_independent_provenance_survives_public_json_cycles(tmp_path):
+    from opendoc_model.document_model import Provenance, ProvenanceEvent
+
+    from opendoc_formats import write_document
+
+    source = Provenance("docx", events=[ProvenanceEvent("import", "original")])
+    edited = source.transformed("edit", detail="independent")
+    edited.events[0].detail = "changed"
+    assert source.events[0].detail == "original"
+    document = DocumentModel(sections=[Section(blocks=[Paragraph([TextRun("Own provenance", provenance=edited)])])])
+    for cycle in range(2):
+        path = tmp_path / f"provenance-{cycle}.json"
+        assert write_document(document, path).success
+        result = read_document(path)
+        assert result.success, result.issues
+        document = result.document
+        assert document.sections[0].blocks[0].content[0].provenance == edited
+        assert source.events[0].detail == "original"
+
+
 def test_model_outline_survives_public_json_cycles(tmp_path):
     from opendoc_model import Outline, OutlineEntry, OutlineTarget, get_outline, set_outline
 
