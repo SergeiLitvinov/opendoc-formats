@@ -10,6 +10,7 @@ from opendoc_model import (
     Annotation,
     Box,
     DiagnosticIssue,
+    DocumentLimits,
     DocumentModel,
     FormControl,
     IntegrationModel,
@@ -64,7 +65,7 @@ def _actions(pdf: Any, xref: int) -> dict[str, Any]:
     return actions
 
 
-def attach_pdf_interactions(model: DocumentModel, source: str | Path) -> None:
+def attach_pdf_interactions(model: DocumentModel, source: str | Path, *, limits: DocumentLimits | None = None) -> None:
     import fitz
 
     source = Path(source)
@@ -318,7 +319,7 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path) -> None:
             assessed_features=tuple(dict.fromkeys(item.issue.code for item in records)),
             assessment_complete=False,
             extra={"pdf_outline": outline, "pdf_source_resource_id": "pdf-original-source" if preserve_source else None},
-        ),
+        ), limits=limits,
     )
     from opendoc_formats.pdf_outline import import_pdf_outline
 

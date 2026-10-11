@@ -39,7 +39,8 @@ _CSS_PROPERTIES = {
 _BLOCKS = {"p", "h1", "h2", "h3", "h4", "h5", "h6", "li", "blockquote", "pre", "figcaption"}
 
 
-def read_epub_model(path: str | Path, *, backend: str = "native", include_nonlinear: bool = False) -> DocumentModel:
+def read_epub_model(path: str | Path, *, backend: str = "native", include_nonlinear: bool = False,
+                    limits: od.DocumentLimits | None = None) -> DocumentModel:
     from bs4 import BeautifulSoup
 
     from opendoc_formats.readers.epub_diagnostics import EpubDiagnostics
@@ -146,7 +147,7 @@ def read_epub_model(path: str | Path, *, backend: str = "native", include_nonlin
         },
     }
     document = DocumentModel(sections=sections, resources=resources, styles=styles, metadata=metadata, source_format="epub")
-    diagnostics.attach(document)
+    diagnostics.attach(document, limits=limits)
     return document
 
 

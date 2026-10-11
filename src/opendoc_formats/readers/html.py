@@ -34,7 +34,8 @@ INLINE = {"span", "a", "b", "strong", "i", "em", "u", "sup", "sub", "code", "sma
 SKIP = {"head", "style", "script", "link", "meta", "base", "iframe", "object", "embed", "template"}
 
 
-def read_html_model(path: str | Path, *, resource_root: str | Path | None = None) -> DocumentModel:
+def read_html_model(path: str | Path, *, resource_root: str | Path | None = None,
+                    limits: od.DocumentLimits | None = None) -> DocumentModel:
     from bs4 import BeautifulSoup
 
     source = Path(path)
@@ -71,7 +72,7 @@ def read_html_model(path: str | Path, *, resource_root: str | Path | None = None
     )
     language = reader.language(soup.html or soup)
     document.metadata["language"] = language if language is not None else ""
-    reader.diagnostics.attach(document, source, data)
+    reader.diagnostics.attach(document, source, data, limits=limits)
     return document
 
 

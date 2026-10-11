@@ -7,7 +7,7 @@
 
 ### ImportOptions
 
-[Исходник, строка 18](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L18)
+[Исходник, строка 19](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L19)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -22,17 +22,18 @@
 
 ### ImportResult
 
-[Исходник, строка 48](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L48)
+[Исходник, строка 49](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L49)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
 | `document` | `DocumentModel &#124; None` | `обязательное` |
 | `format_id` | `str` | `обязательное` |
 | `issues` | `tuple[DiagnosticIssue, ...]` | `()` |
+| `document_limits` | `DocumentLimits` | `field(default_factory=DocumentLimits, repr=False, compare=False)` |
 
 ### ImportResult.success
 
-[Исходник, строка 54](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L54)
+[Исходник, строка 56](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L56)
 
 ```python
 success(self) -> bool
@@ -40,7 +41,7 @@ success(self) -> bool
 
 ### ImportResult.assessment_complete
 
-[Исходник, строка 58](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L58)
+[Исходник, строка 60](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L60)
 
 ```python
 assessment_complete(self) -> bool
@@ -48,7 +49,7 @@ assessment_complete(self) -> bool
 
 ### ImportResult.lossless
 
-[Исходник, строка 69](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L69)
+[Исходник, строка 71](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L71)
 
 ```python
 lossless(self) -> bool
@@ -56,7 +57,7 @@ lossless(self) -> bool
 
 ### AdapterSpec
 
-[Исходник, строка 86](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L86)
+[Исходник, строка 88](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L88)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -67,11 +68,11 @@ lossless(self) -> bool
 
 ### AdapterRegistry
 
-[Исходник, строка 106](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L106)
+[Исходник, строка 108](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L108)
 
 ### AdapterRegistry.__init__
 
-[Исходник, строка 107](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L107)
+[Исходник, строка 109](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L109)
 
 ```python
 __init__(self) -> None
@@ -79,7 +80,7 @@ __init__(self) -> None
 
 ### AdapterRegistry.register
 
-[Исходник, строка 111](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L111)
+[Исходник, строка 113](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L113)
 
 ```python
 register(self, adapter: AdapterSpec) -> None
@@ -87,7 +88,7 @@ register(self, adapter: AdapterSpec) -> None
 
 ### AdapterRegistry.adapters
 
-[Исходник, строка 119](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L119)
+[Исходник, строка 121](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L121)
 
 ```python
 adapters(self) -> tuple[AdapterSpec, ...]
@@ -95,7 +96,7 @@ adapters(self) -> tuple[AdapterSpec, ...]
 
 ### AdapterRegistry.read
 
-[Исходник, строка 122](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L122)
+[Исходник, строка 124](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L124)
 
 ```python
 read(self, path: str | Path, *, format_id: str | None=None, options: ImportOptions | None=None) -> ImportResult
@@ -103,7 +104,7 @@ read(self, path: str | Path, *, format_id: str | None=None, options: ImportOptio
 
 ### default_registry
 
-[Исходник, строка 214](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L214)
+[Исходник, строка 237](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L237)
 
 ```python
 default_registry() -> AdapterRegistry
@@ -111,7 +112,7 @@ default_registry() -> AdapterRegistry
 
 ### read_document
 
-[Исходник, строка 228](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L228)
+[Исходник, строка 251](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L251)
 
 ```python
 read_document(path: str | Path, *, format_id: str | None=None, options: ImportOptions | None=None) -> ImportResult
@@ -181,7 +182,7 @@ write(self, document: DocumentModel, path: str | Path, *, format_id: str | None=
 
 ### default_exporter_registry
 
-[Исходник, строка 226](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L226)
+[Исходник, строка 231](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L231)
 
 ```python
 default_exporter_registry() -> ExporterRegistry
@@ -189,7 +190,7 @@ default_exporter_registry() -> ExporterRegistry
 
 ### write_document
 
-[Исходник, строка 250](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L250)
+[Исходник, строка 255](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L255)
 
 ```python
 write_document(document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport

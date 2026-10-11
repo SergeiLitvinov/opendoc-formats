@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from importlib import import_module
@@ -49,6 +50,7 @@ class ImportResult:
     document: DocumentModel | None
     format_id: str
     issues: tuple[DiagnosticIssue, ...] = ()
+    document_limits: DocumentLimits = field(default_factory=DocumentLimits, repr=False, compare=False)
 
     @property
     def success(self) -> bool:
@@ -59,7 +61,7 @@ class ImportResult:
         """Only an explicit, fully reported OpenDoc assessment proves coverage."""
         if self.document is None:
             return False
-        model = get_integration(self.document)
+        model = get_integration(self.document, limits=self.document_limits)
         return bool(
             model is not None and model.assessment_complete and model.assessed_features
             and {record.issue.code for record in model.preservation} == set(model.assessed_features)
@@ -71,7 +73,7 @@ class ImportResult:
 
         if not self.success or not self.assessment_complete or self.document is None:
             return False
-        model = get_integration(self.document)
+        model = get_integration(self.document, limits=self.document_limits)
         return bool(
             model is not None
             and all(record.state is PreservationState.SEMANTIC for record in model.preservation)
@@ -129,6 +131,24 @@ class AdapterRegistry:
         def failure(code: str, message: str) -> ImportResult:
             return ImportResult(None, identifier, (DiagnosticIssue(code, IssueSeverity.ERROR, message, str(source)),))
 
+        def limit_failure(error: ArtifactLimitError) -> ImportResult:
+            message = str(error)
+            measurement: dict[str, object] = {"limits": {
+                "max_bytes": options.document_limits.max_bytes,
+                "max_depth": options.document_limits.max_depth,
+                "max_nodes": options.document_limits.max_nodes,
+                "max_embedded_bytes": options.document_limits.max_embedded_bytes,
+            }}
+            location = str(source)
+            match = re.fullmatch(r"([^\r\n]+): ([\w ]+) quota exceeded \((\d+)\)", message)
+            if match:
+                location += "#" + match[1]
+                measurement.update({"quota": match[2], "maximum": int(match[3])})
+            return ImportResult(None, identifier, (DiagnosticIssue(
+                "import.document-limit", IssueSeverity.ERROR, message, location,
+                measurement, "document-limit",
+            ),), options.document_limits)
+
         adapter = self._adapters.get(identifier)
         if adapter is None:
             return failure("import.unsupported-format", "No registered reader for the requested format")
@@ -142,6 +162,8 @@ class AdapterRegistry:
         # Reader failures and missing files remain exceptions; never manufacture a valid empty model.
         try:
             document = adapter.reader(source, options)
+        except ArtifactLimitError as error:
+            return limit_failure(error)
         except TextEncodingError as error:
             return ImportResult(None, identifier, (DiagnosticIssue(
                 "import.txt-encoding", IssueSeverity.ERROR, str(error), str(source), reason=error.reason,
@@ -152,11 +174,12 @@ class AdapterRegistry:
             return failure("import.cancelled", "Import cancelled; result discarded")
         try:
             errors = document.validate(limits=options.document_limits)
+            issues = _import_issues(document, identifier, source, options.document_limits) if not errors else ()
         except ArtifactLimitError as error:
-            return failure("import.document-limit", str(error))
+            return limit_failure(error)
         if errors:
             return failure("import.invalid-model", "; ".join(errors))
-        return ImportResult(document, identifier, _import_issues(document, identifier, source, options.document_limits))
+        return ImportResult(document, identifier, issues, options.document_limits)
 
 
 def _import_issues(
@@ -208,7 +231,7 @@ def _txt(path: Path, options: ImportOptions) -> DocumentModel:
 
 def _html(path: Path, options: ImportOptions) -> DocumentModel:
     reader = cast(Callable[..., DocumentModel], import_module("opendoc_formats.readers.html").read_html_model)
-    return reader(path, resource_root=options.resource_root)
+    return reader(path, resource_root=options.resource_root, limits=options.document_limits)
 
 
 def default_registry() -> AdapterRegistry:
@@ -230,29 +253,31 @@ def read_document(path: str | Path, *, format_id: str | None = None, options: Im
 
 
 def _docx(path: Path, options: ImportOptions) -> DocumentModel:
-    reader = cast(Callable[[Path], DocumentModel], import_module("opendoc_formats.readers.docx").read_docx_model)
-    return reader(path)
+    reader = cast(Callable[..., DocumentModel], import_module("opendoc_formats.readers.docx").read_docx_model)
+    return reader(path, limits=options.document_limits)
 
 
 def _tex(path: Path, options: ImportOptions) -> DocumentModel:
     from opendoc_formats.readers.tex_model import read_tex_model
 
-    return read_tex_model(path, max_input_bytes=options.max_input_bytes, cancelled=options.cancelled)
+    return read_tex_model(path, max_input_bytes=options.max_input_bytes, cancelled=options.cancelled,
+                          limits=options.document_limits)
 
 
 def _pptx(path: Path, options: ImportOptions) -> DocumentModel:
-    reader = cast(Callable[[Path], DocumentModel], import_module("opendoc_formats.readers.pptx").read_pptx_model)
-    return reader(path)
+    reader = cast(Callable[..., DocumentModel], import_module("opendoc_formats.readers.pptx").read_pptx_model)
+    return reader(path, limits=options.document_limits)
 
 
 def _epub(path: Path, options: ImportOptions) -> DocumentModel:
     reader = cast(Callable[..., DocumentModel], import_module("opendoc_formats.readers.epub_model").read_epub_model)
-    return reader(path, include_nonlinear=options.epub_include_nonlinear)
+    return reader(path, include_nonlinear=options.epub_include_nonlinear, limits=options.document_limits)
 
 
 def _pdf(path: Path, options: ImportOptions) -> DocumentModel:
     reader = cast(Callable[..., DocumentModel], import_module("opendoc_formats.readers.pdf_model").read_pdf_model)
-    return reader(path=path, mode=options.pdf_mode, ocr_engine_factory=options.ocr_engine_factory)
+    return reader(path=path, mode=options.pdf_mode, ocr_engine_factory=options.ocr_engine_factory,
+                  limits=options.document_limits)
 
 
 def _json(path: Path, options: ImportOptions) -> DocumentModel:
@@ -260,7 +285,7 @@ def _json(path: Path, options: ImportOptions) -> DocumentModel:
 
     from opendoc_formats.ooxml.widths import import_width
 
-    document = load_document(path)
+    document = load_document(path, limits=options.document_limits)
     from opendoc_formats.pdf_outline import import_pdf_outline
 
     import_pdf_outline(document, limits=options.document_limits)

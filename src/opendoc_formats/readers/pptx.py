@@ -28,6 +28,7 @@ try:
 except ImportError:  # pragma: no cover - python-pptx тянет lxml транзитивно
     etree = None  # type: ignore[assignment]
 
+from opendoc_model import DocumentLimits
 from opendoc_model.color import ColorValue
 from opendoc_model.document_model import (
     Box,
@@ -400,6 +401,7 @@ def read_pptx_model(
     path: Union[str, Path],
     *,
     mode: ConversionMode = ConversionMode.BALANCED,
+    limits: DocumentLimits | None = None,
 ) -> DocumentModel:
     """Импортировать PPTX в богатую модель: слайды → секции, фигуры → блоки.
 
@@ -480,7 +482,7 @@ def read_pptx_model(
         section.properties["slide_number"] = slide_index
         model.sections.append(section)
 
-    diagnostics.attach(model)
+    diagnostics.attach(model, limits=limits)
     return model
 
 

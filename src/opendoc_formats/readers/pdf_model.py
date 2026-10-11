@@ -7,6 +7,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+from opendoc_model import DocumentLimits
 from opendoc_model.color import ColorValue
 from opendoc_model.document_model import (
     Block as RichBlock,
@@ -50,6 +51,7 @@ def read_pdf_model(
     use_gpu: bool = False,
     mode: str | None = None,
     ocr_engine_factory: Callable[..., Any] | None = None,
+    limits: DocumentLimits | None = None,
 ) -> DocumentModel:
     """Извлечь PDF в богатую модель с текстом, таблицами и изображениями.
 
@@ -307,8 +309,8 @@ def read_pdf_model(
     )
     from opendoc_formats.readers.pdf_interactive import attach_pdf_interactions
 
-    attach_pdf_interactions(document, path)
-    attach_history_map(document, path, matched_history, history_issues)
+    attach_pdf_interactions(document, path, limits=limits)
+    attach_history_map(document, path, matched_history, history_issues, limits=limits)
     return document
 
 

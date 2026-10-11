@@ -8,6 +8,7 @@ from typing import Any
 
 from opendoc_model import (
     DiagnosticIssue,
+    DocumentLimits,
     DocumentModel,
     IntegrationModel,
     IssueSeverity,
@@ -61,7 +62,7 @@ class EpubDiagnostics:
             )
         )
 
-    def attach(self, document: DocumentModel) -> None:
+    def attach(self, document: DocumentModel, *, limits: DocumentLimits | None = None) -> None:
         # Detected losses do not constitute an exhaustive assessment of EPUB/CSS.
         set_integration(
             document,
@@ -69,7 +70,7 @@ class EpubDiagnostics:
                 preservation=tuple(self.records),
                 assessed_features=tuple(dict.fromkeys(record.issue.code for record in self.records)),
                 assessment_complete=False,
-            ),
+            ), limits=limits,
         )
 
     def chapter(self, body: Any, part: str, blocks: set[str]) -> None:

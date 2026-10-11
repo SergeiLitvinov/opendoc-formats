@@ -118,7 +118,8 @@ class ExporterRegistry:
             staged = Path(directory) / output.name
             written = (
                 _txt(document, staged, profile=options.txt_profile)
-                if exporter.writer is _txt else exporter.writer(document, staged)
+                if exporter.writer is _txt else _json(document, staged, limits=options.document_limits)
+                if exporter.writer is _json else exporter.writer(document, staged)
             )
             if not isinstance(written, ConversionReport):
                 return fail("export.invalid-result", "Writer did not return an OpenDoc ConversionReport")
@@ -165,6 +166,10 @@ class ExporterRegistry:
                 try:
                     if exporter.writer is _txt:
                         decode_text(staged.read_bytes(), TextProfile(encoding=str(report.metrics["encoding"])))
+                    elif exporter.writer is _json:
+                        from opendoc_model import load_document
+
+                        load_document(staged, limits=options.document_limits)
                     else:
                         exporter.validator(staged)
                 except Exception as error:  # noqa: BLE001 - third-party validators are a diagnostic boundary
@@ -201,10 +206,10 @@ def _writer(module: str, name: str) -> Writer:
     return write
 
 
-def _json(document: DocumentModel, path: Path) -> ConversionReport:
+def _json(document: DocumentModel, path: Path, *, limits: DocumentLimits | None = None) -> ConversionReport:
     from opendoc_model import save_document
 
-    save_document(document, path)
+    save_document(document, path, limits=limits)
     return ConversionReport(path)
 
 

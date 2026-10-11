@@ -6,6 +6,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Any, Union
 
+from opendoc_model import DocumentLimits
 from opendoc_model.document_model import (
     Block as RichBlock,
 )
@@ -75,6 +76,7 @@ def read_docx_model(
     path: Union[str, Path],
     *,
     mode: ConversionMode = ConversionMode.BALANCED,
+    limits: DocumentLimits | None = None,
 ) -> DocumentModel:
     """Импортировать DOCX в богатую модель с оформлением и ресурсами."""
 
@@ -125,7 +127,7 @@ def read_docx_model(
             )
         )
     _attach_docx_provenance(model, source)
-    attach_docx_diagnostics(document, model, source)
+    attach_docx_diagnostics(document, model, source, limits=limits)
     return model
 
 

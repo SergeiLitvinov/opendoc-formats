@@ -11,6 +11,7 @@ from typing import Callable
 
 from opendoc_model import (
     DiagnosticIssue,
+    DocumentLimits,
     DocumentModel,
     Formula,
     FormulaFormat,
@@ -399,7 +400,8 @@ class _Parser:
 
 
 def read_tex_model(
-    path: str | Path, *, max_input_bytes: int = 10 * 1024 * 1024, cancelled: Callable[[], bool] | None = None
+    path: str | Path, *, max_input_bytes: int = 10 * 1024 * 1024, cancelled: Callable[[], bool] | None = None,
+    limits: DocumentLimits | None = None,
 ) -> DocumentModel:
     """Read the first finite LaTeX source profile without executing commands or reading includes."""
     source = Path(path)
@@ -438,5 +440,6 @@ def read_tex_model(
     set_integration(
         document,
         IntegrationModel(preservation=tuple(parser.records), assessed_features=("latex.source",), assessment_complete=False),
+        limits=limits,
     )
     return document

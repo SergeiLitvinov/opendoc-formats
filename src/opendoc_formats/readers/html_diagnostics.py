@@ -88,7 +88,7 @@ class HtmlDiagnostics:
             }
         return {"warnings": warnings, "locations": locations, "scope": "static-html-v1"}
 
-    def attach(self, document: od.DocumentModel, source: Path, data: bytes) -> None:
+    def attach(self, document: od.DocumentModel, source: Path, data: bytes, *, limits: od.DocumentLimits | None = None) -> None:
         """Retain source markup separately from known semantic/profile losses."""
         records, seen = [], set()
         for feature, message, node in self.pending:
@@ -144,5 +144,5 @@ class HtmlDiagnostics:
                 preservation=tuple(records),
                 assessed_features=tuple(dict.fromkeys(record.issue.code for record in records)),
                 assessment_complete=False,
-            ),
+            ), limits=limits,
         )

@@ -7,6 +7,7 @@ from typing import Any
 
 from opendoc_model import (
     DiagnosticIssue,
+    DocumentLimits,
     DocumentModel,
     IntegrationModel,
     IssueSeverity,
@@ -73,9 +74,9 @@ class PptxDiagnostics:
             element, state=PreservationState.VISUAL if resource_id else PreservationState.LOST, resource_id=resource_id,
         )
 
-    def attach(self, document: DocumentModel) -> None:
+    def attach(self, document: DocumentModel, *, limits: DocumentLimits | None = None) -> None:
         set_integration(document, IntegrationModel(
             preservation=tuple(self.records),
             assessed_features=tuple(dict.fromkeys(record.issue.code for record in self.records)),
             assessment_complete=False,
-        ))
+        ), limits=limits)

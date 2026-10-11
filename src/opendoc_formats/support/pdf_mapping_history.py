@@ -13,6 +13,7 @@ from typing import Any
 
 from opendoc_model import (
     DiagnosticIssue,
+    DocumentLimits,
     DocumentModel,
     IssueSeverity,
     NativeObjectLocator,
@@ -181,7 +182,7 @@ def load_history(path: str | Path) -> tuple[dict[tuple[int, int], dict[str, Any]
 
 
 def attach_history_map(document: DocumentModel, path: str | Path, matched: list[tuple[Any, dict[str, Any]]],
-                       issues: list[DiagnosticIssue]) -> ObjectMapping | None:
+                       issues: list[DiagnosticIssue], *, limits: DocumentLimits | None = None) -> ObjectMapping | None:
     from opendoc_formats.support.object_mapping import _result_id
 
     mapping = None
@@ -210,9 +211,9 @@ def attach_history_map(document: DocumentModel, path: str | Path, matched: list[
             extra={'profile': 'pdf-imported-vector-origin-v1', 'source_evidence': 'artifact-declaration',
                    'target_evidence': 'measured-native-raster'},
         )
-        validate_object_mapping(mapping, target=document)
-        object_mapping_to_dict(mapping)
-    integration = get_integration(document)
+        validate_object_mapping(mapping, target=document, limits=limits)
+        object_mapping_to_dict(mapping, limits=limits)
+    integration = get_integration(document, limits=limits)
     if integration is not None and issues:
         set_integration(document, replace(integration,
             assessed_features=tuple(dict.fromkeys((*integration.assessed_features, *(issue.code for issue in issues)))),
@@ -221,7 +222,7 @@ def attach_history_map(document: DocumentModel, path: str | Path, matched: list[
                                provenance=Provenance(source_format='pdf', source_path=str(path),
                                                      object_id=f'mapping-history-{index}'))
             for index, issue in enumerate(issues)
-        )))
+        )), limits=limits)
 
     return mapping
 

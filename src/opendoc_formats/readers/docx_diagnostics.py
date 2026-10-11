@@ -11,6 +11,7 @@ from typing import Any
 from lxml import etree
 from opendoc_model import (
     DiagnosticIssue,
+    DocumentLimits,
     DocumentModel,
     IntegrationModel,
     IssueSeverity,
@@ -91,7 +92,7 @@ def _retained_fragments(model: DocumentModel) -> Counter[bytes]:
     return retained
 
 
-def attach_docx_diagnostics(document: Any, model: DocumentModel, source: Path) -> None:
+def attach_docx_diagnostics(document: Any, model: DocumentModel, source: Path, *, limits: DocumentLimits | None = None) -> None:
     fragments = _retained_fragments(model)
     graph = model.package
     records: list[PreservationRecord] = []
@@ -150,4 +151,4 @@ def attach_docx_diagnostics(document: Any, model: DocumentModel, source: Path) -
     set_integration(model, IntegrationModel(
         preservation=tuple(records), assessed_features=tuple(dict.fromkeys(record.issue.code for record in records)),
         assessment_complete=False,
-    ))
+    ), limits=limits)
