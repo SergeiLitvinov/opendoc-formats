@@ -22,6 +22,52 @@ def _references(kind: str, raw: str) -> list[int]:
     return [int(match[1]) for match in _REFERENCE.finditer(content)]
 
 
+def canonical_field_names(pdf: Any) -> set[str]:
+    """Measure named AcroForm nodes, never infer logical fields from widgets."""
+    pending = [(xref, 0) for xref in _references(*pdf.xref_get_key(pdf.pdf_catalog(), 'AcroForm/Fields'))]
+    visited: set[int] = set()
+    names: set[str] = set()
+    while pending:
+        xref, depth = pending.pop()
+        if depth > 64 or len(visited) >= 10_000 or xref in visited or not 0 < xref < pdf.xref_length():
+            raise ValueError('Invalid or excessive canonical field graph')
+        visited.add(xref)
+        children = _references(*pdf.xref_get_key(xref, 'Kids'))
+        pending.extend((child, depth + 1) for child in children)
+        own = [pdf.xref_get_key(xref, key) for key in ('T', 'TM')]
+        if all(kind == 'null' for kind, _ in own):
+            continue
+        parts: list[str] = []
+        parents: set[int] = set()
+        node = xref
+        while node:
+            if len(parents) > 64 or node in parents or not 0 < node < pdf.xref_length():
+                raise ValueError('Invalid or excessive field parent chain')
+            parents.add(node)
+            kind, mapped = pdf.xref_get_key(node, 'TM')
+            if kind != 'null':
+                if kind != 'string' or len(mapped) > 65_536:
+                    raise ValueError('Unsupported field mapping name')
+                parts.append(mapped)
+                break
+            kind, partial = pdf.xref_get_key(node, 'T')
+            if kind not in ('null', 'string') or len(partial) > 65_536:
+                raise ValueError('Unsupported field partial name')
+            parts.append(partial if kind == 'string' else '')
+            kind, raw = pdf.xref_get_key(node, 'Parent')
+            if kind == 'null':
+                break
+            match = _REFERENCE.fullmatch(raw.strip()) if kind == 'xref' else None
+            if match is None:
+                raise ValueError('Unsupported field parent reference')
+            node = int(match[1])
+        name = '.'.join(reversed(parts))
+        if len(name) > 65_536:
+            raise ValueError('Excessive qualified field name')
+        names.add(name)
+    return names
+
+
 def audit_field_tree(pdf: Any, widgets: set[int], record: Callable[..., None]) -> None:
     catalog = pdf.pdf_catalog()
     roots = _references(*pdf.xref_get_key(catalog, 'AcroForm/Fields'))

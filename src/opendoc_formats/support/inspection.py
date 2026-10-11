@@ -63,31 +63,73 @@ def inspect_path(path: str | Path) -> DocumentInspection:
     raise FormatError(f"Unsupported inspection format: {suffix or '<none>'}")
 
 
+_PDF_INSPECTION_MAX_BYTES = 128 * 1024 * 1024
+_PDF_INSPECTION_MAX_PAGES = 10_000
+_PDF_INSPECTION_MAX_PAGE_TEXT = 1_000_000
+_PDF_INSPECTION_MAX_TEXT = 10_000_000
+
+
 def _inspect_pdf(path: Path) -> DocumentInspection:
-    import fitz
-    from pypdf import PdfReader
+    import pymupdf as fitz
+    from opendoc_model import TextFlowProfile, text_flow_profile_to_dict
+    from opendoc_model.text_flow import TextFlowFingerprint
+
+    from opendoc_formats.readers.pdf_fields import canonical_field_names
 
     report = DocumentInspection(path, "pdf")
     counters: Counter[str] = Counter()
     fonts: Counter[str] = Counter()
     resources: dict[int, dict[str, Any]] = {}
-    reader = PdfReader(path)
-    if reader.is_encrypted:
-        try:
-            password_status = reader.decrypt("")
-        except Exception:  # noqa: BLE001 - damaged encryption dictionaries vary by producer
-            password_status = 0
-        if not password_status:
-            report.add(IssueSeverity.ERROR, "encryption", "PDF requires a password for structural inspection")
-            report.metrics = {"encrypted": 1}
-            return report
-        report.add(IssueSeverity.WARNING, "encryption", "PDF is encrypted with an empty password")
-    counters["form_fields"] = len(reader.get_fields() or {})
-    counters["pages"] = len(reader.pages)
+    flow = TextFlowFingerprint()
+    profile = f"pdf-pymupdf-native-text-v1-{fitz.VersionBind}"
 
+    def finish(reason: str | None = None, *, measured: bool = True) -> DocumentInspection:
+        report.metadata["text_flow_profile"] = text_flow_profile_to_dict(
+            TextFlowProfile(profile=profile, scope="pdf-native-text-layer-v1",
+                            measured=measured, complete=reason is None, reason=reason)
+        )
+        if measured:
+            report.metadata["text_flow"] = flow.to_dict()
+        counters["resources"] = len(resources)
+        report.metrics = dict(sorted(counters.items()))
+        report.resources = list(resources.values())
+        report.fonts = dict(fonts.most_common())
+        return report
+
+    if path.stat().st_size > _PDF_INSPECTION_MAX_BYTES:
+        report.add(IssueSeverity.WARNING, "pdf.inspection-limit", "PDF file exceeds inspection limit", "source")
+        return finish("file-limit", measured=False)
     with fitz.open(path) as document:
-        report.metadata = {key: value for key, value in document.metadata.items() if value}
+        if document.needs_pass and not document.authenticate(""):
+            counters["encrypted"] = 1
+            report.add(IssueSeverity.ERROR, "encryption", "PDF requires a password for structural inspection", "source")
+            return finish("password-required", measured=False)
+        if document.metadata.get("encryption"):
+            report.add(IssueSeverity.WARNING, "encryption", "PDF is encrypted with an empty password", "source")
+        counters["pages"] = len(document)
+        if len(document) > _PDF_INSPECTION_MAX_PAGES:
+            report.add(IssueSeverity.WARNING, "pdf.inspection-limit", "PDF exceeds page limit", "pages")
+            return finish("page-limit", measured=False)
+        try:
+            counters["form_fields"] = len(canonical_field_names(document))
+            report.metadata["pdf_field_names_complete"] = True
+        except ValueError as error:
+            report.metadata["pdf_field_names_complete"] = False
+            report.add(IssueSeverity.WARNING, "pdf.field-inventory", str(error), "catalog.AcroForm.Fields")
+        report.metadata.update({key: value for key, value in document.metadata.items() if value})
+        raw_characters = 0
         for page_index, page in enumerate(document):
+            try:
+                text = page.get_text("text", sort=False, flags=fitz.TEXTFLAGS_TEXT)
+            except RuntimeError as error:
+                report.add(IssueSeverity.WARNING, "pdf.text-flow", str(error), f"pages[{page_index}]")
+                return finish("backend-extraction-failed")
+            if len(text) > _PDF_INSPECTION_MAX_PAGE_TEXT or raw_characters + len(text) > _PDF_INSPECTION_MAX_TEXT:
+                report.add(IssueSeverity.WARNING, "pdf.inspection-limit", "Native text exceeds inspection limit",
+                           f"pages[{page_index}]")
+                return finish("text-limit")
+            raw_characters += len(text)
+            flow.add(text)
             rectangle = page.rect
             report.pages.append(
                 {
@@ -139,12 +181,7 @@ def _inspect_pdf(path: Path) -> DocumentInspection:
                     "page has no text, images, or vector drawings",
                     f"pages[{page_index}]",
                 )
-    counters["resources"] = len(resources)
-    report.metrics = dict(sorted(counters.items()))
-    report.resources = list(resources.values())
-    report.fonts = dict(fonts.most_common())
-    return report
-
+    return finish()
 
 _HTML_SKIP_TAGS = {"script", "style", "head"}
 _LATEX_MATH_ENVS = (

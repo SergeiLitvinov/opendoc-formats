@@ -611,7 +611,8 @@ Disposable native content view without interactive appearances or stale caches.
 
 Bounded AcroForm tree audit independent of widget appearance extraction.
 
-- `audit_field_tree(pdf: Any, widgets: set[int], record: Callable[..., None]) -> None` — [строка 25](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_fields.py#L25)
+- `canonical_field_names(pdf: Any) -> set[str]` — [строка 25](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_fields.py#L25)
+- `audit_field_tree(pdf: Any, widgets: set[int], record: Callable[..., None]) -> None` — [строка 71](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_fields.py#L71)
 
 Импорты: `__future__`, `collections.abc`, `opendoc_model`, `typing`
 
@@ -934,7 +935,7 @@ Availability checks for optional modules, including missing dotted parents.
 
 - `inspect_path(path: str | Path) -> DocumentInspection` — [строка 30](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/inspection.py#L30)
 
-Импорты: `__future__`, `collections`, `html.parser`, `opendoc_formats.errors`, `opendoc_formats.readers.docx`, `opendoc_formats.readers.pptx`, `opendoc_formats.readers.txt`, `opendoc_model.diagnostics`, `opendoc_model.document_codec`, `opendoc_model.inspection`, `pathlib`, `pypdf`, `typing`
+Импорты: `__future__`, `collections`, `html.parser`, `opendoc_formats.errors`, `opendoc_formats.readers.docx`, `opendoc_formats.readers.pdf_fields`, `opendoc_formats.readers.pptx`, `opendoc_formats.readers.txt`, `opendoc_model`, `opendoc_model.diagnostics`, `opendoc_model.document_codec`, `opendoc_model.inspection`, `opendoc_model.text_flow`, `pathlib`, `typing`
 
 Тесты: [test_emphasis_quality.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_emphasis_quality.py#L1), [test_text_edit_budget.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_text_edit_budget.py#L1), [test_text_flow.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_text_flow.py#L1), [test_text_quality.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_text_quality.py#L1)
 

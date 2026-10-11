@@ -31,9 +31,21 @@ def main() -> None:
         if args.profile == "pdf-rich":
             import fitz
             from opendoc_model import Rect2D, get_integration, get_outline, get_page_geometry
+            from opendoc_model.diagnostics import ConversionReport
+            from opendoc_model.inspection import compare_inspections
+            from opendoc_model.text_quality_policy import TextPreservationPolicy
 
             from opendoc_formats.pdf import PdfDocument
+            from opendoc_formats.support.inspection import inspect_path
 
+            native_inspection = inspect_path(source)
+            assert native_inspection.metadata["text_flow_profile"]["complete"]
+            assert native_inspection.metadata["pdf_field_names_complete"]
+            assert "object_inventory_scope" not in native_inspection.metadata
+            quality = ConversionReport(output / "inspection.pdf")
+            assert TextPreservationPolicy("flow", 0).evaluate(
+                quality, compare_inspections(native_inspection, inspect_path(source))
+            )
             with PdfDocument(source) as pdf:
                 assert pdf.page_count == 2
                 assert pdf.page_info(0).width > 0
