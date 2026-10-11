@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "lock_sha256": "78d1a5fa51c77e9813a3555b20eeccaa514b4478b101c549d046eff4efff390f",
-  "configuration_sha256": "6534d7e04c2ef7d81f16bc295911a144885247431583554461c344a958548d71",
+  "lock_sha256": "4c4c77e8a9d1542997e856bbad0df5bab990d3a62450329febf17c7c7d2d0112",
+  "configuration_sha256": "eb16cf84ee8c2fbfbb9f024354ad2e7f20cfaa6c791e02c4ef754ee603666dfd",
   "packages": [
     {
       "name": "ast-serialize",
@@ -1606,21 +1606,21 @@
     },
     {
       "name": "opendoc-model",
-      "version": "0.8.1",
+      "version": "0.9.1",
       "scopes": [
         "base"
       ],
       "description": "Модель документа, ресурсы и валидация",
       "license": "MIT",
-      "metadata_url": "https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.8.1/opendoc_model-0.8.1-py3-none-any.whl",
+      "metadata_url": "https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.9.1/opendoc_model-0.9.1-py3-none-any.whl",
       "artifacts": [
         {
-          "url": "https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.8.1/opendoc_model-0.8.1-py3-none-any.whl",
-          "expected_sha256": "f91c87fbaa2dcdd46158803199e53d569026ea2661e7e576174c9d795fdff9b0",
+          "url": "https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.9.1/opendoc_model-0.9.1-py3-none-any.whl",
+          "expected_sha256": "35768c9271d31324a4bf4e0787d2b215d2025e5c5423b39709aa00863e8fd9cc",
           "archive_verified": true,
           "license_files": [
             {
-              "path": "opendoc_model-0.8.1.dist-info/licenses/docs/LICENSE",
+              "path": "opendoc_model-0.9.1.dist-info/licenses/docs/LICENSE",
               "sha256": "3ed05eb4b11d122a12b6d37eb1f695bfbd303b542f067658a1dc43d8f81dcf59"
             }
           ]
