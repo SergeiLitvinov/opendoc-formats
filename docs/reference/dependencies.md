@@ -11,7 +11,7 @@
 | --- | --- | --- | --- | --- |
 | [ast-serialize](#ast-serialize-0121) | 0.12.1 | dev | MIT | Сериализация AST для mypy |
 | [backports-tarfile](#backports-tarfile-120) | 1.2.0 | dev | MIT | Совместимость архивов tooling |
-| [beautifulsoup4](#beautifulsoup4-4150) | 4.15.0 | epub, epub-ebooklib, html | MIT License | HTML/XHTML parser |
+| [beautifulsoup4](#beautifulsoup4-4150) | 4.15.0 | epub, html | MIT License | HTML/XHTML parser |
 | [build](#build-161) | 1.6.1 | dev | MIT | Frontend сборки Python |
 | [certifi](#certifi-2026722) | 2026.7.22 | dev | MPL-2.0 | Набор корневых TLS-сертификатов |
 | [cffi](#cffi-211) | 2.1.1 | dev, pdf-layout | MIT-0 | Вызов native кода |
@@ -20,7 +20,6 @@
 | [colorama](#colorama-046) | 0.4.6 | dev, docs | BSD-3-Clause | Цветной вывод Windows |
 | [cryptography](#cryptography-5002) | 50.0.2 | dev, pdf-layout | Apache-2.0 OR BSD-3-Clause | Криптография PDF и системного credential storage |
 | [docutils](#docutils-023) | 0.23 | dev | Public domain + BSD-2-Clause/BSD-3-Clause; GPL-3.0-or-later для отдельных tooling files | Разбор описаний reStructuredText для twine |
-| [ebooklib](#ebooklib-020) | 0.20 | epub-ebooklib | AGPL-3.0-or-later | Контейнер и spine EPUB |
 | [fire](#fire-071) | 0.7.1 | pdf-docx | Apache-2.0 | CLI прямого PDF-конвертера |
 | [fonttools](#fonttools-4661) | 4.66.1 | fonts, pdf-docx | MIT | Метаданные шрифтов |
 | [ghp-import](#ghp-import-210) | 2.1.0 | docs | Apache Software License | Инструмент публикации MkDocs |
@@ -35,7 +34,7 @@
 | [jinja2](#jinja2-316) | 3.1.6 | docs | BSD-3-Clause | Шаблоны документации |
 | [keyring](#keyring-2570) | 25.7.0 | dev | MIT | Хранилище credentials twine |
 | [librt](#librt-0160) | 0.16.0 | dev | MIT | Runtime mypy |
-| [lxml](#lxml-613) | 6.1.3 | docx, epub-ebooklib, pdf-docx, pptx | BSD-3-Clause + PSF/ElementTree, MIT, Zlib, LGPL-2.1; два XSL: unresolved license grant (OF16) | XML/OOXML parser |
+| [lxml](#lxml-613) | 6.1.3 | docx, pdf-docx, pptx | BSD-3-Clause + PSF/ElementTree, MIT, Zlib, LGPL-2.1; два XSL: unresolved license grant (OF16) | XML/OOXML parser |
 | [markdown](#markdown-311) | 3.11 | docs | BSD-3-Clause | Markdown документации |
 | [markdown-it-py](#markdown-it-py-420) | 4.2.0 | dev | MIT | Разбор Markdown для CLI |
 | [markupsafe](#markupsafe-304) | 3.0.4 | docs | BSD-3-Clause | Экранирование HTML шаблонов |
@@ -79,12 +78,12 @@
 | [rich](#rich-1500) | 15.0.0 | dev | MIT | Форматирование CLI |
 | [ruff](#ruff-01610) | 0.16.10 | dev | MIT | Линтер |
 | [secretstorage](#secretstorage-350) | 3.5.0 | dev | BSD-3-Clause | Linux credential storage |
-| [six](#six-1170) | 1.17.0 | docs, epub-ebooklib | MIT | Совместимость Python EPUB/dateutil |
-| [soupsieve](#soupsieve-210) | 2.10 | epub, epub-ebooklib, html | MIT | CSS selectors BeautifulSoup |
+| [six](#six-1170) | 1.17.0 | docs | MIT | Совместимость Python dateutil (документация) |
+| [soupsieve](#soupsieve-210) | 2.10 | epub, html | MIT | CSS selectors BeautifulSoup |
 | [termcolor](#termcolor-330) | 3.3.0 | pdf-docx | MIT | Цвет CLI конвертера |
 | [tinycss2](#tinycss2-151) | 1.5.1 | html | BSD-3-Clause | CSS parser HTML |
 | [twine](#twine-700) | 7.0.0 | dev | Apache-2.0 | Проверка/публикация метаданных Python |
-| [typing-extensions](#typing-extensions-4160) | 4.16.0 | dev, docx, epub, epub-ebooklib, html, pdf-docx, pptx | PSF-2.0 | Совместимость аннотаций типов |
+| [typing-extensions](#typing-extensions-4160) | 4.16.0 | dev, docx, epub, html, pdf-docx, pptx | PSF-2.0 | Совместимость аннотаций типов |
 | [urllib3](#urllib3-280) | 2.8.0 | dev | MIT | HTTP transport tooling |
 | [watchdog](#watchdog-600) | 6.0.0 | docs | Apache-2.0 | Отслеживание файлов документации |
 | [webencodings](#webencodings-061) | 0.6.1 | html | BSD-3-Clause | Кодировки CSS |
@@ -203,15 +202,6 @@ HTTP Range: их SHA-256 вычислен, SHA-256 всего архива ук�
   - `docutils-0.23.dist-info/licenses/licenses/BSD-0-Clause.rst` — `42ac50251ab8a6738f77d5707f2a788dbf3446a6ed68edecb6ac17489a78e163`.
   - `docutils-0.23.dist-info/licenses/licenses/BSD-2-Clause.rst` — `b8f3b31a2f4312401fe4122fe932a333ec0d7e47d849c02da0404e8048fe74d0`.
   - `docutils-0.23.dist-info/licenses/licenses/gpl-3-0.txt` — `e6037104443f9a7829b2aa7c5370d0789a7bda3ca65a0b904cdc0c2e285d9195`.
-
-### ebooklib 0.20
-
-[Метаданные выпуска](https://pypi.org/project/ebooklib/0.20/)
-
-- [ebooklib-0.20-py3-none-any.whl](https://files.pythonhosted.org/packages/bf/ee/aa015c5de8b0dc42a8e507eae8c2de5d1c0e068c896858fec6d502402ed6/ebooklib-0.20-py3-none-any.whl) — проверен целиком.
-  SHA-256 архива по lockfile: `fff5322517a37e31c972d27be7d982cc3928c16b3dcc5fd7e8f7c0f5d7bcf42b`.
-  - `ebooklib-0.20.dist-info/licenses/AUTHORS.txt` — `5f39f9f20994d500d1e79598b1fe9b21b5e439566b8508ee9c00021fbd5c675c`.
-  - `ebooklib-0.20.dist-info/licenses/LICENSE.txt` — `57c8ff33c9c0cfc3ef00e650a1cc910d7ee479a8bc509f6c9209a7c2a11399d6`.
 
 ### fire 0.7.1
 

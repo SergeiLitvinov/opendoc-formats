@@ -18,25 +18,23 @@ def test_tex_source_has_finite_native_reader(tmp_path):
 
 
 def test_epub_table_math_are_semantic_but_nonlinear_content_is_lost(tmp_path):
-    from ebooklib import epub
+    import zipfile
 
-    book = epub.EpubBook()
-    book.set_identifier("coverage-fixture")
-    book.set_title("Own generated source fixture")
-    book.set_language("en")
-    chapter = epub.EpubHtml(title="Chapter", file_name="chapter.xhtml")
-    chapter.content = (
-        '<html xmlns="http://www.w3.org/1999/xhtml"><body>'
-        '<p>Visible <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>x</mi></math></p>'
-        "<table><tr><td>TableOnly</td></tr></table></body></html>"
-    )
-    appendix = epub.EpubHtml(title="Appendix", file_name="appendix.xhtml")
-    appendix.content = "<html><body><p>NonlinearOnly</p></body></html>"
-    for item in (chapter, appendix, epub.EpubNav()):
-        book.add_item(item)
-    book.spine = [chapter, (appendix, "no")]
     source = tmp_path / "source.epub"
-    epub.write_epub(str(source), book)
+    with zipfile.ZipFile(source, "w") as archive:
+        archive.writestr("mimetype", "application/epub+zip")
+        archive.writestr("META-INF/container.xml", '''<container xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+          <rootfiles><rootfile full-path="book.opf" media-type="application/oebps-package+xml"/></rootfiles></container>''')
+        archive.writestr("book.opf", '''<package xmlns="http://www.idpf.org/2007/opf" version="3.0">
+          <metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier>coverage-fixture</dc:identifier>
+          <dc:title>Own generated source fixture</dc:title><dc:language>en</dc:language></metadata>
+          <manifest><item id="chapter" href="chapter.xhtml" media-type="application/xhtml+xml"/>
+          <item id="appendix" href="appendix.xhtml" media-type="application/xhtml+xml"/></manifest>
+          <spine><itemref idref="chapter"/><itemref idref="appendix" linear="no"/></spine></package>''')
+        archive.writestr("chapter.xhtml", '''<html xmlns="http://www.w3.org/1999/xhtml"><body>
+          <p>Visible <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>x</mi></math></p>
+          <table><tr><td>TableOnly</td></tr></table></body></html>''')
+        archive.writestr("appendix.xhtml", "<html><body><p>NonlinearOnly</p></body></html>")
     document = read_epub_model(source)
     blocks = [block for section in document.sections for block in section.blocks]
     text = str(document)
@@ -69,8 +67,6 @@ def test_epub_table_math_are_semantic_but_nonlinear_content_is_lost(tmp_path):
     assert next(
         record for record in ledger.preservation if record.issue.reason == "nonlinear-spine"
     ).provenance.package_part.endswith(".xhtml")
-    import zipfile
-
     with zipfile.ZipFile(source) as archive:
         assert all(record.provenance.package_part.lstrip("/") in archive.namelist() for record in ledger.preservation)
     report = write_document(document, tmp_path / "output.epub")

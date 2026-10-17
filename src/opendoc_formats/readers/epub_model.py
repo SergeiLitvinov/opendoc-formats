@@ -44,16 +44,16 @@ def read_epub_model(path: str | Path, *, backend: str = "native", include_nonlin
     from bs4 import BeautifulSoup
 
     from opendoc_formats.readers.epub_diagnostics import EpubDiagnostics
-    from opendoc_formats.readers.epub_package import read_ebooklib_package, read_epub_package
+    from opendoc_formats.readers.epub_package import read_epub_package
 
     source = Path(path)
     if type(include_nonlinear) is not bool:
         raise ValueError("include_nonlinear must be boolean")
     if not source.is_file():
         raise FileNotFoundError(source)
-    if backend not in {"native", "ebooklib"}:
-        raise ValueError("EPUB backend must be native or ebooklib")
-    book = read_epub_package(source) if backend == "native" else read_ebooklib_package(source)
+    if backend != "native":
+        raise ValueError("EPUB supports backend='native' only; install opendoc-formats[epub]")
+    book = read_epub_package(source)
     resources, item_names = _resources(book, source)
     diagnostics = EpubDiagnostics(source, book.root_directory, resources)
     source_resources = {}

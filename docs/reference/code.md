@@ -537,9 +537,8 @@ Original, bounded EPUB container reader; no network or XML entity expansion.
 - `EpubItem` — [строка 25](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L25)
 - `EpubPackage` — [строка 34](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L34)
 - `read_epub_package(path: str | Path) -> EpubPackage` — [строка 100](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L100)
-- `read_ebooklib_package(path: str | Path) -> EpubPackage` — [строка 181](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L181)
 
-Импорты: `__future__`, `dataclasses`, `ebooklib`, `opendoc_formats.epub_metadata`, `opendoc_formats.support.io`, `pathlib`, `urllib.parse`
+Импорты: `__future__`, `dataclasses`, `opendoc_formats.epub_metadata`, `opendoc_formats.support.io`, `pathlib`, `urllib.parse`
 
 Тесты: [test_epub_package.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_package.py#L1), [test_epub_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_epub_writer.py#L1)
 

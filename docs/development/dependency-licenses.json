@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "lock_sha256": "d34ee95987619d27b897504360b5bfc7423b9a467ea2c1312fc5098de9eacc67",
-  "configuration_sha256": "ea15972f66905d5b74685c56e46fd740e26e7a66c576d5df67c03b9b16d34db3",
+  "lock_sha256": "0f50839a9319dd8be5253fd534fe03bc3a41bd456491b371270b7afc238bfb41",
+  "configuration_sha256": "cd67e46b530c298b96234c21509c582a13e9ae71fc3de352f12f1e1ce8be3bc2",
   "packages": [
     {
       "name": "ast-serialize",
@@ -73,7 +73,6 @@
       "version": "4.15.0",
       "scopes": [
         "epub",
-        "epub-ebooklib",
         "html"
       ],
       "description": "HTML/XHTML parser",
@@ -330,33 +329,6 @@
             {
               "path": "docutils-0.23.dist-info/licenses/licenses/gpl-3-0.txt",
               "sha256": "e6037104443f9a7829b2aa7c5370d0789a7bda3ca65a0b904cdc0c2e285d9195"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "ebooklib",
-      "version": "0.20",
-      "scopes": [
-        "epub-ebooklib"
-      ],
-      "description": "Контейнер и spine EPUB",
-      "license": "AGPL-3.0-or-later",
-      "metadata_url": "https://pypi.org/project/ebooklib/0.20/",
-      "artifacts": [
-        {
-          "url": "https://files.pythonhosted.org/packages/bf/ee/aa015c5de8b0dc42a8e507eae8c2de5d1c0e068c896858fec6d502402ed6/ebooklib-0.20-py3-none-any.whl",
-          "expected_sha256": "fff5322517a37e31c972d27be7d982cc3928c16b3dcc5fd7e8f7c0f5d7bcf42b",
-          "archive_verified": true,
-          "license_files": [
-            {
-              "path": "ebooklib-0.20.dist-info/licenses/AUTHORS.txt",
-              "sha256": "5f39f9f20994d500d1e79598b1fe9b21b5e439566b8508ee9c00021fbd5c675c"
-            },
-            {
-              "path": "ebooklib-0.20.dist-info/licenses/LICENSE.txt",
-              "sha256": "57c8ff33c9c0cfc3ef00e650a1cc910d7ee479a8bc509f6c9209a7c2a11399d6"
             }
           ]
         }
@@ -705,7 +677,6 @@
       "version": "6.1.3",
       "scopes": [
         "docx",
-        "epub-ebooklib",
         "pdf-docx",
         "pptx"
       ],
@@ -2496,10 +2467,9 @@
       "name": "six",
       "version": "1.17.0",
       "scopes": [
-        "docs",
-        "epub-ebooklib"
+        "docs"
       ],
-      "description": "Совместимость Python EPUB/dateutil",
+      "description": "Совместимость Python dateutil (документация)",
       "license": "MIT",
       "metadata_url": "https://pypi.org/project/six/1.17.0/",
       "artifacts": [
@@ -2521,7 +2491,6 @@
       "version": "2.10",
       "scopes": [
         "epub",
-        "epub-ebooklib",
         "html"
       ],
       "description": "CSS selectors BeautifulSoup",
@@ -2617,7 +2586,6 @@
         "dev",
         "docx",
         "epub",
-        "epub-ebooklib",
         "html",
         "pdf-docx",
         "pptx"

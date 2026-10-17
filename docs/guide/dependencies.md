@@ -31,11 +31,10 @@ EbookLib, lxml и BeautifulSoup для записи не используютс�
 | pdf2docx 0.5.13 | pdf-docx | Отдельный прямой PDF → DOCX маршрут | MIT; зависит от AGPL/commercial PyMuPDF и OpenCV; upstream помечен как не поддерживаемый активно |
 | pdfplumber 0.11.10 | pdf-layout | Альтернативное извлечение текста/геометрии PDF | MIT; pdfminer.six, Pillow, pypdfium2 и их компоненты |
 | python-docx 1.2.0 | docx | OOXML DOCX, rich reader/writer и DOCX → TeX | MIT; использует lxml |
-| lxml 6.1.3 | docx, pptx; транзитивно epub-ebooklib/pdf-docx | XML и OOXML | BSD-3-Clause; bundled libiconv LGPL-2.1 и другие отдельные условия |
+| lxml 6.1.3 | docx, pptx; транзитивно pdf-docx | XML и OOXML | BSD-3-Clause; bundled libiconv LGPL-2.1 и другие отдельные условия |
 | python-pptx 1.0.2 | pptx | Чтение/создание презентаций и отдельный HTML viewer | MIT; lxml, Pillow, XlsxWriter |
 | Pillow 12.3.0 | pptx; транзитивно pdf-layout | Обработка изображений, fallback и измерения | MIT-CMU; комплект лицензий встроенных библиотек |
-| EbookLib 0.20 | epub-ebooklib | Необязательный прежний backend контейнера/OPF/spine EPUB | **AGPL-3.0-or-later**, использует lxml/six |
-| beautifulsoup4 4.15.0 | html, epub, epub-ebooklib | Разбор HTML/XHTML | MIT; soupsieve/typing-extensions |
+| beautifulsoup4 4.15.0 | html, epub | Разбор HTML/XHTML | MIT; soupsieve/typing-extensions |
 | tinycss2 1.5.1 | html | Токены и разбор статического CSS | BSD-3-Clause; webencodings |
 | fonttools 4.66.1 | fonts | Метаданные шрифтов, покрытие глифов и ограничения embedding | MIT; лицензия самих шрифтов отдельно |
 
@@ -93,7 +92,6 @@ OMML в MathML и OOXML-маршруты имеют отдельные треб�
 | `docx` | MIT, BSD-3-Clause, PSF/ElementTree, Zlib; LGPL-2.1 для bundled libiconv | Сохранить условия lxml и LGPL-компонента; XSL-исключение описано ниже |
 | `pptx` | Условия `docx` плюс BSD-2-Clause XlsxWriter и MIT-CMU/third-party notices Pillow | Сохранить весь комплект notices; XSL-исключение остаётся |
 | `epub` | MIT; PSF-2.0 у typing-extensions | Собственный ZIP/OPF/spine/nav/NCX слой; BeautifulSoup/soupsieve для XHTML. Сохранить notices; lxml и EbookLib не требуются |
-| `epub-ebooklib` | EbookLib AGPL-3.0-or-later; MIT/BSD/PSF и условия lxml/libiconv | Прежний backend выбирается явно. Совместимые AGPL-условия для охватываемой объединённой программы, source и notices; XSL-исключение остаётся |
 | `dev` | MIT/BSD/Apache/PSF, MIT-0, MPL-2.0; docutils Public domain/BSD и GPL у отдельных tooling-файлов | Это инструменты разработки; их применение не назначает всему выходному wheel их лицензии. При распространении самого окружения учитывать все компоненты |
 | `docs` | BSD-2-Clause MkDocs; MIT/BSD/Apache и MPL-2.0 зависимостей; MIT и MPL-1.1 JavaScript поиска | Для публикуемых assets сохранить headers/полные license texts и доступность MPL source; это сделано на Pages |
 | build-system | MIT setuptools; версия выбирается из `>=77` при изолированной сборке | Фиксировать и проверять точный backend при распространении сборочного окружения |
@@ -120,7 +118,7 @@ MIT позволяет включать собственный код в сов�
 программы нужны corresponding source, права получателей и лицензии компонентов;
 для модифицированной версии с удалённым сетевым взаимодействием применяется §13.
 Само размещение кода на GitHub и установка движка отдельно не заменяют эти требования.
-Первичный текст: [AGPL-3.0](https://raw.githubusercontent.com/aerkalov/ebooklib/master/LICENSE.txt).
+Первичный текст: [AGPL-3.0](https://www.gnu.org/licenses/agpl-3.0.html).
 
 Направление развития зависимости — выбор совместимых открытых движков, устранение
 неясных прав и уменьшение лишнего состава установки. Переписывание AGPL-движков
@@ -133,12 +131,14 @@ MIT позволяет включать собственный код в сов�
 spine, метаданные title/language/identifier, оглавление EPUB 3 nav и EPUB 2 NCX,
 исходные XHTML/CSS и изображения. Archive safety, проверки локальных путей и XML
 исключают выход за архив, сетевые обращения и объявления сущностей.
-Существующий профиль XHTML/CSS не расширяется этим изменением: таблицы, MathML,
-nonlinear content и полный fixed layout остаются задачами OF08.
+Таблицы и MathML имеют конечный семантический профиль; nonlinear главы включаются
+явно. Полнота XHTML/CSS и fixed layout остаётся задачей OF08.
 
-Прежний маршрут доступен после установки `epub-ebooklib`:
-`read_epub_model(path, backend="ebooklib")` и `read_epub(path, backend="ebooklib")`.
-По умолчанию и в `read_document` используется `backend="native"`.
+Для импорта устанавливается только `opendoc-formats[epub]`. Контейнер разбирается
+собственным кодом, XHTML — BeautifulSoup; EbookLib не входит ни в один профиль.
+Используется `backend="native"`. При переходе с версии 0.37 замените установку
+`epub-ebooklib` на `epub` и удалите `backend="ebooklib"` из вызовов: прежнее значение
+даёт явную ошибку с инструкцией. Формат модели и стандартный маршрут не меняются.
 
 ## Минимальные PDF-профили
 

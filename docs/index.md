@@ -46,7 +46,7 @@
 Из [GitHub Release](https://github.com/SergeiLitvinov/opendoc-formats/releases), без зависимости от публикации на PyPI:
 
 ```sh
-python -m pip install "opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.13.0/opendoc_model-0.13.0-py3-none-any.whl" "opendoc-formats[docx,html] @ https://github.com/SergeiLitvinov/opendoc-formats/releases/download/v0.37.0/opendoc_formats-0.37.0-py3-none-any.whl"
+python -m pip install "opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.13.0/opendoc_model-0.13.0-py3-none-any.whl" "opendoc-formats[docx,html] @ https://github.com/SergeiLitvinov/opendoc-formats/releases/download/v0.38.0/opendoc_formats-0.38.0-py3-none-any.whl"
 ```
 
 Необязательные движки импортируются только при выборе обработчика. TXT/JSON работают с базовой установкой.
@@ -78,7 +78,7 @@ if result.success:
 CI проверяет Linux на Python 3.11/3.12/3.13 и Windows на 3.12, базовую установку и wheel из sdist.
 GitHub Pages публикуется после успешного CI. Тег `vX.Y.Z` запускает проверку версии и выпуск пакетов.
 
-Собственный код — MIT. Необязательные PyMuPDF и EbookLib (`epub-ebooklib`) имеют условия AGPL;
+Собственный код — MIT. Необязательный PyMuPDF имеет условия AGPL/commercial;
 у PyMuPDF также доступна коммерческая лицензия. Состав и назначение движков —
 в [зависимостях](guide/dependencies.md), условия — в [лицензионном аудите](development/licenses.md).
 Уведомления — в [NOTICE](development/notice.md).

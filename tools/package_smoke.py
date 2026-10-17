@@ -50,6 +50,7 @@ def main() -> None:
 
     assert opendoc_formats.__version__ == version("opendoc-formats")
     assert version("opendoc-model") == "0.13.0"
+    assert importlib.util.find_spec("ebooklib") is None, "Removed EPUB engine leaked into the installed profile"
     engines = ("bs4", "fitz", "pymupdf", "lxml", "docx", "pptx", "ebooklib", "fontTools")
     assert all(name not in sys.modules for name in engines)
     installed = Path(opendoc_formats.__file__).resolve().parent

@@ -1,50 +1,49 @@
 """Editable EPUB chapters, hyperlinks, media, and basic CSS."""
 
+import zipfile
 from io import BytesIO
 
 import pytest
 
-pytest.importorskip("ebooklib")
 pytest.importorskip("bs4")
-from ebooklib import epub
-from opendoc_model.document_codec import document_to_dict, load_document, save_document
+from opendoc_model.document_codec import load_document, save_document
 from opendoc_model.document_model import Image, ResourceKind, TextRun
 from PIL import Image as PillowImage
 
-from opendoc_formats.readers.epub import read_epub_model
+from opendoc_formats.readers.epub import read_epub, read_epub_model
 
 
 def _rich_epub(path):
-    book = epub.EpubBook()
-    book.set_identifier("book-42")
-    book.set_title("Rich book")
-    book.set_language("ru")
-    css = epub.EpubItem(
-        uid="style",
-        file_name="styles/main.css",
-        media_type="text/css",
-        content=b".accent { color: #123456; font-weight: 700 } p.note { font-size: 16px; background-color: #ffeecc }",
-    )
     buffer = BytesIO()
     PillowImage.new("RGB", (12, 8), "green").save(buffer, format="PNG")
-    picture = epub.EpubItem(uid="picture", file_name="images/picture.png", media_type="image/png", content=buffer.getvalue())
-    first = epub.EpubHtml(title="First", file_name="chapters/first.xhtml", lang="ru")
-    first.content = """<html><head><link href="../styles/main.css" rel="stylesheet" type="text/css"/></head>
+    first = """<html><head><link href="../styles/main.css" rel="stylesheet" type="text/css"/></head>
       <body><h1 id="target">Первая</h1>
       <p class="note">До <a href="https://example.com"><strong>ссылки</strong></a></p>
       <p><img src="../images/picture.png" alt="Схема"/> после</p>
       <ol><li><span class="accent" style="font-style: italic">Пункт</span></li></ol></body></html>"""
-    first.add_link(href="../styles/main.css", rel="stylesheet", type="text/css")
-    second = epub.EpubHtml(title="Second", file_name="chapters/second.xhtml", lang="ru")
-    second.content = '<html><body><p><a href="first.xhtml#target">К первой</a></p></body></html>'
-    for item in (css, picture, first, second, epub.EpubNcx(), epub.EpubNav()):
-        book.add_item(item)
-    book.toc = (
-        epub.Link("chapters/second.xhtml", "Second", "second"),
-        epub.Link("chapters/first.xhtml", "First", "first"),
-    )
-    book.spine = ["nav", second, first]
-    epub.write_epub(str(path), book)
+    second = '<html><body><p><a href="first.xhtml#target">К первой</a></p></body></html>'
+    with zipfile.ZipFile(path, "w") as archive:
+        archive.writestr("mimetype", "application/epub+zip")
+        archive.writestr("META-INF/container.xml", '''<container xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+          <rootfiles><rootfile full-path="book.opf" media-type="application/oebps-package+xml"/></rootfiles></container>''')
+        archive.writestr("book.opf", '''<package xmlns="http://www.idpf.org/2007/opf" version="3.0">
+          <metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier>book-42</dc:identifier>
+          <dc:title>Rich book</dc:title><dc:language>ru</dc:language></metadata><manifest>
+          <item id="style" href="styles/main.css" media-type="text/css"/>
+          <item id="picture" href="images/picture.png" media-type="image/png"/>
+          <item id="first" href="chapters/first.xhtml" media-type="application/xhtml+xml"/>
+          <item id="second" href="chapters/second.xhtml" media-type="application/xhtml+xml"/>
+          <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
+          </manifest><spine><itemref idref="nav"/><itemref idref="second"/><itemref idref="first"/></spine></package>''')
+        archive.writestr("nav.xhtml", '''<html xmlns="http://www.w3.org/1999/xhtml"
+          xmlns:epub="http://www.idpf.org/2007/ops"><body><nav epub:type="toc"><ol>
+          <li><a href="chapters/second.xhtml">Second</a></li>
+          <li><a href="chapters/first.xhtml">First</a></li></ol></nav></body></html>''')
+        archive.writestr("chapters/first.xhtml", first)
+        archive.writestr("chapters/second.xhtml", second)
+        archive.writestr("images/picture.png", buffer.getvalue())
+        archive.writestr("styles/main.css", ".accent { color: #123456; font-weight: 700 } "
+                         "p.note { font-size: 16px; background-color: #ffeecc }")
 
 
 def test_spine_links_media_css_and_json_roundtrip(tmp_path):
@@ -73,11 +72,10 @@ def test_spine_links_media_css_and_json_roundtrip(tmp_path):
     assert restored.resources[image.resource_id].data == model.resources[image.resource_id].data
 
 
-def test_native_and_ebooklib_have_equal_rich_document_semantics(tmp_path):
+@pytest.mark.parametrize("reader", [read_epub_model, read_epub])
+@pytest.mark.parametrize("backend", ["ebooklib", "unknown"])
+def test_removed_backend_has_actionable_error(tmp_path, reader, backend):
     source = tmp_path / "rich.epub"
     _rich_epub(source)
-    native = document_to_dict(read_epub_model(source))
-    legacy = document_to_dict(read_epub_model(source, backend="ebooklib"))
-    native["document"]["metadata"].pop("engine")
-    legacy["document"]["metadata"].pop("engine")
-    assert native == legacy
+    with pytest.raises(ValueError, match="backend='native'.*opendoc-formats"):
+        reader(source, backend=backend)

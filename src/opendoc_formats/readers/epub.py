@@ -26,11 +26,11 @@ def read_epub(path: Union[str, Path], *, backend: str = "native") -> Text:
             warnings=["beautifulsoup4 not installed"],
         )
 
-    from opendoc_formats.readers.epub_package import read_ebooklib_package, read_epub_package
+    from opendoc_formats.readers.epub_package import read_epub_package
 
-    if backend not in {"native", "ebooklib"}:
-        raise ValueError("EPUB backend must be native or ebooklib")
-    book = read_epub_package(p) if backend == "native" else read_ebooklib_package(p)
+    if backend != "native":
+        raise ValueError("EPUB supports backend='native' only; install opendoc-formats[epub]")
+    book = read_epub_package(p)
     blocks: list[Block] = []
     plain_parts: list[str] = []
 
