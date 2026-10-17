@@ -24,7 +24,7 @@
 | HTML / CSS | Да | Да | `html` для импорта |
 | DOCX | Да | Да | `docx` |
 | PPTX | Да | Да | `pptx` |
-| PDF | Да | Да | `pdf-rich` или полный `pdf` |
+| PDF | Да | Да | `pdf` — один PyMuPDF; `pdf-rich` — тот же профиль |
 | EPUB | Да | Да, конечный EPUB 3 профиль | `epub` для импорта; экспорт в базовом пакете |
 | DjVu | Текст | — | Внешний `djvutxt` |
 | LaTeX | Конечный source profile | DOCX-мост | Импорт в базовом пакете; `docx` для экспорта |
@@ -46,11 +46,13 @@
 Из [GitHub Release](https://github.com/SergeiLitvinov/opendoc-formats/releases), без зависимости от публикации на PyPI:
 
 ```sh
-python -m pip install "opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.13.0/opendoc_model-0.13.0-py3-none-any.whl" "opendoc-formats[docx,html] @ https://github.com/SergeiLitvinov/opendoc-formats/releases/download/v0.36.0/opendoc_formats-0.36.0-py3-none-any.whl"
+python -m pip install "opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.13.0/opendoc_model-0.13.0-py3-none-any.whl" "opendoc-formats[docx,html] @ https://github.com/SergeiLitvinov/opendoc-formats/releases/download/v0.37.0/opendoc_formats-0.37.0-py3-none-any.whl"
 ```
 
 Необязательные движки импортируются только при выборе обработчика. TXT/JSON работают с базовой установкой.
-Extra `pdf-text` устанавливает pypdf для извлечения текста; `pdf-rich` нужен для геометрии и рендера; `pdf` сохраняет полный набор движков.
+Extra `pdf` устанавливает один PyMuPDF для модели, геометрии, рендера и PDF writer.
+Альтернативы подключаются явно: `pdf-text` — pypdf, `pdf-layout` — pdfplumber,
+`pdf-docx` — отдельный converter pdf2docx. Их зависимости не входят в обычный `pdf`.
 
 ## Пример
 

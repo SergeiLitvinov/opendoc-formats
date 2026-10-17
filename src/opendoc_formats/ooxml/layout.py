@@ -272,12 +272,13 @@ def retain_layout_styles(
     from lxml import etree
 
     from opendoc_formats.ooxml.package import RELATIONSHIP_TYPE
+    from opendoc_formats.ooxml.paragraph_indent import export_indents, indents_need_patch
     from opendoc_formats.ooxml.spacing import default_spacing_owner, export_spacing, spacing_needs_patch
     from opendoc_formats.ooxml.word_color import apply_color, color_needs_patch, default_color_owner
 
     selected = {key: style for key, style in styles.items() if any(name in style.properties for name in (
         'docx_tab_stops', 'docx_tab_stops_imported', 'docx_tab_stops_unsupported',
-    )) or spacing_needs_patch(style.properties) or color_needs_patch(style)}
+    )) or spacing_needs_patch(style.properties) or indents_need_patch(style.properties) or color_needs_patch(style)}
     part = graph.related_part(graph.root, RELATIONSHIP_TYPE['styles'])
     if not selected or part is None:
         return graph
@@ -292,6 +293,8 @@ def retain_layout_styles(
                 if spacing_needs_patch(style.properties):
                     export_spacing(style.properties, default_spacing_owner(root), report,
                                    f'styles[{identifier}]', limits=limits)
+                if indents_need_patch(style.properties):
+                    export_indents(style.properties, default_spacing_owner(root), report, f'styles[{identifier}]')
                 continue
             nodes = [node for node in root.findall(W + 'style') if node.get(W + 'styleId') == identifier]
             if len(nodes) != 1:
@@ -300,7 +303,8 @@ def retain_layout_styles(
                 continue
             if color_needs_patch(style):
                 apply_color(nodes[0].get_or_add_rPr(), style)
-            if not spacing_needs_patch(style.properties) and not any(name in style.properties for name in (
+            if not (spacing_needs_patch(style.properties) or indents_need_patch(style.properties)) and not any(
+                name in style.properties for name in (
                 'docx_tab_stops', 'docx_tab_stops_imported', 'docx_tab_stops_unsupported',
             )):
                 continue
@@ -311,6 +315,8 @@ def retain_layout_styles(
             export_layout(style.properties, owner, report, f'styles[{identifier}]')
             if spacing_needs_patch(style.properties):
                 export_spacing(style.properties, owner, report, f'styles[{identifier}]', limits=limits)
+            if indents_need_patch(style.properties):
+                export_indents(style.properties, owner, report, f'styles[{identifier}]')
         parts = dict(graph.parts)
         parts[part.name] = replace(part, data=etree.tostring(root, encoding='UTF-8', xml_declaration=True))
         return replace(graph, parts=parts)

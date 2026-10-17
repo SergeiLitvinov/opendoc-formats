@@ -56,6 +56,9 @@ def read_document_defaults(document: Any, model: DocumentModel) -> TextStyle | N
 
     spacing_properties: dict[str, Any] = {}
     import_spacing_nodes(spacing_properties, paragraph_defaults)
+    from opendoc_formats.ooxml.paragraph_indent import import_indents
+
+    import_indents(spacing_properties, paragraph_defaults[0] if paragraph_defaults else None)
     return TextStyle(
         font_family=font_family,
         font_size=Length(int(size.get(qn("w:val"))) / 2) if size is not None and size.get(qn("w:val")) else None,
@@ -387,7 +390,10 @@ def _style_paragraph_properties(style: Any) -> dict[str, Any]:
 
 def _resolved_paragraph_values(formats: list[Any]) -> dict[str, Any]:
     properties: dict[str, Any] = {}
-    for name in ("left_indent", "right_indent", "first_line_indent", "space_before", "space_after"):
+    from opendoc_formats.ooxml.paragraph_indent import import_indents
+
+    import_indents(properties, formats[0]._element.pPr if formats else None)
+    for name in ("space_before", "space_after"):
         value = next((getattr(item, name) for item in formats if getattr(item, name) is not None), None)
         if hasattr(value, "pt"):
             properties[f"{name}_pt"] = float(value.pt)

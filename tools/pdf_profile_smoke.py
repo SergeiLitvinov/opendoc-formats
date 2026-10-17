@@ -10,7 +10,7 @@ from tempfile import TemporaryDirectory
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("profile", choices=("pdf-rich", "pdf-layout", "pdf-docx"))
+    parser.add_argument("profile", choices=("pdf", "pdf-rich", "pdf-layout", "pdf-docx"))
     args = parser.parse_args()
     from opendoc_model import document_from_json, document_to_json
 
@@ -21,14 +21,21 @@ def main() -> None:
     corpus = Path(__file__).resolve().parents[1] / "tests/corpus/native"
     source = corpus / "text-pages.pdf"
     absent = {
+        "pdf": ("pypdf", "pdfplumber", "pdf2docx", "cv2", "numpy", "docx", "lxml", "PIL"),
         "pdf-rich": ("pypdf", "pdfplumber", "pdf2docx", "cv2", "numpy", "docx", "lxml", "PIL"),
         "pdf-layout": ("pypdf", "fitz", "pdf2docx", "cv2", "numpy", "docx", "lxml"),
         "pdf-docx": ("pypdf", "pdfplumber"),
     }[args.profile]
     assert all(importlib.util.find_spec(name) is None for name in absent), absent
+    from opendoc_formats.readers.pdf import get_pdf_info
+    from opendoc_formats.support.io import validate_pdf
+
+    assert validate_pdf(source)
+    assert get_pdf_info(str(source)) == {'title': '', 'author': '', 'subject': ''}
+    assert all(importlib.util.find_spec(name) is None for name in absent)
     with TemporaryDirectory(prefix="opendoc-formats-pdf-profile-") as directory:
         output = Path(directory)
-        if args.profile == "pdf-rich":
+        if args.profile in {"pdf", "pdf-rich"}:
             import fitz
             from opendoc_model import Rect2D, get_integration, get_outline, get_page_geometry
             from opendoc_model.diagnostics import ConversionReport
@@ -36,7 +43,12 @@ def main() -> None:
             from opendoc_model.text_quality_policy import TextPreservationPolicy
 
             from opendoc_formats.pdf import PdfDocument
+            from opendoc_formats.readers.pdf import read_pdf
             from opendoc_formats.support.inspection import inspect_path
+
+            text = read_pdf(str(source))
+            assert text.engine.startswith('pymupdf') and text.pages == 2 and 'Native PDF' in text.plain
+            assert not any('ModuleNotFoundError' in warning for warning in text.warnings)
 
             native_inspection = inspect_path(source)
             assert native_inspection.metadata["text_flow_profile"]["complete"]

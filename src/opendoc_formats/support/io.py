@@ -276,13 +276,11 @@ def progress_bar(current: int, total: int, width: int = 30) -> str:
 
 
 def validate_pdf(file_path: PathLike) -> bool:
-    """Можно ли открыть файл как PDF (через pypdf)."""
+    """Можно ли прочитать PDF выбранным установленным движком."""
     try:
-        import pypdf
+        from opendoc_formats.support.pdf_probe import probe_pdf
 
-        with open(file_path, "rb") as f:
-            reader = pypdf.PdfReader(f)
-            _ = len(reader.pages)
+        probe_pdf(file_path)
         return True
     except Exception:  # noqa: BLE001
         return False

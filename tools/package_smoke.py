@@ -80,10 +80,13 @@ def main() -> None:
     )
     assert assemble_docx_package_resources(document, {}) == document
     if args.pdf_text:
-        from opendoc_formats.readers.pdf import read_pdf
+        from opendoc_formats.readers.pdf import get_pdf_info, read_pdf
+        from opendoc_formats.support.io import validate_pdf
 
-        text = read_pdf(str(Path(__file__).resolve().parents[1] / "tests/corpus/native/text-pages.pdf"))
+        pdf_source = Path(__file__).resolve().parents[1] / "tests/corpus/native/text-pages.pdf"
+        text = read_pdf(str(pdf_source))
         assert text.engine == "pypdf" and text.pages == 2 and "Native PDF" in text.plain, text
+        assert validate_pdf(pdf_source) and get_pdf_info(str(pdf_source)) == {'title': '', 'author': '', 'subject': ''}
     with TemporaryDirectory(prefix="opendoc-formats-installed-") as directory:
         root = Path(directory)
         tex = root / "own-source.tex"

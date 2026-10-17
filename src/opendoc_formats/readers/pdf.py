@@ -16,6 +16,7 @@ from typing import Callable
 
 from opendoc_formats.readers.pdf_geometry import PdfGeometryDocument, extract_pdf_geometry
 from opendoc_formats.readers.pdf_semantic import analyze_pdf_geometry
+from opendoc_formats.support.backends import missing_backends
 from opendoc_formats.types import Block, BlockType, DocFormat, Text
 
 logger = logging.getLogger(__name__)
@@ -107,6 +108,8 @@ def read_pdf(path: str) -> Text:
     ]
     warnings: list[str] = []
     for name, fn in engines:
+        if missing_backends((name,)):
+            continue
         result = _safe_call(name, lambda: fn(path))
         if result.plain or result.blocks:
             result.warnings = warnings + result.warnings
@@ -120,17 +123,12 @@ def read_pdf(path: str) -> Text:
 
 
 def get_pdf_info(path: str) -> dict:
-    """Извлечь метаданные PDF (title, author, subject) через pypdf."""
+    """Извлечь title/author/subject уже установленным PDF-движком."""
     info = {"title": "", "author": "", "subject": ""}
     try:
-        from pypdf import PdfReader
+        from opendoc_formats.support.pdf_probe import probe_pdf
 
-        with PdfReader(path) as reader:
-            meta = reader.metadata
-            if meta:
-                info["title"] = getattr(meta, "title", "") or ""
-                info["author"] = getattr(meta, "author", "") or ""
-                info["subject"] = getattr(meta, "subject", "") or ""
+        _, info = probe_pdf(path, metadata=True)
     except Exception:  # noqa: BLE001
         pass
     return info

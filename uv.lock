@@ -1422,7 +1422,7 @@ wheels = [
 
 [[package]]
 name = "opendoc-formats"
-version = "0.36.0"
+version = "0.37.0"
 source = { editable = "." }
 dependencies = [
     { name = "opendoc-model" },
@@ -1458,10 +1458,7 @@ html = [
     { name = "tinycss2" },
 ]
 pdf = [
-    { name = "pdf2docx" },
-    { name = "pdfplumber" },
     { name = "pymupdf" },
-    { name = "pypdf" },
 ]
 pdf-docx = [
     { name = "pdf2docx" },
@@ -1494,14 +1491,11 @@ requires-dist = [
     { name = "mkdocs", marker = "extra == 'docs'", specifier = ">=1.6,<2" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.15" },
     { name = "opendoc-model", url = "https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.13.0/opendoc_model-0.13.0-py3-none-any.whl" },
-    { name = "pdf2docx", marker = "extra == 'pdf'", specifier = ">=0.2" },
     { name = "pdf2docx", marker = "extra == 'pdf-docx'", specifier = ">=0.2" },
-    { name = "pdfplumber", marker = "extra == 'pdf'", specifier = ">=0.11" },
     { name = "pdfplumber", marker = "extra == 'pdf-layout'", specifier = ">=0.11" },
     { name = "pillow", marker = "extra == 'pptx'", specifier = ">=10" },
     { name = "pymupdf", marker = "extra == 'pdf'", specifier = ">=1.24" },
     { name = "pymupdf", marker = "extra == 'pdf-rich'", specifier = ">=1.24" },
-    { name = "pypdf", marker = "extra == 'pdf'", specifier = ">=4" },
     { name = "pypdf", marker = "extra == 'pdf-text'", specifier = ">=4" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8" },
     { name = "python-docx", marker = "extra == 'docx'", specifier = ">=1.1" },

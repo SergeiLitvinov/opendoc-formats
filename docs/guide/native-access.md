@@ -58,7 +58,7 @@ with PdfDocument("source.pdf") as pdf:
 Библиотека не выполняет OCR и не оценивает визуальное качество.
 
 Extra `pdf-text` устанавливает только pypdf для текстового маршрута `readers.pdf.read_pdf`.
-Для геометрии, `PdfDocument` и рендера требуется полный `pdf`.
+Для геометрии, `PdfDocument` и рендера нужен `pdf` или эквивалентный `pdf-rich` с одним PyMuPDF.
 
 ## Офис → PDF
 

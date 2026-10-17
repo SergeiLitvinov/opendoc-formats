@@ -108,6 +108,12 @@ def write_paragraph_content(
     for index, item in enumerate(source.content):
         item_location = f"{location}.content[{index}]"
         if isinstance(item, TextRun):
+            from opendoc_formats.ooxml.paragraph_indent import ATTRIBUTES
+
+            if any(item.style.properties.get(key) is not None for key in ATTRIBUTES):
+                report.add(IssueSeverity.ERROR, 'docx.paragraph-indent',
+                           'An inline run style does not declare paragraph indentation in Word', item_location + '.style')
+                continue
             if LINE_SPACING_PROPERTY in item.style.properties:
                 report.add(IssueSeverity.ERROR, 'docx.line-spacing',
                            'An inline run style does not declare paragraph line spacing in Word', item_location + '.style')

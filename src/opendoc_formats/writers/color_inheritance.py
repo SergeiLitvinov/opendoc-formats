@@ -45,6 +45,13 @@ def materialize_docx_colors(document: DocumentModel, limits: DocumentLimits | No
         if not isinstance(paragraph, Paragraph):
             continue
         prepare_legacy_spacing_view(paragraph, limits)
+        from opendoc_formats.ooxml.paragraph_indent import ATTRIBUTES, effective_indent
+
+        for key in ATTRIBUTES:
+            value = effective_indent(document, paragraph, key)
+            paragraph.properties.pop(key, None)
+            if value is not None:
+                paragraph.properties[key] = value
         style = named_style(paragraph.style_id)
         declaration = get_line_spacing(paragraph, limits=limits)
         if declaration is None and LINE_SPACING_PROPERTY not in paragraph.properties and style is not None:

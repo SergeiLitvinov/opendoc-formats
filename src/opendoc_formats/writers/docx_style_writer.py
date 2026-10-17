@@ -19,6 +19,12 @@ def write_styles(
     created: dict[str, Any] = {}
     for style_id, source in styles.items():
         properties = source.properties
+        from opendoc_formats.ooxml.paragraph_indent import ATTRIBUTES
+
+        if properties.style_type in {'character', 'table'} and any(properties.get(key) is not None for key in ATTRIBUTES):
+            report.add(IssueSeverity.ERROR, 'docx.paragraph-indent',
+                       'Paragraph indentation requires a paragraph style or document defaults', f'styles[{style_id}]')
+            continue
         if (LINE_SPACING_PROPERTY in properties
                 and properties.style_type in {'character', 'table'}):
             report.add(IssueSeverity.ERROR, 'docx.line-spacing',
@@ -33,6 +39,9 @@ def write_styles(
 
             export_spacing(properties, default_spacing_owner(target.styles.element), report, 'styles[__doc_defaults__]',
                            limits=limits)
+            from opendoc_formats.ooxml.paragraph_indent import export_indents
+
+            export_indents(properties, default_spacing_owner(target.styles.element), report, 'styles[__doc_defaults__]')
             continue
         style_name = properties.style_name or style_id
         style_type_name = str(properties.style_type or "paragraph").upper()
@@ -75,7 +84,10 @@ def apply_paragraph_format(
 ) -> None:
     from docx.shared import Pt
 
-    for name in ("left_indent", "right_indent", "first_line_indent", "space_before", "space_after"):
+    from opendoc_formats.ooxml.paragraph_indent import export_indents
+
+    export_indents(properties, paragraph_format._element.get_or_add_pPr(), report, location)
+    for name in ("space_before", "space_after"):
         value = properties.get(f"{name}_pt")
         if value is not None:
             setattr(paragraph_format, name, Pt(value))

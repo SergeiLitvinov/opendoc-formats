@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "lock_sha256": "a2c058ec9ab23b424a0dc0bb696aee9cad74dfe5550be02eebc4e8e1a33bc988",
-  "configuration_sha256": "fe3451edd45239e02bb86fc5d3b8425b62e363ed2a6be9c2f67bb32597cf37bd",
+  "lock_sha256": "d34ee95987619d27b897504360b5bfc7423b9a467ea2c1312fc5098de9eacc67",
+  "configuration_sha256": "ea15972f66905d5b74685c56e46fd740e26e7a66c576d5df67c03b9b16d34db3",
   "packages": [
     {
       "name": "ast-serialize",
@@ -148,7 +148,6 @@
       "version": "2.1.1",
       "scopes": [
         "dev",
-        "pdf",
         "pdf-layout"
       ],
       "description": "Вызов native кода",
@@ -184,7 +183,6 @@
       "version": "3.5.2",
       "scopes": [
         "dev",
-        "pdf",
         "pdf-layout"
       ],
       "description": "Определение кодировки HTTP",
@@ -256,7 +254,6 @@
       "version": "50.0.2",
       "scopes": [
         "dev",
-        "pdf",
         "pdf-layout"
       ],
       "description": "Криптография PDF и системного credential storage",
@@ -369,7 +366,6 @@
       "name": "fire",
       "version": "0.7.1",
       "scopes": [
-        "pdf",
         "pdf-docx"
       ],
       "description": "CLI прямого PDF-конвертера",
@@ -394,7 +390,6 @@
       "version": "4.66.1",
       "scopes": [
         "fonts",
-        "pdf",
         "pdf-docx"
       ],
       "description": "Метаданные шрифтов",
@@ -711,7 +706,6 @@
       "scopes": [
         "docx",
         "epub-ebooklib",
-        "pdf",
         "pdf-docx",
         "pptx"
       ],
@@ -1175,7 +1169,6 @@
       "name": "numpy",
       "version": "2.4.6",
       "scopes": [
-        "pdf",
         "pdf-docx"
       ],
       "description": "Массивы PDF-конвертера",
@@ -1362,7 +1355,6 @@
       "name": "numpy",
       "version": "2.5.3",
       "scopes": [
-        "pdf",
         "pdf-docx"
       ],
       "description": "Массивы PDF-конвертера",
@@ -1549,7 +1541,6 @@
       "name": "opencv-python-headless",
       "version": "5.0.0.93",
       "scopes": [
-        "pdf",
         "pdf-docx"
       ],
       "description": "Обработка изображений PDF-конвертера",
@@ -1695,7 +1686,6 @@
       "name": "pdf2docx",
       "version": "0.5.13",
       "scopes": [
-        "pdf",
         "pdf-docx"
       ],
       "description": "Прямой PDF → DOCX converter",
@@ -1719,7 +1709,6 @@
       "name": "pdfminer-six",
       "version": "20260107",
       "scopes": [
-        "pdf",
         "pdf-layout"
       ],
       "description": "Текст и layout для pdfplumber",
@@ -1743,7 +1732,6 @@
       "name": "pdfplumber",
       "version": "0.11.10",
       "scopes": [
-        "pdf",
         "pdf-layout"
       ],
       "description": "Таблицы и геометрия PDF",
@@ -1767,7 +1755,6 @@
       "name": "pillow",
       "version": "12.3.0",
       "scopes": [
-        "pdf",
         "pdf-layout",
         "pptx"
       ],
@@ -1850,7 +1837,6 @@
       "version": "3.0",
       "scopes": [
         "dev",
-        "pdf",
         "pdf-layout"
       ],
       "description": "C declarations для cffi",
@@ -1937,7 +1923,6 @@
       "name": "pypdf",
       "version": "6.19.0",
       "scopes": [
-        "pdf",
         "pdf-text"
       ],
       "description": "Низкоуровневый PDF text",
@@ -1961,7 +1946,6 @@
       "name": "pypdfium2",
       "version": "5.13.0",
       "scopes": [
-        "pdf",
         "pdf-layout"
       ],
       "description": "PDFium rendering для pdfplumber",
@@ -2210,7 +2194,6 @@
       "version": "1.2.0",
       "scopes": [
         "docx",
-        "pdf",
         "pdf-docx"
       ],
       "description": "DOCX reader/writer",
@@ -2562,7 +2545,6 @@
       "name": "termcolor",
       "version": "3.3.0",
       "scopes": [
-        "pdf",
         "pdf-docx"
       ],
       "description": "Цвет CLI конвертера",
@@ -2637,7 +2619,6 @@
         "epub",
         "epub-ebooklib",
         "html",
-        "pdf",
         "pdf-docx",
         "pptx"
       ],
