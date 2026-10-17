@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import sys
 import zipfile
@@ -17,7 +18,18 @@ def main() -> None:
     parser.add_argument("--pdf-text", action="store_true")
     parser.add_argument("--epub", action="store_true")
     args = parser.parse_args()
-    from opendoc_model import DocumentModel, Formula, FormulaFormat, Paragraph, Section, Table, TableCell, TableRow, TextRun
+    from opendoc_model import (
+        DocumentLimits,
+        DocumentModel,
+        Formula,
+        FormulaFormat,
+        Paragraph,
+        Section,
+        Table,
+        TableCell,
+        TableRow,
+        TextRun,
+    )
 
     import opendoc_formats
     from opendoc_formats import (
@@ -34,6 +46,7 @@ def main() -> None:
     from opendoc_formats.office import find_libreoffice
     from opendoc_formats.package_resources import assemble_docx_package_resources
     from opendoc_formats.pdf import PdfDocument
+    from opendoc_formats.support.inspection import inspect_path
 
     assert opendoc_formats.__version__ == version("opendoc-formats")
     assert version("opendoc-model") == "0.13.0"
@@ -169,6 +182,14 @@ def main() -> None:
             report = write_document(document, path)
             assert report.success, report.to_dict()
             assert report.metrics["output_verified"] is True
+            digest = hashlib.sha256(path.read_bytes()).hexdigest()
+            inspected = inspect_path(path, options=ImportOptions(document_limits=DocumentLimits(max_nodes=200000)))
+            assert inspected.valid and inspected.metadata['inspection_status'] == 'completed', inspected.to_dict()
+            assert inspected.metadata['inspection_source_sha256'] == digest
+            assert hashlib.sha256(path.read_bytes()).hexdigest() == digest
+            if format_id in {'txt', 'json', 'docx', 'pptx'}:
+                refused = inspect_path(path, options=ImportOptions(document_limits=DocumentLimits(max_nodes=10)))
+                assert not refused.valid and refused.metadata['document_limit']['maximum'] == 10
             if format_id != "latex" and (args.all_formats or format_id != "html"):
                 result = read_document(path)
                 assert result.success, result.issues

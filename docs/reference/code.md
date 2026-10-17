@@ -984,11 +984,11 @@ Located SDK quota failures, preserving unknown error text without guessed fields
 
 Структурная инспекция документов и промежуточной модели.
 
-- `inspect_path(path: str | Path) -> DocumentInspection` — [строка 30](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/inspection.py#L30)
+- `inspect_path(path: str | Path, *, options: ImportOptions | None=None) -> DocumentInspection` — [строка 34](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/inspection.py#L34)
 
-Импорты: `__future__`, `collections`, `html.parser`, `opendoc_formats.errors`, `opendoc_formats.readers.docx`, `opendoc_formats.readers.pdf_fields`, `opendoc_formats.readers.pptx`, `opendoc_formats.readers.txt`, `opendoc_model`, `opendoc_model.diagnostics`, `opendoc_model.document_codec`, `opendoc_model.inspection`, `opendoc_model.text_flow`, `pathlib`, `typing`
+Импорты: `__future__`, `collections`, `collections.abc`, `html.parser`, `opendoc_formats.api`, `opendoc_formats.errors`, `opendoc_formats.readers.docx`, `opendoc_formats.readers.pdf_fields`, `opendoc_formats.readers.pptx`, `opendoc_formats.readers.txt`, `opendoc_formats.support.document_limits`, `opendoc_model`, `opendoc_model.diagnostics`, `opendoc_model.document_codec`, `opendoc_model.inspection`, `opendoc_model.text_flow`, `pathlib`, `typing`
 
-Тесты: [test_emphasis_quality.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_emphasis_quality.py#L1), [test_text_edit_budget.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_text_edit_budget.py#L1), [test_text_flow.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_text_flow.py#L1), [test_text_quality.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_text_quality.py#L1)
+Тесты: [test_import_limits.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_import_limits.py#L1), [test_emphasis_quality.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_emphasis_quality.py#L1), [test_text_edit_budget.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_text_edit_budget.py#L1), [test_text_flow.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_text_flow.py#L1), [test_text_quality.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_text_quality.py#L1)
 
 ## src/opendoc_formats/support/io.py
 

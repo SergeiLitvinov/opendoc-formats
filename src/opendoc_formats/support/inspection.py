@@ -6,10 +6,12 @@ import base64
 import hashlib
 import re
 from collections import Counter
+from collections.abc import Callable
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
 
+from opendoc_model import ArtifactLimitError
 from opendoc_model.diagnostics import IssueSeverity
 from opendoc_model.inspection import (
     DocumentComparison as DocumentComparison,
@@ -24,20 +26,84 @@ from opendoc_model.inspection import (
     inspect_document_model as inspect_document_model,
 )
 
-from opendoc_formats.errors import FormatError
+from opendoc_formats.api import ImportOptions
+from opendoc_formats.errors import FormatError, OperationCancelledError
+from opendoc_formats.support.document_limits import limit_diagnostic
 
 
-def inspect_path(path: str | Path) -> DocumentInspection:
+def inspect_path(path: str | Path, *, options: ImportOptions | None = None) -> DocumentInspection:
     """Inspect DOCX, PDF, PPTX, TXT, HTML, LaTeX or a JSON-serialized DocumentModel."""
 
     source = Path(path)
     if not source.is_file():
         raise FileNotFoundError(source)
+    if options is not None and not isinstance(options, ImportOptions):
+        raise ValueError('options must be ImportOptions')
+    # Preserve the existing PDF input ceiling when called without options.
+    chosen = options or ImportOptions(max_input_bytes=128 * 1024 * 1024)
+    formats = {'.json': 'document-model-json', '.tex': 'latex'}
+    identifier = formats.get(source.suffix.lower(), source.suffix.lower().lstrip('.'))
+    if source.suffix.lower() not in {'.txt', '.docx', '.json', '.pdf', '.pptx', '.html', '.tex'}:
+        raise FormatError(f"Unsupported inspection format: {source.suffix.lower() or '<none>'}")
+    refusal = DocumentInspection(source, identifier)
+    refusal.metadata['inspection_status'] = 'refused'
+    try:
+        _inspection_checkpoint(chosen.cancelled)
+        if source.stat().st_size > chosen.max_input_bytes:
+            refusal.add(IssueSeverity.ERROR, 'inspection.input-limit', 'Input exceeds max_input_bytes', str(source))
+            return refusal
+        digest = _inspection_digest(source, chosen)
+        refusal.metadata['inspection_source_sha256'] = digest
+        report = _inspect_path(source, chosen)
+        _inspection_checkpoint(chosen.cancelled)
+        if digest != _inspection_digest(source, chosen):
+            refusal.add(IssueSeverity.ERROR, 'inspection.source-changed', 'Source changed during inspection', str(source))
+            return refusal
+        report.metadata['inspection_source_sha256'] = digest
+        profile = report.metadata.get('text_flow_profile', {})
+        partial = source.suffix.lower() == '.pdf' and not profile.get('complete', False)
+        report.metadata['inspection_status'] = 'partial' if partial else ('completed' if report.valid else 'refused')
+        return report
+    except ArtifactLimitError as error:
+        issue = limit_diagnostic(error, chosen.document_limits, str(source), 'inspection.document-limit')
+        refusal.add(issue.severity, issue.code, issue.message, issue.location)
+        refusal.metadata['document_limit'] = issue.measurement
+        return refusal
+    except OperationCancelledError:
+        refusal.metadata['inspection_status'] = 'cancelled'
+        refusal.add(IssueSeverity.ERROR, 'inspection.cancelled', 'Inspection cancelled; measurements discarded', str(source))
+        return refusal
+
+
+def _inspection_checkpoint(cancelled: Callable[[], bool] | None) -> None:
+    if cancelled and cancelled():
+        raise OperationCancelledError('Inspection cancelled')
+
+
+def _inspection_digest(source: Path, options: ImportOptions) -> str:
+    digest = hashlib.sha256()
+    size = 0
+    with source.open('rb') as stream:
+        while True:
+            _inspection_checkpoint(options.cancelled)
+            chunk = stream.read(min(65536, options.max_input_bytes - size + 1))
+            if not chunk:
+                return digest.hexdigest()
+            size += len(chunk)
+            if size > options.max_input_bytes:
+                raise ArtifactLimitError('Source grew beyond max_input_bytes during inspection',
+                                         path='source', quota='input bytes', maximum=options.max_input_bytes)
+            digest.update(chunk)
+
+
+def _inspect_path(source: Path, options: ImportOptions) -> DocumentInspection:
     suffix = source.suffix.lower()
     if suffix == ".txt":
         from opendoc_formats.readers.txt import read_txt_model
 
-        report = inspect_document_model(read_txt_model(source), source_path=source, source_format="txt")
+        model = read_txt_model(source, profile=options.txt_profile)
+        _inspection_checkpoint(options.cancelled)
+        report = inspect_document_model(model, source_path=source, source_format="txt", limits=options.document_limits)
         # Model defaults are not evidence of pagination in a plain-text source.
         report.pages.clear()
         report.metrics.pop("pages", None)
@@ -45,17 +111,24 @@ def inspect_path(path: str | Path) -> DocumentInspection:
     if suffix == ".docx":
         from opendoc_formats.readers.docx import read_docx_model
 
-        return inspect_document_model(read_docx_model(source), source_path=source, source_format="docx")
+        model = read_docx_model(source, limits=options.document_limits)
+        _inspection_checkpoint(options.cancelled)
+        return inspect_document_model(model, source_path=source, source_format="docx", limits=options.document_limits)
     if suffix == ".json":
         from opendoc_model.document_codec import load_document
 
-        return inspect_document_model(load_document(source), source_path=source, source_format="document-model-json")
+        model = load_document(source, limits=options.document_limits)
+        _inspection_checkpoint(options.cancelled)
+        return inspect_document_model(model, source_path=source, source_format="document-model-json",
+                                      limits=options.document_limits)
     if suffix == ".pdf":
-        return _inspect_pdf(source)
+        return _inspect_pdf(source, cancelled=options.cancelled)
     if suffix == ".pptx":
         from opendoc_formats.readers.pptx import read_pptx_model
 
-        return inspect_document_model(read_pptx_model(source), source_path=source, source_format="pptx")
+        model = read_pptx_model(source, limits=options.document_limits)
+        _inspection_checkpoint(options.cancelled)
+        return inspect_document_model(model, source_path=source, source_format="pptx", limits=options.document_limits)
     if suffix == ".html":
         return _inspect_html(source)
     if suffix == ".tex":
@@ -69,7 +142,7 @@ _PDF_INSPECTION_MAX_PAGE_TEXT = 1_000_000
 _PDF_INSPECTION_MAX_TEXT = 10_000_000
 
 
-def _inspect_pdf(path: Path) -> DocumentInspection:
+def _inspect_pdf(path: Path, *, cancelled: Callable[[], bool] | None = None) -> DocumentInspection:
     import pymupdf as fitz
     from opendoc_model import TextFlowProfile, text_flow_profile_to_dict
     from opendoc_model.text_flow import TextFlowFingerprint
@@ -119,6 +192,7 @@ def _inspect_pdf(path: Path) -> DocumentInspection:
         report.metadata.update({key: value for key, value in document.metadata.items() if value})
         raw_characters = 0
         for page_index, page in enumerate(document):
+            _inspection_checkpoint(cancelled)
             try:
                 text = page.get_text("text", sort=False, flags=fitz.TEXTFLAGS_TEXT)
             except RuntimeError as error:

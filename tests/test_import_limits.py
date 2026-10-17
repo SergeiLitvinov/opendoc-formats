@@ -94,6 +94,36 @@ def large_pptx(tmp_path_factory):
     return source
 
 
+def test_inspection_selected_budget_for_own_pptx_and_model_json(large_pptx, tmp_path):
+    from opendoc_formats.support.inspection import inspect_document_model, inspect_path
+
+    options = ImportOptions(max_input_bytes=30 * 1024 * 1024, document_limits=DocumentLimits(max_nodes=200000))
+    before = large_pptx.read_bytes()
+    original = read_document(large_pptx, options=options)
+    assert original.success
+    expected = inspect_document_model(original.document, limits=options.document_limits)
+    selected = inspect_path(large_pptx, options=options)
+    assert selected.valid and selected.metadata['inspection_status'] == 'completed'
+    assert selected.metrics == expected.metrics and selected.objects == expected.objects
+    assert selected.metadata['text_flow'] == expected.metadata['text_flow']
+    assert selected.metrics['text_runs'] == 6720
+    refused = inspect_path(large_pptx)
+    assert not refused.valid and not refused.objects
+    assert refused.metadata['document_limit']['quota'] == 'nodes'
+    assert refused.metadata['document_limit']['maximum'] == 100000
+    assert large_pptx.read_bytes() == before
+    assert selected.metadata['inspection_source_sha256'] == hashlib.sha256(before).hexdigest()
+    path = tmp_path / 'own-large.json'
+    assert write_document(original.document, path, options=ExportOptions(document_limits=options.document_limits)).success
+    before_json = path.read_bytes()
+    restored = inspect_path(path, options=options)
+    assert restored.valid and restored.metrics == selected.metrics
+    assert restored.objects == selected.objects and restored.metadata['text_flow'] == selected.metadata['text_flow']
+    assert restored.metadata['inspection_source_sha256'] == hashlib.sha256(before_json).hexdigest()
+    assert not inspect_path(path, options=ImportOptions(max_input_bytes=options.max_input_bytes)).valid
+    assert path.read_bytes() == before_json
+
+
 def test_native_pptx_selected_budget_and_two_public_json_cycles(large_pptx, tmp_path):
     before = hashlib.sha256(large_pptx.read_bytes()).digest()
     refused = read_document(large_pptx)
