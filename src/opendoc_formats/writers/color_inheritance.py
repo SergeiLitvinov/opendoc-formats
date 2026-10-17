@@ -52,6 +52,13 @@ def materialize_docx_colors(document: DocumentModel, limits: DocumentLimits | No
             paragraph.properties.pop(key, None)
             if value is not None:
                 paragraph.properties[key] = value
+        from opendoc_formats.ooxml.paragraph_flow import FIELDS, effective_flow
+
+        for key in FIELDS:
+            value = effective_flow(document, paragraph, key)
+            paragraph.properties.pop(key, None)
+            if value is not None:
+                paragraph.properties[key] = value
         style = named_style(paragraph.style_id)
         declaration = get_line_spacing(paragraph, limits=limits)
         if declaration is None and LINE_SPACING_PROPERTY not in paragraph.properties and style is not None:

@@ -6,6 +6,7 @@ from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.shared import Inches, Pt
+from opendoc_model import resolve_style
 from opendoc_model.color import ColorValue
 from opendoc_model.document_model import Formula, Image, Paragraph, ResourceKind, Table
 from PIL import Image as PillowImage
@@ -352,10 +353,11 @@ def test_read_docx_model_resolves_style_inheritance_for_paragraphs_and_runs(tmp_
     assert result_style.font_family == "Arial"
     assert result_style.font_size.pt == 12
     assert result_style.bold is True
-    assert result_style.properties["space_after_pt"] == 9
+    assert "space_after_pt" not in result_style.properties
+    assert resolve_style(model, 'ScientificResult').properties["space_after_pt"] == 9
     imported = model.sections[0].blocks[0]
     assert isinstance(imported, Paragraph)
-    assert imported.properties["space_after_pt"] == 9
+    assert "space_after_pt" not in imported.properties
     assert imported.content[0].style.font_family == "Arial"
     assert imported.content[0].style.font_size.pt == 12
     assert imported.content[0].style.bold is True

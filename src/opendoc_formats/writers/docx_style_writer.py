@@ -19,6 +19,12 @@ def write_styles(
     created: dict[str, Any] = {}
     for style_id, source in styles.items():
         properties = source.properties
+        from opendoc_formats.ooxml.paragraph_flow import FIELDS, export_flow
+
+        if properties.style_type in {'character', 'table'} and any(properties.get(key) is not None for key in FIELDS):
+            report.add(IssueSeverity.ERROR, 'docx.paragraph-flow',
+                       'Paragraph flow requires a paragraph style or document defaults', f'styles[{style_id}]')
+            continue
         from opendoc_formats.ooxml.paragraph_indent import ATTRIBUTES
 
         if properties.style_type in {'character', 'table'} and any(properties.get(key) is not None for key in ATTRIBUTES):
@@ -42,6 +48,7 @@ def write_styles(
             from opendoc_formats.ooxml.paragraph_indent import export_indents
 
             export_indents(properties, default_spacing_owner(target.styles.element), report, 'styles[__doc_defaults__]')
+            export_flow(properties, default_spacing_owner(target.styles.element), report, 'styles[__doc_defaults__]')
             continue
         style_name = properties.style_name or style_id
         style_type_name = str(properties.style_type or "paragraph").upper()
@@ -82,21 +89,14 @@ def apply_paragraph_format(
     paragraph_format: Any, properties: Mapping[str, Any], report: ConversionReport, location: str,
     *, limits: DocumentLimits | None = None,
 ) -> None:
-    from docx.shared import Pt
-
+    from opendoc_formats.ooxml.paragraph_flow import export_flow
     from opendoc_formats.ooxml.paragraph_indent import export_indents
 
     export_indents(properties, paragraph_format._element.get_or_add_pPr(), report, location)
-    for name in ("space_before", "space_after"):
-        value = properties.get(f"{name}_pt")
-        if value is not None:
-            setattr(paragraph_format, name, Pt(value))
+    export_flow(properties, paragraph_format._element.get_or_add_pPr(), report, location)
     from opendoc_formats.ooxml.spacing import export_spacing
 
     export_spacing(properties, paragraph_format._element.get_or_add_pPr(), report, location, limits=limits)
-    for name in ("keep_together", "keep_with_next", "page_break_before", "widow_control"):
-        if properties.get(name) is not None:
-            setattr(paragraph_format, name, bool(properties[name]))
 
 
 def apply_numbering(paragraph_properties: Any, properties: Mapping[str, Any]) -> None:

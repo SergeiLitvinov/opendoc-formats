@@ -23,6 +23,7 @@ from opendoc_model import (
 
 from opendoc_formats.ooxml.borders import native_only
 from opendoc_formats.ooxml.layout import native_layout_supported
+from opendoc_formats.ooxml.paragraph_flow import native_flow_supported
 from opendoc_formats.ooxml.paragraph_indent import native_indents_supported
 from opendoc_formats.ooxml.spacing import native_spacing_supported
 from opendoc_formats.readers.docx_features import _relationship_feature
@@ -48,6 +49,9 @@ _XML_KEYS = {"docx_raw_inline_xml", "docx_raw_block_xml", "field_xml", "vml_xml"
 def _feature(node: Any) -> str | None:
     if node.tag == W + 'ind' and not native_indents_supported(node):
         return 'paragraph-indent'
+    if (node.tag in {W + name for name in ('spacing', 'keepLines', 'keepNext', 'pageBreakBefore', 'widowControl')}
+            and not native_flow_supported(node)):
+        return 'paragraph-flow'
     if node.tag == W + 'spacing' and not native_spacing_supported(node):
         return 'line-spacing'
     if node.tag == W + 'tabs' and any(child.get(W + 'val') in ('start', 'end', 'num') for child in node):

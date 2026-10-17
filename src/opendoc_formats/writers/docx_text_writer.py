@@ -108,6 +108,12 @@ def write_paragraph_content(
     for index, item in enumerate(source.content):
         item_location = f"{location}.content[{index}]"
         if isinstance(item, TextRun):
+            from opendoc_formats.ooxml.paragraph_flow import FIELDS
+
+            if any(item.style.properties.get(key) is not None for key in FIELDS):
+                report.add(IssueSeverity.ERROR, 'docx.paragraph-flow',
+                           'An inline run style does not declare paragraph flow in Word', item_location + '.style')
+                continue
             from opendoc_formats.ooxml.paragraph_indent import ATTRIBUTES
 
             if any(item.style.properties.get(key) is not None for key in ATTRIBUTES):

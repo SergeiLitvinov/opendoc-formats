@@ -178,22 +178,28 @@ class ExporterRegistry:
 
                 color_context = DocumentModel(styles=document.styles)
                 inherited_colors: dict[str | None, Any] = {}
+                from opendoc_formats.ooxml.paragraph_flow import FIELDS, unresolved_flow
                 from opendoc_formats.ooxml.paragraph_indent import ATTRIBUTES, unresolved_indent
 
-                def indent_loss(indent_properties: Mapping[str, Any], location: str) -> None:
-                    if (any(unresolved_indent(indent_properties, key) for key in ATTRIBUTES)
+                def paragraph_layout_loss(layout_properties: Mapping[str, Any], location: str) -> None:
+                    if (any(unresolved_indent(layout_properties, key) for key in ATTRIBUTES)
                             or (identifier in {'txt', 'latex'}
-                                and any(indent_properties.get(key) is not None for key in ATTRIBUTES))):
+                                and any(layout_properties.get(key) is not None for key in ATTRIBUTES))):
                         report.add(IssueSeverity.LOSS, 'docx.paragraph-indent',
                                    f'{identifier.upper()} does not preserve these native paragraph indents', location)
+                    lost_flow = [key for key in FIELDS if identifier not in {'html', 'epub', 'pptx'} or not key.endswith('_pt')]
+                    if (any(unresolved_flow(layout_properties, key) for key in FIELDS)
+                            or any(layout_properties.get(key) is not None for key in lost_flow)):
+                        report.add(IssueSeverity.LOSS, 'docx.paragraph-flow',
+                                   f'{identifier.upper()} does not preserve these native paragraph flow declarations', location)
 
                 for indent_style_id, indent_style in document.styles.items():
-                    indent_loss(indent_style.properties, f'styles[{indent_style_id}]')
+                    paragraph_layout_loss(indent_style.properties, f'styles[{indent_style_id}]')
                 for reference in walk_model(document, limits=options.document_limits):
                     if isinstance(reference.node, Paragraph):
-                        indent_loss(reference.node.properties, reference.path)
+                        paragraph_layout_loss(reference.node.properties, reference.path)
                     elif isinstance(reference.node, TextRun):
-                        indent_loss(reference.node.style.properties, reference.path + '.style')
+                        paragraph_layout_loss(reference.node.style.properties, reference.path + '.style')
                     if (identifier not in {'html', 'pdf', 'pptx'}
                             and isinstance(reference.node, TextRun) and reference.node.style.color == 'auto'):
                         report.add(IssueSeverity.LOSS, 'color-auto',

@@ -59,6 +59,9 @@ def read_document_defaults(document: Any, model: DocumentModel) -> TextStyle | N
     from opendoc_formats.ooxml.paragraph_indent import import_indents
 
     import_indents(spacing_properties, paragraph_defaults[0] if paragraph_defaults else None)
+    from opendoc_formats.ooxml.paragraph_flow import import_flow
+
+    import_flow(spacing_properties, paragraph_defaults[0] if paragraph_defaults else None)
     return TextStyle(
         font_family=font_family,
         font_size=Length(int(size.get(qn("w:val"))) / 2) if size is not None and size.get(qn("w:val")) else None,
@@ -393,19 +396,12 @@ def _resolved_paragraph_values(formats: list[Any]) -> dict[str, Any]:
     from opendoc_formats.ooxml.paragraph_indent import import_indents
 
     import_indents(properties, formats[0]._element.pPr if formats else None)
-    for name in ("space_before", "space_after"):
-        value = next((getattr(item, name) for item in formats if getattr(item, name) is not None), None)
-        if hasattr(value, "pt"):
-            properties[f"{name}_pt"] = float(value.pt)
-        elif value is not None:
-            properties[name] = float(value)
+    from opendoc_formats.ooxml.paragraph_flow import import_flow
+
+    import_flow(properties, formats[0]._element.pPr if formats else None)
     from opendoc_formats.ooxml.spacing import import_spacing
 
     import_spacing(properties, formats)
-    for name in ("keep_together", "keep_with_next", "page_break_before", "widow_control"):
-        value = next((getattr(item, name) for item in formats if getattr(item, name) is not None), None)
-        if value is not None:
-            properties[name] = bool(value)
     return properties
 
 
