@@ -65,8 +65,11 @@ def unresolved_flow(properties: Mapping[str, Any], key: str) -> bool:
 
 
 def native_flow_supported(node: Any) -> bool:
+    owner = node.getparent()
+    if owner is None or owner.tag != W + 'pPr':
+        return True
     properties: dict[str, Any] = {}
-    import_flow(properties, node.getparent())
+    import_flow(properties, owner)
     return not any(record.get('unsupported') for record in properties.get(SNAPSHOT, {}).values())
 
 

@@ -298,9 +298,9 @@ Finite direct paragraph spacing and pagination, with live style inheritance.
 - `import_flow(properties: MutableMapping[str, Any], owner: Any) -> None` — [строка 24](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/paragraph_flow.py#L24)
 - `unresolved_flow(properties: Mapping[str, Any], key: str) -> bool` — [строка 60](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/paragraph_flow.py#L60)
 - `native_flow_supported(node: Any) -> bool` — [строка 67](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/paragraph_flow.py#L67)
-- `flow_needs_patch(properties: Mapping[str, Any]) -> bool` — [строка 73](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/paragraph_flow.py#L73)
-- `export_flow(properties: Mapping[str, Any], owner: Any, report: Any, location: str) -> None` — [строка 82](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/paragraph_flow.py#L82)
-- `effective_flow(document: DocumentModel, paragraph: Paragraph, key: str) -> Any` — [строка 125](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/paragraph_flow.py#L125)
+- `flow_needs_patch(properties: Mapping[str, Any]) -> bool` — [строка 76](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/paragraph_flow.py#L76)
+- `export_flow(properties: Mapping[str, Any], owner: Any, report: Any, location: str) -> None` — [строка 85](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/paragraph_flow.py#L85)
+- `effective_flow(document: DocumentModel, paragraph: Paragraph, key: str) -> Any` — [строка 128](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/paragraph_flow.py#L128)
 
 Импорты: `__future__`, `collections.abc`, `opendoc_model`, `typing`
 

@@ -192,3 +192,18 @@ def test_other_spacing_axes_and_line_rule_survive(source, tmp_path):
     assert model.styles['OwnFlowBase'].properties['space_after_pt'] == 8
     defaults = Document(tmp_path / 'one-axis.docx').styles.element.xpath('./w:docDefaults/w:pPrDefault/w:pPr/w:spacing')[0]
     assert defaults.get(qn('w:line')) == '276' and defaults.get(qn('w:lineRule')) == 'auto'
+
+
+def test_run_character_spacing_is_not_paragraph_spacing(tmp_path):
+    native = Document()
+    paragraph = native.add_paragraph('Own character tracking')
+    node = OxmlElement('w:spacing')
+    node.set(qn('w:val'), '30')
+    paragraph.runs[0]._r.get_or_add_rPr().append(node)
+    paragraph.paragraph_format.space_before = Pt(8)
+    source = tmp_path / 'tracking.docx'
+    native.save(source)
+    result = read_document(source)
+    assert result.success
+    assert result.document.sections[0].blocks[0].properties['space_before_pt'] == 8
+    assert not any(issue.code == 'docx.paragraph-flow' for issue in result.issues)
