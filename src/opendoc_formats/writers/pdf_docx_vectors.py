@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from xml.etree import ElementTree as ET
 
 from opendoc_model import Box, DocumentModel, Image, Resource, ResourceKind
 
@@ -13,6 +14,8 @@ def convert_vector(document: DocumentModel, image: Image, location: str) -> None
         return
     if resource.properties.get('neutral_page_group_only'):
         resource = replace(resource, properties={**resource.properties, 'graphics_state_unsupported': False})
+    if image.properties.get('pdf_docx_graphics_measured'):
+        resource = replace(resource, properties={**resource.properties, 'graphics_state_unsupported': False, 'clip_rects': []})
     from opendoc_formats.writers.pdf_vectors import PdfVector, _validate, draw_vectors
 
     _validate(image, resource)
@@ -29,6 +32,14 @@ def convert_vector(document: DocumentModel, image: Image, location: str) -> None
         placed = replace(image, box=Box(padding, padding, original.width, original.height))
         draw_vectors(page, [PdfVector(placed, resource, location)], lambda: False)
         svg = page.get_svg_image(text_as_path=False).encode('utf-8')
+    from opendoc_formats.writers.pdf_docx_graphics import clip_svg, word_svg_bytes
+
+    root = ET.fromstring(svg)
+    clips = image.properties.get('pdf_docx_clip_paths')
+    if clips:
+        clip_svg(root, clips, Box(original.x-padding, original.y-padding, width, height),
+                 max_commands=image.properties.get('pdf_docx_clip_limit', 50_000))
+    svg = word_svg_bytes(root)
     identifier = resource.id + '-word-svg'
     while identifier in document.resources:
         identifier += '-derived'

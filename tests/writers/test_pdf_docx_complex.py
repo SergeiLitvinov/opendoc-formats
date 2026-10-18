@@ -246,7 +246,7 @@ def test_scan_preserves_native_pixels_without_text_threshold_rasterization(tmp_p
     assert (images[0].box.x, images[0].box.y, images[0].box.width, images[0].box.height) == (0, 0, 400, 300)
 
 
-def test_unmeasured_form_clipping_is_rejected_without_showing_hidden_pixels(tmp_path):
+def test_measured_form_clipping_keeps_native_crop_without_showing_hidden_pixels(tmp_path):
     source, output = tmp_path / 'form-crop.pdf', tmp_path / 'previous.docx'
     with fitz.open(stream=raster_bytes(), filetype='png') as image:
         image_pdf = fitz.open(stream=image.convert_to_pdf(), filetype='pdf')
@@ -255,11 +255,14 @@ def test_unmeasured_form_clipping_is_rejected_without_showing_hidden_pixels(tmp_
         page.show_pdf_page(fitz.Rect(60, 80, 280, 180), image_pdf, clip=fitz.Rect(10, 5, 65, 35),
                            keep_proportion=False)
         native.save(source)
-    output.write_bytes(b'previous destination')
     report = PdfModelConverter().convert(source, output)
-    assert not report.success
-    assert any('clipping or graphics group' in issue.message for issue in report.issues)
-    assert output.read_bytes() == b'previous destination'
+    assert report.success, report.issues
+    restored = read_document(output).document
+    images = [ref.node for ref in walk_model(restored) if isinstance(ref.node, Image)]
+    assert len(images) == 1 and images[0].crop is not None
+    assert images[0].crop.left == pytest.approx(1/6, abs=1e-5)
+    assert images[0].crop.top == pytest.approx(1/6, abs=1e-5)
+    assert images[0].crop.right == images[0].crop.bottom == 0
 
 
 def test_native_jpeg_bytes_are_embedded_without_reencoding(tmp_path):

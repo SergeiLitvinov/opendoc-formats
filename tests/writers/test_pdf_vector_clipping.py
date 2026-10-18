@@ -50,7 +50,7 @@ def test_form_rectangular_clips_have_exact_original_pixels_in_two_cycles(tmp_pat
     assert source.read_bytes() == original
 
 
-def test_nonrectangular_clip_has_located_opaque_source_and_atomic_refusal(tmp_path):
+def test_measured_nonrectangular_clip_keeps_source_and_native_pdf_refusal(tmp_path):
     source = tmp_path / 'curve-clip.pdf'
     with fitz.open() as pdf:
         page = pdf.new_page(width=240, height=240)
@@ -65,7 +65,9 @@ def test_nonrectangular_clip_has_located_opaque_source_and_atomic_refusal(tmp_pa
     issue = next(issue for issue in imported.issues if issue.code == 'pdf.vector-graphics-state')
     assert issue.location.startswith('resources[')
     ledger = get_integration(imported.document)
-    assert any(record.issue.code == issue.code and record.state.value == 'opaque' for record in ledger.preservation)
+    assert any(record.issue.code == issue.code and record.state.value == 'semantic' for record in ledger.preservation)
+    evidence = imported.document.sections[0].properties['pdf_graphics']
+    assert any(command[0] == 'C' for clip in evidence['clips'] for command in clip.get('commands', []))
     assert imported.document.resources['pdf-original-source'].data == source.read_bytes()
     transport = tmp_path / 'curve.json'
     assert write_document(imported.document, transport).success

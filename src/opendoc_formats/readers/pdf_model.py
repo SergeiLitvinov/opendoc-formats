@@ -249,6 +249,7 @@ def read_pdf_model(
             image = RichImage(
                 resource_id=resource_id, box=box, provenance=image_origin, crop=img.crop,
                 properties={"pdf_image_transform": list(img.transform), 'pdf_paint_seq': img.paint_seq,
+                            'pdf_source_image_transform': list(img.source_transform),
                             'pdf_graphics_state_unknown': img.graphics_state_unknown},
             )
             set_anchor(image, Anchor(f'pdf-image-{source_identity}-{page.number}-{img.number}'))
@@ -329,12 +330,11 @@ def read_pdf_model(
         mode=ConversionMode.BALANCED,
     )
     from opendoc_formats.readers.pdf_interactive import attach_pdf_interactions
-
-    attach_pdf_interactions(document, path, limits=limits)
-    attach_history_map(document, path, matched_history, history_issues, limits=limits)
     from opendoc_formats.readers.pdf_paint import attach_text_paint
 
     attach_text_paint(document, path, limits=limits)
+    attach_pdf_interactions(document, path, limits=limits)
+    attach_history_map(document, path, matched_history, history_issues, limits=limits)
     return document
 
 

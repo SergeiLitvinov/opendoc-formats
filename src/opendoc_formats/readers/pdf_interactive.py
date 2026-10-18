@@ -280,6 +280,21 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path, *, limits:
                     "unsupported-" + key,
                     f"Catalog {key} retained only in source PDF",
                 )
+    from opendoc_formats.pdf_graphics import paint_clips
+
+    for index, section in enumerate(model.sections):
+        evidence = section.properties.get('pdf_graphics')
+        if evidence is None:
+            continue
+        try:
+            if evidence.get('unknown'):
+                raise ValueError(evidence['unknown'])
+            for sequence in range(len(evidence.get('paints', []))):
+                paint_clips(evidence, sequence,
+                            {'fill-path', 'stroke-path', 'fill-image', 'fill-text', 'stroke-text', 'ignore-text'})
+        except ValueError as error:
+            record('pdf.graphics-state', PreservationState.OPAQUE, index + 1, 0,
+                   'unsupported-native-paint-state', str(error))
     for resource in model.resources.values():
         if resource.media_type != "application/pdf+vector" or not resource.properties.get("graphics_state_unsupported"):
             continue
@@ -287,14 +302,15 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path, *, limits:
         if count > MAX_OBJECTS:
             raise ValueError("PDF interaction objects exceed profile limit")
         preserve_source = True
-        neutral = resource.properties.get('neutral_page_group_only') is True
+        neutral = (resource.properties.get('neutral_page_group_only') is True
+                   or resource.properties.get('pdf_docx_graphics_measured') is True)
         records.append(PreservationRecord(
             issue=DiagnosticIssue(
                 "pdf.vector-graphics-state", IssueSeverity.INFO if neutral else IssueSeverity.LOSS,
-                ("Neutral full-page group measured; preservation requires a supported target projection" if neutral
+                ("Native clip/group state measured; preservation requires a supported target projection" if neutral
                  else "Vector clip path or graphics group retained only in source PDF"),
                 f"resources[{resource.id!r}]", {"source_resource_id": resource.id},
-                "neutral-page-group" if neutral else "unsupported-graphics-state",
+                "measured-native-graphics" if neutral else "unsupported-graphics-state",
             ), state=PreservationState.SEMANTIC if neutral else PreservationState.OPAQUE, provenance=resource.provenance,
         ))
     if preserve_source:

@@ -43,6 +43,7 @@ class ExtractedPdfImage:
     crop: ImageCrop | None = None
     paint_seq: int | None = None
     graphics_state_unknown: bool = False
+    source_transform: tuple[float, ...] = ()
 
     @property
     def media_type(self) -> str:
@@ -169,7 +170,12 @@ def extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[
                     warnings.append(f"page {page_number} image {block_number}: missing image bytes")
                     continue
                 extension = str(block.get("ext", "png"))
-                if block.get("mask"):
+                mask_xref = masks.get(xref, 0)
+                preblended = bool(mask_xref and document.xref_get_key(mask_xref, 'Matte')[0] != 'null')
+                # /Matte may already produce an RGBA block. Retain it as opaque
+                # extraction evidence: the native paint ledger rejects this
+                # unverified profile instead of combining its alpha twice.
+                if block.get("mask") and not preblended:
                     from opendoc_formats.readers.pdf_image_alpha import straight_alpha_png
 
                     data = straight_alpha_png(data, block['mask'])
@@ -186,6 +192,7 @@ def extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[
                     crop=clipped[2] if clipped else None,
                     paint_seq=paint_seq,
                     graphics_state_unknown=unknown_group or bool(clip_count and not (clipped and clip_count == 1)),
+                    source_transform=tuple(info.get('transform', block.get('transform', ()))),
                 ))
 
     images.sort(key=lambda img: (img.page, img.number))

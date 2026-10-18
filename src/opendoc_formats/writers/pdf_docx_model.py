@@ -52,7 +52,9 @@ def prepare_pdf_docx(document: DocumentModel, *, limits: DocumentLimits | None =
                 pass
     for section in prepared.sections:
         from opendoc_formats.writers.pdf_docx_borders import project_table_borders
+        from opendoc_formats.writers.pdf_docx_graphics import prepare_section_graphics
 
+        prepare_section_graphics(prepared, section, limits=limits)
         project_table_borders(prepared, section)
         for name in ('blocks', 'headers', 'footers'):
             setattr(section, name, _split_lines(getattr(section, name)))

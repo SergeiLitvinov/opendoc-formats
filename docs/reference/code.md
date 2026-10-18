@@ -468,6 +468,18 @@ Public, bounded PDF page access without exposing the optional rendering engine.
 
 Тесты: [test_format_audit.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_format_audit.py#L1), [test_office_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_office_access.py#L1), [test_pdf_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_access.py#L1)
 
+## src/opendoc_formats/pdf_graphics.py
+
+Validate adapter-owned native PDF paint evidence before a target projection.
+
+- `finite_number(value: Any) -> float` — [строка 9](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_graphics.py#L9)
+- `paint_clips(evidence: dict, sequence: int, kinds: set[str]) -> tuple[dict, list[dict]]` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_graphics.py#L15)
+- `rectangle_points(clip: dict) -> list[tuple[float, float]] | None` — [строка 64](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_graphics.py#L64)
+- `axis_rectangle(points: list[tuple[float, float]], *, tolerance: float=0.0001) -> list[float] | None` — [строка 73](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_graphics.py#L73)
+- `contains(bounds: list[float], inner: list[float]) -> bool` — [строка 92](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_graphics.py#L92)
+
+Импорты: `__future__`, `typing`
+
 ## src/opendoc_formats/pdf_outline.py
 
 Bridge inert native PDF outlines to the shared Model contract.
@@ -816,6 +828,16 @@ Preserve embedded PDF font programs as bounded public Model resources.
 
 Тесты: [test_pdf_geometry.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_geometry.py#L1), [test_pdf_images.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_images.py#L1), [test_pdf_ocr_merge.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_ocr_merge.py#L1)
 
+## src/opendoc_formats/readers/pdf_graphics_state.py
+
+Bounded native PDF paint states, including Form XObject clip/group scopes.
+
+- `native_paint_states(page: Any, *, limits: DocumentLimits | None=None) -> dict` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_graphics_state.py#L15)
+
+Импорты: `__future__`, `opendoc_model`, `typing`
+
+Тесты: [test_pdf_docx_graphics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_docx_graphics.py#L1)
+
 ## src/opendoc_formats/readers/pdf_image_alpha.py
 
 Combine straight PDF image samples and a soft mask without alpha roundoff.
@@ -840,12 +862,12 @@ Read a bounded single-image quadrilateral clip profile, without executing conten
 Extract raster images and vector drawings from PDF pages.
 
 - `ExtractedPdfImage` — [строка 29](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L29)
-- `media_type(self) -> str` — [строка 48](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L48)
-- `PdfVectorDrawing` — [строка 66](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L66)
-- `is_path(self) -> bool` — [строка 93](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L93)
-- `extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[str]]` — [строка 115](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L115)
-- `extract_pdf_vector_drawings(path: str | Path) -> tuple[list[PdfVectorDrawing], list[str]]` — [строка 195](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L195)
-- `enrich_geometry_with_images(geometry: PdfGeometryDocument, images: list[ExtractedPdfImage] | None=None, vector_drawings: list[PdfVectorDrawing] | None=None) -> PdfGeometryDocument` — [строка 300](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L300)
+- `media_type(self) -> str` — [строка 49](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L49)
+- `PdfVectorDrawing` — [строка 67](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L67)
+- `is_path(self) -> bool` — [строка 94](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L94)
+- `extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[str]]` — [строка 116](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L116)
+- `extract_pdf_vector_drawings(path: str | Path) -> tuple[list[PdfVectorDrawing], list[str]]` — [строка 202](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L202)
+- `enrich_geometry_with_images(geometry: PdfGeometryDocument, images: list[ExtractedPdfImage] | None=None, vector_drawings: list[PdfVectorDrawing] | None=None) -> PdfGeometryDocument` — [строка 307](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L307)
 
 Импорты: `__future__`, `dataclasses`, `opendoc_formats.errors`, `opendoc_formats.readers.pdf_content`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_image_alpha`, `opendoc_formats.readers.pdf_image_clips`, `opendoc_model`, `opendoc_model.color`, `pathlib`, `typing`
 
@@ -857,7 +879,7 @@ Finite PDF interaction profile; actions are inert data, never executed.
 
 - `attach_pdf_interactions(model: DocumentModel, source: str | Path, *, limits: DocumentLimits | None=None) -> None` — [строка 68](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_interactive.py#L68)
 
-Импорты: `__future__`, `opendoc_formats.pdf_outline`, `opendoc_formats.pdf_page_geometry`, `opendoc_formats.readers.pdf_fields`, `opendoc_model`, `pathlib`, `typing`
+Импорты: `__future__`, `opendoc_formats.pdf_graphics`, `opendoc_formats.pdf_outline`, `opendoc_formats.pdf_page_geometry`, `opendoc_formats.readers.pdf_fields`, `opendoc_model`, `pathlib`, `typing`
 
 ## src/opendoc_formats/readers/pdf_layout.py
 
@@ -909,7 +931,7 @@ PDF paint evidence, independent of semantic reading order and Word layout.
 
 - `attach_text_paint(document: DocumentModel, path: str | Path, *, limits: DocumentLimits | None) -> None` — [строка 12](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_paint.py#L12)
 
-Импорты: `__future__`, `collections`, `opendoc_formats.readers.pdf_content`, `opendoc_formats.readers.pdf_font_bindings`, `opendoc_formats.readers.pdf_image_clips`, `opendoc_formats.readers.pdf_images`, `opendoc_model`, `pathlib`, `typing`
+Импорты: `__future__`, `collections`, `opendoc_formats.pdf_graphics`, `opendoc_formats.readers.pdf_content`, `opendoc_formats.readers.pdf_font_bindings`, `opendoc_formats.readers.pdf_graphics_state`, `opendoc_formats.readers.pdf_image_clips`, `opendoc_formats.readers.pdf_images`, `opendoc_model`, `pathlib`, `typing`
 
 ## src/opendoc_formats/readers/pdf_semantic.py
 
@@ -1557,6 +1579,18 @@ Measured native PDF cell baselines after Word font resolution.
 
 Импорты: `__future__`, `opendoc_formats.fonts.word_metrics`, `opendoc_model`
 
+## src/opendoc_formats/writers/pdf_docx_graphics.py
+
+Project verified native PDF clip scopes into Word pictures without page rasterization.
+
+- `prepare_section_graphics(document: DocumentModel, section: Section, *, limits: DocumentLimits | None) -> None` — [строка 30](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_graphics.py#L30)
+- `verify_text_clip(properties: dict, evidence: dict) -> None` — [строка 76](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_graphics.py#L76)
+- `clip_svg(root: ET.Element, clips: list[dict], box: Box, *, max_commands: int=50000) -> None` — [строка 138](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_graphics.py#L138)
+- `install_svg(document: DocumentModel, image: Image, source: Resource, root: ET.Element, box: Box) -> None` — [строка 214](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_graphics.py#L214)
+- `word_svg_bytes(root: ET.Element) -> bytes` — [строка 225](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_graphics.py#L225)
+
+Импорты: `__future__`, `dataclasses`, `opendoc_formats.pdf_graphics`, `opendoc_model`, `xml.etree`
+
 ## src/opendoc_formats/writers/pdf_docx_images.py
 
 Represent orthogonal native PDF image matrices using editable Word pictures.
@@ -1573,7 +1607,7 @@ Private fixed-layout Word view of the public PDF model; source stays unchanged.
 
 - `prepare_pdf_docx(document: DocumentModel, *, limits: DocumentLimits | None=None) -> DocumentModel` — [строка 37](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_model.py#L37)
 
-Импорты: `__future__`, `copy`, `dataclasses`, `opendoc_formats.fonts.resource_fonts`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_model`, `opendoc_formats.writers.pdf_docx_borders`, `opendoc_formats.writers.pdf_docx_images`, `opendoc_formats.writers.pdf_docx_paint`, `opendoc_formats.writers.pdf_docx_vectors`, `opendoc_model`, `opendoc_model.limits`
+Импорты: `__future__`, `copy`, `dataclasses`, `opendoc_formats.fonts.resource_fonts`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_model`, `opendoc_formats.writers.pdf_docx_borders`, `opendoc_formats.writers.pdf_docx_graphics`, `opendoc_formats.writers.pdf_docx_images`, `opendoc_formats.writers.pdf_docx_paint`, `opendoc_formats.writers.pdf_docx_vectors`, `opendoc_model`, `opendoc_model.limits`
 
 ## src/opendoc_formats/writers/pdf_docx_paint.py
 
@@ -1588,9 +1622,9 @@ Map measured PDF paint order to Word's drawing and body-text planes.
 
 Keep supported PDF path objects as separate, positioned Word SVG pictures.
 
-- `convert_vector(document: DocumentModel, image: Image, location: str) -> None` — [строка 10](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_vectors.py#L10)
+- `convert_vector(document: DocumentModel, image: Image, location: str) -> None` — [строка 11](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_vectors.py#L11)
 
-Импорты: `__future__`, `dataclasses`, `opendoc_formats.writers.pdf_vectors`, `opendoc_model`
+Импорты: `__future__`, `dataclasses`, `opendoc_formats.writers.pdf_docx_graphics`, `opendoc_formats.writers.pdf_vectors`, `opendoc_model`, `xml.etree`
 
 ## src/opendoc_formats/writers/pdf_flow.py
 
@@ -1674,7 +1708,7 @@ Bounded check of rendered plain text before PDF publication.
 
 Импорты: `__future__`, `dataclasses`, `docx`, `docx.shared`, `opendoc_formats`, `opendoc_formats.errors`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.document_limits`, `opendoc_formats.support.io`, `opendoc_formats.support.object_mapping`, `opendoc_formats.writers.base`, `opendoc_formats.writers.docx_postprocess`, `opendoc_model`, `pathlib`, `typing`
 
-Тесты: [test_pdf_docx_complex.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_docx_complex.py#L1), [test_pdf_model_docx.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_model_docx.py#L1), [test_pdf_to_docx.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_to_docx.py#L1)
+Тесты: [test_pdf_docx_complex.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_docx_complex.py#L1), [test_pdf_docx_graphics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_docx_graphics.py#L1), [test_pdf_model_docx.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_model_docx.py#L1), [test_pdf_to_docx.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_to_docx.py#L1)
 
 ## src/opendoc_formats/writers/pdf_unicode.py
 
