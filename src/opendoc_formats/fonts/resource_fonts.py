@@ -34,6 +34,8 @@ def font_program_names(data: bytes) -> tuple[str, tuple[str, ...]]:
 
 
 class ResourceFontResolver(FontResolver):
+    supports_resource_references = True
+
     def __init__(self, embedded: FontResolver, aliases: dict[str, str], system: FontResolver,
                  native_names: dict[str, str], bindings: dict[tuple[str, bool, bool], FontFace], *, strict: bool,
                  resource_faces: dict[str, FontFace] | None = None, ambiguous: set[str] | None = None,

@@ -79,6 +79,8 @@ class FontResolutionReport:
 class FontResolver:
     """Immutable registry whose ordering and tie-breaking are platform-stable."""
 
+    supports_resource_references = False
+
     def __init__(self, faces: Iterable[FontFace] = ()) -> None:
         self._faces = tuple(sorted(faces, key=lambda item: (item.normalized_family, str(item.path).casefold())))
 
@@ -144,8 +146,9 @@ def prepare_document_fonts(
 ) -> tuple[DocumentModel, FontResolutionReport]:
     """Resolve fonts in a deep copy, preserving the caller's canonical model."""
     prepared = copy.deepcopy(document)
+    registry = resolver or FontResolver.system()
     # Resolve only font bindings in the private renderer view through the SDK cascade.
-    if next(od.iter_font_references(prepared, limits=limits), None) is not None:
+    if registry.supports_resource_references and next(od.iter_font_references(prepared, limits=limits), None) is not None:
         context = DocumentModel(styles=prepared.styles, resources=prepared.resources)
         for style in prepared.styles.values():
             effective = od.resolve_style(context, style, limits=limits)
@@ -173,12 +176,11 @@ def prepare_document_fonts(
                     od.set_font_reference(run.style, reference, limits=limits)
                     if run.style.font_family is None:
                         run.style.font_family = effective.font_family
-    registry = resolver or FontResolver.system()
     report = FontResolutionReport()
     usages: dict[str, dict[str, object]] = {}
 
     def collect_style(style: TextStyle, text: str) -> None:
-        reference = od.get_font_reference(style, limits=limits)
+        reference = od.get_font_reference(style, limits=limits) if registry.supports_resource_references else None
         if not style.font_family and reference is None:
             return
         key = f"{style.font_family}"

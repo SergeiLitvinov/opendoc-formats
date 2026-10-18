@@ -167,12 +167,12 @@ Cross-platform font registry and metric-aware deterministic substitutions.
 - `missing_glyphs(self) -> dict[str, tuple[str, ...]]` — [строка 68](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L68)
 - `to_dict(self) -> dict[str, object]` — [строка 71](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L71)
 - `FontResolver` — [строка 79](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L79)
-- `__init__(self, faces: Iterable[FontFace]=()) -> None` — [строка 82](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L82)
-- `system(cls, search_paths: Iterable[str | Path] | None=None) -> FontResolver` — [строка 86](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L86)
-- `faces(self) -> tuple[FontFace, ...]` — [строка 91](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L91)
-- `resolve_style(self, style: TextStyle, text: str='') -> FontResolution` — [строка 94](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L94)
-- `resolve(self, family: str, text: str='', *, bold: bool=False, italic: bool=False) -> FontResolution` — [строка 97](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L97)
-- `prepare_document_fonts(document: DocumentModel, resolver: FontResolver | None=None, *, limits: od.DocumentLimits | None=None) -> tuple[DocumentModel, FontResolutionReport]` — [строка 140](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L140)
+- `__init__(self, faces: Iterable[FontFace]=()) -> None` — [строка 84](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L84)
+- `system(cls, search_paths: Iterable[str | Path] | None=None) -> FontResolver` — [строка 88](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L88)
+- `faces(self) -> tuple[FontFace, ...]` — [строка 93](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L93)
+- `resolve_style(self, style: TextStyle, text: str='') -> FontResolution` — [строка 96](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L96)
+- `resolve(self, family: str, text: str='', *, bold: bool=False, italic: bool=False) -> FontResolution` — [строка 99](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L99)
+- `prepare_document_fonts(document: DocumentModel, resolver: FontResolver | None=None, *, limits: od.DocumentLimits | None=None) -> tuple[DocumentModel, FontResolutionReport]` — [строка 142](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L142)
 
 Импорты: `__future__`, `collections.abc`, `dataclasses`, `fontTools.ttLib`, `functools`, `opendoc_model.document_model`, `pathlib`, `typing`
 
@@ -182,10 +182,10 @@ Use document-owned font programs during Word export without shared installs.
 
 - `font_program_names(data: bytes) -> tuple[str, tuple[str, ...]]` — [строка 22](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resource_fonts.py#L22)
 - `ResourceFontResolver` — [строка 36](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resource_fonts.py#L36)
-- `__init__(self, embedded: FontResolver, aliases: dict[str, str], system: FontResolver, native_names: dict[str, str], bindings: dict[tuple[str, bool, bool], FontFace], *, strict: bool, resource_faces: dict[str, FontFace] | None=None, ambiguous: set[str] | None=None, report: Any=None, limits: DocumentLimits | None=None) -> None` — [строка 37](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resource_fonts.py#L37)
-- `resolve_style(self, style: TextStyle, text: str='') -> FontResolution` — [строка 52](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resource_fonts.py#L52)
-- `resolve(self, family: str, text: str='', *, bold: bool=False, italic: bool=False) -> FontResolution` — [строка 65](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resource_fonts.py#L65)
-- `document_font_resolver(document: DocumentModel, report: Any, *, limits: DocumentLimits | None=None) -> Iterator[FontResolver]` — [строка 81](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resource_fonts.py#L81)
+- `__init__(self, embedded: FontResolver, aliases: dict[str, str], system: FontResolver, native_names: dict[str, str], bindings: dict[tuple[str, bool, bool], FontFace], *, strict: bool, resource_faces: dict[str, FontFace] | None=None, ambiguous: set[str] | None=None, report: Any=None, limits: DocumentLimits | None=None) -> None` — [строка 39](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resource_fonts.py#L39)
+- `resolve_style(self, style: TextStyle, text: str='') -> FontResolution` — [строка 54](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resource_fonts.py#L54)
+- `resolve(self, family: str, text: str='', *, bold: bool=False, italic: bool=False) -> FontResolution` — [строка 67](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resource_fonts.py#L67)
+- `document_font_resolver(document: DocumentModel, report: Any, *, limits: DocumentLimits | None=None) -> Iterator[FontResolver]` — [строка 83](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resource_fonts.py#L83)
 
 Импорты: `__future__`, `contextlib`, `dataclasses`, `fontTools.ttLib`, `io`, `opendoc_formats.fonts.resolver`, `opendoc_formats.support.artifacts`, `opendoc_model`, `typing`
 
