@@ -145,20 +145,34 @@ def prepare_document_fonts(
     """Resolve fonts in a deep copy, preserving the caller's canonical model."""
     prepared = copy.deepcopy(document)
     # Resolve only font bindings in the private renderer view through the SDK cascade.
-    context = DocumentModel(styles=prepared.styles, resources=prepared.resources)
-    for location in od.walk_model(prepared, limits=limits):
-        paragraph = location.node
-        if not isinstance(paragraph, Paragraph):
-            continue
-        for run in paragraph.content:
-            if not isinstance(run, TextRun):
-                continue
-            effective = od.resolve_style(context, paragraph.style_id, overrides=run.style, limits=limits)
+    if next(od.iter_font_references(prepared, limits=limits), None) is not None:
+        context = DocumentModel(styles=prepared.styles, resources=prepared.resources)
+        for style in prepared.styles.values():
+            effective = od.resolve_style(context, style, limits=limits)
             reference = od.get_font_reference(effective, limits=limits)
             if reference is not None:
-                od.set_font_reference(run.style, reference, limits=limits)
-                if run.style.font_family is None:
-                    run.style.font_family = effective.font_family
+                od.set_font_reference(style, reference, limits=limits)
+                if style.font_family is None:
+                    style.font_family = effective.font_family
+        for location in od.walk_model(prepared, limits=limits):
+            paragraph = location.node
+            if not isinstance(paragraph, Paragraph):
+                continue
+            for run in paragraph.content:
+                if not isinstance(run, TextRun):
+                    continue
+                if od.get_font_reference(run.style, limits=limits) is not None:
+                    continue
+                # Exporters also accept native built-in labels without a Model style declaration.
+                identifier = paragraph.style_id if paragraph.style_id in context.styles else None
+                if identifier is None and not run.style.properties.base_style_id:
+                    continue
+                effective = od.resolve_style(context, identifier, overrides=run.style, limits=limits)
+                reference = od.get_font_reference(effective, limits=limits)
+                if reference is not None:
+                    od.set_font_reference(run.style, reference, limits=limits)
+                    if run.style.font_family is None:
+                        run.style.font_family = effective.font_family
     registry = resolver or FontResolver.system()
     report = FontResolutionReport()
     usages: dict[str, dict[str, object]] = {}

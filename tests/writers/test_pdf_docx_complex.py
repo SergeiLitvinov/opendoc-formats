@@ -414,8 +414,9 @@ def test_same_family_different_programs_keep_explicit_model_binding(tmp_path):
 
     model.styles['bound'] = TextStyle(font_family=runs[0].style.font_family)
     set_font_reference(model.styles['bound'], get_font_reference(runs[0].style))
+    model.styles['bound-child'] = TextStyle(properties={'base_style_id': 'bound'})
     set_font_reference(runs[0].style, None)
-    model.sections[0].blocks[0].style_id = 'bound'
+    model.sections[0].blocks[0].style_id = 'bound-child'
     before = document_to_json(model)
     report = write_document(model, output)
     assert report.success, report.issues
