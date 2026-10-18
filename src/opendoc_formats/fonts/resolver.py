@@ -181,9 +181,11 @@ def prepare_document_fonts(
         reference = od.get_font_reference(style, limits=limits)
         if not style.font_family and reference is None:
             return
-        key = f"{style.font_family}|{int(bool(style.bold))}|{int(bool(style.italic))}"
+        key = f"{style.font_family}"
         if reference is not None:
             key += f'|resource={reference.resource_id!r}|face={reference.face_index!r}'
+        # Existing consumers read the final two fields as weight and slant.
+        key += f'|{int(bool(style.bold))}|{int(bool(style.italic))}'
         usage = usages.setdefault(key, {"styles": [], "style_ids": set(), "text": []})
         style_ids = usage["style_ids"]
         if isinstance(style_ids, set) and id(style) not in style_ids:
