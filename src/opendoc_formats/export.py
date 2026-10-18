@@ -134,6 +134,14 @@ class ExporterRegistry:
             return limit_failure(error)
         if errors:
             return fail("export.invalid-model", "; ".join(errors))
+        if identifier not in {'docx', 'json'}:
+            from opendoc_model import get_vector_scene
+
+            for index, section in enumerate(document.sections):
+                scene_id = section.properties.get('pdf_scene_id')
+                if scene_id and get_vector_scene(document, scene_id, limits=options.document_limits) is not None:
+                    return fail('export.graphics-scopes', 'Target does not project the typed PDF clip/compositing scope',
+                                f'sections[{index}]')
         missing = missing_backends(exporter.requirements)
         if missing:
             return fail("export.backend-unavailable", "Missing optional backends: " + ", ".join(missing))

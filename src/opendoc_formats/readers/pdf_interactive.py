@@ -291,7 +291,8 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path, *, limits:
                 raise ValueError(evidence['unknown'])
             for sequence in range(len(evidence.get('paints', []))):
                 paint_clips(evidence, sequence,
-                            {'fill-path', 'stroke-path', 'fill-image', 'fill-text', 'stroke-text', 'ignore-text'})
+                            {'fill-path', 'stroke-path', 'fill-image', 'fill-text', 'stroke-text', 'ignore-text'},
+                            compositing=True)
         except ValueError as error:
             record('pdf.graphics-state', PreservationState.OPAQUE, index + 1, 0,
                    'unsupported-native-paint-state', str(error))

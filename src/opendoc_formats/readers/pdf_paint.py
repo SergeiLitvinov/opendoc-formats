@@ -43,7 +43,8 @@ def attach_text_paint(document: DocumentModel, path: str | Path, *, limits: Docu
                         from opendoc_formats.pdf_graphics import paint_clips
 
                         try:
-                            paint_clips(graphics, run.properties.get('pdf_paint_seq'), {'fill-path', 'stroke-path'})
+                            paint_clips(graphics, run.properties.get('pdf_paint_seq'), {'fill-path', 'stroke-path'},
+                                        compositing=True)
                             resource.properties['pdf_docx_graphics_measured'] = True
                         except ValueError:
                             pass

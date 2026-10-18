@@ -334,6 +334,9 @@ def read_pdf_model(
 
     attach_text_paint(document, path, limits=limits)
     attach_pdf_interactions(document, path, limits=limits)
+    from opendoc_formats.readers.pdf_scopes import attach_pdf_scopes
+
+    attach_pdf_scopes(document, limits=limits)
     attach_history_map(document, path, matched_history, history_issues, limits=limits)
     return document
 

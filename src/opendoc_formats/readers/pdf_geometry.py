@@ -127,7 +127,10 @@ def extract_pdf_geometry(path: str | Path, *, exclude_interactions: bool = False
         for page_index, page in enumerate(document):
             # Table analysis may mutate the backend page's crop/rotation temporarily.
             width, height, rotation = float(page.rect.width), float(page.rect.height), int(page.rotation)
-            raw = page.get_text("dict", sort=False) or {}
+            # Keep hidden glyphs as source content. The measured clip scope,
+            # rather than destructive extraction, determines their visibility.
+            raw = page.get_text("dict", sort=False, flags=fitz.TEXTFLAGS_DICT & ~fitz.TEXT_MEDIABOX_CLIP,
+                                clip=fitz.INFINITE_RECT()) or {}
             text_blocks: list[PdfTextBlockGeometry] = []
             image_blocks: list[PdfImageGeometry] = []
             for block_index, block in enumerate(raw.get("blocks", [])):

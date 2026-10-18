@@ -69,6 +69,12 @@ def write_docx_model(
                 return report
         from opendoc_model import TextRun, walk_model
 
+        projections = document.metadata.get('pdf_docx_group_projection', [])
+        if projections:
+            report.metrics['pdf_docx_group_projection'] = projections
+            report.add(IssueSeverity.LOSS, 'pdf-docx.group-projection',
+                       'RGB group is represented by a vector SVG; native child/group editing is not reconstructed. '
+                       'Typed source scopes remain in the input Model.', 'document')
         seen_fonts = set()
         for reference in walk_model(document, limits=limits):
             run = reference.node

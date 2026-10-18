@@ -37,6 +37,9 @@ def write_pdf_model(
     outline_document = document
     integration = get_integration(document, limits=limits)
     if integration is not None:
+        if any(scene.scope_version == 1 for scene in integration.scenes):
+            report.add(IssueSeverity.ERROR, 'pdf.graphics-scopes', 'Native PDF projection of mixed scopes is not implemented')
+            return report
         if integration.extra.get("pdf_outline") and not integration.extra.get("pdf_outline_imported"):
             report.add(IssueSeverity.LOSS, "pdf.outline", "Source outline is not recreated by the PDF layout writer")
         for record in integration.preservation:

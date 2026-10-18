@@ -12,9 +12,11 @@ def finite_number(value: Any) -> float:
     return float(value)
 
 
-def paint_clips(evidence: dict, sequence: int, kinds: set[str]) -> tuple[dict, list[dict]]:
+def paint_clips(evidence: dict, sequence: int, kinds: set[str], *, compositing: bool = False) -> tuple[dict, list[dict]]:
     if not isinstance(evidence, dict) or evidence.get('version') != 1 or evidence.get('unknown'):
         raise ValueError('Unknown native PDF graphics evidence')
+    if evidence.get('unsupported_compositing'):
+        raise ValueError('Unsupported PDF composition policy: ' + str(evidence['unsupported_compositing']))
     paints = evidence.get('paints')
     if type(sequence) is not int or not isinstance(paints, list) or not 0 <= sequence < len(paints):
         raise ValueError('Missing native PDF paint occurrence')
@@ -39,10 +41,12 @@ def paint_clips(evidence: dict, sequence: int, kinds: set[str]) -> tuple[dict, l
             if not isinstance(record, dict):
                 raise ValueError('Invalid native PDF graphics scope')
             if key == 'groups':
-                if (type(record.get('isolated')) is not bool or record.get('knockout') is not False
-                        or type(record.get('blendmode')) is not int or record['blendmode'] != 0
-                        or finite_number(record.get('opacity')) != 1
+                if (type(record.get('isolated')) is not bool or type(record.get('knockout')) is not bool
+                        or type(record.get('blendmode')) is not int or not 0 <= record['blendmode'] <= 15
+                        or not 0 <= finite_number(record.get('opacity')) <= 1
                         or record.get('colorspace') not in (None, 'DeviceRGB', 'DeviceGray')):
+                    raise ValueError('PDF compositing group requires an explicit group representation')
+                if not compositing and (record['knockout'] or record['blendmode'] or record['opacity'] != 1):
                     raise ValueError('PDF compositing group requires an explicit group representation')
                 continue
             commands = record.get('commands')

@@ -214,7 +214,16 @@ def native_paint_states(page: Any, *, limits: DocumentLimits | None = None) -> d
             raise ValueError('Native PDF paint sequence could not be verified')
         for item, (_, bounds) in zip(paints, native_bounds, strict=True):
             item['bbox'] = list(bounds)
-        return {'version': 1, 'clips': clips, 'groups': groups, 'paints': paints}
+        evidence = {'version': 1, 'clips': clips, 'groups': groups, 'paints': paints}
+        from opendoc_formats.readers.pdf_scopes import needs_scene
+
+        if needs_scene(evidence):
+            from opendoc_formats.readers.pdf_composition_policy import unsupported_policy
+
+            policy = unsupported_policy(page.parent, budget)
+            if policy:
+                evidence['unsupported_compositing'] = policy
+        return evidence
     except ArtifactLimitError:
         raise
     except (AttributeError, TypeError, RuntimeError, ValueError) as error:

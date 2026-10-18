@@ -110,8 +110,8 @@ Extensible model export with validation and atomic publication.
 - `register(self, exporter: ExporterSpec) -> None` — [строка 91](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L91)
 - `exporters(self) -> tuple[ExporterSpec, ...]` — [строка 99](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L99)
 - `write(self, document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport` — [строка 102](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L102)
-- `default_exporter_registry() -> ExporterRegistry` — [строка 320](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L320)
-- `write_document(document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport` — [строка 344](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L344)
+- `default_exporter_registry() -> ExporterRegistry` — [строка 328](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L328)
+- `write_document(document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport` — [строка 352](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L352)
 
 Импорты: `__future__`, `collections.abc`, `dataclasses`, `importlib`, `opendoc_formats.ooxml.paragraph_flow`, `opendoc_formats.ooxml.paragraph_indent`, `opendoc_formats.support.backends`, `opendoc_formats.support.document_limits`, `opendoc_formats.support.object_mapping`, `opendoc_formats.support.output_validation`, `opendoc_formats.text_profile`, `opendoc_formats.writers.txt_writer`, `opendoc_model`, `pathlib`, `tempfile`, `typing`
 
@@ -473,10 +473,10 @@ Public, bounded PDF page access without exposing the optional rendering engine.
 Validate adapter-owned native PDF paint evidence before a target projection.
 
 - `finite_number(value: Any) -> float` — [строка 9](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_graphics.py#L9)
-- `paint_clips(evidence: dict, sequence: int, kinds: set[str]) -> tuple[dict, list[dict]]` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_graphics.py#L15)
-- `rectangle_points(clip: dict) -> list[tuple[float, float]] | None` — [строка 64](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_graphics.py#L64)
-- `axis_rectangle(points: list[tuple[float, float]], *, tolerance: float=0.0001) -> list[float] | None` — [строка 73](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_graphics.py#L73)
-- `contains(bounds: list[float], inner: list[float]) -> bool` — [строка 92](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_graphics.py#L92)
+- `paint_clips(evidence: dict, sequence: int, kinds: set[str], *, compositing: bool=False) -> tuple[dict, list[dict]]` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_graphics.py#L15)
+- `rectangle_points(clip: dict) -> list[tuple[float, float]] | None` — [строка 68](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_graphics.py#L68)
+- `axis_rectangle(points: list[tuple[float, float]], *, tolerance: float=0.0001) -> list[float] | None` — [строка 77](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_graphics.py#L77)
+- `contains(bounds: list[float], inner: list[float]) -> bool` — [строка 96](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_graphics.py#L96)
 
 Импорты: `__future__`, `typing`
 
@@ -770,6 +770,14 @@ Lazy public HTML readers.
 
 Импорты: `__future__`, `collections`, `dataclasses`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.types`
 
+## src/opendoc_formats/readers/pdf_composition_policy.py
+
+Conservative native-dictionary audit for the finite RGB compositor profile.
+
+- `unsupported_policy(document: Any, limits: DocumentLimits) -> str | None` — [строка 10](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_composition_policy.py#L10)
+
+Импорты: `__future__`, `opendoc_model`, `typing`
+
 ## src/opendoc_formats/readers/pdf_content.py
 
 Disposable native content view without interactive appearances or stale caches.
@@ -834,7 +842,7 @@ Bounded native PDF paint states, including Form XObject clip/group scopes.
 
 - `native_paint_states(page: Any, *, limits: DocumentLimits | None=None) -> dict` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_graphics_state.py#L15)
 
-Импорты: `__future__`, `opendoc_model`, `typing`
+Импорты: `__future__`, `opendoc_formats.readers.pdf_composition_policy`, `opendoc_formats.readers.pdf_scopes`, `opendoc_model`, `typing`
 
 Тесты: [test_pdf_docx_graphics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_docx_graphics.py#L1)
 
@@ -898,7 +906,7 @@ PDF → модель OpenDoc: геометрия, семантические б�
 
 - `read_pdf_model(*, path: str | Path, use_ocr: bool=False, ocr_backend: str='', handwriting: bool=False, use_gpu: bool=False, mode: str | None=None, ocr_engine_factory: Callable[..., Any] | None=None, limits: DocumentLimits | None=None) -> DocumentModel` — [строка 43](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_model.py#L43)
 
-Импорты: `__future__`, `collections.abc`, `opendoc_formats.readers.pdf_fonts`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_images`, `opendoc_formats.readers.pdf_interactive`, `opendoc_formats.readers.pdf_ocr_merge`, `opendoc_formats.readers.pdf_paint`, `opendoc_formats.readers.pdf_table_model`, `opendoc_formats.support.object_mapping`, `opendoc_formats.support.pdf_mapping_history`, `opendoc_formats.types`, `opendoc_model`, `opendoc_model.color`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
+Импорты: `__future__`, `collections.abc`, `opendoc_formats.readers.pdf_fonts`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_images`, `opendoc_formats.readers.pdf_interactive`, `opendoc_formats.readers.pdf_ocr_merge`, `opendoc_formats.readers.pdf_paint`, `opendoc_formats.readers.pdf_scopes`, `opendoc_formats.readers.pdf_table_model`, `opendoc_formats.support.object_mapping`, `opendoc_formats.support.pdf_mapping_history`, `opendoc_formats.types`, `opendoc_model`, `opendoc_model.color`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
 
 ## src/opendoc_formats/readers/pdf_ocr_merge.py
 
@@ -932,6 +940,15 @@ PDF paint evidence, independent of semantic reading order and Word layout.
 - `attach_text_paint(document: DocumentModel, path: str | Path, *, limits: DocumentLimits | None) -> None` — [строка 12](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_paint.py#L12)
 
 Импорты: `__future__`, `collections`, `opendoc_formats.pdf_graphics`, `opendoc_formats.readers.pdf_content`, `opendoc_formats.readers.pdf_font_bindings`, `opendoc_formats.readers.pdf_graphics_state`, `opendoc_formats.readers.pdf_image_clips`, `opendoc_formats.readers.pdf_images`, `opendoc_model`, `pathlib`, `typing`
+
+## src/opendoc_formats/readers/pdf_scopes.py
+
+Bind measured PDF paint scopes to the official mixed VectorScene contract.
+
+- `needs_scene(evidence: dict) -> bool` — [строка 31](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_scopes.py#L31)
+- `attach_pdf_scopes(document: DocumentModel, *, limits: DocumentLimits | None) -> None` — [строка 51](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_scopes.py#L51)
+
+Импорты: `__future__`, `opendoc_formats.pdf_graphics`, `opendoc_model`
 
 ## src/opendoc_formats/readers/pdf_semantic.py
 
@@ -1584,12 +1601,12 @@ Measured native PDF cell baselines after Word font resolution.
 Project verified native PDF clip scopes into Word pictures without page rasterization.
 
 - `prepare_section_graphics(document: DocumentModel, section: Section, *, limits: DocumentLimits | None) -> None` — [строка 30](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_graphics.py#L30)
-- `verify_text_clip(properties: dict, evidence: dict) -> None` — [строка 76](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_graphics.py#L76)
-- `clip_svg(root: ET.Element, clips: list[dict], box: Box, *, max_commands: int=50000) -> None` — [строка 138](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_graphics.py#L138)
-- `install_svg(document: DocumentModel, image: Image, source: Resource, root: ET.Element, box: Box) -> None` — [строка 214](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_graphics.py#L214)
-- `word_svg_bytes(root: ET.Element) -> bytes` — [строка 225](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_graphics.py#L225)
+- `verify_text_clip(properties: dict, evidence: dict) -> None` — [строка 85](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_graphics.py#L85)
+- `clip_svg(root: ET.Element, clips: list[dict], box: Box, *, max_commands: int=50000) -> None` — [строка 147](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_graphics.py#L147)
+- `install_svg(document: DocumentModel, image: Image, source: Resource, root: ET.Element, box: Box) -> None` — [строка 223](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_graphics.py#L223)
+- `word_svg_bytes(root: ET.Element) -> bytes` — [строка 234](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_graphics.py#L234)
 
-Импорты: `__future__`, `dataclasses`, `opendoc_formats.pdf_graphics`, `opendoc_model`, `xml.etree`
+Импорты: `__future__`, `dataclasses`, `opendoc_formats.pdf_graphics`, `opendoc_formats.writers.pdf_group_compositor`, `opendoc_formats.writers.pdf_scope_projection`, `opendoc_model`, `xml.etree`
 
 ## src/opendoc_formats/writers/pdf_docx_images.py
 
@@ -1608,6 +1625,8 @@ Private fixed-layout Word view of the public PDF model; source stays unchanged.
 - `prepare_pdf_docx(document: DocumentModel, *, limits: DocumentLimits | None=None) -> DocumentModel` — [строка 37](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_model.py#L37)
 
 Импорты: `__future__`, `copy`, `dataclasses`, `opendoc_formats.fonts.resource_fonts`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_model`, `opendoc_formats.writers.pdf_docx_borders`, `opendoc_formats.writers.pdf_docx_graphics`, `opendoc_formats.writers.pdf_docx_images`, `opendoc_formats.writers.pdf_docx_paint`, `opendoc_formats.writers.pdf_docx_vectors`, `opendoc_model`, `opendoc_model.limits`
+
+Тесты: [test_pdf_group_scopes.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_group_scopes.py#L1)
 
 ## src/opendoc_formats/writers/pdf_docx_paint.py
 
@@ -1635,6 +1654,14 @@ Reserve inline image space and capture its actual Story page position.
 - `record_position(positions: dict[tuple[str, int], tuple[float, ...]], position: Any) -> None` — [строка 62](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_flow.py#L62)
 
 Импорты: `__future__`, `dataclasses`, `opendoc_formats.writers.html_resources`, `opendoc_formats.writers.html_writer`, `opendoc_model`, `opendoc_model.limits`, `typing`
+
+## src/opendoc_formats/writers/pdf_group_compositor.py
+
+Exact planar RGB rectangle composition; no bitmap or SVG filter fallback.
+
+- `project_rectangular_groups(document: DocumentModel, section: Section, evidence: dict, *, limits: DocumentLimits | None) -> dict` — [строка 60](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_group_compositor.py#L60)
+
+Импорты: `__future__`, `copy`, `dataclasses`, `opendoc_formats.pdf_graphics`, `opendoc_formats.writers.pdf_docx_graphics`, `opendoc_formats.writers.pdf_vectors`, `opendoc_model`, `xml.etree`
 
 ## src/opendoc_formats/writers/pdf_interactive.py
 
@@ -1673,6 +1700,14 @@ Bounded native raster transforms and placement in PDF page and Story coordinates
 
 Тесты: [test_pdf_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_resources.py#L1), [test_pdf_svg_mapping.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_svg_mapping.py#L1)
 
+## src/opendoc_formats/writers/pdf_scope_projection.py
+
+Resolve authoritative SDK scopes into a private native-evidence projection.
+
+- `project_scopes(document: DocumentModel, section: Section, *, limits: DocumentLimits | None) -> dict` — [строка 23](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_scope_projection.py#L23)
+
+Импорты: `__future__`, `copy`, `opendoc_formats.readers.pdf_scopes`, `opendoc_model`
+
 ## src/opendoc_formats/writers/pdf_text_verify.py
 
 Bounded check of rendered plain text before PDF publication.
@@ -1708,7 +1743,7 @@ Bounded check of rendered plain text before PDF publication.
 
 Импорты: `__future__`, `dataclasses`, `docx`, `docx.shared`, `opendoc_formats`, `opendoc_formats.errors`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.document_limits`, `opendoc_formats.support.io`, `opendoc_formats.support.object_mapping`, `opendoc_formats.writers.base`, `opendoc_formats.writers.docx_postprocess`, `opendoc_model`, `pathlib`, `typing`
 
-Тесты: [test_pdf_docx_complex.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_docx_complex.py#L1), [test_pdf_docx_graphics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_docx_graphics.py#L1), [test_pdf_model_docx.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_model_docx.py#L1), [test_pdf_to_docx.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_to_docx.py#L1)
+Тесты: [test_pdf_docx_complex.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_docx_complex.py#L1), [test_pdf_docx_graphics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_docx_graphics.py#L1), [test_pdf_group_scopes.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_group_scopes.py#L1), [test_pdf_model_docx.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_model_docx.py#L1), [test_pdf_to_docx.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_to_docx.py#L1)
 
 ## src/opendoc_formats/writers/pdf_unicode.py
 

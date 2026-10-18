@@ -28,9 +28,18 @@ XLINK = 'http://www.w3.org/1999/xlink'
 
 
 def prepare_section_graphics(document: DocumentModel, section: Section, *, limits: DocumentLimits | None) -> None:
-    evidence = section.properties.get('pdf_graphics')
+    from opendoc_formats.writers.pdf_scope_projection import project_scopes
+
+    evidence = project_scopes(document, section, limits=limits)
     if evidence is None:
         return  # Legacy Model transport retains the earlier conservative refusal.
+    order = evidence.get('paint_order', [])
+    if (any(group['opacity'] != 1 or group['knockout'] or group['blendmode']
+            or group['colorspace'] not in (None, 'DeviceRGB') for group in evidence.get('groups', []))
+            or order != sorted(order)):
+        from opendoc_formats.writers.pdf_group_compositor import project_rectangular_groups
+
+        evidence = project_rectangular_groups(document, section, evidence, limits=limits)
     supported = {'fill-path', 'stroke-path', 'fill-image', 'fill-text', 'stroke-text', 'ignore-text'}
     for sequence, paint in enumerate(evidence.get('paints', [])):
         paint_clips(evidence, sequence, supported)
@@ -79,7 +88,7 @@ def verify_text_clip(properties: dict, evidence: dict) -> None:
         points = rectangle_points(clip)
         bounds = axis_rectangle(points) if points else None
         if bounds is None or not contains(bounds, paint['bbox']):
-            raise ValueError('PDF text intersects a clipping boundary; editable clipped text needs a Model contract')
+            raise ValueError('Typed text clip intersects glyphs; native editable Word clipping is not verified')
     properties['pdf_graphics_state_unknown'] = False
 
 

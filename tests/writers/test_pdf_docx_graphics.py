@@ -54,15 +54,16 @@ def curved_clip(path, even_odd=False, vector=False):
         native.save(path)
 
 
-def grouped_form(path, *, opacity=1, isolated=True, knockout=False, blend='Normal', partial_text=False):
+def grouped_form(path, *, opacity=1, isolated=True, knockout=False, blend='Normal', partial_text=False, background_alpha=1):
     with fitz.open() as native:
         page = native.new_page(width=400, height=300)
-        page.draw_rect(page.rect, color=None, fill=(.9, .85, .6))
+        page.draw_rect(page.rect, color=None, fill=(.9, .85, .6), fill_opacity=background_alpha)
         page.insert_text((50, 250), 'Outside group', fontsize=12)
         form = native.get_new_xref()
         native.update_object(form, f'''<< /Type /XObject /Subtype /Form /BBox [0 0 160 100]
           /Resources << /ExtGState << /ChildAlpha << /ca 0.5 /CA 0.5 >> >> >>
-          /Group << /S /Transparency /CS /DeviceRGB /I {str(isolated).lower()} /K {str(knockout).lower()} >> >>''')
+          /Group << /S /Transparency {'/CS /DeviceRGB' if isolated else ''}
+          /I {str(isolated).lower()} /K {str(knockout).lower()} >> >>''')
         native.update_stream(form, b'1 0 0 rg 0 0 110 100 re f\nq /ChildAlpha gs 0 0 1 rg 50 0 110 100 re f Q\n')
         resources = int(native.xref_get_key(page.xref, 'Resources')[1].split()[0])
         native.xref_set_key(resources, 'XObject/OwnForm', f'{form} 0 R')
@@ -181,7 +182,7 @@ def test_neutral_form_group_retains_child_alpha_and_editable_outer_text(tmp_path
     assert len([r for r in model.resources.values() if r.media_type == 'image/svg+xml']) >= 3
 
 
-@pytest.mark.parametrize('options', [{'opacity': .5}, {'knockout': True}, {'blend': 'Multiply'}, {'partial_text': True}])
+@pytest.mark.parametrize('options', [{'blend': 'Hue'}, {'blend': 'Color'}, {'partial_text': True}])
 def test_unrepresented_group_or_partial_text_clip_refuses_atomically(tmp_path, options):
     source, output = tmp_path / 'complex.pdf', tmp_path / 'previous.docx'
     grouped_form(source, **options)
