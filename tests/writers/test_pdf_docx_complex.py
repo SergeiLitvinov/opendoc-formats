@@ -461,6 +461,39 @@ def test_pdf_font_binding_unknown_collection_face_is_not_defaulted(tmp_path):
     assert output.read_bytes() == b'previous destination'
 
 
+def test_native_font_buffer_survives_repeated_content_view_close(tmp_path):
+    import subprocess
+    import sys
+
+    from tests.writers.test_pdf_unicode import _font
+
+    font, source = tmp_path / 'own.ttf', tmp_path / 'annotated.pdf'
+    _font(font)
+    with fitz.open() as native:
+        page = native.new_page()
+        page.insert_font(fontname='Own', fontfile=str(font))
+        page.insert_text((54, 90), 'f', fontname='Own')
+        page.add_text_annot((180, 180), 'Independent appearance')
+        native.save(source)
+    # A subprocess turns native allocator aborts into an ordinary, located regression failure.
+    script = '''
+import gc, sys
+import pymupdf
+from opendoc_model import TextRun, get_font_reference, walk_model
+from opendoc_formats import read_document
+for index in range(12):
+    model = read_document(sys.argv[1]).document
+    runs = [item.node for item in walk_model(model) if isinstance(item.node, TextRun) and item.node.text == 'f']
+    assert runs and all(get_font_reference(run.style) is not None for run in runs)
+    del model, runs
+    gc.collect()
+    with pymupdf.open(sys.argv[1]) as native:
+        assert native[0].get_pixmap().width > 0
+'''
+    result = subprocess.run([sys.executable, '-c', script, str(source)], capture_output=True, text=True, timeout=60)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_font_subsetting_keeps_license_and_localized_notices(tmp_path):
     from fontTools.ttLib import TTFont
 

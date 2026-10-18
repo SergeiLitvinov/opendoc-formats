@@ -38,7 +38,8 @@ def painted_font_programs(page: Any, resources: dict[str, Resource],
                 buffer = native.font().m_internal.buffer
                 key = int(buffer.this) if buffer else 0
                 if key not in self.cache:
-                    data = mupdf.fz_buffer_extract_copy(mupdf.FzBuffer(buffer)) if buffer and buffer.len in sizes else b''
+                    # The font owns this borrowed buffer. Do not create an owning FzBuffer wrapper.
+                    data = mupdf.ll_fz_buffer_extract_copy(buffer) if buffer and buffer.len in sizes else b''
                     ids = by_digest.get(hashlib.sha256(data).digest(), [])
                     self.cache[key] = ids[0] if len(ids) == 1 else None
                 identifier = self.cache[key]
