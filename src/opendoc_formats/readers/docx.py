@@ -95,6 +95,9 @@ def read_docx_model(
         metadata=_document_metadata(document, source),
     )
     model.package = _load_docx_package_graph(document)
+    from opendoc_formats.readers.docx_fonts import read_embedded_fonts
+
+    model.resources.update(read_embedded_fonts(document, limits=limits))
     model.metadata["docx_features"] = inspect_docx_features(document)
     model.styles = read_document_styles(document, model)
     document_defaults = read_document_defaults(document, model)

@@ -41,6 +41,8 @@ class ExtractedPdfImage:
     smask_xref: int = 0
     transform: tuple[float, ...] = ()
     crop: ImageCrop | None = None
+    paint_seq: int | None = None
+    graphics_state_unknown: bool = False
 
     @property
     def media_type(self) -> str:
@@ -84,6 +86,8 @@ class PdfVectorDrawing:
     line_cap: int = 0
     clip_rects: tuple[PdfBox, ...] = ()
     graphics_state_unsupported: bool = False
+    paint_seq: int | None = None
+    neutral_page_group_only: bool = False
 
     @property
     def is_path(self) -> bool:
@@ -136,7 +140,12 @@ def extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[
             from opendoc_formats.readers.pdf_image_clips import clipped_image_placement, image_clip_profiles
 
             clips = image_clip_profiles(page)
+            graphics = page.get_drawings(extended=True)
+            clip_count = sum(draw.get('type') == 'clip' for draw in graphics)
+            unknown_group = any(draw.get('type') == 'group' and not _neutral_page_group(page, draw)
+                                for draw in graphics)
             masks = {int(item[0]): int(item[1]) for item in page.get_images(full=True)}
+            paint_images = [(index, box) for index, (kind, box) in enumerate(page.get_bboxlog()) if kind == 'fill-image']
             for block_index, block in enumerate(image_blocks):
                 from opendoc_formats.errors import ResourceLimitError
 
@@ -145,6 +154,12 @@ def extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[
                     raise ResourceLimitError("PDF raster exceeds pixel or placement limits")
                 block_number = int(block.get("number", block_index))
                 info = infos.get(block_number, {})
+                original_box = info.get('bbox', block.get('bbox', ()))
+                matches = [(index, box) for index, box in paint_images
+                           if len(original_box) == 4 and max(abs(a - b) for a, b in zip(original_box, box)) < .02]
+                paint_seq = matches[0][0] if matches else None
+                if matches:
+                    paint_images.remove(matches[0])
                 clipped = clipped_image_placement(info, clips)
                 xref = int(info.get("xref", 0)) or -(block_number + 1)
                 data = block.get("image", b"")
@@ -155,9 +170,9 @@ def extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[
                     continue
                 extension = str(block.get("ext", "png"))
                 if block.get("mask"):
-                    base = fitz.Pixmap(data)
-                    mask = fitz.Pixmap(block["mask"])
-                    data = fitz.Pixmap(base, mask).tobytes("png")
+                    from opendoc_formats.readers.pdf_image_alpha import straight_alpha_png
+
+                    data = straight_alpha_png(data, block['mask'])
                     extension = "png"
                 if len(data) > 32 * 1024 * 1024:
                     raise ResourceLimitError("PDF raster with mask exceeds 32 MiB")
@@ -169,6 +184,8 @@ def extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[
                     data=data, xref=xref, page=page_number, smask_xref=masks.get(xref, 0),
                     transform=clipped[1] if clipped else tuple(block.get("transform", ())),
                     crop=clipped[2] if clipped else None,
+                    paint_seq=paint_seq,
+                    graphics_state_unknown=unknown_group or bool(clip_count and not (clipped and clip_count == 1)),
                 ))
 
     images.sort(key=lambda img: (img.page, img.number))
@@ -211,7 +228,8 @@ def extract_pdf_vector_drawings(path: str | Path) -> tuple[list[PdfVectorDrawing
                         tuple(float(value) for value in commands[0][1])
                         if draw["type"] == "clip" and len(commands) == 1 and commands[0][0] == "re" else None
                     )
-                    states.append((level, rectangle))
+                    root_group = not states and _neutral_page_group(page, draw)
+                    states.append((level, rectangle, rectangle is None and not root_group))
                     if len(states) > 64:
                         raise ArtifactLimitError(f"PDF graphics state nesting exceeds 64 on page {page_number}")
                     continue
@@ -250,12 +268,24 @@ def extract_pdf_vector_drawings(path: str | Path) -> tuple[list[PdfVectorDrawing
                         dashes=str(draw.get("dashes") or "[] 0"),
                         line_join=_to_int(draw.get("lineJoin", 0)),
                         line_cap=_to_int(draw.get("lineCap", 0)),
-                        clip_rects=tuple(rectangle for _, rectangle in states if rectangle is not None),
-                        graphics_state_unsupported=any(rectangle is None for _, rectangle in states),
+                        clip_rects=tuple(rectangle for _, rectangle, _ in states if rectangle is not None),
+                        graphics_state_unsupported=any(rectangle is None for _, rectangle, _ in states),
+                        neutral_page_group_only=(any(rectangle is None for _, rectangle, _ in states)
+                                                 and not any(unsupported for _, _, unsupported in states)),
+                        paint_seq=draw.get('seqno'),
                     )
                 )
 
     return drawings, warnings
+
+
+def _neutral_page_group(page: Any, draw: dict) -> bool:
+    return bool(draw.get('type') == 'group' and draw.get('level') == 0
+                and draw.get('isolated') is True and not draw.get('knockout')
+                and draw.get('blendmode') == 'Normal' and draw.get('opacity') == 1
+                and draw.get('rect') is not None
+                and max(abs(a - b) for a, b in zip(draw['rect'],
+                                                  (0, 0, page.cropbox.width, page.cropbox.height))) < .001)
 
 
 def _drawing_value(value: Any) -> Any:

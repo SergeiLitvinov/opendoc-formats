@@ -22,7 +22,7 @@ def test_theme_beats_literal_fallback_in_two_public_cycles(tmp_path, monkeypatch
     from opendoc_formats.writers import docx_writer
 
     # Font discovery is a separate policy; this fixture exercises the native declarations.
-    monkeypatch.setattr(docx_writer, 'prepare_fonts', lambda document, report, *, limits=None: document)
+    monkeypatch.setattr(docx_writer, 'prepare_fonts', lambda document, report, *, limits=None, resolver=None: document)
     source = tmp_path / 'own.docx'
     _source(source)
     original = source.read_bytes()

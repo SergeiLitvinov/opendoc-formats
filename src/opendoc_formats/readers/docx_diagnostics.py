@@ -18,7 +18,9 @@ from opendoc_model import (
     PreservationRecord,
     PreservationState,
     Provenance,
+    TableCell,
     set_integration,
+    walk_model,
 )
 
 from opendoc_formats.ooxml.borders import native_only
@@ -47,6 +49,11 @@ _XML_KEYS = {"docx_raw_inline_xml", "docx_raw_block_xml", "field_xml", "vml_xml"
 
 
 def _feature(node: Any) -> str | None:
+    if node.tag in {W + 'txbxContent', V + 'textbox'}:
+        from opendoc_formats.ooxml.positioned_text import native_positioned_content_supported
+
+        if native_positioned_content_supported(node):
+            return None
     if node.tag == W + 'ind' and not native_indents_supported(node):
         return 'paragraph-indent'
     if (node.tag in {W + name for name in ('spacing', 'keepLines', 'keepNext', 'pageBreakBefore', 'widowControl')}
@@ -158,6 +165,15 @@ def attach_docx_diagnostics(document: Any, model: DocumentModel, source: Path, *
             )
             record("relationship." + feature, target_kept, name, "relationship=" + relation.rId, relation.rId,
                    {"target": target, "external": relation.is_external})
+    for reference in walk_model(model, limits=limits):
+        if isinstance(reference.node, TableCell) and reference.node.properties.get('docx_merge_borders_unsupported'):
+            records.append(PreservationRecord(
+                issue=DiagnosticIssue('docx.merge-borders', IssueSeverity.LOSS,
+                                      'Native merged-cell border segments require explicit resolution',
+                                      f'{source}#{reference.path}', reason='unsupported-native-segments'),
+                state=PreservationState.OPAQUE,
+                provenance=Provenance('docx', str(source), object_id=reference.path),
+            ))
     set_integration(model, IntegrationModel(
         preservation=tuple(records), assessed_features=tuple(dict.fromkeys(record.issue.code for record in records)),
         assessment_complete=False,

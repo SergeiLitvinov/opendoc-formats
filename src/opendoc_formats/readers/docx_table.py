@@ -16,22 +16,40 @@ BlockReader = Callable[[Any, DocumentModel], list[Block]]
 
 def read_table(table: Any, model: DocumentModel, read_blocks: BlockReader) -> Table:
     from docx.oxml.ns import qn
+    from docx.table import _Cell
 
     rows: list[TableRow] = []
+    active: dict[int, TableCell] = {}
+    grid_count = len(table._tbl.tblGrid.gridCol_lst)
     for row in table.rows:
         cells: list[TableCell] = []
-        seen_cells: set[int] = set()
-        for cell in row.cells:
-            cell_identity = id(cell._tc)
-            if cell_identity in seen_cells:
-                continue
-            seen_cells.add(cell_identity)
+        following: dict[int, TableCell] = {}
+        column = 0
+        for native_cell in row._tr.tc_lst:
+            cell = _Cell(native_cell, table)
             grid_span = cell._tc.xpath("./w:tcPr/w:gridSpan")
             column_span = int(grid_span[0].get(qn("w:val"), "1")) if grid_span else 1
+            if column_span < 1 or column + column_span > grid_count:
+                raise ValueError('DOCX cell span exceeds the native table grid')
             vertical_merge = cell._tc.xpath("./w:tcPr/w:vMerge")
+            merge = vertical_merge[0].get(qn('w:val'), 'continue') if vertical_merge else None
+            if merge == 'continue':
+                origin = active.get(column)
+                if (origin is None or origin.column_span != column_span
+                        or any(active.get(index) is not origin for index in range(column, column + column_span))):
+                    raise ValueError('DOCX vertical merge has no matching origin cell')
+                if any(node.text for node in native_cell.iter(qn('w:t'))):
+                    raise ValueError('DOCX merge continuation contains unresolved text')
+                from opendoc_formats.ooxml.merged_cell_borders import import_merge_borders
+
+                import_merge_borders(origin, native_cell.tcPr)
+                origin.row_span += 1
+                following.update({index: origin for index in range(column, column + column_span)})
+                column += column_span
+                continue
+            if merge not in {None, 'restart'}:
+                raise ValueError('Unknown DOCX vertical merge declaration')
             properties = _cell_properties(cell)
-            if vertical_merge:
-                properties["vertical_merge"] = vertical_merge[0].get(qn("w:val"), "continue")
             parsed_cell = TableCell(
                 blocks=read_blocks(cell, model),
                 column_span=column_span,
@@ -40,9 +58,18 @@ def read_table(table: Any, model: DocumentModel, read_blocks: BlockReader) -> Ta
             import_width(parsed_cell)
             import_borders(parsed_cell, cell._tc.tcPr)
             cells.append(parsed_cell)
+            if merge == 'restart':
+                following.update({index: parsed_cell for index in range(column, column + column_span)})
+            column += column_span
+        active = following
         row_properties: dict[str, Any] = {}
         if row._tr.xpath("./w:trPr/w:tblHeader"):
             row_properties["repeat_header"] = True
+        heights = row._tr.xpath('./w:trPr/w:trHeight')
+        if len(heights) == 1 and heights[0].get(qn('w:hRule')) in {'atLeast', 'exact'}:
+            raw = heights[0].get(qn('w:val'), '')
+            if raw.isdigit() and 0 < int(raw) < 2**31:
+                row_properties.update({'docx_height_twips': int(raw), 'docx_height_rule': heights[0].get(qn('w:hRule'))})
         rows.append(TableRow(cells=cells, properties=row_properties))
     style_id = table.style.style_id if table.style is not None else None
     properties: dict[str, Any] = {"style_name": table.style.name} if table.style is not None else {}
@@ -62,6 +89,9 @@ def read_table(table: Any, model: DocumentModel, read_blocks: BlockReader) -> Ta
     import_borders(result, table._tbl.tblPr)
     import_layout(result.properties, table._tbl.tblPr, table=True)
     import_common_layout(result)
+    from opendoc_formats.ooxml.table_position import import_table_position
+
+    import_table_position(table, result)
     return result
 
 

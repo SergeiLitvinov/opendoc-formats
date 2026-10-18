@@ -32,7 +32,14 @@ def add_paragraph(
     if source.style_id is None and 'docx_paragraph_style_imported' in source.properties:
         style = None
     try:
-        paragraph = container.add_paragraph(style=style) if style else container.add_paragraph()
+        if source.properties.get('docx_positioned_textbox'):
+            from opendoc_formats.ooxml.positioned_text import create_positioned_text
+
+            paragraph = create_positioned_text(container, source, report, location, pdf=document.source_format == 'pdf')
+            if style:
+                paragraph.style = style
+        else:
+            paragraph = container.add_paragraph(style=style) if style else container.add_paragraph()
     except KeyError:
         paragraph = container.add_paragraph()
         report.add(IssueSeverity.WARNING, "paragraph-style", f"style {style!r} is unavailable", location)
@@ -43,6 +50,10 @@ def add_paragraph(
         if alignment is not None:
             paragraph.alignment = alignment
     apply_paragraph_format(paragraph.paragraph_format, source.properties, report, location, limits=limits)
+    from opendoc_formats.ooxml.paragraph_frame import export_frame
+
+    if not source.properties.get('docx_positioned_textbox'):
+        export_frame(source, paragraph, report, location, pdf=document.source_format == 'pdf')
     if (document.source_format == 'docx' and 'docx_line_spacing_rule' not in source.properties
             and any(source.properties.get(key) is not None for key in ('line_spacing', 'line_spacing_pt'))):
         report.add(IssueSeverity.LOSS, 'docx.line-spacing-rule',
@@ -108,6 +119,13 @@ def write_paragraph_content(
     for index, item in enumerate(source.content):
         item_location = f"{location}.content[{index}]"
         if isinstance(item, TextRun):
+            from opendoc_formats.ooxml.run_position import native_position
+
+            try:
+                native_position(item.style.properties)
+            except ValueError as error:
+                report.add(IssueSeverity.ERROR, 'docx.run-position', str(error), item_location + '.style')
+                continue
             from opendoc_formats.ooxml.paragraph_flow import FIELDS
 
             if any(item.style.properties.get(key) is not None for key in FIELDS):

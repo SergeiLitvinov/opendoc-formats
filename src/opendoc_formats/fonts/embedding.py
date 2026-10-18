@@ -79,7 +79,10 @@ def subset_font(usage: FontUsage) -> bytes:
         options = subset.Options()
         options.recalc_timestamp = False
         options.canonical_order = True
-        options.name_IDs = [0, 1, 2, 3, 4, 5, 6, 16, 17]
+        # Keep copyright, license/URL and localized notices with the program.
+        options.name_IDs = ['*']
+        options.name_languages = ['*']
+        options.name_legacy = True
         subsetter = subset.Subsetter(options=options)
         subsetter.populate(text="".join(sorted(usage.characters)))
         subsetter.subset(font)

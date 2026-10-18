@@ -26,8 +26,6 @@ from opendoc_model.document_model import (
     Resource,
     ResourceKind,
     Section,
-    TableCell,
-    TableRow,
     TextRun,
     TextStyle,
 )
@@ -133,6 +131,9 @@ def read_pdf_model(
     matched_history = []
     sections: list[Section] = []
     resources: dict[str, Resource] = {}
+    from opendoc_formats.readers.pdf_fonts import extract_pdf_fonts
+
+    resources.update(extract_pdf_fonts(path, limits=limits))
 
     for page in geometry.pages:
         blocks: list[RichBlock] = []
@@ -157,15 +158,18 @@ def read_pdf_model(
                 **semantic_block.meta,
             }
             if semantic_block.type is BlockType.TABLE:
-                rows = [
-                    TableRow(cells=[TableCell(blocks=[Paragraph(content=[TextRun(text=str(value))])]) for value in row])
-                    for row in semantic_block.meta.get("rows", [])
-                ]
+                from opendoc_formats.readers.pdf_table_model import pdf_table_rows
+
+                rows = pdf_table_rows(page, semantic_block.meta, _pdf_text_runs, all_warnings)
+                native_table = next((table for table in page.tables
+                                     if table.number == semantic_block.meta.get('source_table')), None)
                 blocks.append(
                     RichTable(
                         rows=rows,
                         box=box,
-                        properties={"pdf": properties},
+                        properties={"pdf": properties,
+                                    'pdf_column_edges': list(native_table.column_edges) if native_table else [],
+                                    'pdf_row_edges': list(native_table.row_edges) if native_table else []},
                         provenance=origin(
                             f"semantic-{semantic_block.meta.get('source_block', 'table')}",
                             detail="reconstructed semantic table",
@@ -177,8 +181,22 @@ def read_pdf_model(
 
             source_number = semantic_block.meta.get("source_block")
             source_block = source_blocks.get(int(source_number)) if source_number is not None else None
+            if source_block is not None:
+                properties['pdf_line_boxes'] = [list(line.bbox) for line in source_block.lines]
+                properties['pdf_line_run_counts'] = [len(line.spans) for line in source_block.lines]
+                properties['pdf_line_directions'] = [list(line.direction) for line in source_block.lines]
+                properties['pdf_line_writing_modes'] = [line.writing_mode for line in source_block.lines]
+                properties['pdf_line_quads'] = [[list(point) for point in line.quad] for line in source_block.lines]
+                properties['pdf_line_origins'] = [list(line.spans[0].origin) if line.spans else None
+                                                  for line in source_block.lines]
             runs = _pdf_text_runs(source_block, semantic_block.text, semantic_block.meta)
             if semantic_block.type is BlockType.EQUATION:
+                if source_block is not None:
+                    properties['pdf_native_lines'] = [
+                        [{'text': span.text, 'font': span.font, 'size': span.size, 'flags': span.flags,
+                          'color': span.color, 'origin': list(span.origin), 'bbox': list(span.bbox)} for span in line.spans]
+                        for line in source_block.lines
+                    ]
                 rich_block: RichBlock = Formula(
                     value=semantic_block.text,
                     format=FormulaFormat.LATEX,
@@ -230,7 +248,8 @@ def read_pdf_model(
             image_origin = origin(f"image-xref-{img.xref}", detail="placed extracted raster image")
             image = RichImage(
                 resource_id=resource_id, box=box, provenance=image_origin, crop=img.crop,
-                properties={"pdf_image_transform": list(img.transform)} if img.transform else {},
+                properties={"pdf_image_transform": list(img.transform), 'pdf_paint_seq': img.paint_seq,
+                            'pdf_graphics_state_unknown': img.graphics_state_unknown},
             )
             set_anchor(image, Anchor(f'pdf-image-{source_identity}-{page.number}-{img.number}'))
             route = history_routes.get((page.number - 1, img.number))
@@ -263,6 +282,7 @@ def read_pdf_model(
                         "line_cap": vec.line_cap,
                         "clip_rects": [list(rectangle) for rectangle in vec.clip_rects],
                         "graphics_state_unsupported": vec.graphics_state_unsupported,
+                        'neutral_page_group_only': vec.neutral_page_group_only,
                     },
                     provenance=origin(f"vector-{vec.number}", detail="extracted PDF drawing operators"),
                 )
@@ -272,7 +292,8 @@ def read_pdf_model(
             vector_origin = origin(f"vector-{vec.number}", detail="represented PDF drawing as editable vector resource")
             blocks.append(
                 Paragraph(
-                    content=[RichImage(resource_id=resource_id, box=box, alt_text=alt, provenance=vector_origin)],
+                    content=[RichImage(resource_id=resource_id, box=box, alt_text=alt, provenance=vector_origin,
+                                       properties={'pdf_paint_seq': vec.paint_seq})],
                     provenance=vector_origin,
                 )
             )
@@ -311,6 +332,9 @@ def read_pdf_model(
 
     attach_pdf_interactions(document, path, limits=limits)
     attach_history_map(document, path, matched_history, history_issues, limits=limits)
+    from opendoc_formats.readers.pdf_paint import attach_text_paint
+
+    attach_text_paint(document, path, limits=limits)
     return document
 
 
@@ -343,6 +367,7 @@ def _pdf_text_runs(source_block: Any, fallback_text: str, meta: dict[str, Any]) 
                 runs.append(
                     TextRun(
                         text=span.text,
+                        properties={'pdf_origin': list(span.origin), 'pdf_bbox': list(span.bbox)},
                         style=TextStyle(
                             font_family=span.font or None,
                             font_size=Length(span.size) if span.size else None,

@@ -2,10 +2,104 @@ from __future__ import annotations
 
 import os
 import subprocess
+from dataclasses import replace
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+from opendoc_model import ArtifactLimitError, ConversionReport, IssueSeverity
 
 from opendoc_formats.errors import ConvertError
 from opendoc_formats.writers.base import BaseConverter, ConversionResult
+
+if TYPE_CHECKING:
+    from opendoc_formats import ExportOptions, ImportOptions
+
+
+class PdfModelConverter(BaseConverter):
+    """PDF → public OpenDoc model → editable fixed-layout Word document."""
+
+    @property
+    def name(self) -> str:
+        return 'opendoc'
+
+    def __init__(self, *, import_options: ImportOptions | None = None, export_options: ExportOptions | None = None) -> None:
+        self.import_options = import_options
+        self.export_options = export_options
+
+    def convert(self, input_path: str | Path, output_path: str | Path) -> ConversionResult:
+        prepared = self._prepare(input_path, output_path)
+        if prepared is None:
+            return ConversionResult(input_path, output_path, False, 'Input file not found')
+        input_path, output_path = prepared
+        if input_path.resolve() == output_path.resolve():
+            return ConversionResult(input_path, output_path, False, 'PDF source and DOCX destination must be different')
+        result = ConversionResult(input_path, output_path, True)
+        limits = None
+        try:
+            from opendoc_formats import ExportOptions, read_document, write_document
+            from opendoc_formats.support.object_mapping import _result_id
+
+            if self.import_options and self.import_options.cancelled and self.import_options.cancelled():
+                result.add(IssueSeverity.ERROR, 'pdf-docx.cancelled', 'Conversion cancelled before reading', str(input_path))
+                return result
+            source_digest = _result_id(input_path)
+            imported = read_document(input_path, format_id='pdf', options=self.import_options)
+            for issue in imported.issues:
+                result.add(issue.severity, issue.code, issue.message, issue.location)
+            if not imported.success or imported.document is None:
+                if result.success:
+                    result.add(IssueSeverity.ERROR, 'pdf-docx.import',
+                               'PDF import did not produce a usable model', str(input_path))
+                return result
+            options = self.export_options or ExportOptions(document_limits=imported.document_limits)
+            limits = options.document_limits
+            gate = options.quality_gate
+            source_issues = list(result.issues)
+
+            def combined_gate(report: ConversionReport, staged: Path) -> bool:
+                if gate is not None:
+                    combined = ConversionResult(input_path, staged, True)
+                    combined.issues.extend(source_issues)
+                    combined.issues.extend(report.issues)
+                    combined.metrics.update(report.metrics)
+                    original_count = len(combined.issues)
+                    accepted = gate(combined, staged)
+                    report.issues.extend(combined.issues[original_count:])
+                    report.metrics.update(combined.metrics)
+                    if type(accepted) is not bool:
+                        raise ValueError('quality_gate must return bool')
+                    if not accepted or not combined.success:
+                        return False
+                losses = [issue for issue in [*source_issues, *report.issues] if issue.severity is IssueSeverity.LOSS]
+                if losses:
+                    report.add(IssueSeverity.ERROR, 'pdf-docx.loss-rejected',
+                               'The measured PDF → Word profile rejects known preservation losses', losses[0].location)
+                    return False
+                if _result_id(input_path) != source_digest:
+                    report.add(IssueSeverity.ERROR, 'pdf-docx.source-changed',
+                               'Source PDF changed during conversion', str(input_path))
+                    return False
+                return True
+
+            options = replace(options, quality_gate=combined_gate)
+            exported = write_document(imported.document, output_path, format_id='docx', options=options)
+            result.issues.extend(exported.issues)
+            result.metrics.update(exported.metrics)
+            result.metrics['engine'] = self.name
+            result.metrics['assessment_complete'] = False
+        except ArtifactLimitError as error:
+            from opendoc_formats.support.document_limits import limit_diagnostic
+
+            if limits is None:
+                from opendoc_model import DocumentLimits
+
+                limits = self.import_options.document_limits if self.import_options else DocumentLimits()
+            issue = limit_diagnostic(error, limits, str(input_path), 'pdf-docx.document-limit')
+            result.add(issue.severity, issue.code, issue.message, issue.location)
+            result.metrics['document_limit'] = issue.measurement
+        except Exception as error:
+            result.add(IssueSeverity.ERROR, 'pdf-docx', str(error))
+        return result
 
 
 class Pdf2DocxConverter(BaseConverter):
@@ -236,6 +330,7 @@ class FanOutConverter(BaseConverter):
 
 def create_converter(tool: str) -> BaseConverter:
     converters = {
+        "opendoc": PdfModelConverter,
         "pdf2docx": Pdf2DocxConverter,
         "pymupdf": PyMuPdfConverter,
         "libreoffice": LibreOfficeConverter,

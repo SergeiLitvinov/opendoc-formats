@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
+from opendoc_model import ArtifactLimitError, DocumentLimits
 from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import Block, DocumentModel, Table
 from opendoc_model.properties import TableCellProperties, TableProperties, TableRowProperties
@@ -26,8 +27,17 @@ def write_table(
     location: str,
     counters: dict[str, int],
     write_blocks: BlockWriter,
+    *, limits: DocumentLimits | None = None,
 ) -> None:
-    column_count = max((sum(max(cell.column_span, 1) for cell in row.cells) for row in source.rows), default=1)
+    from opendoc_formats.ooxml.table_grid import native_grid
+
+    try:
+        column_count, placements = native_grid(source, limits=limits)
+    except ArtifactLimitError:
+        raise
+    except ValueError as error:
+        report.add(IssueSeverity.ERROR, 'docx.table-grid', str(error), location)
+        return
     row_count = max(len(source.rows), 1)
     try:
         target = container.add_table(rows=row_count, cols=column_count)
@@ -36,6 +46,11 @@ def write_table(
 
         target = container.add_table(rows=row_count, cols=column_count, width=Inches(6))
     _apply_table_properties(target, source.properties)
+    from opendoc_formats.ooxml.table_position import export_table_position
+
+    if source.properties.get('docx_table_position_unsupported'):
+        report.add(IssueSeverity.ERROR, 'docx.table-position', 'Unknown table positioning requires native resolution', location)
+    export_table_position(source, target, report, location)
     from opendoc_formats.ooxml.layout import export_layout
 
     export_layout(source.properties, target._tbl.tblPr, report, location, table=True)
@@ -53,14 +68,24 @@ def write_table(
                 f"style {source.properties.style_name!r} is unavailable",
                 location,
             )
+    for row_index, column_index, cell in placements:
+        if cell.row_span > 1 or cell.column_span > 1:
+            target.cell(row_index, column_index).merge(target.cell(row_index + cell.row_span - 1,
+                                                                  column_index + cell.column_span - 1))
+    position_iter = iter(placements)
     for row_index, source_row in enumerate(source.rows):
-        _apply_row_properties(target.rows[row_index], source_row.properties)
-        column_index = 0
+        _apply_row_properties(target.rows[row_index], source_row.properties, report, f'{location}.rows[{row_index}]')
         for cell_index, source_cell in enumerate(source_row.cells):
-            span = max(source_cell.column_span, 1)
+            _, column_index, _ = next(position_iter)
             target_cell = target.cell(row_index, column_index)
-            if span > 1:
-                target_cell = target_cell.merge(target.cell(row_index, min(column_index + span - 1, column_count - 1)))
+            if document.source_format == 'pdf' and source_cell.properties.get('pdf_text_origin') is not None:
+                from opendoc_formats.writers.pdf_docx_cells import prepare_cell_baselines
+
+                try:
+                    prepare_cell_baselines(source_cell)
+                except ValueError as error:
+                    report.add(IssueSeverity.ERROR, 'docx.table-baseline',
+                               str(error), f'{location}.rows[{row_index}].cells[{cell_index}]')
             _apply_cell_properties(target_cell, source_cell.properties)
             export_width(source_cell, target_cell._tc.get_or_add_tcPr(), "w:tcW")
             export_borders(source_cell, target_cell._tc.get_or_add_tcPr(), report,
@@ -76,9 +101,9 @@ def write_table(
             )
             if not source_cell.blocks:
                 target_cell.add_paragraph()
-            if source_cell.row_span > 1:
-                report.add(IssueSeverity.LOSS, "table-row-span", "vertical merge is not yet exported", location)
-            column_index += span
+    from opendoc_formats.ooxml.merged_cell_borders import export_merge_borders
+
+    export_merge_borders(target, placements, report, location)
 
 
 def _clear_container(container: Any) -> None:
@@ -117,12 +142,22 @@ def _apply_table_properties(table: Any, properties: TableProperties) -> None:
         column.set(qn("w:w"), str(width))
 
 
-def _apply_row_properties(row: Any, properties: TableRowProperties) -> None:
-    if not properties.repeat_header:
-        return
+def _apply_row_properties(row: Any, properties: TableRowProperties, report: ConversionReport, location: str) -> None:
     from docx.oxml import OxmlElement
 
-    row._tr.get_or_add_trPr().append(OxmlElement("w:tblHeader"))
+    if properties.repeat_header:
+        row._tr.get_or_add_trPr().append(OxmlElement("w:tblHeader"))
+    height = properties.get('docx_height_twips')
+    if height is not None:
+        if type(height) is not int or not 0 < height < 2**31 or properties.get('docx_height_rule') not in {'exact', 'atLeast'}:
+            report.add(IssueSeverity.ERROR, 'docx.row-height', 'Invalid finite row height or rule', location)
+            return
+        from docx.oxml.ns import qn
+
+        node = OxmlElement('w:trHeight')
+        node.set(qn('w:val'), str(height))
+        node.set(qn('w:hRule'), properties['docx_height_rule'])
+        row._tr.get_or_add_trPr().append(node)
 
 
 def _apply_cell_properties(cell: Any, properties: TableCellProperties) -> None:

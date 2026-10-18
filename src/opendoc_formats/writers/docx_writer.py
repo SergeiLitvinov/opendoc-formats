@@ -19,6 +19,7 @@ from opendoc_model.document_model import (
 )
 from opendoc_model.limits import DocumentLimits
 
+from opendoc_formats.fonts import FontResolver
 from opendoc_formats.fonts.docx_embedding import embed_docx_fonts, verify_docx_font_embedding
 from opendoc_formats.ooxml.headings import retain_derived_styles
 from opendoc_formats.ooxml.package import restore_package_graph
@@ -36,9 +37,6 @@ def write_docx_model(
 ) -> ConversionReport:
     """Записать ``DocumentModel`` в DOCX и вернуть отчёт о потерях."""
 
-    from docx import Document
-    from docx.enum.section import WD_SECTION
-
     output = Path(output_path)
     report = ConversionReport(output)
     errors = document.validate(limits=limits)
@@ -52,9 +50,54 @@ def write_docx_model(
         report.add(IssueSeverity.ERROR, 'model', error)
     if not report.success:
         return report
-    document = prepare_fonts(document, report, limits=limits)
+    native_pdf = (document.source_format == 'pdf' and any(
+        section.properties.get('pdf', {}).get('coordinate_space') == 'pymupdf-unrotated' for section in document.sections))
+    if native_pdf:
+        report.metrics.update({'pdf_docx_layout_profile': 'opendoc-v1', 'assessment_complete': False})
+        _check_pdf_projection_source(document, report, limits=limits)
+        if not report.success:
+            return report
+        if not document.metadata.get('pdf_docx_layout'):
+            from opendoc_formats.writers.pdf_docx_model import prepare_pdf_docx
+
+            try:
+                document = prepare_pdf_docx(document, limits=limits)
+            except ArtifactLimitError:
+                raise
+            except ValueError as error:
+                report.add(IssueSeverity.ERROR, 'pdf-docx.layout', str(error), 'document')
+                return report
+        from opendoc_model import TextRun, walk_model
+
+        seen_fonts = set()
+        for reference in walk_model(document, limits=limits):
+            run = reference.node
+            name = run.style.properties.get('pdf_source_font') if isinstance(run, TextRun) else None
+            if name is not None and name not in seen_fonts:
+                seen_fonts.add(name)
+                report.add(IssueSeverity.WARNING, 'font-substitution',
+                           f'Unembedded PDF font {name!r} maps to Word {run.style.font_family!r}; visual comparison is required',
+                           reference.path)
+    from opendoc_formats.fonts.resource_fonts import document_font_resolver
+
+    with document_font_resolver(document, report) as resolver:
+        return _write_validated_docx(document, output, report, resolver, limits=limits)
+
+
+def _write_validated_docx(
+    document: DocumentModel, output: Path, report: ConversionReport, resolver: FontResolver,
+    *, limits: DocumentLimits | None = None,
+) -> ConversionReport:
+    from docx import Document
+    from docx.enum.section import WD_SECTION
+
+    document = prepare_fonts(document, report, limits=limits, resolver=resolver)
+    _reject_pdf_losses(report)
     if not report.success:
         return report
+    from opendoc_formats.writers.pdf_docx_cells import fit_virtual_tables
+
+    fit_virtual_tables(document, limits=limits)
     preflight_colors(document, report, target="docx")
     target = Document()
     _write_metadata(target, document.metadata)
@@ -80,6 +123,7 @@ def write_docx_model(
 
     embed_docx_fonts(target, document, report)
     _restore_package_graph(target, document, report, limits=limits)
+    _reject_pdf_losses(report)
     if not report.success:
         return report
     try:
@@ -90,15 +134,47 @@ def write_docx_model(
             staged = workspace.artifact_path("output.docx")
             target.save(staged)
             workspace.validate_artifact(staged)
+            verify_docx_font_embedding(staged, report)
+            _reject_pdf_losses(report)
+            if not report.success:
+                return report
             atomic_copy(staged, output)
     except Exception as error:  # noqa: BLE001 - diagnostic boundary must return a report
         report.add(IssueSeverity.ERROR, "docx-write", str(error))
         return report
-    verify_docx_font_embedding(output, report)
     report.metrics.update(counters)
     report.metrics["sections"] = len(sections)
     report.metrics["resources"] = len(document.resources)
     return report
+
+
+def _reject_pdf_losses(report: ConversionReport) -> None:
+    if report.metrics.get('pdf_docx_layout_profile') != 'opendoc-v1':
+        return
+    losses = [issue for issue in report.issues if issue.severity is IssueSeverity.LOSS]
+    if losses and report.success:
+        report.add(IssueSeverity.ERROR, 'pdf-docx.loss-rejected',
+                   'The measured PDF → Word profile rejects known preservation losses', losses[0].location)
+
+
+def _check_pdf_projection_source(
+    document: DocumentModel, report: ConversionReport, *, limits: DocumentLimits | None,
+) -> None:
+    from opendoc_model import PreservationState, get_integration
+
+    integration = get_integration(document, limits=limits)
+    if integration is None:
+        return
+    for name in ('annotations', 'forms'):
+        if getattr(integration, name):
+            report.add(IssueSeverity.ERROR, 'pdf-docx.interactions',
+                       'PDF interactions are outside the measured native Word profile', f'integration.{name}')
+    if integration.extra.get('pdf_outline'):
+        report.add(IssueSeverity.ERROR, 'pdf-docx.outline',
+                   'PDF outline projection is outside the measured native Word profile', 'integration.extra.pdf_outline')
+    for record in integration.preservation:
+        if record.state in {PreservationState.OPAQUE, PreservationState.LOST, PreservationState.REJECTED}:
+            report.add(IssueSeverity.ERROR, 'pdf-docx.source-unknown', record.issue.message, record.issue.location)
 
 
 def _write_metadata(target: Any, metadata: dict[str, Any]) -> None:
@@ -189,7 +265,8 @@ def _write_blocks(
             write_paragraph_content(paragraph, block, document, report, block_location, counters)
             counters["paragraphs"] += 1
         elif isinstance(block, Table):
-            write_table(container, block, document, report, block_location, counters, partial(_write_blocks, limits=limits))
+            write_table(container, block, document, report, block_location, counters,
+                        partial(_write_blocks, limits=limits), limits=limits)
             counters["tables"] += 1
         elif isinstance(block, Formula):
             paragraph = container.add_paragraph()

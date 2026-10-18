@@ -30,7 +30,9 @@ def _font(path):
     builder.setupHorizontalMetrics({name: (500, 0) for name in names})
     builder.setupHorizontalHeader(ascent=800, descent=-200)
     builder.setupCharacterMap({32: 'space', 102: 'f', 105: 'i', 116: 't'})
-    builder.setupNameTable({'familyName': 'OwnLigature', 'styleName': 'Regular', 'psName': 'OwnLigature-Regular'})
+    builder.setupNameTable({'familyName': 'OwnLigature', 'styleName': 'Regular', 'psName': 'OwnLigature-Regular',
+                            'fullName': 'OwnLigature Regular', 'uniqueFontIdentifier': 'OwnLigature-Regular-1',
+                            'version': 'Version 1.0'})
     builder.setupOS2(sTypoAscender=800, sTypoDescender=-200, usWinAscent=800, usWinDescent=200)
     builder.setupPost()
     addOpenTypeFeaturesFromString(builder.font, 'feature liga { sub f i by fi; sub t i by ti; } liga;')

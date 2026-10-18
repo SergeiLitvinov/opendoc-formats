@@ -15,6 +15,15 @@ from opendoc_formats.readers.docx_style import read_paragraph_properties, read_r
 def read_paragraph(paragraph: Any, model: DocumentModel) -> Paragraph:
     """Преобразовать абзац python-docx в богатую модель."""
 
+    from opendoc_formats.ooxml.positioned_text import positioned_text_source
+
+    positioned = positioned_text_source(paragraph)
+    if positioned is not None:
+        native, box, level = positioned
+        result = read_paragraph(native, model)
+        result.box = box
+        result.properties.update({'docx_positioned_textbox': True, 'docx_drawing_relative_height': level})
+        return result
     from docx.oxml.ns import qn
     from docx.text.hyperlink import Hyperlink
     from docx.text.run import Run
@@ -95,6 +104,9 @@ def read_paragraph(paragraph: Any, model: DocumentModel) -> Paragraph:
     from opendoc_formats.ooxml.layout import import_common_layout
 
     import_common_layout(result)
+    from opendoc_formats.ooxml.paragraph_frame import import_frame
+
+    import_frame(paragraph, result)
     return result
 
 
@@ -133,6 +145,9 @@ def _append_run_content(
         properties = {"hyperlink_anchor": anchor} if anchor else {}
         if vml_colors:
             properties.update({"vml_colors": vml_colors, "vml_xml": vml_xml})
+        from opendoc_formats.ooxml.run_position import import_run_position
+
+        import_run_position(run, style.properties)
         content.append(TextRun(run.text, style=style, link=link, properties=properties))
     elif vml_colors:
         content.append(TextRun("", style=style, properties={"vml_colors": vml_colors, "vml_xml": vml_xml}))

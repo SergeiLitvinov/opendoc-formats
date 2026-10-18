@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from bisect import bisect_right
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from statistics import median
 from typing import Any, TypeAlias
@@ -29,6 +30,7 @@ class PdfLineGeometry:
     bbox: PdfBox
     direction: tuple[float, float] = (1.0, 0.0)
     writing_mode: int = 0
+    quad: tuple[tuple[float, float], ...] = ()
 
     @property
     def text(self) -> str:
@@ -71,6 +73,8 @@ class PdfTableGeometry:
     bbox: PdfBox
     number: int
     strategy: str = "lines_strict"
+    column_edges: tuple[float, ...] = ()
+    row_edges: tuple[float, ...] = ()
 
     @property
     def text(self) -> str:
@@ -163,16 +167,40 @@ def _find_tables(page: Any, warnings: list[str], page_number: int) -> list[PdfTa
             if strategy == "text":
                 kwargs.update({"min_words_vertical": 2, "min_words_horizontal": 2})
             finder = page.find_tables(**kwargs)
+            words = page.get_text('words') if strategy == 'text' else ()
             tables = [
                 _table_geometry(table, index, strategy)
                 for index, table in enumerate(finder.tables)
-                if _valid_table(table, strategy)
+                if _valid_table(table, strategy) and (strategy != 'text' or _text_table_keeps_words(table, words))
             ]
             if tables:
                 return tables
         except Exception as error:  # noqa: BLE001 - layout analysis is best-effort
             warnings.append(f"pymupdf tables page {page_number} ({strategy}): {type(error).__name__}: {error}")
     return []
+
+
+def _text_table_keeps_words(table: Any, words: Any) -> bool:
+    """Virtual text-table edges must not cut native words into different cells."""
+    bands = []
+    for row in table.rows:
+        cells = [cell for cell in row.cells if cell is not None]
+        if cells:
+            bands.append((min(cell[1] for cell in cells), max(cell[3] for cell in cells),
+                          sorted({coordinate for cell in cells for coordinate in (cell[0], cell[2])})))
+    bands.sort(key=lambda band: band[0])
+    starts = [band[0] for band in bands]
+    for word in words:
+        x0, y0, x1, y1 = word[:4]
+        center = (y0 + y1) / 2
+        index = bisect_right(starts, center) - 1
+        if index < 0 or center > bands[index][1]:
+            continue
+        edges = bands[index][2][1:-1]
+        edge = bisect_right(edges, x0 + .5)
+        if edge < len(edges) and edges[edge] < x1 - .5:
+            return False
+    return True
 
 
 def _valid_table(table: Any, strategy: str) -> bool:
@@ -226,6 +254,9 @@ def _text_table_has_regular_row_spacing(
 
 def _table_geometry(table: Any, number: int, strategy: str) -> PdfTableGeometry:
     rows, row_indices, column_indices = _table_axes(table)
+    if strategy == 'lines_strict':
+        row_indices = list(range(len(rows)))
+        column_indices = list(range(max(map(len, rows), default=0)))
     extracted = tuple(tuple(rows[row][column] for column in column_indices) for row in row_indices)
     cells: list[PdfTableCellGeometry] = []
     for row_index, source_row_index in enumerate(row_indices):
@@ -240,12 +271,23 @@ def _table_geometry(table: Any, number: int, strategy: str) -> PdfTableGeometry:
                     bbox=_box(bbox) if bbox is not None else None,
                 )
             )
+    column_edges = tuple(sorted({float(box[index]) for row in table.rows for box in row.cells if box is not None
+                                 for index in (0, 2)}))
+    row_edges = tuple(sorted({float(box[index]) for row in table.rows for box in row.cells if box is not None
+                              for index in (1, 3)}))
+    if strategy == 'text' and cells:
+        row_edges = tuple(min(cell.bbox[1] for cell in cells if cell.row == index and cell.bbox)
+                          for index in range(len(row_indices))) + (max(cell.bbox[3] for cell in cells if cell.bbox),)
+        cells = [replace(cell, bbox=(cell.bbox[0], row_edges[cell.row], cell.bbox[2], row_edges[cell.row + 1]))
+                 if cell.bbox else cell for cell in cells]
     return PdfTableGeometry(
         rows=extracted,
         cells=tuple(cells),
         bbox=_box(table.bbox),
         number=number,
         strategy=strategy,
+        column_edges=column_edges,
+        row_edges=row_edges,
     )
 
 
@@ -282,9 +324,19 @@ def _text_block(block: dict[str, Any], number: int) -> PdfTextBlockGeometry:
                 bbox=_box(line.get("bbox")),
                 direction=_point(line.get("dir"), default=(1.0, 0.0)),
                 writing_mode=int(line.get("wmode", 0)),
+                quad=_line_quad(line),
             )
         )
     return PdfTextBlockGeometry(lines=tuple(lines), bbox=_box(block.get("bbox")), number=number)
+
+
+def _line_quad(line: dict[str, Any]) -> tuple[tuple[float, float], ...]:
+    if not line.get('spans') or _point(line.get('dir'), default=(1.0, 0.0)) == (1.0, 0.0):
+        return ()
+    import fitz
+
+    quad = fitz.recover_line_quad(line)
+    return tuple((float(point.x), float(point.y)) for point in (quad.ul, quad.ur, quad.ll, quad.lr))
 
 
 def _box(value: Any) -> PdfBox:

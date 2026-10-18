@@ -287,12 +287,15 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path, *, limits:
         if count > MAX_OBJECTS:
             raise ValueError("PDF interaction objects exceed profile limit")
         preserve_source = True
+        neutral = resource.properties.get('neutral_page_group_only') is True
         records.append(PreservationRecord(
             issue=DiagnosticIssue(
-                "pdf.vector-graphics-state", IssueSeverity.LOSS,
-                "Vector clip path or graphics group retained only in source PDF",
-                f"resources[{resource.id!r}]", {"source_resource_id": resource.id}, "unsupported-graphics-state",
-            ), state=PreservationState.OPAQUE, provenance=resource.provenance,
+                "pdf.vector-graphics-state", IssueSeverity.INFO if neutral else IssueSeverity.LOSS,
+                ("Neutral full-page group measured; preservation requires a supported target projection" if neutral
+                 else "Vector clip path or graphics group retained only in source PDF"),
+                f"resources[{resource.id!r}]", {"source_resource_id": resource.id},
+                "neutral-page-group" if neutral else "unsupported-graphics-state",
+            ), state=PreservationState.SEMANTIC if neutral else PreservationState.OPAQUE, provenance=resource.provenance,
         ))
     if preserve_source:
         with source.open("rb") as stream:

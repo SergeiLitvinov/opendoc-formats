@@ -19,6 +19,10 @@ def write_styles(
     created: dict[str, Any] = {}
     for style_id, source in styles.items():
         properties = source.properties
+        if properties.get('docx_run_position_pt') is not None:
+            report.add(IssueSeverity.ERROR, 'docx.run-position',
+                       'This finite profile supports baseline shifts on direct runs only', f'styles[{style_id}]')
+            continue
         from opendoc_formats.ooxml.paragraph_flow import FIELDS, export_flow
 
         if properties.style_type in {'character', 'table'} and any(properties.get(key) is not None for key in FIELDS):
@@ -124,6 +128,9 @@ def apply_text_style(run: Any, style: TextStyle) -> None:
     from docx.oxml.ns import qn
 
     apply_font_style(run.font, style)
+    from opendoc_formats.ooxml.run_position import export_run_position
+
+    export_run_position(style.properties, run._r.get_or_add_rPr())
     if style.language:
         run_properties = run._r.get_or_add_rPr()
         language = OxmlElement("w:lang")
