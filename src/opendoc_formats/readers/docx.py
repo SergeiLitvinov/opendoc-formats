@@ -132,6 +132,9 @@ def read_docx_model(
                 odd_and_even_pages=bool(document.settings.odd_and_even_pages_header_footer),
             )
         )
+    from opendoc_formats.readers.docx_fonts import attach_font_references
+
+    attach_font_references(model, limits=limits)
     _attach_docx_provenance(model, source)
     attach_docx_diagnostics(document, model, source, limits=limits)
     return model

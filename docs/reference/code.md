@@ -143,6 +143,8 @@ Shared font usage collection and deterministic OpenType subsetting.
 
 Импорты: `__future__`, `dataclasses`, `fontTools`, `fontTools.ttLib`, `io`, `opendoc_model.document_model`, `pathlib`
 
+Тесты: [test_pdf_docx_complex.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_docx_complex.py#L1)
+
 ## src/opendoc_formats/fonts/html_embedding.py
 
 Target-specific embedding of resolved fonts into self-contained HTML.
@@ -168,10 +170,33 @@ Cross-platform font registry and metric-aware deterministic substitutions.
 - `__init__(self, faces: Iterable[FontFace]=()) -> None` — [строка 82](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L82)
 - `system(cls, search_paths: Iterable[str | Path] | None=None) -> FontResolver` — [строка 86](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L86)
 - `faces(self) -> tuple[FontFace, ...]` — [строка 91](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L91)
-- `resolve(self, family: str, text: str='', *, bold: bool=False, italic: bool=False) -> FontResolution` — [строка 94](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L94)
-- `prepare_document_fonts(document: DocumentModel, resolver: FontResolver | None=None) -> tuple[DocumentModel, FontResolutionReport]` — [строка 137](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L137)
+- `resolve_style(self, style: TextStyle, text: str='') -> FontResolution` — [строка 94](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L94)
+- `resolve(self, family: str, text: str='', *, bold: bool=False, italic: bool=False) -> FontResolution` — [строка 97](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L97)
+- `prepare_document_fonts(document: DocumentModel, resolver: FontResolver | None=None, *, limits: od.DocumentLimits | None=None) -> tuple[DocumentModel, FontResolutionReport]` — [строка 140](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resolver.py#L140)
 
 Импорты: `__future__`, `collections.abc`, `dataclasses`, `fontTools.ttLib`, `functools`, `opendoc_model.document_model`, `pathlib`, `typing`
+
+## src/opendoc_formats/fonts/resource_fonts.py
+
+Use document-owned font programs during Word export without shared installs.
+
+- `font_program_names(data: bytes) -> tuple[str, tuple[str, ...]]` — [строка 22](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resource_fonts.py#L22)
+- `ResourceFontResolver` — [строка 36](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resource_fonts.py#L36)
+- `__init__(self, embedded: FontResolver, aliases: dict[str, str], system: FontResolver, native_names: dict[str, str], bindings: dict[tuple[str, bool, bool], FontFace], *, strict: bool, resource_faces: dict[str, FontFace] | None=None, ambiguous: set[str] | None=None, report: Any=None, limits: DocumentLimits | None=None) -> None` — [строка 37](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resource_fonts.py#L37)
+- `resolve_style(self, style: TextStyle, text: str='') -> FontResolution` — [строка 52](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resource_fonts.py#L52)
+- `resolve(self, family: str, text: str='', *, bold: bool=False, italic: bool=False) -> FontResolution` — [строка 65](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resource_fonts.py#L65)
+- `document_font_resolver(document: DocumentModel, report: Any, *, limits: DocumentLimits | None=None) -> Iterator[FontResolver]` — [строка 81](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/resource_fonts.py#L81)
+
+Импорты: `__future__`, `contextlib`, `dataclasses`, `fontTools.ttLib`, `io`, `opendoc_formats.fonts.resolver`, `opendoc_formats.support.artifacts`, `opendoc_model`, `typing`
+
+## src/opendoc_formats/fonts/word_metrics.py
+
+OpenType baseline metrics used by the fixed-layout Word writer.
+
+- `word_line_ascent(style: TextStyle) -> float | None` — [строка 23](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/word_metrics.py#L23)
+- `word_line_descent(style: TextStyle) -> float | None` — [строка 31](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/word_metrics.py#L31)
+
+Импорты: `__future__`, `fontTools.ttLib`, `functools`, `opendoc_model`
 
 ## src/opendoc_formats/html_tables.py
 
@@ -279,6 +304,15 @@ Direct Word layout declarations using existing versioned property bags.
 
 Импорты: `__future__`, `collections.abc`, `dataclasses`, `decimal`, `docx.oxml`, `lxml`, `opendoc_formats.ooxml.package`, `opendoc_formats.ooxml.paragraph_flow`, `opendoc_formats.ooxml.paragraph_indent`, `opendoc_formats.ooxml.spacing`, `opendoc_formats.ooxml.word_color`, `opendoc_model`, `typing`
 
+## src/opendoc_formats/ooxml/merged_cell_borders.py
+
+Map whole merged-cell borders onto Word's physical continuation cells.
+
+- `export_merge_borders(target: Any, placements: list, report: Any, location: str) -> None` — [строка 14](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/merged_cell_borders.py#L14)
+- `import_merge_borders(origin: TableCell, owner: Any) -> None` — [строка 47](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/merged_cell_borders.py#L47)
+
+Импорты: `__future__`, `dataclasses`, `docx.oxml.ns`, `lxml`, `opendoc_formats.ooxml.borders`, `opendoc_formats.ooxml.widths`, `opendoc_model`, `typing`
+
 ## src/opendoc_formats/ooxml/package.py
 
 Reusable helpers for importing and restoring OOXML package topology.
@@ -304,6 +338,15 @@ Finite direct paragraph spacing and pagination, with live style inheritance.
 
 Импорты: `__future__`, `collections.abc`, `opendoc_model`, `typing`
 
+## src/opendoc_formats/ooxml/paragraph_frame.py
+
+Finite page-anchored editable paragraph frames for fixed-layout conversion.
+
+- `import_frame(source: Any, target: Paragraph) -> None` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/paragraph_frame.py#L15)
+- `export_frame(source: Paragraph, target: Any, report: Any, location: str, *, pdf: bool=False) -> None` — [строка 34](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/paragraph_frame.py#L34)
+
+Импорты: `__future__`, `docx.oxml`, `opendoc_formats.fonts.word_metrics`, `opendoc_model`, `typing`
+
 ## src/opendoc_formats/ooxml/paragraph_indent.py
 
 Finite direct Word paragraph indents and live native inheritance.
@@ -319,6 +362,28 @@ Finite direct Word paragraph indents and live native inheritance.
 
 Тесты: [test_docx_paragraph_indents.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_paragraph_indents.py#L1)
 
+## src/opendoc_formats/ooxml/positioned_text.py
+
+Editable page-positioned Word text boxes on the native drawing layer.
+
+- `create_positioned_text(container: Any, source: Paragraph, report: Any, location: str, *, pdf: bool) -> Any` — [строка 45](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/positioned_text.py#L45)
+- `positioned_text_source(paragraph: Any) -> tuple[Any, Box, int] | None` — [строка 93](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/positioned_text.py#L93)
+- `native_positioned_content_supported(node: Any) -> bool` — [строка 171](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/positioned_text.py#L171)
+
+Импорты: `__future__`, `docx.oxml`, `docx.text.paragraph`, `opendoc_formats.fonts.word_metrics`, `opendoc_formats.ooxml.package`, `opendoc_model`, `opendoc_model.units`, `types`, `typing`
+
+Тесты: [test_pdf_model_docx.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_model_docx.py#L1)
+
+## src/opendoc_formats/ooxml/run_position.py
+
+Direct native Word baseline shifts in half-point units.
+
+- `import_run_position(run: Any, properties: Any) -> None` — [строка 13](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/run_position.py#L13)
+- `native_position(properties: Mapping[str, Any]) -> int | None` — [строка 25](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/run_position.py#L25)
+- `export_run_position(properties: Mapping[str, Any], owner: Any) -> None` — [строка 39](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/run_position.py#L39)
+
+Импорты: `__future__`, `collections.abc`, `docx.oxml`, `typing`
+
 ## src/opendoc_formats/ooxml/spacing.py
 
 Finite Word line-spacing declarations, separate from their numeric units.
@@ -333,6 +398,23 @@ Finite Word line-spacing declarations, separate from their numeric units.
 - `export_spacing(properties: Mapping[str, Any], owner: Any, report: Any, location: str, *, limits: DocumentLimits | None=None) -> None` — [строка 155](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/spacing.py#L155)
 
 Импорты: `__future__`, `collections.abc`, `copy`, `docx.oxml`, `lxml`, `opendoc_model`, `typing`
+
+## src/opendoc_formats/ooxml/table_grid.py
+
+Bounded projection of sparse Model spans onto a native Word table grid.
+
+- `native_grid(table: Table, *, limits: DocumentLimits | None=None) -> tuple[int, list[tuple[int, int, TableCell]]]` — [строка 10](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/table_grid.py#L10)
+
+Импорты: `__future__`, `bisect`, `opendoc_model`
+
+## src/opendoc_formats/ooxml/table_position.py
+
+Finite page-relative Word table placement and measured native row heights.
+
+- `export_table_position(source: Table, target: Any, report: Any, location: str) -> None` — [строка 20](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/table_position.py#L20)
+- `import_table_position(source: Any, target: Table) -> None` — [строка 46](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/table_position.py#L46)
+
+Импорты: `__future__`, `docx.oxml`, `opendoc_model`, `typing`
 
 ## src/opendoc_formats/ooxml/widths.py
 
@@ -435,7 +517,7 @@ DOCX readers for extracted text and editable OpenDoc documents.
 - `read_docx(path: Union[str, Path], *, include_tables: bool=True) -> Text` — [строка 41](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx.py#L41)
 - `read_docx_model(path: Union[str, Path], *, mode: ConversionMode=ConversionMode.BALANCED, limits: DocumentLimits | None=None) -> DocumentModel` — [строка 75](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx.py#L75)
 
-Импорты: `__future__`, `collections.abc`, `docx`, `docx.oxml.ns`, `docx.oxml.table`, `docx.oxml.text.paragraph`, `docx.table`, `docx.text.paragraph`, `lxml`, `opendoc_formats.ooxml.package`, `opendoc_formats.readers.docx_diagnostics`, `opendoc_formats.readers.docx_features`, `opendoc_formats.readers.docx_section`, `opendoc_formats.readers.docx_style`, `opendoc_formats.readers.docx_table`, `opendoc_formats.readers.docx_text`, `opendoc_formats.support.io`, `opendoc_formats.types`, `opendoc_model`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
+Импорты: `__future__`, `collections.abc`, `docx`, `docx.oxml.ns`, `docx.oxml.table`, `docx.oxml.text.paragraph`, `docx.table`, `docx.text.paragraph`, `lxml`, `opendoc_formats.ooxml.package`, `opendoc_formats.readers.docx_diagnostics`, `opendoc_formats.readers.docx_features`, `opendoc_formats.readers.docx_fonts`, `opendoc_formats.readers.docx_section`, `opendoc_formats.readers.docx_style`, `opendoc_formats.readers.docx_table`, `opendoc_formats.readers.docx_text`, `opendoc_formats.support.io`, `opendoc_formats.types`, `opendoc_model`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
 
 Тесты: [test_format_audit.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_format_audit.py#L1), [test_docx_layout_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_layout_roundtrip.py#L1), [test_docx_model.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_model.py#L1), [test_docx_typed_widths.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_typed_widths.py#L1), [test_full_contract.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_full_contract.py#L1), [test_docx_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_docx_writer.py#L1), [test_html_normalize.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_normalize.py#L1)
 
@@ -443,9 +525,9 @@ DOCX readers for extracted text and editable OpenDoc documents.
 
 Evidence-based partial preservation assessment of advanced DOCX objects.
 
-- `attach_docx_diagnostics(document: Any, model: DocumentModel, source: Path, *, limits: DocumentLimits | None=None) -> None` — [строка 105](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_diagnostics.py#L105)
+- `attach_docx_diagnostics(document: Any, model: DocumentModel, source: Path, *, limits: DocumentLimits | None=None) -> None` — [строка 112](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_diagnostics.py#L112)
 
-Импорты: `__future__`, `collections`, `dataclasses`, `lxml`, `opendoc_formats.ooxml.borders`, `opendoc_formats.ooxml.layout`, `opendoc_formats.ooxml.paragraph_flow`, `opendoc_formats.ooxml.paragraph_indent`, `opendoc_formats.ooxml.spacing`, `opendoc_formats.readers.docx_features`, `opendoc_model`, `pathlib`, `typing`
+Импорты: `__future__`, `collections`, `dataclasses`, `lxml`, `opendoc_formats.ooxml.borders`, `opendoc_formats.ooxml.layout`, `opendoc_formats.ooxml.paragraph_flow`, `opendoc_formats.ooxml.paragraph_indent`, `opendoc_formats.ooxml.positioned_text`, `opendoc_formats.ooxml.spacing`, `opendoc_formats.readers.docx_features`, `opendoc_model`, `pathlib`, `typing`
 
 ## src/opendoc_formats/readers/docx_drawing.py
 
@@ -463,6 +545,15 @@ Inventory advanced DOCX features and their preservation level.
 - `inspect_docx_features(document: Any) -> dict[str, Any]` — [строка 25](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_features.py#L25)
 
 Импорты: `__future__`, `collections`, `lxml`, `typing`
+
+## src/opendoc_formats/readers/docx_fonts.py
+
+Decode document-owned Word font programs into bounded Model resources.
+
+- `read_embedded_fonts(document: object, *, limits: DocumentLimits | None=None) -> dict[str, Resource]` — [строка 13](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_fonts.py#L13)
+- `attach_font_references(model: DocumentModel, *, limits: DocumentLimits | None=None) -> None` — [строка 50](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_fonts.py#L50)
+
+Импорты: `__future__`, `docx.opc.constants`, `lxml`, `opendoc_formats.fonts.docx_embedding`, `opendoc_model`, `uuid`
 
 ## src/opendoc_formats/readers/docx_notes.py
 
@@ -498,16 +589,16 @@ DOCX table importer for spans, geometry, fills, margins, and styles.
 
 - `read_table(table: Any, model: DocumentModel, read_blocks: BlockReader) -> Table` — [строка 17](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_table.py#L17)
 
-Импорты: `__future__`, `collections.abc`, `docx.oxml.ns`, `lxml`, `opendoc_formats.ooxml.borders`, `opendoc_formats.ooxml.layout`, `opendoc_formats.ooxml.widths`, `opendoc_model.document_model`, `typing`
+Импорты: `__future__`, `collections.abc`, `docx.oxml.ns`, `docx.table`, `lxml`, `opendoc_formats.ooxml.borders`, `opendoc_formats.ooxml.layout`, `opendoc_formats.ooxml.merged_cell_borders`, `opendoc_formats.ooxml.table_position`, `opendoc_formats.ooxml.widths`, `opendoc_model.document_model`, `typing`
 
 ## src/opendoc_formats/readers/docx_text.py
 
 Чтение абзацев и строчного содержимого DOCX.
 
 - `read_paragraph(paragraph: Any, model: DocumentModel) -> Paragraph` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_text.py#L15)
-- `read_block_ooxml(element: Any) -> Paragraph` — [строка 101](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_text.py#L101)
+- `read_block_ooxml(element: Any) -> Paragraph` — [строка 113](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_text.py#L113)
 
-Импорты: `__future__`, `docx.oxml.ns`, `docx.text.hyperlink`, `docx.text.run`, `lxml`, `opendoc_formats.ooxml.headings`, `opendoc_formats.ooxml.layout`, `opendoc_formats.readers.docx_drawing`, `opendoc_formats.readers.docx_notes`, `opendoc_formats.readers.docx_style`, `opendoc_model.document_model`, `typing`
+Импорты: `__future__`, `docx.oxml.ns`, `docx.text.hyperlink`, `docx.text.run`, `lxml`, `opendoc_formats.ooxml.headings`, `opendoc_formats.ooxml.layout`, `opendoc_formats.ooxml.paragraph_frame`, `opendoc_formats.ooxml.positioned_text`, `opendoc_formats.ooxml.run_position`, `opendoc_formats.readers.docx_drawing`, `opendoc_formats.readers.docx_notes`, `opendoc_formats.readers.docx_style`, `opendoc_model.document_model`, `typing`
 
 ## src/opendoc_formats/readers/epub.py
 
@@ -686,28 +777,54 @@ Bounded AcroForm tree audit independent of widget appearance extraction.
 
 Тесты: [test_pdf_field_tree.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_field_tree.py#L1)
 
+## src/opendoc_formats/readers/pdf_font_bindings.py
+
+Bind painted glyph origins to actual native font bytes, never family guesses.
+
+- `painted_font_programs(page: Any, resources: dict[str, Resource], origins: set[tuple[float, float]]) -> dict` — [строка 11](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_font_bindings.py#L11)
+
+Импорты: `__future__`, `opendoc_model`, `typing`
+
+## src/opendoc_formats/readers/pdf_fonts.py
+
+Preserve embedded PDF font programs as bounded public Model resources.
+
+- `extract_pdf_fonts(path: str | Path, *, limits: DocumentLimits | None=None) -> dict[str, Resource]` — [строка 10](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_fonts.py#L10)
+
+Импорты: `__future__`, `opendoc_model`, `pathlib`
+
 ## src/opendoc_formats/readers/pdf_geometry.py
 
 Геометрический слой импорта PDF без семантических эвристик.
 
-- `PdfSpanGeometry` — [строка 14](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L14)
-- `PdfLineGeometry` — [строка 27](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L27)
-- `text(self) -> str` — [строка 34](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L34)
-- `PdfTextBlockGeometry` — [строка 39](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L39)
-- `text(self) -> str` — [строка 45](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L45)
-- `PdfImageGeometry` — [строка 50](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L50)
-- `PdfTableCellGeometry` — [строка 60](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L60)
-- `PdfTableGeometry` — [строка 68](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L68)
-- `text(self) -> str` — [строка 76](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L76)
-- `row_count(self) -> int` — [строка 80](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L80)
-- `column_count(self) -> int` — [строка 84](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L84)
-- `PdfPageGeometry` — [строка 89](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L89)
-- `PdfGeometryDocument` — [строка 102](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L102)
-- `extract_pdf_geometry(path: str | Path, *, exclude_interactions: bool=False) -> PdfGeometryDocument` — [строка 109](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L109)
+- `PdfSpanGeometry` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L15)
+- `PdfLineGeometry` — [строка 28](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L28)
+- `text(self) -> str` — [строка 36](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L36)
+- `PdfTextBlockGeometry` — [строка 41](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L41)
+- `text(self) -> str` — [строка 47](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L47)
+- `PdfImageGeometry` — [строка 52](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L52)
+- `PdfTableCellGeometry` — [строка 62](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L62)
+- `PdfTableGeometry` — [строка 70](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L70)
+- `text(self) -> str` — [строка 80](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L80)
+- `row_count(self) -> int` — [строка 84](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L84)
+- `column_count(self) -> int` — [строка 88](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L88)
+- `PdfPageGeometry` — [строка 93](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L93)
+- `PdfGeometryDocument` — [строка 106](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L106)
+- `extract_pdf_geometry(path: str | Path, *, exclude_interactions: bool=False) -> PdfGeometryDocument` — [строка 113](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L113)
 
-Импорты: `__future__`, `dataclasses`, `opendoc_formats.readers.pdf_content`, `pathlib`, `statistics`, `typing`
+Импорты: `__future__`, `bisect`, `dataclasses`, `opendoc_formats.readers.pdf_content`, `pathlib`, `statistics`, `typing`
 
 Тесты: [test_pdf_geometry.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_geometry.py#L1), [test_pdf_images.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_images.py#L1), [test_pdf_ocr_merge.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_ocr_merge.py#L1)
+
+## src/opendoc_formats/readers/pdf_image_alpha.py
+
+Combine straight PDF image samples and a soft mask without alpha roundoff.
+
+- `straight_alpha_png(image: bytes, mask: bytes) -> bytes` — [строка 11](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_image_alpha.py#L11)
+
+Импорты: `__future__`, `opendoc_formats.errors`
+
+Тесты: [test_pdf_docx_complex.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_docx_complex.py#L1)
 
 ## src/opendoc_formats/readers/pdf_image_clips.py
 
@@ -723,14 +840,14 @@ Read a bounded single-image quadrilateral clip profile, without executing conten
 Extract raster images and vector drawings from PDF pages.
 
 - `ExtractedPdfImage` — [строка 29](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L29)
-- `media_type(self) -> str` — [строка 46](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L46)
-- `PdfVectorDrawing` — [строка 64](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L64)
-- `is_path(self) -> bool` — [строка 89](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L89)
-- `extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[str]]` — [строка 111](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L111)
-- `extract_pdf_vector_drawings(path: str | Path) -> tuple[list[PdfVectorDrawing], list[str]]` — [строка 178](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L178)
-- `enrich_geometry_with_images(geometry: PdfGeometryDocument, images: list[ExtractedPdfImage] | None=None, vector_drawings: list[PdfVectorDrawing] | None=None) -> PdfGeometryDocument` — [строка 270](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L270)
+- `media_type(self) -> str` — [строка 48](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L48)
+- `PdfVectorDrawing` — [строка 66](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L66)
+- `is_path(self) -> bool` — [строка 93](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L93)
+- `extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[str]]` — [строка 115](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L115)
+- `extract_pdf_vector_drawings(path: str | Path) -> tuple[list[PdfVectorDrawing], list[str]]` — [строка 195](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L195)
+- `enrich_geometry_with_images(geometry: PdfGeometryDocument, images: list[ExtractedPdfImage] | None=None, vector_drawings: list[PdfVectorDrawing] | None=None) -> PdfGeometryDocument` — [строка 300](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_images.py#L300)
 
-Импорты: `__future__`, `dataclasses`, `opendoc_formats.errors`, `opendoc_formats.readers.pdf_content`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_image_clips`, `opendoc_model`, `opendoc_model.color`, `pathlib`, `typing`
+Импорты: `__future__`, `dataclasses`, `opendoc_formats.errors`, `opendoc_formats.readers.pdf_content`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_image_alpha`, `opendoc_formats.readers.pdf_image_clips`, `opendoc_model`, `opendoc_model.color`, `pathlib`, `typing`
 
 Тесты: [test_format_audit.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_format_audit.py#L1), [test_pdf_images.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_images.py#L1)
 
@@ -757,9 +874,9 @@ Finite PDF interaction profile; actions are inert data, never executed.
 
 PDF → модель OpenDoc: геометрия, семантические блоки и внедряемый OCR.
 
-- `read_pdf_model(*, path: str | Path, use_ocr: bool=False, ocr_backend: str='', handwriting: bool=False, use_gpu: bool=False, mode: str | None=None, ocr_engine_factory: Callable[..., Any] | None=None, limits: DocumentLimits | None=None) -> DocumentModel` — [строка 45](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_model.py#L45)
+- `read_pdf_model(*, path: str | Path, use_ocr: bool=False, ocr_backend: str='', handwriting: bool=False, use_gpu: bool=False, mode: str | None=None, ocr_engine_factory: Callable[..., Any] | None=None, limits: DocumentLimits | None=None) -> DocumentModel` — [строка 43](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_model.py#L43)
 
-Импорты: `__future__`, `collections.abc`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_images`, `opendoc_formats.readers.pdf_interactive`, `opendoc_formats.readers.pdf_ocr_merge`, `opendoc_formats.support.object_mapping`, `opendoc_formats.support.pdf_mapping_history`, `opendoc_formats.types`, `opendoc_model`, `opendoc_model.color`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
+Импорты: `__future__`, `collections.abc`, `opendoc_formats.readers.pdf_fonts`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_images`, `opendoc_formats.readers.pdf_interactive`, `opendoc_formats.readers.pdf_ocr_merge`, `opendoc_formats.readers.pdf_paint`, `opendoc_formats.readers.pdf_table_model`, `opendoc_formats.support.object_mapping`, `opendoc_formats.support.pdf_mapping_history`, `opendoc_formats.types`, `opendoc_model`, `opendoc_model.color`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
 
 ## src/opendoc_formats/readers/pdf_ocr_merge.py
 
@@ -786,6 +903,14 @@ PDF → модель OpenDoc: геометрия, семантические б�
 
 Тесты: [test_pdf_ocr_merge.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_ocr_merge.py#L1)
 
+## src/opendoc_formats/readers/pdf_paint.py
+
+PDF paint evidence, independent of semantic reading order and Word layout.
+
+- `attach_text_paint(document: DocumentModel, path: str | Path, *, limits: DocumentLimits | None) -> None` — [строка 12](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_paint.py#L12)
+
+Импорты: `__future__`, `collections`, `opendoc_formats.readers.pdf_content`, `opendoc_formats.readers.pdf_font_bindings`, `opendoc_formats.readers.pdf_image_clips`, `opendoc_formats.readers.pdf_images`, `opendoc_model`, `pathlib`, `typing`
+
 ## src/opendoc_formats/readers/pdf_semantic.py
 
 Семантическая интерпретация геометрического слоя PDF.
@@ -795,6 +920,14 @@ PDF → модель OpenDoc: геометрия, семантические б�
 Импорты: `__future__`, `opendoc_formats.readers.pdf_classify`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_layout`, `opendoc_formats.types`
 
 Тесты: [test_pdf_geometry.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_geometry.py#L1)
+
+## src/opendoc_formats/readers/pdf_table_model.py
+
+Retain native PDF cell geometry and text styling in reconstructed Model tables.
+
+- `pdf_table_rows(page: PdfPageGeometry, meta: dict[str, Any], run_builder: Callable[[Any, str, dict[str, Any]], list[TextRun]], warnings: list[str]) -> list[TableRow]` — [строка 14](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_table_model.py#L14)
+
+Импорты: `__future__`, `collections.abc`, `dataclasses`, `opendoc_formats.readers.pdf_geometry`, `opendoc_model`, `typing`
 
 ## src/opendoc_formats/readers/pptx.py
 
@@ -1243,30 +1376,30 @@ DOCX section exporter for page geometry and running content.
 DOCX style exporter for definitions, font formatting, and numbering.
 
 - `write_styles(target: Any, styles: dict[str, TextStyle], report: ConversionReport, *, limits: DocumentLimits | None=None) -> None` — [строка 14](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_style_writer.py#L14)
-- `apply_paragraph_format(paragraph_format: Any, properties: Mapping[str, Any], report: ConversionReport, location: str, *, limits: DocumentLimits | None=None) -> None` — [строка 88](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_style_writer.py#L88)
-- `apply_numbering(paragraph_properties: Any, properties: Mapping[str, Any]) -> None` — [строка 102](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_style_writer.py#L102)
-- `apply_text_style(run: Any, style: TextStyle) -> None` — [строка 122](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_style_writer.py#L122)
-- `apply_font_style(font: Any, style: TextStyle) -> None` — [строка 134](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_style_writer.py#L134)
+- `apply_paragraph_format(paragraph_format: Any, properties: Mapping[str, Any], report: ConversionReport, location: str, *, limits: DocumentLimits | None=None) -> None` — [строка 92](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_style_writer.py#L92)
+- `apply_numbering(paragraph_properties: Any, properties: Mapping[str, Any]) -> None` — [строка 106](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_style_writer.py#L106)
+- `apply_text_style(run: Any, style: TextStyle) -> None` — [строка 126](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_style_writer.py#L126)
+- `apply_font_style(font: Any, style: TextStyle) -> None` — [строка 141](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_style_writer.py#L141)
 
-Импорты: `__future__`, `collections.abc`, `docx.enum.style`, `docx.oxml`, `docx.oxml.ns`, `docx.shared`, `opendoc_formats.ooxml.layout`, `opendoc_formats.ooxml.paragraph_flow`, `opendoc_formats.ooxml.paragraph_indent`, `opendoc_formats.ooxml.spacing`, `opendoc_formats.ooxml.word_color`, `opendoc_model`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `opendoc_model.limits`, `typing`
+Импорты: `__future__`, `collections.abc`, `docx.enum.style`, `docx.oxml`, `docx.oxml.ns`, `docx.shared`, `opendoc_formats.ooxml.layout`, `opendoc_formats.ooxml.paragraph_flow`, `opendoc_formats.ooxml.paragraph_indent`, `opendoc_formats.ooxml.run_position`, `opendoc_formats.ooxml.spacing`, `opendoc_formats.ooxml.word_color`, `opendoc_model`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `opendoc_model.limits`, `typing`
 
 ## src/opendoc_formats/writers/docx_table_writer.py
 
 DOCX table exporter for spans, geometry, fills, margins, and styles.
 
-- `write_table(container: Any, source: Table, document: DocumentModel, report: ConversionReport, location: str, counters: dict[str, int], write_blocks: BlockWriter) -> None` — [строка 21](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_table_writer.py#L21)
+- `write_table(container: Any, source: Table, document: DocumentModel, report: ConversionReport, location: str, counters: dict[str, int], write_blocks: BlockWriter, *, limits: DocumentLimits | None=None) -> None` — [строка 22](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_table_writer.py#L22)
 
-Импорты: `__future__`, `collections.abc`, `docx.enum.table`, `docx.oxml`, `docx.oxml.ns`, `docx.shared`, `lxml`, `opendoc_formats.ooxml.borders`, `opendoc_formats.ooxml.layout`, `opendoc_formats.ooxml.widths`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `opendoc_model.properties`, `typing`
+Импорты: `__future__`, `collections.abc`, `docx.enum.table`, `docx.oxml`, `docx.oxml.ns`, `docx.shared`, `lxml`, `opendoc_formats.ooxml.borders`, `opendoc_formats.ooxml.layout`, `opendoc_formats.ooxml.merged_cell_borders`, `opendoc_formats.ooxml.table_grid`, `opendoc_formats.ooxml.table_position`, `opendoc_formats.ooxml.widths`, `opendoc_formats.writers.pdf_docx_cells`, `opendoc_model`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `opendoc_model.properties`, `typing`
 
 ## src/opendoc_formats/writers/docx_text_writer.py
 
 Запись абзацев и строчного содержимого в DOCX.
 
 - `add_paragraph(container: Any, source: Paragraph, document: DocumentModel, report: ConversionReport, location: str, *, limits: DocumentLimits | None=None) -> Any` — [строка 19](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_text_writer.py#L19)
-- `write_paragraph_content(paragraph: Any, source: Paragraph, document: DocumentModel, report: ConversionReport, location: str, counters: dict[str, int]) -> None` — [строка 98](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_text_writer.py#L98)
-- `write_formula(paragraph: Any, formula: Formula, report: ConversionReport, location: str) -> None` — [строка 179](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_text_writer.py#L179)
+- `write_paragraph_content(paragraph: Any, source: Paragraph, document: DocumentModel, report: ConversionReport, location: str, counters: dict[str, int]) -> None` — [строка 109](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_text_writer.py#L109)
+- `write_formula(paragraph: Any, formula: Formula, report: ConversionReport, location: str) -> None` — [строка 197](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_text_writer.py#L197)
 
-Импорты: `__future__`, `docx.enum.text`, `docx.opc.constants`, `docx.oxml`, `docx.oxml.ns`, `opendoc_formats.ooxml.headings`, `opendoc_formats.ooxml.layout`, `opendoc_formats.ooxml.package`, `opendoc_formats.ooxml.paragraph_flow`, `opendoc_formats.ooxml.paragraph_indent`, `opendoc_formats.writers.docx_drawing_writer`, `opendoc_formats.writers.docx_html_links`, `opendoc_formats.writers.docx_html_lists`, `opendoc_formats.writers.docx_notes_writer`, `opendoc_formats.writers.docx_style_writer`, `opendoc_formats.writers.mathml_to_omml`, `opendoc_model`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `opendoc_model.limits`, `typing`, `urllib.parse`
+Импорты: `__future__`, `docx.enum.text`, `docx.opc.constants`, `docx.oxml`, `docx.oxml.ns`, `opendoc_formats.ooxml.headings`, `opendoc_formats.ooxml.layout`, `opendoc_formats.ooxml.package`, `opendoc_formats.ooxml.paragraph_flow`, `opendoc_formats.ooxml.paragraph_frame`, `opendoc_formats.ooxml.paragraph_indent`, `opendoc_formats.ooxml.positioned_text`, `opendoc_formats.ooxml.run_position`, `opendoc_formats.writers.docx_drawing_writer`, `opendoc_formats.writers.docx_html_links`, `opendoc_formats.writers.docx_html_lists`, `opendoc_formats.writers.docx_notes_writer`, `opendoc_formats.writers.docx_style_writer`, `opendoc_formats.writers.mathml_to_omml`, `opendoc_model`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `opendoc_model.limits`, `typing`, `urllib.parse`
 
 ## src/opendoc_formats/writers/docx_to_latex.py
 
@@ -1284,9 +1417,9 @@ DOCX table exporter for spans, geometry, fills, margins, and styles.
 
 Экспорт богатой промежуточной модели в редактируемый DOCX.
 
-- `write_docx_model(document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None=None) -> ConversionReport` — [строка 34](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_writer.py#L34)
+- `write_docx_model(document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None=None) -> ConversionReport` — [строка 35](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/docx_writer.py#L35)
 
-Импорты: `__future__`, `docx`, `docx.enum.section`, `docx.oxml`, `functools`, `opendoc_formats.fonts.docx_embedding`, `opendoc_formats.ooxml.headings`, `opendoc_formats.ooxml.layout`, `opendoc_formats.ooxml.package`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.io`, `opendoc_formats.writers.color_preflight`, `opendoc_formats.writers.docx_drawing_writer`, `opendoc_formats.writers.docx_section_writer`, `opendoc_formats.writers.docx_style_writer`, `opendoc_formats.writers.docx_table_writer`, `opendoc_formats.writers.docx_text_writer`, `opendoc_formats.writers.font_preflight`, `opendoc_formats.writers.html_resources`, `opendoc_model`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `opendoc_model.limits`, `pathlib`, `typing`
+Импорты: `__future__`, `docx`, `docx.enum.section`, `docx.oxml`, `functools`, `opendoc_formats.fonts`, `opendoc_formats.fonts.docx_embedding`, `opendoc_formats.fonts.resource_fonts`, `opendoc_formats.ooxml.headings`, `opendoc_formats.ooxml.layout`, `opendoc_formats.ooxml.package`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.io`, `opendoc_formats.writers.color_preflight`, `opendoc_formats.writers.docx_drawing_writer`, `opendoc_formats.writers.docx_section_writer`, `opendoc_formats.writers.docx_style_writer`, `opendoc_formats.writers.docx_table_writer`, `opendoc_formats.writers.docx_text_writer`, `opendoc_formats.writers.font_preflight`, `opendoc_formats.writers.html_resources`, `opendoc_formats.writers.pdf_docx_cells`, `opendoc_formats.writers.pdf_docx_model`, `opendoc_model`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `opendoc_model.limits`, `pathlib`, `typing`
 
 Тесты: [test_format_audit.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_format_audit.py#L1), [test_docx_layout_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_layout_roundtrip.py#L1), [test_docx_typed_widths.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_typed_widths.py#L1), [test_docx_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_docx_writer.py#L1), [test_html_normalize.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_normalize.py#L1)
 
@@ -1314,7 +1447,7 @@ Serialize extracted plain text independently of OCR engines or applications.
 
 Shared font preflight for model exporters.
 
-- `prepare_fonts(document: DocumentModel, report: ConversionReport, *, limits: DocumentLimits | None=None) -> DocumentModel` — [строка 12](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/font_preflight.py#L12)
+- `prepare_fonts(document: DocumentModel, report: ConversionReport, *, limits: DocumentLimits | None=None, resolver: FontResolver | None=None) -> DocumentModel` — [строка 12](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/font_preflight.py#L12)
 
 Импорты: `__future__`, `opendoc_formats.fonts`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `opendoc_model.limits`
 
@@ -1407,6 +1540,58 @@ Compatibility entry point for the shared MathML-to-Office-Math structure convert
 
 Тесты: [test_mathml_decorations.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_mathml_decorations.py#L1), [test_mathml_pptx.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_mathml_pptx.py#L1)
 
+## src/opendoc_formats/writers/pdf_docx_borders.py
+
+Project only proven complete PDF grid strokes into editable Word cell borders.
+
+- `project_table_borders(document: DocumentModel, section: Section) -> None` — [строка 8](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_borders.py#L8)
+
+Импорты: `__future__`, `opendoc_model`
+
+## src/opendoc_formats/writers/pdf_docx_cells.py
+
+Measured native PDF cell baselines after Word font resolution.
+
+- `prepare_cell_baselines(cell: TableCell) -> None` — [строка 22](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_cells.py#L22)
+- `fit_virtual_tables(document: DocumentModel, *, limits: DocumentLimits | None) -> None` — [строка 55](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_cells.py#L55)
+
+Импорты: `__future__`, `opendoc_formats.fonts.word_metrics`, `opendoc_model`
+
+## src/opendoc_formats/writers/pdf_docx_images.py
+
+Represent orthogonal native PDF image matrices using editable Word pictures.
+
+- `prepare_image_transform(image: Image) -> None` — [строка 10](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_images.py#L10)
+
+Импорты: `__future__`, `opendoc_model`
+
+Тесты: [test_pdf_docx_complex.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_docx_complex.py#L1)
+
+## src/opendoc_formats/writers/pdf_docx_model.py
+
+Private fixed-layout Word view of the public PDF model; source stays unchanged.
+
+- `prepare_pdf_docx(document: DocumentModel, *, limits: DocumentLimits | None=None) -> DocumentModel` — [строка 37](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_model.py#L37)
+
+Импорты: `__future__`, `copy`, `dataclasses`, `opendoc_formats.fonts.resource_fonts`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_model`, `opendoc_formats.writers.pdf_docx_borders`, `opendoc_formats.writers.pdf_docx_images`, `opendoc_formats.writers.pdf_docx_paint`, `opendoc_formats.writers.pdf_docx_vectors`, `opendoc_model`, `opendoc_model.limits`
+
+## src/opendoc_formats/writers/pdf_docx_paint.py
+
+Map measured PDF paint order to Word's drawing and body-text planes.
+
+- `prepare_text_paint(paragraph: Paragraph) -> None` — [строка 8](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_paint.py#L8)
+- `prepare_page_paint(section: Section, *, limits: DocumentLimits | None) -> None` — [строка 34](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_paint.py#L34)
+
+Импорты: `__future__`, `opendoc_model`
+
+## src/opendoc_formats/writers/pdf_docx_vectors.py
+
+Keep supported PDF path objects as separate, positioned Word SVG pictures.
+
+- `convert_vector(document: DocumentModel, image: Image, location: str) -> None` — [строка 10](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_docx_vectors.py#L10)
+
+Импорты: `__future__`, `dataclasses`, `opendoc_formats.writers.pdf_vectors`, `opendoc_model`
+
 ## src/opendoc_formats/writers/pdf_flow.py
 
 Reserve inline image space and capture its actual Story page position.
@@ -1466,26 +1651,30 @@ Bounded check of rendered plain text before PDF publication.
 
 ## src/opendoc_formats/writers/pdf_to_docx.py
 
-- `Pdf2DocxConverter` — [строка 11](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L11)
-- `name(self) -> str` — [строка 13](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L13)
-- `convert(self, input_path: str | Path, output_path: str | Path) -> ConversionResult` — [строка 16](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L16)
-- `PyMuPdfConverter` — [строка 37](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L37)
-- `name(self) -> str` — [строка 47](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L47)
-- `__init__(self, render_dpi: int=150, text_threshold: int=50) -> None` — [строка 50](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L50)
-- `convert(self, input_path: str | Path, output_path: str | Path) -> ConversionResult` — [строка 54](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L54)
-- `LibreOfficeConverter` — [строка 125](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L125)
-- `name(self) -> str` — [строка 134](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L134)
-- `__init__(self, libreoffice_path: str | None=None) -> None` — [строка 137](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L137)
-- `convert(self, input_path: str | Path, output_path: str | Path) -> ConversionResult` — [строка 156](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L156)
-- `FanOutConverter` — [строка 171](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L171)
-- `name(self) -> str` — [строка 181](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L181)
-- `__init__(self, tools: list[str] | None=None) -> None` — [строка 184](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L184)
-- `convert(self, input_path: str | Path, output_path: str | Path) -> ConversionResult` — [строка 189](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L189)
-- `create_converter(tool: str) -> BaseConverter` — [строка 237](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L237)
+- `PdfModelConverter` — [строка 18](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L18)
+- `name(self) -> str` — [строка 22](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L22)
+- `__init__(self, *, import_options: ImportOptions | None=None, export_options: ExportOptions | None=None) -> None` — [строка 25](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L25)
+- `convert(self, input_path: str | Path, output_path: str | Path) -> ConversionResult` — [строка 29](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L29)
+- `Pdf2DocxConverter` — [строка 105](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L105)
+- `name(self) -> str` — [строка 107](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L107)
+- `convert(self, input_path: str | Path, output_path: str | Path) -> ConversionResult` — [строка 110](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L110)
+- `PyMuPdfConverter` — [строка 131](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L131)
+- `name(self) -> str` — [строка 141](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L141)
+- `__init__(self, render_dpi: int=150, text_threshold: int=50) -> None` — [строка 144](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L144)
+- `convert(self, input_path: str | Path, output_path: str | Path) -> ConversionResult` — [строка 148](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L148)
+- `LibreOfficeConverter` — [строка 219](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L219)
+- `name(self) -> str` — [строка 228](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L228)
+- `__init__(self, libreoffice_path: str | None=None) -> None` — [строка 231](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L231)
+- `convert(self, input_path: str | Path, output_path: str | Path) -> ConversionResult` — [строка 250](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L250)
+- `FanOutConverter` — [строка 265](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L265)
+- `name(self) -> str` — [строка 275](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L275)
+- `__init__(self, tools: list[str] | None=None) -> None` — [строка 278](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L278)
+- `convert(self, input_path: str | Path, output_path: str | Path) -> ConversionResult` — [строка 283](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L283)
+- `create_converter(tool: str) -> BaseConverter` — [строка 331](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/pdf_to_docx.py#L331)
 
-Импорты: `__future__`, `docx`, `docx.shared`, `opendoc_formats.errors`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.io`, `opendoc_formats.writers.base`, `opendoc_formats.writers.docx_postprocess`, `pathlib`
+Импорты: `__future__`, `dataclasses`, `docx`, `docx.shared`, `opendoc_formats`, `opendoc_formats.errors`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.document_limits`, `opendoc_formats.support.io`, `opendoc_formats.support.object_mapping`, `opendoc_formats.writers.base`, `opendoc_formats.writers.docx_postprocess`, `opendoc_model`, `pathlib`, `typing`
 
-Тесты: [test_pdf_to_docx.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_to_docx.py#L1)
+Тесты: [test_pdf_docx_complex.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_docx_complex.py#L1), [test_pdf_model_docx.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_model_docx.py#L1), [test_pdf_to_docx.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_to_docx.py#L1)
 
 ## src/opendoc_formats/writers/pdf_unicode.py
 

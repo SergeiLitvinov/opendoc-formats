@@ -6,7 +6,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-from opendoc_model import DocumentLimits, DocumentModel, Formula, TextRun, walk_model
+from opendoc_model import DocumentLimits, DocumentModel, FontReference, Formula, TextRun, set_font_reference, walk_model
 
 
 def attach_text_paint(document: DocumentModel, path: str | Path, *, limits: DocumentLimits | None) -> None:
@@ -26,31 +26,45 @@ def attach_text_paint(document: DocumentModel, path: str | Path, *, limits: Docu
             for trace in page.get_texttrace():
                 for offset, character in enumerate(trace['chars']):
                     index[_point_key(character[2])].append((trace, offset))
-            indices.append((index, unknown))
-        for section, (index, unknown) in zip(document.sections, indices, strict=True):
+            from opendoc_formats.readers.pdf_font_bindings import painted_font_programs
+
+            programs = painted_font_programs(page, document.resources, set(index))
+            indices.append((index, unknown, programs))
+        for section, (index, unknown, programs) in zip(document.sections, indices, strict=True):
             for reference in walk_model(section, limits=limits):
                 run = reference.node
                 if isinstance(run, Formula):
                     for line in run.properties.get('pdf_native_lines', []):
                         for span in line:
-                            span['paint'] = _evidence(span['text'], span['font'], span['origin'], index)
+                            span['paint'] = _evidence(span['text'], span['font'], span['origin'], index, programs)
                             span['paint']['pdf_graphics_state_unknown'] = unknown
                 if not isinstance(run, TextRun) or not run.properties.get('pdf_origin'):
                     continue
-                run.properties.update(_evidence(run.text, run.style.font_family, run.properties['pdf_origin'], index))
+                evidence = _evidence(run.text, run.style.font_family, run.properties['pdf_origin'], index, programs)
+                identifier = evidence.pop('pdf_font_resource', None)
+                if identifier is not None:
+                    set_font_reference(run.style, FontReference(identifier), limits=limits)
+                run.properties.update(evidence)
                 run.properties['pdf_graphics_state_unknown'] = unknown
 
 
-def _evidence(text: str, font: str, origin: Any, index: dict) -> dict:
+def _evidence(text: str, font: str, origin: Any, index: dict, programs: dict) -> dict:
     candidates = []
     for trace, offset in index.get(_point_key(origin), []):
         native_text = ''.join(chr(character[0]) for character in trace['chars'][offset:offset + len(text)])
         if native_text.startswith(text) and trace['font'] == font:
-            candidates.append(trace)
+            candidates.append((trace, offset))
     if len(candidates) != 1:
         return {'pdf_paint_unknown': True}
-    trace = candidates[0]
-    return {'pdf_paint_seq': trace['seqno'], 'pdf_paint_type': trace['type'], 'pdf_paint_opacity': trace['opacity']}
+    trace, offset = candidates[0]
+    evidence = {'pdf_paint_seq': trace['seqno'], 'pdf_paint_type': trace['type'], 'pdf_paint_opacity': trace['opacity']}
+    bindings = [programs.get((_point_key(char[2]), char[0]), set())
+                for char in trace['chars'][offset:offset + len(text)]]
+    if bindings and all(len(binding) == 1 and None not in binding for binding in bindings):
+        identifiers = set.union(*bindings)
+        if len(identifiers) == 1:
+            evidence['pdf_font_resource'] = next(iter(identifiers))
+    return evidence
 
 
 def _point_key(point: Any) -> tuple[float, float]:

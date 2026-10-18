@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from opendoc_model import ArtifactLimitError, DocumentLimits, Provenance, Resource, ResourceKind
+from opendoc_model import ArtifactLimitError, DocumentLimits, DocumentModel, Provenance, Resource, ResourceKind
 
 W = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
 R = '{http://schemas.openxmlformats.org/officeDocument/2006/relationships}'
@@ -45,3 +45,22 @@ def read_embedded_fonts(document: object, *, limits: DocumentLimits | None = Non
                                               provenance=Provenance(source_format='docx',
                                                                     package_part=str(relationship.target_part.partname)))
     return result
+
+
+def attach_font_references(model: DocumentModel, *, limits: DocumentLimits | None = None) -> None:
+    """Bind parsed Word font-table slots, independently of the binary family name."""
+    from opendoc_model import FontReference, TextRun, get_font_reference, set_font_reference, walk_model
+
+    slots = {}
+    for resource in model.resources.values():
+        if resource.kind is ResourceKind.FONT:
+            key = (resource.properties.get('docx_font_family'), resource.properties.get('docx_font_variant'))
+            slots.setdefault(key, []).append(resource.id)
+    styles = list(model.styles.values()) + [location.node.style for location in walk_model(model, limits=limits)
+                                           if isinstance(location.node, TextRun)]
+    for style in styles:
+        variant = ('embedBoldItalic' if style.bold and style.italic else 'embedBold' if style.bold else
+                   'embedItalic' if style.italic else 'embedRegular')
+        candidates = slots.get((style.font_family, variant), [])
+        if len(candidates) == 1 and get_font_reference(style, limits=limits) is None:
+            set_font_reference(style, FontReference(candidates[0]), limits=limits)

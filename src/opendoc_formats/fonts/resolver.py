@@ -91,6 +91,9 @@ class FontResolver:
     def faces(self) -> tuple[FontFace, ...]:
         return self._faces
 
+    def resolve_style(self, style: TextStyle, text: str = '') -> FontResolution:
+        return self.resolve(style.font_family or '', text, bold=bool(style.bold), italic=bool(style.italic))
+
     def resolve(self, family: str, text: str = "", *, bold: bool = False, italic: bool = False) -> FontResolution:
         requested = family.strip() or "sans-serif"
         normalized = _normalize_family(requested)
@@ -137,17 +140,36 @@ def _load_faces(search_paths: tuple[str, ...]) -> tuple[FontFace, ...]:
 def prepare_document_fonts(
     document: DocumentModel,
     resolver: FontResolver | None = None,
+    *, limits: od.DocumentLimits | None = None,
 ) -> tuple[DocumentModel, FontResolutionReport]:
     """Resolve fonts in a deep copy, preserving the caller's canonical model."""
     prepared = copy.deepcopy(document)
+    # Resolve only font bindings in the private renderer view through the SDK cascade.
+    context = DocumentModel(styles=prepared.styles, resources=prepared.resources)
+    for location in od.walk_model(prepared, limits=limits):
+        paragraph = location.node
+        if not isinstance(paragraph, Paragraph):
+            continue
+        for run in paragraph.content:
+            if not isinstance(run, TextRun):
+                continue
+            effective = od.resolve_style(context, paragraph.style_id, overrides=run.style, limits=limits)
+            reference = od.get_font_reference(effective, limits=limits)
+            if reference is not None:
+                od.set_font_reference(run.style, reference, limits=limits)
+                if run.style.font_family is None:
+                    run.style.font_family = effective.font_family
     registry = resolver or FontResolver.system()
     report = FontResolutionReport()
     usages: dict[str, dict[str, object]] = {}
 
     def collect_style(style: TextStyle, text: str) -> None:
-        if not style.font_family:
+        reference = od.get_font_reference(style, limits=limits)
+        if not style.font_family and reference is None:
             return
         key = f"{style.font_family}|{int(bool(style.bold))}|{int(bool(style.italic))}"
+        if reference is not None:
+            key += f'|resource={reference.resource_id!r}|face={reference.face_index!r}'
         usage = usages.setdefault(key, {"styles": [], "style_ids": set(), "text": []})
         style_ids = usage["style_ids"]
         if isinstance(style_ids, set) and id(style) not in style_ids:
@@ -181,7 +203,7 @@ def prepare_document_fonts(
             continue
         style = styles[0]
         text = "".join(str(value) for value in texts)
-        resolution = registry.resolve(style.font_family or "", text, bold=bool(style.bold), italic=bool(style.italic))
+        resolution = registry.resolve_style(style, text)
         report.resolutions[key] = resolution
         for used_style in styles:
             used_style.font_family = resolution.resolved

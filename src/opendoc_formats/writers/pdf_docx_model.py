@@ -9,6 +9,7 @@ from dataclasses import replace
 from opendoc_model import (
     Box,
     DocumentModel,
+    FontReference,
     Formula,
     Image,
     Paragraph,
@@ -17,6 +18,8 @@ from opendoc_model import (
     Table,
     TextRun,
     WidthMeasure,
+    get_font_reference,
+    set_font_reference,
     set_preferred_width,
     walk_model,
 )
@@ -85,7 +88,7 @@ def prepare_pdf_docx(document: DocumentModel, *, limits: DocumentLimits | None =
                                     'vertical_relative_from': 'page', 'wrap': 'none', 'allow_overlap': True})
         elif isinstance(node, TextRun):
             family = node.style.font_family
-            if family in _STANDARD_FONTS and _plain_name(family) not in embedded_names:
+            if family in _STANDARD_FONTS and _plain_name(family) not in embedded_names and get_font_reference(node.style) is None:
                 node.style.properties['pdf_source_font'] = family
                 node.style.font_family = _STANDARD_FONTS[family]
         elif isinstance(node, Table):
@@ -150,7 +153,11 @@ def _split_lines(blocks: list) -> list:
             paints = iter(span.get('paint', {}) for spans in properties['pdf_native_lines'] for span in spans)
             for run in block.content:
                 if isinstance(run, TextRun) and run.properties.get('pdf_origin'):
-                    run.properties.update(next(paints))
+                    paint = deepcopy(next(paints))
+                    identifier = paint.pop('pdf_font_resource', None)
+                    if identifier is not None:
+                        set_font_reference(run.style, FontReference(identifier))
+                    run.properties.update(paint)
         boxes = block.properties.get('pdf_line_boxes') if isinstance(block, Paragraph) else None
         counts = block.properties.get('pdf_line_run_counts') if isinstance(block, Paragraph) else None
         origins = block.properties.get('pdf_line_origins') if isinstance(block, Paragraph) else None

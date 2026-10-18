@@ -353,10 +353,10 @@ def test_embedded_font_program_precedes_base14_alias(tmp_path):
     assert restored.text == 'f i t'
 
 
-def test_same_family_different_programs_require_explicit_model_binding(tmp_path):
+def test_same_family_different_programs_keep_explicit_model_binding(tmp_path):
     from fontTools.pens.ttGlyphPen import TTGlyphPen
     from fontTools.ttLib import TTFont
-    from opendoc_model import ResourceKind, TextRun
+    from opendoc_model import ResourceKind, TextRun, get_font_reference, set_font_reference
 
     from tests.writers.test_pdf_unicode import _font
 
@@ -384,10 +384,80 @@ def test_same_family_different_programs_require_explicit_model_binding(tmp_path)
     assert len(resources) == 2 and resources[0].data != resources[1].data
     families = {ref.node.style.font_family for ref in walk_model(model) if isinstance(ref.node, TextRun)}
     assert len(families) == 1 and next(iter(families)).startswith('OwnLigature')
+    runs = [ref.node for ref in walk_model(model) if isinstance(ref.node, TextRun)]
+    programs = [model.resources[get_font_reference(run.style).resource_id].data for run in runs]
+    assert programs == [font.read_bytes() for font in fonts]
+    assert all(get_font_reference(run.style).face_index is None for run in runs)
+    for cycle in range(2):
+        model = document_from_json(document_to_json(model))
+        report = write_document(model, output)
+        assert report.success, report.issues
+        restored = read_document(output).document
+        restored_runs = [ref.node for ref in walk_model(restored) if isinstance(ref.node, TextRun)]
+        assert len({get_font_reference(run.style).resource_id for run in restored_runs}) == 2
+        assert len({run.style.font_family for run in restored_runs}) == 2
+        # Compare actual glyph outlines, independent of Word aliases and subsetting bytes.
+        for original, run in zip(fonts, restored_runs, strict=True):
+            data = restored.resources[get_font_reference(run.style).resource_id].data
+            with TTFont(original) as expected, TTFont(BytesIO(data)) as actual:
+                glyph = actual.getBestCmap()[ord('f')]
+                assert list(actual['glyf'][glyph].coordinates) == list(expected['glyf']['f'].coordinates)
+        model = restored
+    # A model edit swaps actual programs while keeping the same visible family label.
+    model = read_document(source).document
+    runs = [ref.node for ref in walk_model(model) if isinstance(ref.node, TextRun)]
+    references = [get_font_reference(run.style) for run in runs]
+    for run, reference in zip(runs, reversed(references), strict=True):
+        set_font_reference(run.style, reference)
+    # Inherit the first binding through a named style using the SDK cascade.
+    from opendoc_model import TextStyle
+
+    model.styles['bound'] = TextStyle(font_family=runs[0].style.font_family)
+    set_font_reference(model.styles['bound'], get_font_reference(runs[0].style))
+    set_font_reference(runs[0].style, None)
+    model.sections[0].blocks[0].style_id = 'bound'
+    before = document_to_json(model)
+    report = write_document(model, output)
+    assert report.success, report.issues
+    assert document_to_json(model) == before
+    restored = read_document(output).document
+    restored_runs = [ref.node for ref in walk_model(restored) if isinstance(ref.node, TextRun)]
+    for original, run in zip(reversed(fonts), restored_runs, strict=True):
+        data = restored.resources[get_font_reference(run.style).resource_id].data
+        with TTFont(original) as expected, TTFont(BytesIO(data)) as actual:
+            assert list(actual['glyf'][actual.getBestCmap()[ord('f')]].coordinates) == list(expected['glyf']['f'].coordinates)
+    # Without native binding evidence the previous destination remains protected.
+    model = read_document(source).document
+    for location in walk_model(model):
+        if isinstance(location.node, TextRun):
+            set_font_reference(location.node.style, None)
     output.write_bytes(b'previous destination')
-    report = PdfModelConverter().convert(source, output)
+    report = write_document(model, output)
     assert not report.success
     assert any(issue.feature == 'font-resource-binding' for issue in report.issues)
+    assert output.read_bytes() == b'previous destination'
+
+
+def test_pdf_font_binding_unknown_collection_face_is_not_defaulted(tmp_path):
+    from opendoc_model import FontReference, TextRun, get_font_reference, set_font_reference
+
+    from tests.writers.test_pdf_unicode import _font
+
+    font, source, output = tmp_path / 'own.ttf', tmp_path / 'own.pdf', tmp_path / 'previous.docx'
+    _font(font)
+    with fitz.open() as native:
+        page = native.new_page()
+        page.insert_font(fontname='Own', fontfile=str(font))
+        page.insert_text((54, 90), 'f', fontname='Own')
+        native.save(source)
+    model = read_document(source).document
+    run = next(location.node for location in walk_model(model) if isinstance(location.node, TextRun))
+    reference = get_font_reference(run.style)
+    set_font_reference(run.style, FontReference(reference.resource_id, face_index=1))
+    output.write_bytes(b'previous destination')
+    report = write_document(model, output)
+    assert not report.success
+    assert any(issue.feature == 'font-unavailable' for issue in report.issues)
     assert output.read_bytes() == b'previous destination'
 
 

@@ -1471,7 +1471,7 @@ requires-dist = [
     { name = "lxml", marker = "extra == 'pptx'", specifier = ">=5" },
     { name = "mkdocs", marker = "extra == 'docs'", specifier = ">=1.6,<2" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.15" },
-    { name = "opendoc-model", url = "https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.13.0/opendoc_model-0.13.0-py3-none-any.whl" },
+    { name = "opendoc-model", url = "https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.14.0/opendoc_model-0.14.0-py3-none-any.whl" },
     { name = "pdf2docx", marker = "extra == 'pdf-docx'", specifier = ">=0.2" },
     { name = "pdfplumber", marker = "extra == 'pdf-layout'", specifier = ">=0.11" },
     { name = "pillow", marker = "extra == 'pptx'", specifier = ">=10" },
@@ -1489,10 +1489,10 @@ provides-extras = ["pdf-text", "pdf", "pdf-rich", "pdf-docx", "pdf-layout", "doc
 
 [[package]]
 name = "opendoc-model"
-version = "0.13.0"
-source = { url = "https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.13.0/opendoc_model-0.13.0-py3-none-any.whl" }
+version = "0.14.0"
+source = { url = "https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.14.0/opendoc_model-0.14.0-py3-none-any.whl" }
 wheels = [
-    { url = "https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.13.0/opendoc_model-0.13.0-py3-none-any.whl", hash = "sha256:f79f48b028d0a492a59b666ac200bace764ebf1d835558319c7476f4da2c164f" },
+    { url = "https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.14.0/opendoc_model-0.14.0-py3-none-any.whl", hash = "sha256:7237cb65f3a7fddef4c9dfd9fbb055ad1be18dab207459b2894e87d7be18533d" },
 ]
 
 [package.metadata]

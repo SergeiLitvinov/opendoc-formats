@@ -13,7 +13,7 @@ def prepare_fonts(
     document: DocumentModel, report: ConversionReport, *, limits: DocumentLimits | None = None,
     resolver: FontResolver | None = None,
 ) -> DocumentModel:
-    prepared, font_report = prepare_document_fonts(document, resolver or FontResolver.system())
+    prepared, font_report = prepare_document_fonts(document, resolver or FontResolver.system(), limits=limits)
     # Canonical input is validated by the registry; native renderers own their
     # fallback semantics. SDK preflight here enforces the prepared model budget.
     prepared.validate(limits=limits)

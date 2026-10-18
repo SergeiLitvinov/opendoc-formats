@@ -80,7 +80,7 @@ def write_docx_model(
                            reference.path)
     from opendoc_formats.fonts.resource_fonts import document_font_resolver
 
-    with document_font_resolver(document, report) as resolver:
+    with document_font_resolver(document, report, limits=limits) as resolver:
         return _write_validated_docx(document, output, report, resolver, limits=limits)
 
 

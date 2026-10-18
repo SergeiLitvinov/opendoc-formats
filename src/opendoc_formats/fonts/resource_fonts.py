@@ -9,7 +9,7 @@ from dataclasses import replace
 from io import BytesIO
 from typing import Any, Iterator
 
-from opendoc_model import DocumentModel, IssueSeverity, ResourceKind
+from opendoc_model import DocumentLimits, DocumentModel, IssueSeverity, ResourceKind, TextStyle, get_font_reference
 
 from opendoc_formats.fonts.resolver import FontFace, FontResolution, FontResolver, _read_face
 from opendoc_formats.support.artifacts import ArtifactWorkspace
@@ -35,16 +35,39 @@ def font_program_names(data: bytes) -> tuple[str, tuple[str, ...]]:
 
 class ResourceFontResolver(FontResolver):
     def __init__(self, embedded: FontResolver, aliases: dict[str, str], system: FontResolver,
-                 native_names: dict[str, str], bindings: dict[tuple[str, bool, bool], FontFace], *, strict: bool) -> None:
+                 native_names: dict[str, str], bindings: dict[tuple[str, bool, bool], FontFace], *, strict: bool,
+                 resource_faces: dict[str, FontFace] | None = None, ambiguous: set[str] | None = None,
+                 report: Any = None, limits: DocumentLimits | None = None) -> None:
         super().__init__(system.faces)
         self.embedded = embedded
         self.aliases = aliases
         self.native_names = native_names
         self.bindings = bindings
         self.strict = strict
+        self.resource_faces = resource_faces or {}
+        self.ambiguous = ambiguous or set()
+        self.report = report
+        self.limits = limits
+
+    def resolve_style(self, style: TextStyle, text: str = '') -> FontResolution:
+        reference = get_font_reference(style, limits=self.limits)
+        if reference is None:
+            return super().resolve_style(style, text)
+        face = self.resource_faces.get(reference.resource_id)
+        # This finite profile supports standalone TTF/OTF, never a guessed collection face.
+        if face is None or reference.face_index not in (None, 0):
+            return FontResolution(style.font_family or '', style.font_family or '', None, False, 1.0,
+                                  tuple(sorted(set(text))), False)
+        resolution = FontResolver([face]).resolve(face.family, text, bold=bool(style.bold), italic=bool(style.italic))
+        return replace(resolution, requested=style.font_family or face.family,
+                       resolved=self.native_names.get(str(face.path), face.family))
 
     def resolve(self, family: str, text: str = '', *, bold: bool = False, italic: bool = False) -> FontResolution:
         actual = self.aliases.get(_plain_name(family), family)
+        if actual in self.ambiguous:
+            self.report.add(IssueSeverity.LOSS, 'font-resource-binding',
+                            f'Ambiguous PDF font program {family!r} requires an explicit resource binding')
+            return FontResolution(family, family, None, False, 1.0, tuple(sorted(set(text))), False)
         bound = self.bindings.get((_plain_name(family), bold, italic))
         registry = FontResolver([bound]) if bound else self.embedded
         resolution = registry.resolve(bound.family if bound else actual, text, bold=bold, italic=italic)
@@ -55,18 +78,17 @@ class ResourceFontResolver(FontResolver):
 
 
 @contextmanager
-def document_font_resolver(document: DocumentModel, report: Any) -> Iterator[FontResolver]:
+def document_font_resolver(document: DocumentModel, report: Any, *,
+                           limits: DocumentLimits | None = None) -> Iterator[FontResolver]:
     fonts = [resource for resource in document.resources.values() if resource.kind is ResourceKind.FONT and resource.data]
     system = FontResolver.system()
-    if not fonts:
-        yield system
-        return
     with ArtifactWorkspace(prefix='opendoc_formats_font_resources_') as workspace:
         faces = []
         aliases = {}
         native_names = {}
         bindings = {}
         variants = {}
+        resource_faces = {}
         pdf = document.metadata.get('pdf_docx_layout') is not None
         for index, resource in enumerate(fonts):
             location = f'resources[{resource.id!r}]'
@@ -86,13 +108,10 @@ def document_font_resolver(document: DocumentModel, report: Any) -> Iterator[Fon
                                'Source font embedding is restricted; installed font fallback requires verification', location)
                 digest = hashlib.sha256(resource.data).hexdigest()
                 key = (face.normalized_family, face.weight, face.italic)
-                if pdf and key in variants and variants[key] != digest:
-                    report.add(IssueSeverity.LOSS, 'font-resource-binding',
-                               'Different PDF font programs share a family/variant; an explicit run resource binding is required',
-                               location)
-                variants[key] = digest
+                variants.setdefault(key, set()).add(digest)
+                resource_faces[resource.id] = face
                 native = resource.properties.get('docx_font_family')
-                if pdf:
+                if pdf or not isinstance(native, str):
                     native = 'ODF Embedded ' + digest[:12]
                 if isinstance(native, str):
                     native_names[str(path)] = native
@@ -104,4 +123,7 @@ def document_font_resolver(document: DocumentModel, report: Any) -> Iterator[Fon
                 faces.append(face)
             except Exception as error:  # noqa: BLE001 - untrusted font programs need located diagnostics
                 report.add(IssueSeverity.LOSS, 'font-resource', f'Embedded font could not be used: {error}', location)
-        yield ResourceFontResolver(FontResolver(faces), aliases, system, native_names, bindings, strict=pdf)
+        ambiguous = {face.family for face in faces
+                     if pdf and len(variants[(face.normalized_family, face.weight, face.italic)]) > 1}
+        yield ResourceFontResolver(FontResolver(faces), aliases, system, native_names, bindings, strict=pdf,
+                                   resource_faces=resource_faces, ambiguous=ambiguous, report=report, limits=limits)
