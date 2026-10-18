@@ -387,7 +387,10 @@ source coordinate convention, все четвертьобороты, typed crop/
   Расширить: частично обрезанный редактируемый текст в Word, общая композиция
   смешанных групп, кривых/штрихов и масок; восстановление нативного редактирования
   children/group, проекция удалённых occurrences, transforms/masks и других
-  форматов. Knockout остаётся явным отказом: MuPDF и Poppler/PDFium расходятся
+  форматов. Нативный `wpg:wgp` с `effectDag/alphaModFix` сохраняет отдельные
+  фигуры и общую opacity в Word, но печатается растром; проверять векторный
+  вывод, не считать одно наличие DrawingML-эффекта закрытием качества.
+  Knockout остаётся явным отказом: MuPDF и Poppler/PDFium расходятся
   в минимальном примере; сверить реализацию движков с ISO 32000-1 11.4.6,
   включая fractional shape, и подтвердить результат независимым корпусом.
   Нужны nonseparable blend, AIS/TK/overprint, stencil/произвольные soft masks, preblended `/Matte`/color-key,
