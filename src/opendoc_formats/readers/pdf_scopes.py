@@ -43,7 +43,7 @@ def needs_scene(evidence: dict) -> bool:
                 continue
             points = rectangle_points(clip)
             box = axis_rectangle(points) if points else None
-            if box is None or not contains(box, paint['bbox']):
+            if box is None or not contains(box, paint.get('ink_bbox', paint['bbox'])):
                 return True
     return False
 

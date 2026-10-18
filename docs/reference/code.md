@@ -474,9 +474,9 @@ Validate adapter-owned native PDF paint evidence before a target projection.
 
 - `finite_number(value: Any) -> float` — [строка 9](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_graphics.py#L9)
 - `paint_clips(evidence: dict, sequence: int, kinds: set[str], *, compositing: bool=False) -> tuple[dict, list[dict]]` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_graphics.py#L15)
-- `rectangle_points(clip: dict) -> list[tuple[float, float]] | None` — [строка 68](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_graphics.py#L68)
-- `axis_rectangle(points: list[tuple[float, float]], *, tolerance: float=0.0001) -> list[float] | None` — [строка 77](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_graphics.py#L77)
-- `contains(bounds: list[float], inner: list[float]) -> bool` — [строка 96](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_graphics.py#L96)
+- `rectangle_points(clip: dict) -> list[tuple[float, float]] | None` — [строка 75](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_graphics.py#L75)
+- `axis_rectangle(points: list[tuple[float, float]], *, tolerance: float=0.0001) -> list[float] | None` — [строка 84](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_graphics.py#L84)
+- `contains(bounds: list[float], inner: list[float]) -> bool` — [строка 103](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf_graphics.py#L103)
 
 Импорты: `__future__`, `typing`
 

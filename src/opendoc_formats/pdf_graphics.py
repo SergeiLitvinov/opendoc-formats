@@ -29,6 +29,13 @@ def paint_clips(evidence: dict, sequence: int, kinds: set[str], *, compositing: 
     x0, y0, x1, y1 = map(finite_number, bounds)
     if x1 < x0 or y1 < y0 or not 0 <= finite_number(paint.get('alpha')) <= 1:
         raise ValueError('Invalid native PDF paint bounds or opacity')
+    ink = paint.get('ink_bbox')
+    if ink is not None:
+        if not isinstance(ink, list) or len(ink) != 4:
+            raise ValueError('Invalid native PDF glyph bounds')
+        ix0, iy0, ix1, iy1 = map(finite_number, ink)
+        if ix1 < ix0 or iy1 < iy0 or not contains(bounds, ink):
+            raise ValueError('Invalid native PDF glyph bounds')
     result = []
     for key in ('clips', 'groups'):
         identifiers, records = paint.get(key), evidence.get(key)

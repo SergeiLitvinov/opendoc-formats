@@ -148,6 +148,38 @@ def test_partial_text_is_whole_in_model_and_clip_removal_is_authoritative(tmp_pa
     assert any(isinstance(r.node, TextRun) and r.node.text == text.text for r in walk_model(restored))
 
 
+@pytest.mark.parametrize(('left', 'accepted'), [(80.5, True), (81.3, False)])
+def test_glyph_cache_margin_is_not_mistaken_for_subpoint_ink_clipping(tmp_path, left, accepted):
+    original, source = tmp_path / 'original.pdf', tmp_path / 'text.pdf'
+    grouped_form(original, partial_text=True)
+    with fitz.open(original) as native:
+        stream = native[0].get_contents()[-1]
+        native.update_stream(stream, native.xref_stream(stream).replace(
+            b'80 240 25 30 re W n', f'{left} 240 170 30 re W n'.encode()))
+        native.save(source)
+    model = read_document(source).document
+    paint = next(p for p in model.sections[0].properties['pdf_graphics']['paints'] if p['kind'] == 'fill-text' and p['clips'])
+    assert paint['bbox'][0] < 80.5 < paint['ink_bbox'][0] < 81.3 < paint['ink_bbox'][0]+1
+    destination = tmp_path / 'previous.docx'
+    destination.write_bytes(b'previous')
+    result = PdfModelConverter().convert(source, destination)
+    assert result.success is accepted, result.issues
+    if not accepted:
+        assert destination.read_bytes() == b'previous'
+
+
+@pytest.mark.parametrize('ink', [[0], [2, 0, 1, 1], [0, 0, float('nan'), 1]])
+def test_malformed_glyph_bounds_refuse_atomically(tmp_path, ink):
+    source, destination = tmp_path / 'source.pdf', tmp_path / 'previous.docx'
+    grouped_form(source, partial_text=True)
+    model = read_document(source).document
+    paint = next(p for p in model.sections[0].properties['pdf_graphics']['paints'] if p['kind'] == 'fill-text' and p['clips'])
+    paint['ink_bbox'] = ink
+    destination.write_bytes(b'previous')
+    assert not write_document(model, destination).success
+    assert destination.read_bytes() == b'previous'
+
+
 def test_removed_scene_does_not_restore_legacy_clip(tmp_path):
     source = tmp_path / 'partial.pdf'
     grouped_form(source, partial_text=True)
@@ -182,7 +214,7 @@ def test_unimplemented_target_does_not_silently_ignore_scope(tmp_path, extension
     assert any(issue.feature == 'export.graphics-scopes' for issue in result.issues)
 
 
-@pytest.mark.parametrize('policy', ['gray', 'AIS', 'op', 'TK', 'BM'])
+@pytest.mark.parametrize('policy', ['gray', 'AIS', 'op', 'TK', 'BM', 'BM-array'])
 def test_color_and_shape_policies_refuse_instead_of_assuming_rgb_or_opacity(tmp_path, policy):
     original, source = tmp_path / 'original.pdf', tmp_path / 'policy.pdf'
     grouped_form(original, opacity=.5)
@@ -190,8 +222,9 @@ def test_color_and_shape_policies_refuse_instead_of_assuming_rgb_or_opacity(tmp_
         form = native[0].get_xobjects()[0][0]
         if policy == 'gray':
             native.xref_set_key(form, 'Group/CS', '/DeviceGray')
-        elif policy == 'BM':
-            native.xref_set_key(form, 'Resources/ExtGState/ChildAlpha/BM', '/UnknownTestMode')
+        elif policy in {'BM', 'BM-array'}:
+            native.xref_set_key(form, 'Resources/ExtGState/ChildAlpha/BM',
+                                '/UnknownTestMode' if policy == 'BM' else '[/UnknownOne /UnknownTwo]')
         else:
             native.xref_set_key(form, 'Resources/ExtGState/ChildAlpha/' + policy, 'false' if policy == 'TK' else 'true')
         native.save(source)

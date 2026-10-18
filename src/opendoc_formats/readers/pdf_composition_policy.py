@@ -31,6 +31,11 @@ def unsupported_policy(document: Any, limits: DocumentLimits) -> str | None:
                 child = mupdf.pdf_dict_get_val(value, index)
                 if name == 'BM' and mupdf.pdf_is_name(child) and mupdf.pdf_to_name(child) not in blend_names:
                     return 'BM'
+                if name == 'BM' and mupdf.pdf_is_array(child) and not any(
+                    mupdf.pdf_to_name(mupdf.pdf_array_get(child, offset)) in blend_names
+                    for offset in range(mupdf.pdf_array_len(child))
+                ):
+                    return 'BM'
                 if ((name in ('AIS', 'OP', 'op') and mupdf.pdf_to_bool(child))
                         or (name == 'TK' and not mupdf.pdf_to_bool(child))
                         or name in ('DefaultRGB', 'DefaultGray', 'DefaultCMYK')):

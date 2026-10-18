@@ -81,6 +81,7 @@ def native_paint_states(page: Any, *, limits: DocumentLimits | None = None) -> d
             self.mask_depth = 0
             self.tile_depth = 0
             self.image_masks = {}
+            self.clipped_glyphs = 0
             for name in ('fill_path', 'stroke_path', 'fill_text', 'stroke_text', 'ignore_text',
                          'fill_image', 'fill_image_mask', 'fill_shade', 'clip_path', 'clip_stroke_path',
                          'clip_text', 'clip_stroke_text', 'clip_image_mask', 'pop_clip', 'begin_group',
@@ -99,10 +100,44 @@ def native_paint_states(page: Any, *, limits: DocumentLimits | None = None) -> d
 
         fill_path = paint_callback('fill-path')
         stroke_path = paint_callback('stroke-path')
-        fill_text = paint_callback('fill-text')
         stroke_text = paint_callback('stroke-text')
         ignore_text = paint_callback('ignore-text')
         fill_shade = paint_callback('fill-shade')
+
+        def fill_text(self, ctx: Any, text: Any, matrix: Any, colorspace: Any, color: Any,
+                      alpha: float, params: Any) -> None:
+            self.paint('fill-text', float(alpha))
+            if self.error is not None or not self.clip_stack:
+                return
+            # Text bboxlog includes a cache/rasterization margin. Query each
+            # actual glyph bound instead; a margin touching a clip is not a cut.
+            try:
+                bounds = None
+                span = text.head
+                while span:
+                    native = mupdf.FzTextSpan(span)
+                    font = native.font()
+                    for offset in range(span.len):
+                        self.clipped_glyphs += 1
+                        guard(self.clipped_glyphs, max_operations, 'nodes')
+                        item = native.items(offset)
+                        if item.gid < 0:
+                            continue
+                        transform = mupdf.FzMatrix(span.trm)
+                        transform.e, transform.f = item.x, item.y
+                        box = mupdf.fz_bound_glyph(font, item.gid, mupdf.fz_concat(transform, mupdf.FzMatrix(matrix)))
+                        if box.x0 >= box.x1 or box.y0 >= box.y1:
+                            continue
+                        values = [box.x0, box.y0, box.x1, box.y1]
+                        if any(not math.isfinite(v) or abs(v) > 1_000_000 for v in values):
+                            raise ValueError('Invalid native glyph bounds')
+                        bounds = values if bounds is None else [min(bounds[0], box.x0), min(bounds[1], box.y0),
+                                                               max(bounds[2], box.x1), max(bounds[3], box.y1)]
+                    span = span.next
+                if bounds is not None:
+                    paints[-1]['ink_bbox'] = bounds
+            except (ArtifactLimitError, AttributeError, TypeError, RuntimeError, ValueError) as error:
+                self.error = error
 
         def fill_image_mask(self, *args: Any) -> None:
             self.paint('fill-image', float(args[-2]))

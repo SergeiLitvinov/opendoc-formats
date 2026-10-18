@@ -87,7 +87,7 @@ def verify_text_clip(properties: dict, evidence: dict) -> None:
     for clip in clips:
         points = rectangle_points(clip)
         bounds = axis_rectangle(points) if points else None
-        if bounds is None or not contains(bounds, paint['bbox']):
+        if bounds is None or not contains(bounds, paint.get('ink_bbox', paint['bbox'])):
             raise ValueError('Typed text clip intersects glyphs; native editable Word clipping is not verified')
     properties['pdf_graphics_state_unknown'] = False
 
