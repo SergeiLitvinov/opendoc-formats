@@ -26,8 +26,12 @@ def read_run_images(run: Any, model: DocumentModel) -> list[Image]:
     from docx.oxml.ns import qn
     from lxml import etree
 
-    images: list[Image] = []
+    from opendoc_formats.readers.docx_groups import stage_groups
+
+    images: list[Image] = stage_groups(run, model)
     for blip in run._r.xpath(".//a:blip"):
+        if any(etree.QName(a).localname in {'wgp', 'wpc'} for a in blip.iterancestors()):
+            continue  # A group is one semantic viewport, never extra flattened blips.
         relationship_id = blip.get(qn("r:embed"))
         fallback_part = run.part.related_parts.get(relationship_id) if relationship_id else None
         image_part = _preferred_svg_part(blip, run) or fallback_part

@@ -48,17 +48,21 @@ def project_scopes(document: DocumentModel, section: Section, *, limits: Documen
 
     def visit(key: str, group_stack: list[int], clip_stack: list[int]) -> None:
         item = groups.get(key) or occurrences[key]
-        if key in groups and 'pdf_blending_colorspace' not in item.extra:
-            raise ValueError('Group blending space is unknown; no RGB assumption is made')
         if item.transform != AffineTransform() or item.mask_resource_id is not None:
             raise ValueError('Edited scope transform/mask requires a verified target projection')
         value = item.compositing
         if value is None or any(getattr(value, name) is None for name in ('opacity', 'isolated', 'knockout', 'blend_mode')):
             raise ValueError('Typed scope composition is unknown')
+        color_space = value.color_space
+        if color_space is None or color_space.space is None:
+            raise ValueError('Typed group blending space is unknown; native extra is not a fallback')
+        if color_space.profile_resource_id is not None or color_space.space not in {'rgb', 'gray', 'cmyk'}:
+            raise ValueError('Group color profile requires a separately verified native projection')
         group_stack = [*group_stack, len(evidence['groups'])]
         evidence['groups'].append({'opacity': value.opacity, 'isolated': value.isolated, 'knockout': value.knockout,
                                    'blendmode': BLENDS.index(value.blend_mode),
-                                   'colorspace': item.extra.get('pdf_blending_colorspace', 'DeviceRGB')})
+                                   'colorspace': {'rgb': 'DeviceRGB', 'gray': 'DeviceGray',
+                                                  'cmyk': 'DeviceCMYK'}[color_space.space]})
         if item.clip_id is not None:
             clip = clips[item.clip_id]
             if clip.transform != AffineTransform() or clip.fill_rule is None:

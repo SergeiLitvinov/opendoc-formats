@@ -133,7 +133,9 @@ def read_docx_model(
             )
         )
     from opendoc_formats.readers.docx_fonts import attach_font_references
+    from opendoc_formats.readers.docx_groups import attach_groups
 
+    attach_groups(model, limits=limits)
     attach_font_references(model, limits=limits)
     _attach_docx_provenance(model, source)
     attach_docx_diagnostics(document, model, source, limits=limits)

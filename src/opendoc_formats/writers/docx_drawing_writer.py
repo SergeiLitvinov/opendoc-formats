@@ -6,6 +6,7 @@ from io import BytesIO
 from pathlib import Path
 from typing import Any
 
+from opendoc_model import DocumentLimits
 from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import VECTOR_IMAGE_MEDIA_TYPES, DocumentModel, Image, Resource
 from opendoc_model.units import degrees_to_ooxml_angle
@@ -19,7 +20,18 @@ def write_image(
     document: DocumentModel,
     report: ConversionReport,
     location: str,
+    *, limits: DocumentLimits | None = None,
 ) -> None:
+    from opendoc_formats.writers.docx_groups import bound_scene, write_group
+
+    try:
+        scene = bound_scene(document, image, limits=limits)
+        if scene is not None:
+            write_group(paragraph, image, scene)
+            return
+    except ValueError as error:
+        report.add(IssueSeverity.ERROR, 'docx.graphics-group', str(error), location)
+        return
     from docx.shared import Pt
 
     resource = document.resources.get(image.resource_id)

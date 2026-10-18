@@ -38,6 +38,9 @@ def prepare_pdf_docx(document: DocumentModel, *, limits: DocumentLimits | None =
     if document.source_format != 'pdf':
         raise ValueError('Fixed-layout PDF preparation requires a PDF model')
     prepared = deepcopy(document)
+    from opendoc_formats.readers.pdf_scopes import attach_pdf_scopes
+
+    attach_pdf_scopes(prepared, limits=limits, include_neutral=True)
     from opendoc_formats.fonts.resource_fonts import _plain_name, font_program_names
 
     embedded_names = {_plain_name(resource.properties['pdf_font_name']) for resource in prepared.resources.values()

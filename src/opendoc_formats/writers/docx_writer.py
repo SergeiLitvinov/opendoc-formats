@@ -70,6 +70,8 @@ def write_docx_model(
         from opendoc_model import TextRun, walk_model
 
         projections = document.metadata.get('pdf_docx_group_projection', [])
+        for failure in document.metadata.get('pdf_docx_group_structure_loss', []):
+            report.add(IssueSeverity.LOSS, 'pdf-docx.group-structure', failure['reason'], failure['group'])
         if projections:
             report.metrics['pdf_docx_group_projection'] = projections
             report.add(IssueSeverity.LOSS, 'pdf-docx.group-projection',
@@ -84,6 +86,24 @@ def write_docx_model(
                 report.add(IssueSeverity.WARNING, 'font-substitution',
                            f'Unembedded PDF font {name!r} maps to Word {run.style.font_family!r}; visual comparison is required',
                            reference.path)
+    from opendoc_model import get_anchor, get_integration, walk_model
+
+    from opendoc_formats.ooxml.group_geometry import scene_profile
+
+    integration = get_integration(document, limits=limits)
+    images = {a.id for ref in walk_model(document, limits=limits) if isinstance(ref.node, Image)
+              if (a := get_anchor(ref.node, limits=limits)) is not None}
+    for scene in integration.scenes if integration else ():
+        if scene.scope_version != 1:
+            continue
+        try:
+            if scene.node_id not in images:
+                raise ValueError('Editable vector scope has no explicit drawing viewport binding')
+            scene_profile(scene)
+        except ValueError as error:
+            report.add(IssueSeverity.ERROR, 'docx.graphics-group', str(error), scene.id)
+    if not report.success:
+        return report
     from opendoc_formats.fonts.resource_fonts import document_font_resolver
 
     with document_font_resolver(document, report, limits=limits) as resolver:
@@ -268,7 +288,7 @@ def _write_blocks(
                 counters["paragraphs"] += 1
                 continue
             paragraph = add_paragraph(container, block, document, report, block_location, limits=limits)
-            write_paragraph_content(paragraph, block, document, report, block_location, counters)
+            write_paragraph_content(paragraph, block, document, report, block_location, counters, limits=limits)
             counters["paragraphs"] += 1
         elif isinstance(block, Table):
             write_table(container, block, document, report, block_location, counters,
@@ -280,7 +300,7 @@ def _write_blocks(
             counters["formulas"] += 1
         elif isinstance(block, Image):
             paragraph = container.add_paragraph()
-            write_image(paragraph, block, document, report, block_location)
+            write_image(paragraph, block, document, report, block_location, limits=limits)
             counters["images"] += 1
 
 

@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 from opendoc_model import (
     Anchor,
     DocumentLimits,
     DocumentModel,
+    GroupColorSpace,
     GroupCompositing,
     Image,
     PathCommand,
@@ -28,6 +31,22 @@ BLENDS = ('normal', 'multiply', 'screen', 'overlay', 'darken', 'lighten', 'color
 NEUTRAL = GroupCompositing(opacity=1, isolated=False, knockout=False, blend_mode='normal')
 
 
+def scope_color_spaces(evidence: dict) -> dict[int | None, GroupColorSpace]:
+    """Resolve PDF inheritance in the adapter's explicit RGB device profile."""
+    names = {'DeviceRGB': 'rgb', 'DeviceGray': 'gray', 'DeviceCMYK': 'cmyk'}
+    spaces = {None: GroupColorSpace(names.get(evidence.get('device_color_space')))}
+    for paint in evidence['paints']:
+        parent = None
+        for key in paint['groups']:
+            native = evidence['groups'][key]['colorspace']
+            value = spaces[parent] if native is None else GroupColorSpace(names.get(native), extra={'pdf_native_name': native})
+            if key in spaces and spaces[key] != value:
+                raise ValueError('Inconsistent native group color-space inheritance')
+            spaces[key] = value
+            parent = key
+    return spaces
+
+
 def needs_scene(evidence: dict) -> bool:
     if evidence.get('unknown'):
         return False
@@ -48,12 +67,16 @@ def needs_scene(evidence: dict) -> bool:
     return False
 
 
-def attach_pdf_scopes(document: DocumentModel, *, limits: DocumentLimits | None) -> None:
+def attach_pdf_scopes(document: DocumentModel, *, limits: DocumentLimits | None, include_neutral: bool = False) -> None:
     for index, section in enumerate(document.sections):
         evidence = section.properties.get('pdf_graphics', {})
-        if not needs_scene(evidence):
+        if 'pdf_scene_id' in section.properties:
+            continue  # An explicitly removed scene is never regenerated from native evidence.
+        if not needs_scene(evidence) and not (include_neutral and 'device_color_space' in evidence
+                and any(not g.get('device_page_group') for g in evidence.get('groups', []))):
             continue
         identifier = f'pdf-scopes-{index}'
+        color_spaces = scope_color_spaces(evidence)
         clips = []
         used_clips = {key for paint in evidence['paints'] for key in paint['clips']}
         if any(evidence['clips'][key].get('unknown') for key in used_clips):
@@ -91,19 +114,22 @@ def attach_pdf_scopes(document: DocumentModel, *, limits: DocumentLimits | None)
                     mode = native['blendmode']
                     groups[group_id] = GroupCompositing(opacity=native['opacity'], isolated=native['isolated'],
                                                        knockout=native['knockout'],
-                                                       blend_mode=BLENDS[mode] if 0 <= mode < len(BLENDS) else None)
+                                                       blend_mode=BLENDS[mode] if 0 <= mode < len(BLENDS) else None,
+                                                       color_space=color_spaces[key])
                     children[group_id] = []
                     children[parent].append(group_id)
                 parent = group_id
             occurrence_id = f'paint-{sequence}-{ordinal}'
+            space = color_spaces[paint['groups'][-1] if paint['groups'] else None]
+            neutral = replace(NEUTRAL, color_space=space)
             for offset, key in enumerate(paint['clips']):
                 clip_group = f'{occurrence_id}-clip-{offset}'
-                groups[clip_group] = NEUTRAL
+                groups[clip_group] = neutral
                 children[clip_group] = []
                 children[parent].append(clip_group)
                 parent = clip_group
             children[parent].append(occurrence_id)
-            occurrences.append(SceneOccurrence(occurrence_id, anchor.id, compositing=NEUTRAL))
+            occurrences.append(SceneOccurrence(occurrence_id, anchor.id, compositing=neutral))
             covered.add(sequence)
         scopes = []
         for key, value in groups.items():
@@ -115,7 +141,11 @@ def attach_pdf_scopes(document: DocumentModel, *, limits: DocumentLimits | None)
             native_space = (evidence['groups'][int(key.removeprefix('group-'))]['colorspace']
                             if key.startswith('group-') else 'DeviceRGB')
             scopes.append(VectorGroup(key, tuple(children[key]), clip_id=clip_id, compositing=value,
-                                      extra={'pdf_blending_colorspace': native_space}))
+                                      extra={'pdf_blending_colorspace': native_space,
+                                             'pdf_clip_wrapper': '-clip-' in key,
+                                             'pdf_device_page_group': (evidence['groups'][int(key.removeprefix('group-'))]
+                                                                      .get('device_page_group', False)
+                                                                      if key.startswith('group-') else False)}))
         scene = VectorScene(identifier, section.page.width.pt, section.page.height.pt, groups=tuple(scopes),
                             occurrences=tuple(occurrences), clips=tuple(clips), roots=tuple(children[None]), scope_version=1)
         set_vector_scene(document, scene, limits=limits)

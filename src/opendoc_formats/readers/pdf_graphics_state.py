@@ -208,7 +208,11 @@ def native_paint_states(page: Any, *, limits: DocumentLimits | None = None) -> d
                 self.group_stack.append(len(groups))
                 groups.append({'bbox': [area.x0, area.y0, area.x1, area.y1], 'isolated': bool(isolated),
                                'knockout': bool(knockout), 'blendmode': int(blendmode), 'opacity': float(alpha),
-                               'colorspace': mupdf.ll_fz_colorspace_name(colorspace) if colorspace else None})
+                               'colorspace': mupdf.ll_fz_colorspace_name(colorspace) if colorspace else None,
+                               'device_page_group': bool(len(groups) == 0 and len(self.group_stack) == 1
+                                   and isolated and not knockout and blendmode == 0 and alpha == 1
+                                   and page.parent.xref_get_key(page.xref, 'Group')[0] == 'null'
+                                   and max(abs(a-b) for a, b in zip((area.x0, area.y0, area.x1, area.y1), page.rect)) < .001)})
             except ArtifactLimitError as error:
                 self.error = error
 
@@ -249,7 +253,8 @@ def native_paint_states(page: Any, *, limits: DocumentLimits | None = None) -> d
             raise ValueError('Native PDF paint sequence could not be verified')
         for item, (_, bounds) in zip(paints, native_bounds, strict=True):
             item['bbox'] = list(bounds)
-        evidence = {'version': 1, 'clips': clips, 'groups': groups, 'paints': paints}
+        evidence = {'version': 1, 'clips': clips, 'groups': groups, 'paints': paints,
+                    'device_color_space': 'DeviceRGB'}
         from opendoc_formats.readers.pdf_scopes import needs_scene
 
         if needs_scene(evidence):

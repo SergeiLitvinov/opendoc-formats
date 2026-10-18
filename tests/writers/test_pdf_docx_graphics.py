@@ -169,17 +169,16 @@ def test_curved_vector_clip_is_retained_as_vector_through_two_cycles(tmp_path):
 
 
 @pytest.mark.parametrize('isolated', [False, True])
-def test_neutral_form_group_retains_child_alpha_and_editable_outer_text(tmp_path, isolated):
+def test_neutral_form_group_does_not_claim_editable_structure_without_native_clip(tmp_path, isolated):
     source, output = tmp_path / 'group.pdf', tmp_path / 'group.docx'
     grouped_form(source, isolated=isolated)
     imported = read_document(source)
     groups = imported.document.sections[0].properties['pdf_graphics']['groups']
     assert groups and any(group['isolated'] is isolated for group in groups)
+    output.write_bytes(b'previous')
     report = PdfModelConverter().convert(source, output)
-    assert report.success, report.issues
-    model = read_document(output).document
-    assert any(isinstance(ref.node, TextRun) and ref.node.text == 'Outside group' for ref in walk_model(model))
-    assert len([r for r in model.resources.values() if r.media_type == 'image/svg+xml']) >= 3
+    assert not report.success and output.read_bytes() == b'previous'
+    assert any(i.feature == 'pdf-docx.group-structure' for i in report.issues)
 
 
 @pytest.mark.parametrize('options', [{'blend': 'Hue'}, {'blend': 'Color'}, {'partial_text': True}])

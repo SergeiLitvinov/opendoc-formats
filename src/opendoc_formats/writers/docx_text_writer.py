@@ -113,6 +113,7 @@ def write_paragraph_content(
     report: ConversionReport,
     location: str,
     counters: dict[str, int],
+    *, limits: DocumentLimits | None = None,
 ) -> None:
     """Записать упорядоченное содержимое абзаца."""
 
@@ -190,7 +191,7 @@ def write_paragraph_content(
             write_formula(paragraph, item, report, item_location)
             counters["formulas"] += 1
         elif isinstance(item, Image):
-            write_image(paragraph, item, document, report, item_location)
+            write_image(paragraph, item, document, report, item_location, limits=limits)
             counters["images"] += 1
 
 

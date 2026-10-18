@@ -28,11 +28,24 @@ XLINK = 'http://www.w3.org/1999/xlink'
 
 
 def prepare_section_graphics(document: DocumentModel, section: Section, *, limits: DocumentLimits | None) -> None:
+    from opendoc_model import get_vector_scene
+
     from opendoc_formats.writers.pdf_scope_projection import project_scopes
 
+    identifier = section.properties.get('pdf_scene_id')
+    source_scene = get_vector_scene(document, identifier, limits=limits) if identifier else None
     evidence = project_scopes(document, section, limits=limits)
     if evidence is None:
         return  # Legacy Model transport retains the earlier conservative refusal.
+    if source_scene is None and 'pdf_scene_id' not in section.properties and any(
+        not group.get('device_page_group') for group in evidence.get('groups', [])
+    ):
+        document.metadata.setdefault('pdf_docx_group_structure_loss', []).append({
+            'group': 'legacy', 'reason': 'Legacy PDF group has no authoritative typed editable scope; re-import the source',
+        })
+    from opendoc_formats.writers.pdf_native_groups import project_native_groups
+
+    evidence = project_native_groups(document, section, source_scene, evidence, limits=limits)
     order = evidence.get('paint_order', [])
     if (any(group['opacity'] != 1 or group['knockout'] or group['blendmode']
             or group['colorspace'] not in (None, 'DeviceRGB') for group in evidence.get('groups', []))

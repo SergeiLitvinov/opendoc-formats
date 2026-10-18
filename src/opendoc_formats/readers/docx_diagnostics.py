@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 from collections import Counter
-from dataclasses import fields, is_dataclass
+from dataclasses import fields, is_dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -19,6 +19,7 @@ from opendoc_model import (
     PreservationState,
     Provenance,
     TableCell,
+    get_integration,
     set_integration,
     walk_model,
 )
@@ -174,7 +175,9 @@ def attach_docx_diagnostics(document: Any, model: DocumentModel, source: Path, *
                 state=PreservationState.OPAQUE,
                 provenance=Provenance('docx', str(source), object_id=reference.path),
             ))
-    set_integration(model, IntegrationModel(
-        preservation=tuple(records), assessed_features=tuple(dict.fromkeys(record.issue.code for record in records)),
+    existing = get_integration(model, limits=limits) or IntegrationModel()
+    set_integration(model, replace(existing,
+        preservation=(*existing.preservation, *records),
+        assessed_features=tuple(dict.fromkeys((*existing.assessed_features, *(record.issue.code for record in records)))),
         assessment_complete=False,
     ), limits=limits)

@@ -29,6 +29,17 @@ MODES = ['Normal', 'Multiply', 'Screen', 'Overlay', 'Darken', 'Lighten', 'ColorD
          'ColorBurn', 'HardLight', 'SoftLight', 'Difference', 'Exclusion']
 
 
+def partial_text_pdf(path):
+    """Text clipping in isolation from the independent group-structure contract."""
+    with fitz.open() as native:
+        page = native.new_page(width=400, height=300)
+        page.insert_text((50, 250), 'Outside group', fontsize=12)
+        page.insert_text((80, 50), 'Partially hidden text', fontsize=12)
+        stream = page.get_contents()[-1]
+        native.update_stream(stream, b'q 80 240 25 30 re W n\n'+native.xref_stream(stream)+b'\nQ\n')
+        native.save(path)
+
+
 def _svg_model(document):
     prepared = prepare_pdf_docx(document)
     images = [r.node for r in walk_model(prepared) if isinstance(r.node, Image)]
@@ -125,7 +136,7 @@ def test_typed_group_edits_and_removal_do_not_restore_native_opacity(tmp_path):
 
 def test_partial_text_is_whole_in_model_and_clip_removal_is_authoritative(tmp_path):
     source = tmp_path / 'partial.pdf'
-    grouped_form(source, partial_text=True)
+    partial_text_pdf(source)
     model = read_document(source).document
     identifier = model.sections[0].properties['pdf_scene_id']
     scene = get_vector_scene(model, identifier)
@@ -151,7 +162,7 @@ def test_partial_text_is_whole_in_model_and_clip_removal_is_authoritative(tmp_pa
 @pytest.mark.parametrize(('left', 'accepted'), [(80.5, True), (81.3, False)])
 def test_glyph_cache_margin_is_not_mistaken_for_subpoint_ink_clipping(tmp_path, left, accepted):
     original, source = tmp_path / 'original.pdf', tmp_path / 'text.pdf'
-    grouped_form(original, partial_text=True)
+    partial_text_pdf(original)
     with fitz.open(original) as native:
         stream = native[0].get_contents()[-1]
         native.update_stream(stream, native.xref_stream(stream).replace(
@@ -171,7 +182,7 @@ def test_glyph_cache_margin_is_not_mistaken_for_subpoint_ink_clipping(tmp_path, 
 @pytest.mark.parametrize('ink', [[0], [2, 0, 1, 1], [0, 0, float('nan'), 1]])
 def test_malformed_glyph_bounds_refuse_atomically(tmp_path, ink):
     source, destination = tmp_path / 'source.pdf', tmp_path / 'previous.docx'
-    grouped_form(source, partial_text=True)
+    partial_text_pdf(source)
     model = read_document(source).document
     paint = next(p for p in model.sections[0].properties['pdf_graphics']['paints'] if p['kind'] == 'fill-text' and p['clips'])
     paint['ink_bbox'] = ink
@@ -182,7 +193,7 @@ def test_malformed_glyph_bounds_refuse_atomically(tmp_path, ink):
 
 def test_removed_scene_does_not_restore_legacy_clip(tmp_path):
     source = tmp_path / 'partial.pdf'
-    grouped_form(source, partial_text=True)
+    partial_text_pdf(source)
     model = read_document(source).document
     remove_vector_scene(model, model.sections[0].properties['pdf_scene_id'])
     assert write_document(model, tmp_path / 'unclipped.docx').success
@@ -205,7 +216,7 @@ def test_knockout_semantics_survive_json_but_unverified_docx_is_refused(tmp_path
 @pytest.mark.parametrize('extension', ['pdf', 'html', 'pptx'])
 def test_unimplemented_target_does_not_silently_ignore_scope(tmp_path, extension):
     source = tmp_path / 'partial.pdf'
-    grouped_form(source, partial_text=True)
+    partial_text_pdf(source)
     model = read_document(source).document
     destination = tmp_path / ('previous.' + extension)
     destination.write_bytes(b'previous')

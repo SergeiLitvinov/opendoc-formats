@@ -135,7 +135,11 @@ class ExporterRegistry:
         if errors:
             return fail("export.invalid-model", "; ".join(errors))
         if identifier not in {'docx', 'json'}:
-            from opendoc_model import get_vector_scene
+            from opendoc_model import get_integration, get_vector_scene
+
+            integration = get_integration(document, limits=options.document_limits)
+            if integration and any(s.scope_version == 1 and s.node_id is not None for s in integration.scenes):
+                return fail('export.graphics-scopes', 'Target does not project the bound editable vector group')
 
             for index, section in enumerate(document.sections):
                 scene_id = section.properties.get('pdf_scene_id')
