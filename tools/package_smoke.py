@@ -132,6 +132,21 @@ def main() -> None:
             assert list_report.success and list_report.metrics['latex_route'] == 'native-text-v1'
             list_model = document_from_json(document_to_json(read_document(target).document))
             assert [entry.number for entry in iter_list_numbers(list_model)] == [1, None]
+        native_math = DocumentModel(sections=[Section(blocks=[Paragraph(content=[
+            TextRun('Before '), Formula(r'\frac{x}{2}', FormulaFormat.LATEX, fallback_text='own fraction'),
+            Formula(r'\begin{pmatrix}1&2\\3&4\end{pmatrix}', FormulaFormat.LATEX, display=True),
+            TextRun(' after'),
+        ])])])
+        for index in range(2):
+            target = root / f'math-{index}.tex'
+            report = write_document(native_math, target)
+            assert report.success and report.metrics['latex_route'] == 'native-text-v1'
+            native_math = document_from_json(document_to_json(read_document(target).document))
+            paragraph, = native_math.sections[0].blocks
+            formulas = [run for run in paragraph.content if isinstance(run, Formula)]
+            assert [(f.value, f.display, f.fallback_text) for f in formulas] == [
+                (r'\frac{x}{2}', False, 'own fraction'), (r'\begin{pmatrix}1&2\\3&4\end{pmatrix}', True, ''),
+            ]
         book = root / "base-writer.epub"
         from opendoc_formats.readers.epub_package import read_epub_package
 

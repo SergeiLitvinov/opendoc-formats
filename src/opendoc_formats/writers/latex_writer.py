@@ -15,14 +15,18 @@ def write_latex_model(
         report.add(IssueSeverity.ERROR, 'model', error)
     if not report.success:
         return report
+    from opendoc_model import Formula, walk_model
+
     from opendoc_formats.writers.latex_text import native_text
+
+    has_formulas = any(isinstance(ref.node, Formula) for ref in walk_model(document, limits=limits))
 
     try:
         source = native_text(document, limits=limits)
     except ArtifactLimitError:
         raise
     except ValueError as error:
-        report.add(IssueSeverity.ERROR, 'latex.list-profile', str(error))
+        report.add(IssueSeverity.ERROR, 'latex.formula-profile' if has_formulas else 'latex.list-profile', str(error))
         return report
     if source is not None:
         output.write_bytes(source.encode('utf-8'))
@@ -34,6 +38,11 @@ def write_latex_model(
     from opendoc_formats.support.backends import missing_backends
 
     integration = get_integration(document, limits=limits)
+    if (has_formulas or integration and (integration.formula_trees
+            or any((r.issue.reason or '').startswith('math-') for r in integration.preservation))):
+        report.add(IssueSeverity.ERROR, 'latex.formula-profile',
+                   'Formula structure is outside the native profile; the DOCX bridge is not a structural substitute')
+        return report
     if (any(isinstance(ref.node, Paragraph) and (get_list_item(ref.node, limits=limits) is not None
             or LIST_PROPERTY in ref.node.properties or 'latex_list_id' in ref.node.properties)
             for ref in walk_model(document, limits=limits))

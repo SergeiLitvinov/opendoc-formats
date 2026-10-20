@@ -17,6 +17,7 @@
 | --- | --- | --- |
 | Поддержка и потери | `CapabilityProfile`, `FeatureCapability`, `PreservationRecord`, `PreservationState` | Объявлять конечный профиль и записывать semantic/opaque/visual/lost/rejected с причиной и местом; OF15 |
 | Исходный синтаксис | `SourceFile`, `SourceSpan`, `SourceMap`, `UnknownFragment` | Связывать разобранные узлы с исходником, сохранять неизвестные фрагменты с лимитами; OF04/OF14 |
+| Нативные формулы TeX | `Formula`: value, format, display, fallback_text; JSON и лимиты | Прямая конечная LATEX проекция, TeX syntax/annotations, paragraph boundaries и независимая приёмка принадлежат Formats; дополнительных требований к Model для этого профиля нет |
 | Поля и диапазоны | `TextPosition`, `TextRange`, `Field`, `BibliographyEntry`, `Comment`, `Revision`, `ContentControl` | Разбирать и экспортировать реальные поля, цитаты, комментарии и revisions; OF05 |
 | Вектор | `AffineTransform`, `PathCommand`, `Paint`, `VectorPath`, `VectorGroup`, `VectorScene` | Развивать graphics state и связи с integration scene; конечный ресурсный PDF writer реализован, полнота исходного PDF остаётся OF07 |
 | Диаграммы и стили | `ChartSeries`, `ChartAxis`, `Chart`, `SceneStyle` | Разбирать данные, группы, theme/master/layout без выдачи картинки за редактируемые данные; OF06 |

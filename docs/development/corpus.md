@@ -363,3 +363,20 @@ Python 3.12; TeX distribution не является runtime-зависимост
 Она подтверждает только конечный профиль, а не произвольные macros, labels,
 формулы, таблицы или компоновку. Другие экспортеры явно сообщают LOSS общей
 структуры списка; quality gate может отклонить публикацию такого результата.
+
+## Нативные формулы TeX
+
+`tests/writers/test_latex_math.py` проверяет точные value/format/display/fallback,
+text/formula порядок и paragraph boundaries, формулы внутри пунктов/продолжений
+списка, отдельные Formula blocks, правку режима и выражения, удаление, два JSON/TeX цикла и запрет Office
+imports. Неподдержанные команды/форматы/geometry, numbered environments,
+непривязанные и повреждённые metadata, попытки file/shell/macro/`^^` синтаксиса
+отклоняются до публикации. Fallback — inert metadata, не подмена выражения.
+
+`tests/writers/test_latex_math_acceptance.py` компилирует четыре собственных оригинала
+и по два JSON/TeX цикла через pdflatex с отключённым shell escape. Дроби, корни,
+суммы/интегралы, матрицы, cases/aligned, оба display delimiter и формулы в списках
+дают попиксельно одинаковые страницы MuPDF при 108 dpi; image XObjects отсутствуют.
+Проверка работает в том же Linux CI профиле, что и списки; TeX distribution
+не включается в пакет. MathML/OMML, FormulaTree, numbered equation/align,
+произвольные macros/Unicode и moving arguments не входят в принятую проекцию.

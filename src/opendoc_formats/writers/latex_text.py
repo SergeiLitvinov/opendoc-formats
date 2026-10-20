@@ -8,6 +8,7 @@ from opendoc_model import (
     LIST_PROPERTY,
     DocumentLimits,
     DocumentModel,
+    Formula,
     PageSettings,
     Paragraph,
     PreservationState,
@@ -19,6 +20,7 @@ from opendoc_model import (
 )
 
 from opendoc_formats.support.latex import PREAMBLE, escape_latex
+from opendoc_formats.tex_math import formula_tex
 from opendoc_formats.writers.latex_lists import list_paragraphs
 
 HEADING_COMMANDS = {1: 'section', 2: 'subsection', 3: 'subsubsection', 4: 'paragraph', 5: 'subparagraph'}
@@ -37,7 +39,7 @@ def native_text(document: DocumentModel, *, limits: DocumentLimits | None) -> st
         return None
     integration = get_integration(document, limits=limits)
     if integration:
-        if integration.scenes:
+        if integration.scenes or integration.formula_trees:
             return None
         original = document.resources.get('latex-original-source')
         known_preamble = next((len(prefix) for prefix in (PREAMBLE, PREAMBLE.replace('\n', '\r\n'))
@@ -62,6 +64,10 @@ def native_text(document: DocumentModel, *, limits: DocumentLimits | None) -> st
         return None
     body = []
     for block in section.blocks:
+        if isinstance(block, Formula):
+            proxy = Paragraph(properties={'latex_par_after_list': block.properties.get('latex_par_after_list', True)})
+            body.append((proxy, formula_tex(block, block=True)))
+            continue
         if (not isinstance(block, Paragraph) or block.alignment or block.box or block.visual_surrogate
                 or set(block.properties)-({'source_span'} | HEADING_PROPERTIES | LIST_PROPERTIES)):
             return None
@@ -90,7 +96,14 @@ def native_text(document: DocumentModel, *, limits: DocumentLimits | None) -> st
                 or type(block.properties.get('latex_heading_starred', True)) is not bool):
             return None
         parts = []
+        visible = []
         for run in block.content:
+            if isinstance(run, Formula):
+                if heading is not None:
+                    return None  # Moving arguments need a separate TeX profile.
+                parts.append(formula_tex(run))
+                visible.append('F')  # Formula source whitespace is not paragraph whitespace.
+                continue
             if (not isinstance(run, TextRun) or run.link or run.visual_surrogate or set(run.properties)-{'source_span'}
                     or any(getattr(run.style, field.name) not in (None, {}) for field in fields(run.style)
                            if field.name not in {'bold', 'italic', 'underline'})):
@@ -103,7 +116,8 @@ def native_text(document: DocumentModel, *, limits: DocumentLimits | None) -> st
                 if enabled:
                     text = '\\'+command+'{'+text+'}'
             parts.append(text)
-        plain = block.plain_text
+            visible.append(run.text)
+        plain = ''.join(visible)
         # TeX collapses arbitrary whitespace; do not claim exact text preservation.
         empty_item = not plain and item is not None and item.continuation_of is None and not heading
         if (not plain and not empty_item) or plain != ' '.join(plain.split()) or any(ord(c) < 32 or ord(c) == 127 for c in plain):

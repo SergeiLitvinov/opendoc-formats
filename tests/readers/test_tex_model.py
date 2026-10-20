@@ -46,11 +46,12 @@ Price \$5, caf\'{e}, \% and $x^2$.
     both = next(item for item in blocks[1].content if isinstance(item, TextRun) and item.text == "both")
     assert both.style.bold and both.style.italic
     assert next(item for item in blocks[1].content if item.link).link == "#start"
-    assert blocks[2].plain_text == "Price $5, café, % and x^2."
+    assert blocks[2].plain_text == r"Price $5, café, % and x^2. \frac{1}{2}"
     inline = next(item for item in blocks[2].content if isinstance(item, Formula))
     assert inline.format is FormulaFormat.LATEX and inline.value == "x^2" and not inline.display
-    assert blocks[3].content[0].value == r"\frac{1}{2}" and blocks[3].content[0].display
-    assert [(b.plain_text, b.properties.get("list_level")) for b in blocks[4:]] == [("First", 0), ("Second", 0), ("Nested", 1)]
+    displayed = next(item for item in blocks[2].content if isinstance(item, Formula) and item.display)
+    assert displayed.value == r"\frac{1}{2}"
+    assert [(b.plain_text, b.properties.get("list_level")) for b in blocks[3:]] == [("First", 0), ("Second", 0), ("Nested", 1)]
     assert result.document.metadata["title"] == "Own title"
     assert result.document.resources["latex-original-source"].data == raw
     restored = document_from_json(document_to_json(result.document))

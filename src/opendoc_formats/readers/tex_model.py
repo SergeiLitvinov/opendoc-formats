@@ -41,6 +41,7 @@ from opendoc_model import (
 from opendoc_formats.errors import InvalidDocumentError, OperationCancelledError, ResourceLimitError
 from opendoc_formats.readers.tex_source import TexToken, load_tex_source
 from opendoc_formats.tex_lists import paragraph_markers
+from opendoc_formats.tex_math import formula_markers
 
 _HEADINGS = {"section": 1, "subsection": 2, "subsubsection": 3, "paragraph": 4, "subparagraph": 5, "chapter": 1}
 _STYLES = {"textbf": "bold", "textit": "italic", "emph": "italic", "underline": "underline", "texttt": "monospace"}
@@ -127,7 +128,7 @@ class _Parser:
                  limits: DocumentLimits | None) -> None:
         self.path, self.text, self.tokens, self.cancelled = path, text, tokens, cancelled
         self.index = 0
-        self.blocks: list[Paragraph] = []
+        self.blocks: list[Paragraph | Formula] = []
         self.current: list[TextRun | Formula] = []
         self.properties: dict = {}
         self.metadata: dict = {}
@@ -144,6 +145,8 @@ class _Parser:
         self.current_marker: dict | None = None
         self.list_numbers: dict[str, int] = {}
         self.after_list: bool | None = None
+        self.math_markers = formula_markers(text, tokens, limits=limits)
+        self.math_marker_index = 0
 
     def adjacent_par(self, *, before: bool) -> bool:
         index, step = (self.index-2, -1) if before else (self.index, 1)
@@ -229,6 +232,9 @@ class _Parser:
     ) -> None:
         if not self.body or not value:
             return
+        if (token.kind != 'space' and self.math_marker_index < len(self.math_markers)
+                and self.math_markers[self.math_marker_index][0] <= token.start):
+            raise InvalidDocumentError('Native formula metadata must precede a formula')
         if not self.current:
             self.current_marker = self.take_marker(token.start)
             if self.after_list is not None:
@@ -252,6 +258,17 @@ class _Parser:
                 self.current[0].text = self.current[0].text.lstrip(" ")
             if isinstance(self.current[-1], TextRun):
                 self.current[-1].text = self.current[-1].text.rstrip(" ")
+            self.current = [run for run in self.current if not isinstance(run, TextRun) or run.text]
+            if self.properties.get('latex_formula_block'):
+                if (len(self.current) != 1 or not isinstance(self.current[0], Formula)
+                        or self.list_stack or self.current_marker
+                        or set(self.properties)-{'latex_formula_block', 'latex_par_after_list'}):
+                    raise InvalidDocumentError('Standalone formula metadata contradicts its native paragraph scope')
+                if 'latex_par_after_list' in self.properties:
+                    self.current[0].properties['latex_par_after_list'] = self.properties['latex_par_after_list']
+                self.blocks.append(self.current[0])
+                self.current, self.properties, self.paragraph_start, self.current_marker = [], {}, None, None
+                return
             token = self.paragraph_start
             assert token is not None
             if self.list_stack:
@@ -343,23 +360,40 @@ class _Parser:
                     self.index += 1
                 if not self.body:
                     return
-                if display:
-                    self.flush()
+                if not self.current:
+                    self.current_marker = self.take_marker(token.start)
+                    if self.after_list is not None:
+                        self.properties['latex_par_after_list'] = self.after_list
+                        self.after_list = None
                 self.paragraph_start = self.paragraph_start or token
                 raw = self.text[start : last.start]
+                fallback = raw
+                found = []
+                while (self.math_marker_index < len(self.math_markers)
+                       and self.math_markers[self.math_marker_index][0] <= token.start):
+                    found.append(self.math_markers[self.math_marker_index][1])
+                    self.math_marker_index += 1
+                if len(found) > 1:
+                    raise InvalidDocumentError('Multiple native formula identities before one formula')
+                if found:
+                    fallback = found[0]['fallback_text']
+                    if found[0].get('placement') == 'block':
+                        self.properties['latex_formula_block'] = True
+                if style != TextStyle():
+                    self.warn(token, 'math-style', 'Surrounding text style has no formula style declaration')
                 self.current.append(
                     Formula(
                         raw,
                         FormulaFormat.LATEX,
                         display=display,
-                        fallback_text=raw,
-                        properties={"source_span": self.span(TexToken("math", "", token.start, self.tokens[self.index - 1].end))},
+                        fallback_text=fallback,
+                        properties={"source_span": self.span(TexToken("math", "", token.start, self.tokens[self.index - 1].end)),
+                                    'latex_math_delimiter': '$$' if token.value == '$' and display else
+                                    '$' if token.value == '$' else '\\'+token.value},
                         provenance=self.provenance(TexToken("math", "", token.start, self.tokens[self.index - 1].end)),
                     )
                 )
                 self.paragraph_end = self.tokens[self.index - 1].end
-                if display:
-                    self.flush()
                 return
         raise InvalidDocumentError("Unclosed LaTeX math delimiter")
 
@@ -432,7 +466,11 @@ class _Parser:
                                                          f"list-{token.start}", parent=parent, par_before=par_before))
                         self.after_list = None
                     else:
-                        self.warn(token, "unsupported-environment", f"Environment {target!r} has no semantic layout profile")
+                        reason = ('math-environment' if target in {
+                            'math', 'displaymath', 'equation', 'equation*', 'align', 'align*', 'gather', 'gather*',
+                            'multline', 'multline*', 'eqnarray', 'eqnarray*', 'flalign', 'flalign*', 'alignat', 'alignat*',
+                        } else 'unsupported-environment')
+                        self.warn(token, reason, f"Environment {target!r} has no semantic layout profile")
                     self.walk(style, environment=target, depth=depth + 1)
                     if target in {"itemize", "enumerate"}:
                         self.list_stack.pop()
@@ -580,7 +618,11 @@ def read_tex_model(
     parser.flush()
     if parser.marker_index != len(parser.markers):
         raise InvalidDocumentError('Unattached native paragraph metadata')
+    if parser.math_marker_index != len(parser.math_markers):
+        raise InvalidDocumentError('Unattached native formula metadata')
     for block in parser.blocks:
+        if not isinstance(block, Paragraph):
+            continue
         for item in block.content:
             if isinstance(item, TextRun) and item.properties.get("latex_reference") == "ref":
                 if item.properties["latex_target"] not in parser.labels:
@@ -595,7 +637,7 @@ def read_tex_model(
         source_format="latex",
     )
     for block in parser.blocks:
-        if "latex_heading_level" in block.properties:
+        if isinstance(block, Paragraph) and "latex_heading_level" in block.properties:
             key = f"Heading {block.properties['latex_heading_level']}"
             block.style_id = key
             document.styles[key] = TextStyle()
@@ -603,7 +645,7 @@ def read_tex_model(
     unsafe_lists = any((record.issue.reason or '').startswith('list-') for record in parser.records)
     if unsafe_lists:
         for block in parser.blocks:
-            if get_list_item(block, limits=limits) is not None:
+            if isinstance(block, Paragraph) and get_list_item(block, limits=limits) is not None:
                 set_list_item(block, None, limits=limits)
                 block.properties['latex_list_imported'] = False
     else:
