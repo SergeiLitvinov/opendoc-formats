@@ -338,7 +338,7 @@ def default_exporter_registry() -> ExporterRegistry:
         ("docx", (".docx",), ("docx",)),
         ("pptx", (".pptx",), ("pptx",)),
         ("pdf", (".pdf",), ("fitz",)),
-        ("latex", (".tex",), ("docx",)),
+        ("latex", (".tex",), ()),
     ):
         registry.register(
             ExporterSpec(

@@ -1249,7 +1249,7 @@ Located SDK quota failures, preserving unknown error text without guessed fields
 
 Импорты: отсутствуют
 
-Тесты: [test_latex.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_latex.py#L1), [test_full_contract.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_full_contract.py#L1)
+Тесты: [test_latex.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_latex.py#L1), [test_full_contract.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_full_contract.py#L1), [test_latex_native_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_native_text.py#L1)
 
 ## src/opendoc_formats/support/mapping_composition.py
 
@@ -1594,13 +1594,23 @@ Serialize model list paragraphs as nested semantic HTML lists.
 
 Тесты: [test_html_chart_statistics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_chart_statistics.py#L1), [test_html_layout.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_layout.py#L1), [test_html_normalize.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_normalize.py#L1), [test_html_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_resources.py#L1), [test_html_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_writer.py#L1), [test_pptx_custom_errors.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_custom_errors.py#L1), [test_pptx_error_directions.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_error_directions.py#L1), [test_pptx_multiple_trends.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_multiple_trends.py#L1), [test_pptx_trend_forecast.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_trend_forecast.py#L1)
 
+## src/opendoc_formats/writers/latex_text.py
+
+Dependency-free finite TeX text profile; other objects retain the DOCX route.
+
+- `native_text(document: DocumentModel, *, limits: DocumentLimits | None) -> str | None` — [строка 18](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/latex_text.py#L18)
+
+Импорты: `dataclasses`, `opendoc_formats.support.latex`, `opendoc_model`
+
 ## src/opendoc_formats/writers/latex_writer.py
 
-Independent model-to-LaTeX adapter using the established DOCX bridge.
+Native text-to-TeX export, with the established bridge for other objects.
 
-- `write_latex_model(document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None=None) -> ConversionReport` — [строка 12](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/latex_writer.py#L12)
+- `write_latex_model(document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None=None) -> ConversionReport` — [строка 9](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/latex_writer.py#L9)
 
-Импорты: `opendoc_formats.writers.docx_to_latex`, `opendoc_formats.writers.docx_writer`, `opendoc_model`, `pathlib`, `tempfile`
+Импорты: `opendoc_formats.support.backends`, `opendoc_formats.writers.docx_to_latex`, `opendoc_formats.writers.docx_writer`, `opendoc_formats.writers.latex_text`, `opendoc_model`, `pathlib`, `tempfile`
+
+Тесты: [test_latex_native_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_native_text.py#L1)
 
 ## src/opendoc_formats/writers/mathml_to_omml.py
 

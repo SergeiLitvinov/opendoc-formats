@@ -16,7 +16,7 @@ EbookLib, lxml и BeautifulSoup для записи не используютс�
 
 Единственная обязательная зависимость — **OpenDoc Model 0.16.0 (MIT)**: модель,
 ресурсы, единицы, диагностика, JSON и валидация. Исходники приложений не используются.
-Базовый пакет читает и пишет TXT/JSON, читает конечный LaTeX source profile и пишет EPUB без дополнительных движков. Собственный LaTeX parser — MIT; стандартная библиотека Python имеет PSF License Agreement. LaTeX distribution не включается.
+Базовый пакет читает и пишет TXT/JSON, читает конечный LaTeX source profile, пишет текстовый TeX и EPUB без дополнительных движков. Собственные LaTeX parser/writer — MIT; стандартная библиотека Python имеет PSF License Agreement. LaTeX distribution не включается. Формулы, таблицы и другие объекты вне текстового TeX-профиля используют прежний DOCX bridge с extra `docx`; lxml для простого текстового экспорта не требуется.
 
 ## Прямые Python-зависимости
 
@@ -81,7 +81,7 @@ OMML в MathML и OOXML-маршруты имеют отдельные треб�
 
 | Профиль | Лицензии и существенные условия зависимостей | Для открытого проекта |
 | --- | --- | --- |
-| Базовый, TXT/JSON, LaTeX reader и EPUB writer | MIT у библиотеки и OpenDoc; PSF License Agreement стандартной библиотеки Python | Сохранить MIT/copyright; разрешены permissive и совместимые copyleft-проекты; EPUB экспорт без extras |
+| Базовый, TXT/JSON, LaTeX reader/text writer и EPUB writer | MIT у библиотеки и OpenDoc; PSF License Agreement стандартной библиотеки Python | Сохранить MIT/copyright; разрешены permissive и совместимые copyleft-проекты; текстовый TeX и EPUB экспорт без extras |
 | Внешний EPUBCheck acceptance | MIT обёртки; BSD-3-Clause EPUBCheck; отдельные JAR notices, включая MPL-2.0 Saxon-HE; условия выбранной Java runtime | Инструмент CI/разработки, не runtime extra и не часть release assets; сохранять весь upstream distribution |
 | `pdf-text` | MIT + BSD-3-Clause у pypdf | Сохранить notices; это извлечение текста, не полный rich PDF профиль |
 | `pdf`, `pdf-rich` | MIT библиотеки; PyMuPDF AGPL-3.0 либо commercial | Чтение модели, геометрия, рендер и PDF writer. Соблюдать выбранные условия PyMuPDF; lxml и его XSL-ресурсы не устанавливаются |

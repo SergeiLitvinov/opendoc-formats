@@ -29,6 +29,8 @@ def main() -> None:
         TableCell,
         TableRow,
         TextRun,
+        document_from_json,
+        document_to_json,
     )
 
     import opendoc_formats
@@ -97,6 +99,13 @@ def main() -> None:
         assert source_tex.document.sections[0].blocks[0].plain_text == "Own"
         assert source_tex.document.sections[0].blocks[1].content[-2].format is FormulaFormat.LATEX
         assert source_tex.document.resources["latex-original-source"].data == tex.read_bytes()
+        native_tex = DocumentModel(sections=[Section(blocks=[Paragraph(content=[TextRun('Own [text] & percent 100%')])])])
+        for index in range(2):
+            native_target = root / f'native-text-{index}.tex'
+            native_report = write_document(native_tex, native_target)
+            assert native_report.success and native_report.metrics['latex_route'] == 'native-text-v1'
+            native_tex = document_from_json(document_to_json(read_document(native_target).document))
+            assert native_tex.sections[0].blocks[0].plain_text == 'Own [text] & percent 100%'
         book = root / "base-writer.epub"
         from opendoc_formats.readers.epub_package import read_epub_package
 
