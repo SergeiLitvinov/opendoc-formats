@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
@@ -10,9 +10,12 @@ from typing import Any
 import opendoc_model as od
 from opendoc_model import Paragraph
 
+from opendoc_formats.support.cancellation import check_cancelled
+
 
 class HtmlDiagnostics:
-    def __init__(self) -> None:
+    def __init__(self, *, cancelled: Callable[[], bool] | None = None) -> None:
+        self.cancelled = cancelled
         self.node = None
         self.pending = []
         self.bindings = {}
@@ -28,6 +31,7 @@ class HtmlDiagnostics:
             self.node = previous
 
     def warn(self, feature: str, message: str, node: Any = None) -> None:
+        check_cancelled(self.cancelled, 'HTML diagnostics')
         if len(self.pending) >= 10_000:
             raise ValueError("HTML diagnostic objects exceed profile limit")
         self.pending.append((feature, message, node if node is not None else self.node))
@@ -61,9 +65,11 @@ class HtmlDiagnostics:
         # Container rules point to their first imported block; inline rules to
         # the block containing their text. Omitted nodes use the nearest owner.
         for child in node.descendants:
+            check_cancelled(self.cancelled, 'HTML diagnostic descendant')
             if id(child) in self.bindings:
                 return self.bindings[id(child)]
         for parent in node.parents:
+            check_cancelled(self.cancelled, 'HTML diagnostic ancestor')
             if parent.name in {"[document]", "html", "body"}:
                 break
             if id(parent) in self.bindings:
@@ -71,8 +77,10 @@ class HtmlDiagnostics:
         return "html:document"
 
     def finish(self) -> dict[str, Any]:
+        check_cancelled(self.cancelled, 'HTML diagnostics completion')
         warnings, seen = [], set()
         for feature, message, node in self.pending:
+            check_cancelled(self.cancelled, 'HTML diagnostic location')
             location = self.resolve(node)
             key = feature, message, location
             if key not in seen:
@@ -90,6 +98,7 @@ class HtmlDiagnostics:
 
     def attach(self, document: od.DocumentModel, source: Path, data: bytes, *, limits: od.DocumentLimits | None = None) -> None:
         """Retain source markup separately from known semantic/profile losses."""
+        check_cancelled(self.cancelled, 'HTML preservation records')
         records, seen = [], set()
         for feature, message, node in self.pending:
             block = self.resolve(node)

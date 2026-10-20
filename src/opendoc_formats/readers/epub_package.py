@@ -6,11 +6,13 @@ import posixpath
 import re
 import xml.etree.ElementTree as ET
 import zipfile
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
 from opendoc_formats.epub_metadata import read_dc_values
+from opendoc_formats.support.cancellation import check_cancelled
 from opendoc_formats.support.io import check_archive_safety
 
 _CONTAINER = "urn:oasis:names:tc:opendocument:xmlns:container"
@@ -44,12 +46,15 @@ class EpubPackage:
     dc_values: dict[str, tuple[str, ...]] = field(default_factory=dict)
 
 
-def _source_snapshot(archive: zipfile.ZipFile, opf_name: str) -> tuple[dict[str, bytes], tuple[str, ...], dict[str, str]]:
+def _source_snapshot(archive: zipfile.ZipFile, opf_name: str, *, cancelled: Callable[[], bool] | None = None
+                      ) -> tuple[dict[str, bytes], tuple[str, ...], dict[str, str]]:
     """Original inert XML parts, independent of backend serialization."""
+    check_cancelled(cancelled, 'EPUB source snapshot')
     payload = archive.read(opf_name)
-    opf = _xml(payload)
+    opf = _xml(payload, cancelled=cancelled)
     parts = {"META-INF/container.xml": archive.read("META-INF/container.xml"), opf_name: payload}
     for item in opf.findall(f"{{{_OPF}}}manifest/{{{_OPF}}}item"):
+        check_cancelled(cancelled, 'EPUB source part')
         if "nav" in item.get("properties", "").split() or item.get("media-type") == "application/x-dtbncx+xml":
             name = _local_path(opf_name, item.get("href", ""))
             parts[name] = archive.read(name)
@@ -71,7 +76,8 @@ def _local_path(base: str, href: str) -> str:
     return name
 
 
-def _xml(data: bytes) -> ET.Element:
+def _xml(data: bytes, *, cancelled: Callable[[], bool] | None = None) -> ET.Element:
+    check_cancelled(cancelled, 'EPUB XML')
     # Strip NUL only for inspection, so UTF-16/32 cannot hide declarations.
     probe = data.replace(b"\x00", b"")
     if re.search(rb"<!\s*ENTITY\b|<!\s*DOCTYPE[^>]*\[", probe, re.IGNORECASE):
@@ -80,6 +86,7 @@ def _xml(data: bytes) -> ET.Element:
     pending = [(root, 1)]
     count = 0
     while pending:
+        check_cancelled(cancelled, 'EPUB XML node')
         node, depth = pending.pop()
         count += 1
         if depth > 128 or count > 100_000:
@@ -88,8 +95,8 @@ def _xml(data: bytes) -> ET.Element:
     return root
 
 
-def _opf_name(container_data: bytes) -> str:
-    container = _xml(container_data)
+def _opf_name(container_data: bytes, *, cancelled: Callable[[], bool] | None = None) -> str:
+    container = _xml(container_data, cancelled=cancelled)
     candidates = container.findall(f"{{{_CONTAINER}}}rootfiles/{{{_CONTAINER}}}rootfile")
     entry = next((item for item in candidates if item.get("media-type") == "application/oebps-package+xml"), None)
     if entry is None:
@@ -97,26 +104,31 @@ def _opf_name(container_data: bytes) -> str:
     return _local_path("", entry.get("full-path", ""))
 
 
-def read_epub_package(path: str | Path) -> EpubPackage:
+def read_epub_package(path: str | Path, *, cancelled: Callable[[], bool] | None = None) -> EpubPackage:
     """Read OPF, spine, EPUB 3 navigation and EPUB 2 NCX without extracting files."""
+    check_cancelled(cancelled, 'EPUB package')
     check_archive_safety(path)
     with zipfile.ZipFile(path) as archive:
 
         def read(name: str) -> bytes:
+            check_cancelled(cancelled, 'EPUB archive member')
             try:
-                return archive.read(name)
+                payload = archive.read(name)
             except KeyError as error:
                 raise ValueError(f"Missing EPUB package member: {name}") from error
+            check_cancelled(cancelled, 'EPUB archive read')
+            return payload
 
         if read("mimetype") != b"application/epub+zip":
             raise ValueError("Invalid EPUB mimetype")
-        opf_name = _opf_name(read("META-INF/container.xml"))
-        opf = _xml(read(opf_name))
+        opf_name = _opf_name(read("META-INF/container.xml"), cancelled=cancelled)
+        opf = _xml(read(opf_name), cancelled=cancelled)
         if opf.tag != f"{{{_OPF}}}package":
             raise ValueError("Invalid EPUB OPF root")
         items: dict[str, EpubItem] = {}
         names: set[str] = set()
         for entry in opf.findall(f"{{{_OPF}}}manifest/{{{_OPF}}}item"):
+            check_cancelled(cancelled, 'EPUB manifest entry')
             identifier = entry.get("id", "")
             name = _local_path(opf_name, entry.get("href", ""))
             media_type = entry.get("media-type", "")
@@ -129,6 +141,7 @@ def read_epub_package(path: str | Path) -> EpubPackage:
             raise ValueError("Missing EPUB spine")
         spine = []
         for entry in spine_node.findall(f"{{{_OPF}}}itemref"):
+            check_cancelled(cancelled, 'EPUB spine entry')
             identifier = entry.get("idref", "")
             if identifier not in items:
                 raise ValueError(f"Unknown EPUB spine item: {identifier}")
@@ -140,19 +153,22 @@ def read_epub_package(path: str | Path) -> EpubPackage:
         titles: dict[str, str] = {}
         ncx = items.get(spine_node.get("toc", ""))
         if ncx is not None:
-            for point in _xml(ncx.content).iter(f"{{{_NCX}}}navPoint"):
+            for point in _xml(ncx.content, cancelled=cancelled).iter(f"{{{_NCX}}}navPoint"):
+                check_cancelled(cancelled, 'EPUB NCX entry')
                 content = point.find(f"{{{_NCX}}}content")
                 label = point.find(f"{{{_NCX}}}navLabel/{{{_NCX}}}text")
                 if content is not None and label is not None and content.get("src"):
                     titles.setdefault(_local_path(ncx.name, content.get("src", "")), "".join(label.itertext()))
         for item in items.values():
+            check_cancelled(cancelled, 'EPUB navigation item')
             if "nav" not in item.properties:
                 continue
-            root = _xml(item.content)
+            root = _xml(item.content, cancelled=cancelled)
             for nav in root.iter(f"{{{_XHTML}}}nav"):
                 if "toc" not in nav.get(f"{{{_EPUB}}}type", "").split():
                     continue
                 for link in nav.iter(f"{{{_XHTML}}}a"):
+                    check_cancelled(cancelled, 'EPUB navigation link')
                     href = link.get("href", "")
                     if href and not urlsplit(href).scheme and not urlsplit(href).netloc:
                         titles[_local_path(item.name, href)] = "".join(link.itertext()).strip()
@@ -164,7 +180,8 @@ def read_epub_package(path: str | Path) -> EpubPackage:
             for key, item in items.items()
         }
         titles = {posixpath.relpath(name, base): title for name, title in titles.items()}
-        parts, entries, properties = _source_snapshot(archive, opf_name)
+        parts, entries, properties = _source_snapshot(archive, opf_name, cancelled=cancelled)
+        check_cancelled(cancelled, 'EPUB package completion')
         return EpubPackage(
             items,
             tuple(spine),

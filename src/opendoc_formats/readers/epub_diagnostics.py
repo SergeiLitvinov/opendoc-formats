@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import posixpath
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -19,13 +20,20 @@ from opendoc_model import (
     set_integration,
 )
 
+from opendoc_formats.support.cancellation import check_cancelled
+
 
 class EpubDiagnostics:
-    def __init__(self, source: Path, root_directory: str = "", resources: dict[str, Resource] | None = None) -> None:
+    def __init__(self, source: Path, root_directory: str = "", resources: dict[str, Resource] | None = None, *,
+                 cancelled: Callable[[], bool] | None = None) -> None:
         self.source = source
         self.root_directory = root_directory
         self.records: list[PreservationRecord] = []
         self.resources = resources if resources is not None else {}
+        self.cancelled = cancelled
+
+    def checkpoint(self) -> None:
+        check_cancelled(self.cancelled, 'EPUB model')
 
     def lost(self, feature: str, reason: str, message: str, part: str, node: Any = None) -> None:
         self._record(feature, reason, message, part, node, PreservationState.LOST)
@@ -45,6 +53,7 @@ class EpubDiagnostics:
         state: PreservationState,
         resource_id: str | None = None,
     ) -> None:
+        self.checkpoint()
         if len(self.records) >= 10_000:
             raise ValueError("EPUB diagnostic objects exceed profile limit")
         part = posixpath.normpath(posixpath.join(self.root_directory, part))
@@ -63,6 +72,7 @@ class EpubDiagnostics:
         )
 
     def attach(self, document: DocumentModel, *, limits: DocumentLimits | None = None) -> None:
+        self.checkpoint()
         # Detected losses do not constitute an exhaustive assessment of EPUB/CSS.
         set_integration(
             document,
@@ -81,6 +91,7 @@ class EpubDiagnostics:
             "script": ("epub.script", "inactive-script", "Script is never executed and has no semantic model"),
         }
         for node in body.find_all(True):
+            self.checkpoint()
             if node.name == "table" and node.find_parent(blocks - {"table"}):
                 self.lost(
                     "epub.table", "nested-table-block", "Table inside a text block is flattened by this profile", part, node

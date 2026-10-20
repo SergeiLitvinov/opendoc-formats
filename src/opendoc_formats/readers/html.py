@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from collections import Counter
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
@@ -27,6 +28,7 @@ from opendoc_formats.html_tables import import_caption_semantics, import_table_s
 from opendoc_formats.readers.html_css import Cascade
 from opendoc_formats.readers.html_diagnostics import HtmlDiagnostics
 from opendoc_formats.readers.html_resources import LIMIT, Resources, clean_xml
+from opendoc_formats.support.cancellation import check_cancelled
 
 PARAGRAPHS = {"p", "h1", "h2", "h3", "h4", "h5", "h6", "pre", "blockquote", "figcaption", "dt", "dd"}
 CONTAINERS = {"html", "body", "main", "section", "article", "div", "header", "footer", "nav", "aside", "figure"}
@@ -35,9 +37,10 @@ SKIP = {"head", "style", "script", "link", "meta", "base", "iframe", "object", "
 
 
 def read_html_model(path: str | Path, *, resource_root: str | Path | None = None,
-                    limits: od.DocumentLimits | None = None) -> DocumentModel:
+                    limits: od.DocumentLimits | None = None, cancelled: Callable[[], bool] | None = None) -> DocumentModel:
     from bs4 import BeautifulSoup
 
+    check_cancelled(cancelled, 'HTML import')
     source = Path(path)
     if source.stat().st_size > LIMIT:
         raise ValueError("HTML exceeds 10 MiB")
@@ -46,10 +49,12 @@ def read_html_model(path: str | Path, *, resource_root: str | Path | None = None
     if len(data) > LIMIT:
         raise ValueError("HTML exceeds 10 MiB")
     soup = BeautifulSoup(data, "html.parser")
-    reader = HtmlReader(soup, source, resource_root)
+    check_cancelled(cancelled, 'HTML parsing')
+    reader = HtmlReader(soup, source, resource_root, cancelled=cancelled)
     for node in soup.find_all(["script", "iframe", "object", "embed", "link", "base"]):
         reader.warn("html-content", f"Не исполнен или не загружен элемент: {node.name}", node)
     for node in soup.find_all(True):
+        check_cancelled(cancelled, 'HTML content inventory')
         if any(key.lower().startswith("on") for key in node.attrs):
             reader.warn("html-content", f"Обработчики событий не перенесены: {node.name}", node)
         if node.name == "img" and any(key in node.attrs for key in ("srcset", "width", "height")):
@@ -73,18 +78,24 @@ def read_html_model(path: str | Path, *, resource_root: str | Path | None = None
     language = reader.language(soup.html or soup)
     document.metadata["language"] = language if language is not None else ""
     reader.diagnostics.attach(document, source, data, limits=limits)
+    check_cancelled(cancelled, 'HTML import completion')
     return document
 
 
 class HtmlReader:
-    def __init__(self, soup: Any, source: Path, resource_root: str | Path | None) -> None:
+    def __init__(self, soup: Any, source: Path, resource_root: str | Path | None, *,
+                 cancelled: Callable[[], bool] | None = None) -> None:
         self.source, self.list_count = source, 0
-        self.diagnostics = HtmlDiagnostics()
+        self.cancelled = cancelled
+        self.diagnostics = HtmlDiagnostics(cancelled=cancelled)
         self.warn = self.diagnostics.warn
-        self.css = Cascade(soup, self.warn)
-        self.resources = Resources(self.warn, resource_root)
+        self.css = Cascade(soup, self.warn, cancelled=cancelled)
+        self.resources = Resources(self.warn, resource_root, cancelled=cancelled)
         self.styles = {}
-        source_ids = Counter(str(node['id']) for node in soup.find_all(id=True))
+        source_ids = Counter()
+        for node in soup.find_all(id=True):
+            check_cancelled(cancelled, 'HTML source anchor')
+            source_ids[str(node['id'])] += 1
         self.semantic_ids = set(source_ids)
         self.ambiguous_ids = frozenset(identifier for identifier, count in source_ids.items() if count > 1)
         self.semantic_count = 0
@@ -105,6 +116,7 @@ class HtmlReader:
         return None
 
     def blocks(self, root: Any) -> list[od.Block]:
+        check_cancelled(self.cancelled, 'HTML block')
         from bs4 import Comment, NavigableString, Tag
 
         result, content, content_nodes = [], [], []
@@ -145,6 +157,7 @@ class HtmlReader:
             content_nodes.clear()
 
         def visit(node: Any) -> None:
+            check_cancelled(self.cancelled, 'HTML node')
             with self.diagnostics.at(node.parent if isinstance(node, NavigableString) else node):
                 visit_node(node)
 
@@ -218,7 +231,7 @@ class HtmlReader:
                     content.append(image)
             elif node.name == "math":
                 content_nodes.append(node)
-                safe = clean_xml(str(node), "math", self.warn)
+                safe = clean_xml(str(node), "math", self.warn, cancelled=self.cancelled)
                 if safe:
                     content.append(
                         Formula(safe, FormulaFormat.MATHML, display=node.get("display") == "block", fallback_text=node.get_text())
@@ -258,6 +271,7 @@ class HtmlReader:
             self.warn("html-list", "Особый тип или обратная нумерация списка не перенесены.")
         result = []
         for index, item in enumerate(node.find_all("li", recursive=False)):
+            check_cancelled(self.cancelled, 'HTML list item')
             blocks = self.blocks(item)
             if not blocks or not isinstance(blocks[0], Paragraph) or "html_list_id" in blocks[0].properties:
                 blocks.insert(0, Paragraph())
@@ -282,10 +296,12 @@ class HtmlReader:
         rows = []
         groups = {}
         for row in node.find_all("tr"):
+            check_cancelled(self.cancelled, 'HTML table row')
             if row.find_parent("table") is not node:
                 continue
             cells = []
             for cell in row.find_all(["td", "th"], recursive=False):
+                check_cancelled(self.cancelled, 'HTML table cell')
                 spans = []
                 for key in ("rowspan", "colspan"):
                     try:

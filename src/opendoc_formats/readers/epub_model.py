@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import posixpath
 import re
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from pathlib import Path
 from typing import Any
 from urllib.parse import unquote, urlsplit
@@ -24,6 +24,8 @@ from opendoc_model.document_model import (
     TextStyle,
 )
 
+from opendoc_formats.support.cancellation import check_cancelled
+
 _DECLARATION = re.compile(r"([\w-]+)\s*:\s*([^;]+)")
 _SIZE = re.compile(r"^((?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+))(pt|px|em|rem|%)$")
 _CSS_PROPERTIES = {
@@ -40,12 +42,13 @@ _BLOCKS = {"p", "h1", "h2", "h3", "h4", "h5", "h6", "li", "blockquote", "pre", "
 
 
 def read_epub_model(path: str | Path, *, backend: str = "native", include_nonlinear: bool = False,
-                    limits: od.DocumentLimits | None = None) -> DocumentModel:
+                    limits: od.DocumentLimits | None = None, cancelled: Callable[[], bool] | None = None) -> DocumentModel:
     from bs4 import BeautifulSoup
 
     from opendoc_formats.readers.epub_diagnostics import EpubDiagnostics
     from opendoc_formats.readers.epub_package import read_epub_package
 
+    check_cancelled(cancelled, 'EPUB import')
     source = Path(path)
     if type(include_nonlinear) is not bool:
         raise ValueError("include_nonlinear must be boolean")
@@ -53,11 +56,12 @@ def read_epub_model(path: str | Path, *, backend: str = "native", include_nonlin
         raise FileNotFoundError(source)
     if backend != "native":
         raise ValueError("EPUB supports backend='native' only; install opendoc-formats[epub]")
-    book = read_epub_package(source)
-    resources, item_names = _resources(book, source)
-    diagnostics = EpubDiagnostics(source, book.root_directory, resources)
+    book = read_epub_package(source, cancelled=cancelled)
+    resources, item_names = _resources(book, source, cancelled=cancelled)
+    diagnostics = EpubDiagnostics(source, book.root_directory, resources, cancelled=cancelled)
     source_resources = {}
     for index, (part, payload) in enumerate(book.source_parts.items(), 1):
+        diagnostics.checkpoint()
         resource_id = f"epub-source-xml-{index}"
         while resource_id in resources:
             resource_id += "-source"
@@ -78,6 +82,7 @@ def read_epub_model(path: str | Path, *, backend: str = "native", include_nonlin
             resource_id,
         )
     for item in book.items.values():
+        diagnostics.checkpoint()
         if item.media_type.startswith(("font/", "audio/", "video/")) or item.media_type in {
             "application/vnd.ms-opentype",
             "application/font-sfnt",
@@ -93,6 +98,7 @@ def read_epub_model(path: str | Path, *, backend: str = "native", include_nonlin
     titles = book.titles
     sections, warnings, styles = [], [], {}
     for idref, linear in book.spine:
+        diagnostics.checkpoint()
         item = book.items.get(idref)
         if str(linear).lower() == "no" and not include_nonlinear:
             diagnostics.lost("epub.spine", "nonlinear-spine", "Nonlinear spine item is skipped", item.name if item else idref)
@@ -106,6 +112,7 @@ def read_epub_model(path: str | Path, *, backend: str = "native", include_nonlin
             )
             continue
         soup = BeautifulSoup(item.content, "html.parser")
+        diagnostics.checkpoint()
         rules = _chapter_rules(book, item, soup, diagnostics)
         body = soup.body or soup
         diagnostics.chapter(body, item.name, _BLOCKS | {"table"})
@@ -148,6 +155,7 @@ def read_epub_model(path: str | Path, *, backend: str = "native", include_nonlin
     }
     document = DocumentModel(sections=sections, resources=resources, styles=styles, metadata=metadata, source_format="epub")
     diagnostics.attach(document, limits=limits)
+    diagnostics.checkpoint()
     return document
 
 
@@ -167,6 +175,7 @@ def _chapter_blocks(
     blocks = []
     candidates = _BLOCKS | {"table", "math", "img", "svg"}
     for tag in [root] if include_root else root.find_all(candidates):
+        diagnostics.checkpoint()
         ancestors = []
         for parent in () if tag is root else tag.parents:
             if parent is root:
@@ -180,10 +189,12 @@ def _chapter_blocks(
                 blocks.append(_paragraph(caption, rules, chapter, names, diagnostics, styles))
             rows, count = [], 0
             for row in tag.find_all("tr"):
+                diagnostics.checkpoint()
                 if row.find_parent("table") is not tag:
                     continue
                 cells = []
                 for cell in row.find_all(["td", "th"], recursive=False):
+                    diagnostics.checkpoint()
                     count += 1
                     if count > 10_000:
                         raise ValueError("EPUB table cells exceed profile limit")
@@ -228,6 +239,7 @@ def _cell_blocks(
             pending.clear()
 
     def visit(node: Any, level: int = 0) -> None:
+        diagnostics.checkpoint()
         if level > 64:
             raise ValueError("EPUB cell container nesting exceeds profile limit")
         if getattr(node, "name", None) in structural:
@@ -273,9 +285,11 @@ def _paragraph(
     )
 
 
-def _resources(book: Any, source: Path) -> tuple[dict[str, od.Resource], dict[str, str]]:
+def _resources(book: Any, source: Path, *, cancelled: Callable[[], bool] | None = None
+                ) -> tuple[dict[str, od.Resource], dict[str, str]]:
     resources, names = {}, {}
     for item in book.items.values():
+        check_cancelled(cancelled, 'EPUB resource')
         media_type = item.media_type or "application/octet-stream"
         if media_type.startswith("image/"):
             kind = ResourceKind.VECTOR_IMAGE if media_type == "image/svg+xml" else ResourceKind.RASTER_IMAGE
@@ -326,6 +340,7 @@ def _chapter_rules(book: Any, item: Any, soup: Any, diagnostics: Any) -> list[tu
     rules = []
     order = 0
     for text, part, resource_id, node in css:
+        diagnostics.checkpoint()
 
         def warn(reason: str, message: str) -> None:
             if resource_id:
@@ -334,9 +349,11 @@ def _chapter_rules(book: Any, item: Any, soup: Any, diagnostics: Any) -> list[tu
                 diagnostics.lost("epub.css", reason, message, part, node)
 
         text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
-        for selector_text, declaration_text in _css_rules(text, warn):
-            declarations = _declarations(declaration_text, warn)
+        for selector_text, declaration_text in _css_rules(text, warn, cancelled=diagnostics.cancelled):
+            diagnostics.checkpoint()
+            declarations = _declarations(declaration_text, warn, cancelled=diagnostics.cancelled)
             for selector in selector_text.split(","):
+                diagnostics.checkpoint()
                 selector = selector.strip()
                 if selector and re.fullmatch(r"(?:[a-zA-Z][\w-]*)?(?:\.[\w-]+|#[\w-]+)?", selector):
                     rules.append((selector, declarations, order))
@@ -346,10 +363,12 @@ def _chapter_rules(book: Any, item: Any, soup: Any, diagnostics: Any) -> list[tu
     return rules
 
 
-def _css_rules(text: str, warn: Any) -> Iterator[tuple[str, str]]:
+def _css_rules(text: str, warn: Any, *, cancelled: Callable[[], bool] | None = None) -> Iterator[tuple[str, str]]:
     start, opening, depth = 0, 0, 0
     quote, escaped = "", False
     for index, char in enumerate(text):
+        if cancelled is not None and index % 1024 == 0:
+            check_cancelled(cancelled, 'EPUB CSS parsing')
         if escaped:
             escaped = False
             continue
@@ -400,6 +419,7 @@ def _inline_content(
     result = []
 
     def visit(node: Any, inherited: dict[str, str], link: str | None = None) -> None:
+        diagnostics.checkpoint()
         if isinstance(node, Comment):
             return
         if isinstance(node, NavigableString):
@@ -412,13 +432,14 @@ def _inline_content(
         if node.name in {"script", "style", "iframe", "object", "embed"}:
             return
         style = dict(inherited)
-        for _, declarations, _ in sorted(_matching_rules(node, rules), key=lambda value: (value[0], value[2])):
+        for _, declarations, _ in sorted(_matching_rules(node, rules, cancelled=diagnostics.cancelled),
+                                        key=lambda value: (value[0], value[2])):
             style.update(declarations)
 
         def css_warn(reason: str, message: str) -> None:
             diagnostics.lost("epub.css", reason, message, chapter_name, node)
 
-        style.update(_declarations(node.get("style", ""), css_warn))
+        style.update(_declarations(node.get("style", ""), css_warn, cancelled=diagnostics.cancelled))
         _semantic_style(node.name, style)
         child_link = _resolve_link(chapter_name, node.get("href")) if node.name == "a" else link
         if node.name in {"math", "svg"}:
@@ -433,7 +454,7 @@ def _inline_content(
                     node,
                 )
 
-            safe = clean_xml(str(node), node.name, warn)
+            safe = clean_xml(str(node), node.name, warn, cancelled=diagnostics.cancelled)
             if safe and node.name == "svg":
                 payload = safe.encode("utf-8")
                 resource_id = "epub-inline-svg-" + hashlib.sha256(payload).hexdigest()
@@ -510,8 +531,10 @@ def _inline_content(
     return result
 
 
-def _matching_rules(tag: Any, rules: list[tuple[str, dict[str, str], int]]) -> Iterator[tuple[int, dict[str, str], int]]:
+def _matching_rules(tag: Any, rules: list[tuple[str, dict[str, str], int]], *, cancelled: Callable[[], bool] | None = None
+                      ) -> Iterator[tuple[int, dict[str, str], int]]:
     for selector, declarations, order in rules:
+        check_cancelled(cancelled, 'EPUB CSS selector')
         element = selector.split(".", 1)[0].split("#", 1)[0]
         matches = not element or tag.name == element.lower()
         specificity = int(bool(element))
@@ -525,9 +548,10 @@ def _matching_rules(tag: Any, rules: list[tuple[str, dict[str, str], int]]) -> I
             yield specificity, declarations, order
 
 
-def _declarations(value: str, warn: Any = None) -> dict[str, str]:
+def _declarations(value: str, warn: Any = None, *, cancelled: Callable[[], bool] | None = None) -> dict[str, str]:
     result = {}
     for name, content in _DECLARATION.findall(value):
+        check_cancelled(cancelled, 'EPUB CSS declaration')
         name, content = name.lower(), content.strip()
         reason = None
         if name not in _CSS_PROPERTIES:

@@ -15,11 +15,15 @@ from urllib.parse import unquote, unquote_to_bytes, urlsplit
 import opendoc_model as od
 from opendoc_model import Image, Resource, ResourceKind
 
+from opendoc_formats.support.cancellation import check_cancelled
+
 LIMIT = 10 * 1024 * 1024
 RASTER_TYPES = {"image/png", "image/jpeg", "image/gif", "image/webp"}
 
 
-def clean_xml(value: str, kind: str, warn: Callable[..., None]) -> str | None:
+def clean_xml(value: str, kind: str, warn: Callable[..., None], *,
+               cancelled: Callable[[], bool] | None = None) -> str | None:
+    check_cancelled(cancelled, 'HTML embedded XML')
     if re.search(r"<!\s*(DOCTYPE|ENTITY)", value, re.I):
         warn("html-resource", f"{kind}: DTD/entity не допускаются.")
         return None
@@ -43,6 +47,7 @@ def clean_xml(value: str, kind: str, warn: Callable[..., None]) -> str | None:
         "clippathunits": "clipPathUnits",
     }
     for node in list(root.iter()):
+        check_cancelled(cancelled, 'HTML embedded XML node')
         local = node.tag.rsplit("}", 1)[-1]
         node.tag = "{" + namespace + "}" + cases.get(local.lower(), local)
         for child in list(node):
@@ -64,11 +69,14 @@ def clean_xml(value: str, kind: str, warn: Callable[..., None]) -> str | None:
 
 
 class Resources:
-    def __init__(self, warn: Callable[..., None], root: str | Path | None = None) -> None:
+    def __init__(self, warn: Callable[..., None], root: str | Path | None = None, *,
+                 cancelled: Callable[[], bool] | None = None) -> None:
         self.warn, self.items = warn, {}
+        self.cancelled = cancelled
         self.root = Path(root).resolve() if root is not None else None
 
     def image(self, src: str, alt: str = "") -> od.Image | None:
+        check_cancelled(self.cancelled, 'HTML image resource')
         data, media = None, ""
         if src.startswith("data:"):
             try:
@@ -85,13 +93,15 @@ class Resources:
                 path = (self.root / unquote(split.path)).resolve()
                 if path.is_relative_to(self.root) and path.is_file() and path.stat().st_size <= LIMIT:
                     data, media = path.read_bytes(), mimetypes.guess_type(path)[0] or ""
+                    check_cancelled(self.cancelled, 'HTML local resource read')
             if data is None:
                 self.warn("html-resource", f"Изображение не загружено: {src[:160]}")
+        check_cancelled(self.cancelled, 'HTML resource decoding')
         if data is None:
             return None
         if media == "image/svg+xml":
             try:
-                safe = clean_xml(data.decode("utf-8"), "svg", self.warn)
+                safe = clean_xml(data.decode("utf-8"), "svg", self.warn, cancelled=self.cancelled)
                 data = safe.encode("utf-8") if safe else None
             except UnicodeError:
                 data = None
@@ -106,7 +116,7 @@ class Resources:
         return Image(key, alt_text=alt)
 
     def svg(self, xml: str, alt: str = "") -> od.Image | None:
-        safe = clean_xml(xml, "svg", self.warn)
+        safe = clean_xml(xml, "svg", self.warn, cancelled=self.cancelled)
         if safe is None:
             return None
         return self.image("data:image/svg+xml;base64," + base64.b64encode(safe.encode()).decode(), alt)

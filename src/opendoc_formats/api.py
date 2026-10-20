@@ -223,7 +223,7 @@ def _txt(path: Path, options: ImportOptions) -> DocumentModel:
 
 def _html(path: Path, options: ImportOptions) -> DocumentModel:
     reader = cast(Callable[..., DocumentModel], import_module("opendoc_formats.readers.html").read_html_model)
-    return reader(path, resource_root=options.resource_root, limits=options.document_limits)
+    return reader(path, resource_root=options.resource_root, limits=options.document_limits, cancelled=options.cancelled)
 
 
 def default_registry() -> AdapterRegistry:
@@ -263,7 +263,8 @@ def _pptx(path: Path, options: ImportOptions) -> DocumentModel:
 
 def _epub(path: Path, options: ImportOptions) -> DocumentModel:
     reader = cast(Callable[..., DocumentModel], import_module("opendoc_formats.readers.epub_model").read_epub_model)
-    return reader(path, include_nonlinear=options.epub_include_nonlinear, limits=options.document_limits)
+    return reader(path, include_nonlinear=options.epub_include_nonlinear, limits=options.document_limits,
+                  cancelled=options.cancelled)
 
 
 def _pdf(path: Path, options: ImportOptions) -> DocumentModel:

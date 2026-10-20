@@ -9,6 +9,8 @@ from typing import Any
 import opendoc_model as od
 from opendoc_model import Length, TextStyle
 
+from opendoc_formats.support.cancellation import check_cancelled
+
 SELECTOR = re.compile(r"(?:[a-zA-Z][\w-]*|\*)?(?:[.#][\w-]+)*$")
 INHERITED = {"color", "font-family", "font-size", "font-weight", "font-style", "text-align", "white-space"}
 INITIAL = {"color": "#000000", "font-size": "12pt", "font-weight": "normal", "font-style": "normal", "white-space": "normal"}
@@ -24,15 +26,18 @@ ENUMS = {
 
 
 class Cascade:
-    def __init__(self, soup: Any, warn: Callable[..., None]) -> None:
+    def __init__(self, soup: Any, warn: Callable[..., None], *, cancelled: Callable[[], bool] | None = None) -> None:
         import tinycss2
 
         self.warn, self.rules, self.cache = warn, [], {}
+        self.cancelled = cancelled
+        check_cancelled(cancelled, 'HTML CSS')
         for sheet in soup.find_all("style"):
             if sheet.get("media", "all") not in {"all", "screen", ""}:
                 warn("html-css", "Условная таблица стилей не применена.")
                 continue
             for rule in tinycss2.parse_stylesheet(sheet.get_text(), skip_comments=True, skip_whitespace=True):
+                check_cancelled(cancelled, 'HTML CSS rule')
                 if rule.type != "qualified-rule":
                     warn("html-css", "Правило CSS вне первого среза: " + getattr(rule, "at_keyword", rule.type))
                     continue
@@ -52,6 +57,7 @@ class Cascade:
         warn = warn or self.warn
         result = []
         for item in tinycss2.parse_blocks_contents(raw, skip_comments=True, skip_whitespace=True):
+            check_cancelled(self.cancelled, 'HTML CSS declaration')
             if item.type != "declaration":
                 warn("html-css", "Некорректное или вложенное объявление CSS пропущено.")
                 continue
@@ -72,6 +78,7 @@ class Cascade:
         return result
 
     def style(self, node: Any) -> dict[str, str]:
+        check_cancelled(self.cancelled, 'HTML CSS cascade')
         if id(node) in self.cache:
             return self.cache[id(node)]
         parent = self.style(node.parent) if getattr(node.parent, "name", None) else INITIAL
@@ -92,6 +99,7 @@ class Cascade:
             style.update({"font-weight": "bold", "font-size": f"{(24, 18, 14, 12, 10, 9)[int(node.name[1]) - 1]}pt"})
         winners = {}
         for order, (selector, specificity, declarations, problems) in enumerate(self.rules):
+            check_cancelled(self.cancelled, 'HTML CSS selector')
             if self.matches(node, selector):
                 self._apply(winners, declarations, (0, *specificity, order))
                 for feature, message in problems:
