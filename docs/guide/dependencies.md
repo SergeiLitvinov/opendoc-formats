@@ -155,7 +155,7 @@ spine, метаданные title/language/identifier, оглавление EPUB
 | Текст/геометрия через pdfplumber | `pdf-layout` | `readers.pdf.read_pdf` |
 | Прямой PDF → DOCX | `pdf-docx` | `Pdf2DocxConverter` |
 | PDF → DOCX через PyMuPDF | `pdf-rich` + `docx` | `PyMuPdfConverter` |
-| Все прежние PDF-движки | `pdf` | Совместимый полный состав |
+| Все альтернативные PDF-маршруты | `pdf,pdf-text,pdf-layout,pdf-docx` | Явный состав extras |
 
 `read_pdf` выбирает установленный маршрут в порядке pdfplumber → pypdf → PyMuPDF;
 отсутствующие альтернативы пропускаются. `validate_pdf` и `get_pdf_info` используют
@@ -179,3 +179,20 @@ spine, метаданные title/language/identifier, оглавление EPUB
 собственный ограниченный код. pypdf здесь не импортируется. Он остаётся
 полноценным независимым движком профиля `pdf-text`, поэтому удалять пакет из
 этого профиля без замены самого извлечения текста нельзя.
+
+## Для чего нужны оставшиеся зависимости
+
+| Зависимость | Использование в библиотеке | Условие замены |
+| --- | --- | --- |
+| BeautifulSoup | Структурный HTML и XHTML EPUB, обход смешанного содержимого | Равноценный разбор документов и сохранение порядка/диагностики; это не пара utility functions |
+| tinycss2 | CSS rules/declarations, selectors и значения цвета | Замена одного color helper не устраняет зависимость CSS parser |
+| python-docx и lxml | Нативное OOXML, relationships, стили, drawings и пакет DOCX | Полная приёмка нужного OOXML-профиля; спорные XSL-ресурсы рассматриваются отдельно в OF16 |
+| python-pptx и Pillow | Пакет/объекты презентаций; WMF/EMF → PNG в HTML viewer | Сохранение форматов/визуального результата; Pillow также требуется самому python-pptx, удаление одной прямой строки не убирает его из установки |
+| fontTools | Имена, cmap, font permissions/metrics, GSUB/ToUnicode и реальное subsetting | Сохранение покрытия шрифтов, glyph mappings и результата subsetting; это не только чтение пары чисел |
+| PyMuPDF | PDF text/layout/graphics, изображения, формы и рендер | Сопоставимая полнота PDF и независимый визуальный корпус; регулярные выражения такой заменой не являются |
+| pypdf, pdfplumber, pdf2docx | Отдельные text/layout/converter профили | Приёмка соответствующего маршрута; permissive pdf-text сохраняет отдельные условия лицензии |
+
+Таблица описывает реальные вызовы в readers, writers, fonts и PPTX HTML viewer.
+Небольшие вспомогательные слои отделены от полноценных движков; удаление зависимости
+проверяется установленным минимальным профилем. Открытые замены и лицензионные
+вопросы находятся только в [TODO](../development/todo.md).

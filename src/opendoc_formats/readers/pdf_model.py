@@ -105,6 +105,8 @@ def read_pdf_model(
         if ocr_engine is not None and ocr_engine.is_available:
             try:
                 ocr_pages = ocr_engine.recognize_pdf_geometry(path, handwriting=handwriting)
+                if geometry.pages and not ocr_pages:
+                    geometry.warnings.append('OCR engine returned no page results')
             except Exception as exc:  # noqa: BLE001
                 geometry.warnings.append(f"OCR failed: {exc}")
         else:
@@ -118,7 +120,7 @@ def read_pdf_model(
 
     semantic = merge_pdf_with_ocr(geometry, ocr_pages, use_text_layer=(scenario != PDF_SCENARIO_SCAN))
 
-    all_warnings: list[str] = list(geometry.warnings) + img_warnings + vec_warnings
+    all_warnings: list[str] = list(semantic.warnings) + img_warnings + vec_warnings
 
     from opendoc_formats.support.pdf_mapping_history import HISTORY_KEY, attach_history_map, load_history
 

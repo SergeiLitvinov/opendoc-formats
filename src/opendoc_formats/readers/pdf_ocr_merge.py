@@ -339,8 +339,12 @@ def read_pdf_scenario(
     if ocr_engine is not None and ocr_engine.is_available:
         try:
             ocr_pages = ocr_engine.recognize_pdf_geometry(path, scale=scale, handwriting=handwriting)
+            if geometry.pages and not ocr_pages:
+                geometry.warnings.append('OCR engine returned no page results')
         except Exception as exc:  # noqa: BLE001
             geometry.warnings.append(f"OCR failed: {exc}")
+    else:
+        geometry.warnings.append('OCR engine requested but none available')
 
     if mode == PDF_SCENARIO_SCAN:
         return merge_pdf_with_ocr(geometry, ocr_pages, use_text_layer=False)

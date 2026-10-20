@@ -65,6 +65,21 @@ def main() -> None:
             result = read_document(source)
             assert result.success, result.issues
             assert "Native PDF" in str(result.document)
+            from opendoc_formats.readers.pdf_ocr_types import OcrPageResult
+
+            class OwnOcrEngine:
+                is_available = True
+
+                def recognize_pdf_geometry(self, *args, **kwargs):
+                    return [OcrPageResult(warnings=['Own installed OCR warning']), OcrPageResult()]
+
+            warned = read_document(source, options=ImportOptions(
+                pdf_mode='structure', ocr_engine_factory=lambda **kwargs: OwnOcrEngine(),
+            ))
+            assert warned.success and any(i.message == 'Own installed OCR warning' for i in warned.issues)
+            transport = output / 'ocr-warnings.json'
+            assert write_document(warned.document, transport).success
+            assert any(i.message == 'Own installed OCR warning' for i in read_document(transport).issues)
             report = write_document(result.document, output / "document.pdf")
             assert report.success, report.to_dict()
             assert read_document(output / "document.pdf").success
