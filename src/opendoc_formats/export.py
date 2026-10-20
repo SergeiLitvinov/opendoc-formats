@@ -166,6 +166,14 @@ class ExporterRegistry:
                 return fail("export.invalid-result", "Writer did not return an OpenDoc ConversionReport")
             report = written
             report.output_path = output
+            if identifier in {'docx', 'html', 'pdf', 'pptx', 'epub', 'txt'}:
+                from opendoc_model import LIST_PROPERTY, Paragraph, walk_model
+
+                for reference in walk_model(document, limits=options.document_limits):
+                    if isinstance(reference.node, Paragraph) and LIST_PROPERTY in reference.node.properties:
+                        report.add(IssueSeverity.LOSS, 'list-structure',
+                                   f'{identifier.upper()} does not preserve the common list structure',
+                                   reference.path + '.properties.' + LIST_PROPERTY)
             if identifier != 'docx' and (isinstance(exporter.writer, _ModelWriter) or exporter.writer is _txt):
                 from opendoc_model import LINE_SPACING_PROPERTY, Paragraph, TextStyle, walk_model
 

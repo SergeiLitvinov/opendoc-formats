@@ -3,7 +3,9 @@
 from dataclasses import fields
 
 from opendoc_model import (
+    ANCHOR_PROPERTY,
     HEADING_PROPERTY,
+    LIST_PROPERTY,
     DocumentLimits,
     DocumentModel,
     PageSettings,
@@ -13,13 +15,17 @@ from opendoc_model import (
     TextStyle,
     get_heading,
     get_integration,
+    get_list_item,
 )
 
 from opendoc_formats.support.latex import PREAMBLE, escape_latex
+from opendoc_formats.writers.latex_lists import list_paragraphs
 
 HEADING_COMMANDS = {1: 'section', 2: 'subsection', 3: 'subsubsection', 4: 'paragraph', 5: 'subparagraph'}
 HEADING_PROPERTIES = {HEADING_PROPERTY, 'latex_heading_level', 'latex_heading_command',
                       'latex_heading_starred', 'latex_heading_imported'}
+LIST_PROPERTIES = {LIST_PROPERTY, ANCHOR_PROPERTY, 'list_kind', 'list_level', 'latex_list_id', 'latex_list_imported',
+                   'latex_list_par_before', 'latex_par_after_list'}
 
 
 def native_text(document: DocumentModel, *, limits: DocumentLimits | None) -> str | None:
@@ -57,7 +63,19 @@ def native_text(document: DocumentModel, *, limits: DocumentLimits | None) -> st
     body = []
     for block in section.blocks:
         if (not isinstance(block, Paragraph) or block.alignment or block.box or block.visual_surrogate
-                or set(block.properties)-({'source_span'} | HEADING_PROPERTIES)):
+                or set(block.properties)-({'source_span'} | HEADING_PROPERTIES | LIST_PROPERTIES)):
+            return None
+        item = get_list_item(block, limits=limits)
+        if any(type(block.properties[key]) is not bool for key in ('latex_list_par_before', 'latex_par_after_list')
+               if key in block.properties):
+            return None
+        if LIST_PROPERTY in block.properties and item is None:
+            return None
+        if item is None and any(key in block.properties for key in ('list_kind', 'list_level', 'latex_list_id')):
+            if block.properties.get('latex_list_imported') is not True:
+                return None  # Legacy evidence never creates or restores a role.
+        if item is not None and set(block.properties[LIST_PROPERTY])-{
+                'format', 'version', 'list_id', 'level', 'kind', 'start', 'restart', 'parent_id', 'continuation_of'}:
             return None
         heading = get_heading(block, limits=limits)
         if HEADING_PROPERTY in block.properties and heading is None:
@@ -87,11 +105,12 @@ def native_text(document: DocumentModel, *, limits: DocumentLimits | None) -> st
             parts.append(text)
         plain = block.plain_text
         # TeX collapses arbitrary whitespace; do not claim exact text preservation.
-        if not plain or plain != ' '.join(plain.split()) or any(ord(char) < 32 or ord(char) == 127 for char in plain):
+        empty_item = not plain and item is not None and item.continuation_of is None and not heading
+        if (not plain and not empty_item) or plain != ' '.join(plain.split()) or any(ord(c) < 32 or ord(c) == 127 for c in plain):
             return None
         text = ''.join(parts)
         if heading is not None:
             star = '*' if block.properties.get('latex_heading_starred', True) else ''
             text = '\\'+HEADING_COMMANDS[heading.level]+star+'{'+text+'}'
-        body.append(text)
-    return PREAMBLE+'\\begin{document}\n'+'\n\n'.join(body)+'\n\\end{document}\n'
+        body.append((block, text))
+    return PREAMBLE+'\\begin{document}\n'+list_paragraphs(document, body, limits=limits)+'\n\\end{document}\n'

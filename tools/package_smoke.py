@@ -32,7 +32,8 @@ def main() -> None:
         document_from_json,
         document_to_json,
         get_heading,
-        get_integration,
+        get_list_item,
+        iter_list_numbers,
     )
 
     import opendoc_formats
@@ -53,7 +54,7 @@ def main() -> None:
     from opendoc_formats.support.inspection import inspect_path
 
     assert opendoc_formats.__version__ == version("opendoc-formats")
-    assert version("opendoc-model") == "0.16.0"
+    assert version("opendoc-model") == "0.17.0"
     assert importlib.util.find_spec("ebooklib") is None, "Removed EPUB engine leaked into the installed profile"
     engines = ("bs4", "fitz", "pymupdf", "lxml", "docx", "pptx", "ebooklib", "fontTools")
     assert all(name not in sys.modules for name in engines)
@@ -123,7 +124,14 @@ def main() -> None:
         list_source.write_text(r'\begin{enumerate}\item First\par Continuation\end{enumerate} Outside', encoding='utf-8')
         list_model = read_document(list_source).document
         assert [p.plain_text for p in list_model.sections[0].blocks] == ['First', 'Continuation', 'Outside']
-        assert any(r.issue.reason == 'list-item-continuation' for r in get_integration(list_model).preservation)
+        assert get_list_item(list_model.sections[0].blocks[1]).continuation_of is not None
+        assert [entry.number for entry in iter_list_numbers(list_model)] == [1, None]
+        for index in range(2):
+            target = root / f'lists-{index}.tex'
+            list_report = write_document(list_model, target)
+            assert list_report.success and list_report.metrics['latex_route'] == 'native-text-v1'
+            list_model = document_from_json(document_to_json(read_document(target).document))
+            assert [entry.number for entry in iter_list_numbers(list_model)] == [1, None]
         book = root / "base-writer.epub"
         from opendoc_formats.readers.epub_package import read_epub_package
 

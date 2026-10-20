@@ -7,12 +7,7 @@ from opendoc_formats import read_document
 
 
 @pytest.mark.parametrize(('body', 'reason', 'texts'), [
-    (r'\begin{enumerate}\item First.\par Continuation.\end{enumerate} Outside.',
-     'list-item-continuation', ['First.', 'Continuation.', 'Outside.']),
     (r'\begin{itemize}\item[Own label] Text\end{itemize}', 'list-item-label', ['Text']),
-    (r'\begin{itemize}\item\item Next\end{itemize}', 'list-empty-item', ['Next']),
-    (r'\begin{itemize}\item\begin{enumerate}\item Child\end{enumerate}\end{itemize}',
-     'list-empty-item', ['Child']),
     (r'\begin{itemize}Before\item Text\end{itemize}', 'list-missing-item', ['Before', 'Text']),
     (r'\item Outside', 'list-orphan-item', ['Outside']),
 ])

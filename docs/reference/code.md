@@ -97,7 +97,7 @@ Format-specific errors, independent of consumers.
 
 Импорты: отсутствуют
 
-Тесты: [test_docx_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_access.py#L1), [test_office_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_office_access.py#L1), [test_package_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_package_resources.py#L1), [test_pdf_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_access.py#L1), [test_djvu_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_djvu_text.py#L1), [test_docx_layout_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_layout_roundtrip.py#L1), [test_fix_encoding.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_fix_encoding.py#L1), [test_tex_model.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_tex_model.py#L1)
+Тесты: [test_docx_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_access.py#L1), [test_office_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_office_access.py#L1), [test_package_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_package_resources.py#L1), [test_pdf_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_access.py#L1), [test_djvu_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_djvu_text.py#L1), [test_docx_layout_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_layout_roundtrip.py#L1), [test_fix_encoding.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_fix_encoding.py#L1), [test_tex_model.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_tex_model.py#L1), [test_latex_lists.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_lists.py#L1)
 
 ## src/opendoc_formats/export.py
 
@@ -110,8 +110,8 @@ Extensible model export with validation and atomic publication.
 - `register(self, exporter: ExporterSpec) -> None` — [строка 91](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L91)
 - `exporters(self) -> tuple[ExporterSpec, ...]` — [строка 99](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L99)
 - `write(self, document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport` — [строка 102](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L102)
-- `default_exporter_registry() -> ExporterRegistry` — [строка 332](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L332)
-- `write_document(document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport` — [строка 356](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L356)
+- `default_exporter_registry() -> ExporterRegistry` — [строка 340](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L340)
+- `write_document(document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport` — [строка 364](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L364)
 
 Импорты: `__future__`, `collections.abc`, `dataclasses`, `importlib`, `opendoc_formats.ooxml.paragraph_flow`, `opendoc_formats.ooxml.paragraph_indent`, `opendoc_formats.support.backends`, `opendoc_formats.support.document_limits`, `opendoc_formats.support.object_mapping`, `opendoc_formats.support.output_validation`, `opendoc_formats.text_profile`, `opendoc_formats.writers.txt_writer`, `opendoc_model`, `pathlib`, `tempfile`, `typing`
 
@@ -1111,9 +1111,9 @@ Safe SVG color discovery for canonical resource metadata.
 
 Finite source LaTeX parsing into OpenDoc, with inert original bytes and located losses.
 
-- `read_tex_model(path: str | Path, *, max_input_bytes: int=10 * 1024 * 1024, cancelled: Callable[[], bool] | None=None, limits: DocumentLimits | None=None) -> DocumentModel` — [строка 440](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/tex_model.py#L440)
+- `read_tex_model(path: str | Path, *, max_input_bytes: int=10 * 1024 * 1024, cancelled: Callable[[], bool] | None=None, limits: DocumentLimits | None=None) -> DocumentModel` — [строка 565](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/tex_model.py#L565)
 
-Импорты: `__future__`, `dataclasses`, `opendoc_formats.errors`, `opendoc_formats.readers.tex_source`, `opendoc_model`, `pathlib`, `typing`
+Импорты: `__future__`, `dataclasses`, `opendoc_formats.errors`, `opendoc_formats.readers.tex_source`, `opendoc_formats.tex_lists`, `opendoc_model`, `pathlib`, `typing`
 
 Тесты: [test_tex_model.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_tex_model.py#L1)
 
@@ -1249,7 +1249,7 @@ Located SDK quota failures, preserving unknown error text without guessed fields
 
 Импорты: отсутствуют
 
-Тесты: [test_latex.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_latex.py#L1), [test_full_contract.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_full_contract.py#L1), [test_latex_native_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_native_text.py#L1)
+Тесты: [test_latex.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_latex.py#L1), [test_full_contract.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_full_contract.py#L1), [test_latex_list_acceptance.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_list_acceptance.py#L1), [test_latex_native_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_native_text.py#L1)
 
 ## src/opendoc_formats/support/mapping_composition.py
 
@@ -1314,6 +1314,15 @@ Small PDF checks use an already installed profile instead of requiring another p
 - `probe_pdf(path: str | Path, *, metadata: bool=False) -> tuple[int | None, dict[str, str]]` — [строка 11](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/pdf_probe.py#L11)
 
 Импорты: `__future__`, `importlib`, `opendoc_formats.errors`, `pathlib`
+
+## src/opendoc_formats/tex_lists.py
+
+Inert TeX paragraph identity comments, not an alternate document model.
+
+- `paragraph_marker(anchor: Anchor | None, item: ListItem | None) -> str` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_lists.py#L15)
+- `paragraph_markers(text: str, *, limits: DocumentLimits | None=None) -> list[tuple[int, dict]]` — [строка 33](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_lists.py#L33)
+
+Импорты: `opendoc_formats.errors`, `opendoc_model`
 
 ## src/opendoc_formats/text_profile.py
 
@@ -1594,13 +1603,21 @@ Serialize model list paragraphs as nested semantic HTML lists.
 
 Тесты: [test_html_chart_statistics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_chart_statistics.py#L1), [test_html_layout.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_layout.py#L1), [test_html_normalize.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_normalize.py#L1), [test_html_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_resources.py#L1), [test_html_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_writer.py#L1), [test_pptx_custom_errors.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_custom_errors.py#L1), [test_pptx_error_directions.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_error_directions.py#L1), [test_pptx_multiple_trends.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_multiple_trends.py#L1), [test_pptx_trend_forecast.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_trend_forecast.py#L1)
 
+## src/opendoc_formats/writers/latex_lists.py
+
+Project SDK list membership into native TeX scopes and counters.
+
+- `list_paragraphs(document: DocumentModel, paragraphs: list[tuple[Paragraph, str]], *, limits: DocumentLimits | None) -> str` — [строка 8](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/latex_lists.py#L8)
+
+Импорты: `opendoc_formats.tex_lists`, `opendoc_model`
+
 ## src/opendoc_formats/writers/latex_text.py
 
 Dependency-free finite TeX text profile; other objects retain the DOCX route.
 
-- `native_text(document: DocumentModel, *, limits: DocumentLimits | None) -> str | None` — [строка 25](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/latex_text.py#L25)
+- `native_text(document: DocumentModel, *, limits: DocumentLimits | None) -> str | None` — [строка 31](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/latex_text.py#L31)
 
-Импорты: `dataclasses`, `opendoc_formats.support.latex`, `opendoc_model`
+Импорты: `dataclasses`, `opendoc_formats.support.latex`, `opendoc_formats.writers.latex_lists`, `opendoc_model`
 
 ## src/opendoc_formats/writers/latex_writer.py
 
