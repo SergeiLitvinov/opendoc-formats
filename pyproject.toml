@@ -36,7 +36,7 @@ pptx = ["python-pptx>=1.0.2", "lxml>=5", "Pillow>=10"]
 epub = ["beautifulsoup4>=4.12"]
 fonts = ["fonttools>=4.50"]
 html = ["beautifulsoup4>=4.12", "tinycss2>=1.5"]
-dev = ["pytest>=8", "ruff>=0.9", "mypy>=1.15", "build>=1.2", "twine>=6"]
+dev = ["pytest>=8", "ruff>=0.9", "mypy>=1.15", "twine>=6"]
 docs = ["mkdocs>=1.6,<2"]
 
 [project.urls]

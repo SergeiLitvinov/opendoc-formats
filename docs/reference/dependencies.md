@@ -12,7 +12,6 @@
 | [ast-serialize](#ast-serialize-0121) | 0.12.1 | dev | MIT | Сериализация AST для mypy |
 | [backports-tarfile](#backports-tarfile-120) | 1.2.0 | dev | MIT | Совместимость архивов tooling |
 | [beautifulsoup4](#beautifulsoup4-4150) | 4.15.0 | epub, html | MIT License | HTML/XHTML parser |
-| [build](#build-161) | 1.6.1 | dev | MIT | Frontend сборки Python |
 | [certifi](#certifi-2026722) | 2026.7.22 | dev | MPL-2.0 | Набор корневых TLS-сертификатов |
 | [cffi](#cffi-211) | 2.1.1 | dev, pdf-layout | MIT-0 | Вызов native кода |
 | [charset-normalizer](#charset-normalizer-352) | 3.5.2 | dev, pdf-layout | MIT | Определение кодировки HTTP |
@@ -63,7 +62,6 @@
 | [pymupdf](#pymupdf-1282) | 1.28.2 | pdf, pdf-docx, pdf-rich | AGPL-3.0 OR Artifex commercial | PDF import/export/render |
 | [pypdf](#pypdf-6190) | 6.19.0 | pdf-text | BSD-3-Clause | Низкоуровневый PDF text |
 | [pypdfium2](#pypdfium2-5130) | 5.13.0 | pdf-layout | Apache-2.0 OR BSD-3-Clause; PDFium/build licenses; CC-BY-4.0 для документации | PDFium rendering для pdfplumber |
-| [pyproject-hooks](#pyproject-hooks-133) | 1.3.3 | dev | MIT | Вызов backend сборки |
 | [pytest](#pytest-911) | 9.1.1 | dev | MIT | Тестовый runner |
 | [python-dateutil](#python-dateutil-290post0) | 2.9.0.post0 | docs | BSD-3-Clause OR Apache-2.0 | Даты инструментов документации |
 | [python-docx](#python-docx-120) | 1.2.0 | docx, pdf-docx | MIT | DOCX reader/writer |
@@ -125,14 +123,6 @@ HTTP Range: их SHA-256 вычислен, SHA-256 всего архива ук�
   SHA-256 архива по lockfile: `d6f88de62e1d4e38ecb1077eb9724cd0eff29d2a08ca16a401e9b9e93f117cf9`.
   - `beautifulsoup4-4.15.0.dist-info/licenses/AUTHORS` — `b989238918e1fdac1e46717cb405b63e92497a272413af0d989c1df6c8abcb6f`.
   - `beautifulsoup4-4.15.0.dist-info/licenses/LICENSE` — `55b4d8d4b1e5bc86d10efac91b74c87bcb77526b0f5b9edaf8b9cd2adc7397b2`.
-
-### build 1.6.1
-
-[Метаданные выпуска](https://pypi.org/project/build/1.6.1/)
-
-- [build-1.6.1-py3-none-any.whl](https://files.pythonhosted.org/packages/ad/9b/9fb3585dabcd73a1b2a6267f63f62649347c9e6d072c9fde365b105abb2c/build-1.6.1-py3-none-any.whl) — проверен целиком.
-  SHA-256 архива по lockfile: `ecd351a4be9d35a9eaaba244a7687143c9c7d4aea6ac964e7e7ddab20cbcf4e7`.
-  - `build-1.6.1.dist-info/licenses/LICENSE` — `aaf9a29ca5907971ccf07de025375db34539a8d5eeebce20b46099805722106f`.
 
 ### certifi 2026.7.22
 
@@ -737,14 +727,6 @@ HTTP Range: их SHA-256 вычислен, SHA-256 всего архива ук�
   - `pypdfium2-5.13.0.dist-info/licenses/data/linux_x64/BUILD_LICENSES/pdfium.txt` — `961eacd9633fff6d051db7208b755e9210e30efac7adec3e6a6d52798f0ccf0e`.
   - `pypdfium2-5.13.0.dist-info/licenses/data/linux_x64/BUILD_LICENSES/simdutf.txt` — `fc8dbc04e03ad4efc08a647ffe7f995b811a95bc04c0e85a56d5277c6593fa5f`.
   - `pypdfium2-5.13.0.dist-info/licenses/data/linux_x64/BUILD_LICENSES/zlib.txt` — `33fd641c9f3b0e0be64bc78fea9e94807674cdd70c48477599226cb8956565fe`.
-
-### pyproject-hooks 1.3.3
-
-[Метаданные выпуска](https://pypi.org/project/pyproject-hooks/1.3.3/)
-
-- [pyproject_hooks-1.3.3-py3-none-any.whl](https://files.pythonhosted.org/packages/85/11/044d1ae1b4ec0d7af88ee5bc91e081be1022533032b906a7bdabdbb60977/pyproject_hooks-1.3.3-py3-none-any.whl) — проверен целиком.
-  SHA-256 архива по lockfile: `5fc53fdac9f7bd63fbcdc868fb5f90b4784d78a53a3d3388cd738b807441a20b`.
-  - `pyproject_hooks-1.3.3.dist-info/licenses/LICENSE` — `1b22b049b5267d6dfc23a67bf4a84d8ec04b9fdfb1a51d360e42b4342c8b4154`.
 
 ### pytest 9.1.1
 
