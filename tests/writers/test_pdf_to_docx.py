@@ -146,7 +146,7 @@ def test_pymupdf_text_page_writes_no_workspace_scrap(tmp_path):
     result = PyMuPdfConverter(text_threshold=10).convert(pdf, out)
     assert result.success
     assert out.is_file()
-    remaining = [p.name for p in tmp_path.iterdir()]
+    remaining = sorted(p.name for p in tmp_path.iterdir())
     assert remaining == ["in.pdf", "out.docx"], remaining
 
 
