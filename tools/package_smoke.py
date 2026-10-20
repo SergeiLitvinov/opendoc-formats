@@ -32,6 +32,7 @@ def main() -> None:
         document_from_json,
         document_to_json,
         get_heading,
+        get_integration,
     )
 
     import opendoc_formats
@@ -118,6 +119,11 @@ def main() -> None:
             assert [get_heading(p).level for p in native_headings.sections[0].blocks] == [1, 2]
             assert r'\section{Own}' in target.read_text(encoding='utf-8')
             assert r'\subsection*{Child}' in target.read_text(encoding='utf-8')
+        list_source = root / 'source-list.tex'
+        list_source.write_text(r'\begin{enumerate}\item First\par Continuation\end{enumerate} Outside', encoding='utf-8')
+        list_model = read_document(list_source).document
+        assert [p.plain_text for p in list_model.sections[0].blocks] == ['First', 'Continuation', 'Outside']
+        assert any(r.issue.reason == 'list-item-continuation' for r in get_integration(list_model).preservation)
         book = root / "base-writer.epub"
         from opendoc_formats.readers.epub_package import read_epub_package
 

@@ -13,6 +13,15 @@ author/date как текстовые metadata, абзацы и коммента
 bfseries/itshape/normalfont. Заголовки section/subsection/subsubsection/paragraph/
 subparagraph/chapter становятся heading paragraphs. Itemize/enumerate задают
 вид и уровень списка; точная нумерация не вычисляется TeX engine.
+Многоабзацный пункт не считается несколькими независимыми пунктами: reader
+записывает located `list-item-continuation`, пока общей связи продолжения нет.
+Custom labels, пустые/содержащие только дочерний список пункты, текст перед первым
+item и item вне списка получают отдельные причины `list-item-label`,
+`list-empty-item`, `list-missing-item`, `list-orphan-item`. Текст сохраняется;
+исходные маркеры и границы доступны в точных source bytes и JSON-диагностике.
+Нативный экспорт списков остаётся в OF04 и
+[C-LIST-02](../development/opendoc-proposals.md#c-list-02-границы-и-продолжение-пункта-списка),
+а не подменяется последовательностью автоматически пронумерованных абзацев.
 
 Inline `$...$` и `\(...\)`, display `$$...$$` и `\[...\]` становятся
 `Formula(format=LATEX)`. Значение — исходный TeX между delimiters; оно не исполняется

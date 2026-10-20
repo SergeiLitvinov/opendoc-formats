@@ -5,7 +5,7 @@ from __future__ import annotations
 import bisect
 import re
 import unicodedata
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Callable
 
@@ -96,6 +96,14 @@ _BLOCKED = {
 }
 
 
+@dataclass
+class _ListFrame:
+    kind: str
+    identifier: str
+    item: TexToken | None = None
+    paragraphs: int = 0
+
+
 class _Parser:
     def __init__(self, path: Path, text: str, tokens: list[TexToken], cancelled: Callable[[], bool] | None) -> None:
         self.path, self.text, self.tokens, self.cancelled = path, text, tokens, cancelled
@@ -107,7 +115,7 @@ class _Parser:
         self.records: list[PreservationRecord] = []
         self.labels: set[str] = set()
         self.lines = [0, *[match.end() for match in re.finditer("\n", text)]]
-        self.list_stack: list[tuple[str, str]] = []
+        self.list_stack: list[_ListFrame] = []
         self.body = not any(t.kind == "command" and t.value == "documentclass" for t in tokens)
         self.paragraph_start: TexToken | None = None
         self.paragraph_end = 0
@@ -195,11 +203,17 @@ class _Parser:
                 self.current[0].text = self.current[0].text.lstrip(" ")
             if isinstance(self.current[-1], TextRun):
                 self.current[-1].text = self.current[-1].text.rstrip(" ")
-            if self.list_stack:
-                kind, identifier = self.list_stack[-1]
-                self.properties.update(list_kind=kind, list_level=len(self.list_stack) - 1, latex_list_id=identifier)
             token = self.paragraph_start
             assert token is not None
+            if self.list_stack:
+                frame = self.list_stack[-1]
+                self.properties.update(list_kind=frame.kind, list_level=len(self.list_stack) - 1, latex_list_id=frame.identifier)
+                if frame.item is None:
+                    self.warn(token, 'list-missing-item', 'List content before the first item has no item membership')
+                elif frame.paragraphs:
+                    self.warn(token, 'list-item-continuation',
+                              'Another paragraph of the same list item has no explicit common continuation relation')
+                frame.paragraphs += 1
             token = TexToken("paragraph", "", token.start, self.paragraph_end)
             self.blocks.append(
                 Paragraph(
@@ -209,6 +223,11 @@ class _Parser:
                 )
             )
         self.current, self.properties, self.paragraph_start = [], {}, None
+
+    def finish_list_item(self) -> None:
+        frame = self.list_stack[-1]
+        if frame.item is not None and not frame.paragraphs:
+            self.warn(frame.item, 'list-empty-item', 'Empty or child-only item has no explicit paragraph block')
 
     def math(self, token: TexToken, closing: str, style: TextStyle, display: bool) -> None:
         start = token.end
@@ -284,6 +303,8 @@ class _Parser:
                     if target != environment:
                         raise InvalidDocumentError("Mismatched LaTeX environment")
                     self.flush()
+                    if target in {'itemize', 'enumerate'}:
+                        self.finish_list_item()
                     if target == "document":
                         self.body = False
                     return
@@ -293,7 +314,7 @@ class _Parser:
                     if target == "document":
                         self.body = True
                     elif target in {"itemize", "enumerate"}:
-                        self.list_stack.append(("bullet" if target == "itemize" else "number", f"list-{token.start}"))
+                        self.list_stack.append(_ListFrame("bullet" if target == "itemize" else "number", f"list-{token.start}"))
                     else:
                         self.warn(token, "unsupported-environment", f"Environment {target!r} has no semantic layout profile")
                     self.walk(style, environment=target, depth=depth + 1)
@@ -394,7 +415,16 @@ class _Parser:
                 elif name in {"par", "item"}:
                     self.flush()
                     if name == "item":
-                        self.optional()
+                        if self.list_stack:
+                            self.finish_list_item()
+                            self.list_stack[-1].item = token
+                            self.list_stack[-1].paragraphs = 0
+                        else:
+                            self.warn(token, 'list-orphan-item', 'Item command has no containing supported list')
+                        self.skip_space()
+                        if self.index < len(self.tokens) and self.tokens[self.index].value == '[':
+                            self.group('[', ']')
+                            self.warn(token, 'list-item-label', 'Custom item label is retained only in the inert original source')
                 elif name == "\\":
                     self.append("\n", token, style)
                 elif name == "maketitle":
