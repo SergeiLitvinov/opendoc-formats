@@ -1111,7 +1111,7 @@ Safe SVG color discovery for canonical resource metadata.
 
 Finite source LaTeX parsing into OpenDoc, with inert original bytes and located losses.
 
-- `read_tex_model(path: str | Path, *, max_input_bytes: int=10 * 1024 * 1024, cancelled: Callable[[], bool] | None=None, limits: DocumentLimits | None=None) -> DocumentModel` — [строка 402](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/tex_model.py#L402)
+- `read_tex_model(path: str | Path, *, max_input_bytes: int=10 * 1024 * 1024, cancelled: Callable[[], bool] | None=None, limits: DocumentLimits | None=None) -> DocumentModel` — [строка 410](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/tex_model.py#L410)
 
 Импорты: `__future__`, `dataclasses`, `opendoc_formats.errors`, `opendoc_formats.readers.tex_source`, `opendoc_model`, `pathlib`, `typing`
 
@@ -1598,7 +1598,7 @@ Serialize model list paragraphs as nested semantic HTML lists.
 
 Dependency-free finite TeX text profile; other objects retain the DOCX route.
 
-- `native_text(document: DocumentModel, *, limits: DocumentLimits | None) -> str | None` — [строка 18](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/latex_text.py#L18)
+- `native_text(document: DocumentModel, *, limits: DocumentLimits | None) -> str | None` — [строка 25](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/latex_text.py#L25)
 
 Импорты: `dataclasses`, `opendoc_formats.support.latex`, `opendoc_model`
 

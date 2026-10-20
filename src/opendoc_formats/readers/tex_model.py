@@ -15,6 +15,7 @@ from opendoc_model import (
     DocumentModel,
     Formula,
     FormulaFormat,
+    Heading,
     IntegrationModel,
     IssueSeverity,
     Paragraph,
@@ -26,6 +27,7 @@ from opendoc_model import (
     Section,
     TextRun,
     TextStyle,
+    set_heading,
     set_integration,
 )
 
@@ -317,15 +319,21 @@ class _Parser:
                 elif name in _HEADINGS:
                     self.flush()
                     self.skip_space()
+                    starred = False
                     if self.index < len(self.tokens) and self.tokens[self.index].value == "*":
                         self.index += 1
-                    self.optional()
+                        starred = True
+                    self.skip_space()
+                    if self.index < len(self.tokens) and self.tokens[self.index].value == '[':
+                        self.group('[', ']')
+                        self.warn(token, 'heading-short-title', 'Heading short title has no semantic export profile')
                     self.skip_space()
                     if self.index >= len(self.tokens) or self.tokens[self.index].value != "{":
                         raise InvalidDocumentError("LaTeX heading requires a group")
                     self.index += 1
                     self.walk(style, group=True, depth=depth + 1)
                     self.properties["latex_heading_level"] = _HEADINGS[name]
+                    self.properties.update(latex_heading_command=name, latex_heading_starred=starred, latex_heading_imported=True)
                     self.flush()
                 elif name == "label":
                     value, _ = self.group()
@@ -434,6 +442,7 @@ def read_tex_model(
             key = f"Heading {block.properties['latex_heading_level']}"
             block.style_id = key
             document.styles[key] = TextStyle()
+            set_heading(block, Heading(block.properties['latex_heading_level']), limits=limits)
     parser.warn(
         TexToken("source", "", 0, len(text)), "inert-original-source", "Original LaTeX bytes retained as an inert attachment"
     )

@@ -31,6 +31,7 @@ def main() -> None:
         TextRun,
         document_from_json,
         document_to_json,
+        get_heading,
     )
 
     import opendoc_formats
@@ -106,6 +107,17 @@ def main() -> None:
             assert native_report.success and native_report.metrics['latex_route'] == 'native-text-v1'
             native_tex = document_from_json(document_to_json(read_document(native_target).document))
             assert native_tex.sections[0].blocks[0].plain_text == 'Own [text] & percent 100%'
+        headings = root / 'source-headings.tex'
+        headings.write_text(r'\begin{document}\section{Own}\subsection*{Child}\end{document}', encoding='utf-8')
+        native_headings = read_document(headings).document
+        for index in range(2):
+            target = root / f'headings-{index}.tex'
+            heading_report = write_document(native_headings, target)
+            assert heading_report.success and heading_report.metrics['latex_route'] == 'native-text-v1'
+            native_headings = document_from_json(document_to_json(read_document(target).document))
+            assert [get_heading(p).level for p in native_headings.sections[0].blocks] == [1, 2]
+            assert r'\section{Own}' in target.read_text(encoding='utf-8')
+            assert r'\subsection*{Child}' in target.read_text(encoding='utf-8')
         book = root / "base-writer.epub"
         from opendoc_formats.readers.epub_package import read_epub_package
 

@@ -3,21 +3,31 @@
 from dataclasses import fields
 
 from opendoc_model import (
+    HEADING_PROPERTY,
     DocumentLimits,
     DocumentModel,
     PageSettings,
     Paragraph,
     PreservationState,
     TextRun,
+    TextStyle,
+    get_heading,
     get_integration,
 )
 
 from opendoc_formats.support.latex import PREAMBLE, escape_latex
 
+HEADING_COMMANDS = {1: 'section', 2: 'subsection', 3: 'subsubsection', 4: 'paragraph', 5: 'subparagraph'}
+HEADING_PROPERTIES = {HEADING_PROPERTY, 'latex_heading_level', 'latex_heading_command',
+                      'latex_heading_starred', 'latex_heading_imported'}
+
 
 def native_text(document: DocumentModel, *, limits: DocumentLimits | None) -> str | None:
     """Return TeX only when every visible object is within the text profile."""
-    if len(document.sections) != 1 or document.styles or document.footnotes:
+    if len(document.sections) != 1 or document.footnotes:
+        return None
+    if any(key not in {f'Heading {level}' for level in HEADING_COMMANDS} or style != TextStyle()
+           for key, style in document.styles.items()):
         return None
     integration = get_integration(document, limits=limits)
     if integration:
@@ -46,8 +56,20 @@ def native_text(document: DocumentModel, *, limits: DocumentLimits | None) -> st
         return None
     body = []
     for block in section.blocks:
-        if (not isinstance(block, Paragraph) or block.style_id or block.alignment or block.box or block.visual_surrogate
-                or set(block.properties)-{'source_span'}):
+        if (not isinstance(block, Paragraph) or block.alignment or block.box or block.visual_surrogate
+                or set(block.properties)-({'source_span'} | HEADING_PROPERTIES)):
+            return None
+        heading = get_heading(block, limits=limits)
+        if HEADING_PROPERTY in block.properties and heading is None:
+            return None  # An opaque extension is not an explicit removal.
+        if heading is not None and set(block.properties[HEADING_PROPERTY])-{'format', 'version', 'level'}:
+            return None
+        imported = block.properties.get('latex_heading_imported') is True
+        if block.style_id and (block.style_id not in document.styles or not (heading or imported)):
+            return None
+        if heading is not None and (heading.level not in HEADING_COMMANDS
+                or block.properties.get('latex_heading_command', HEADING_COMMANDS[heading.level]) not in HEADING_COMMANDS.values()
+                or type(block.properties.get('latex_heading_starred', True)) is not bool):
             return None
         parts = []
         for run in block.content:
@@ -67,5 +89,9 @@ def native_text(document: DocumentModel, *, limits: DocumentLimits | None) -> st
         # TeX collapses arbitrary whitespace; do not claim exact text preservation.
         if not plain or plain != ' '.join(plain.split()) or any(ord(char) < 32 or ord(char) == 127 for char in plain):
             return None
-        body.append(''.join(parts))
+        text = ''.join(parts)
+        if heading is not None:
+            star = '*' if block.properties.get('latex_heading_starred', True) else ''
+            text = '\\'+HEADING_COMMANDS[heading.level]+star+'{'+text+'}'
+        body.append(text)
     return PREAMBLE+'\\begin{document}\n'+'\n\n'.join(body)+'\n\\end{document}\n'
