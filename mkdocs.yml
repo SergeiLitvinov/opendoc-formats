@@ -45,7 +45,7 @@ nav:
       - Тестовый корпус: development/corpus.md
       - Нативный контракт: development/native-access-contract.md
       - Запросы к библиотеке: development/format-requests.md
-      - Подтверждённые задачи: development/todo.md
+      - Открытые задачи: development/todo.md
       - Исследования: development/research.md
       - Предложения к OpenDoc: development/opendoc-proposals.md
       - Сборка и выпуск: development/release.md
