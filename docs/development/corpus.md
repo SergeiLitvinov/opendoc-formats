@@ -379,4 +379,13 @@ imports. Неподдержанные команды/форматы/geometry, nu
 дают попиксельно одинаковые страницы MuPDF при 108 dpi; image XObjects отсутствуют.
 Проверка работает в том же Linux CI профиле, что и списки; TeX distribution
 не включается в пакет. MathML/OMML, FormulaTree, numbered equation/align,
-произвольные macros/Unicode и moving arguments не входят в принятую проекцию.
+произвольные macros/Unicode и moving arguments вне описанного профиля заголовков
+не входят в принятую проекцию.
+
+`tests/writers/test_latex_heading_acceptance.py` проверяет inline math в Heading 1–5,
+numbered/starred команды, дроби/корни/греческие символы и матрицу. Для каждого
+original и двух JSON/TeX циклов отдельная обёртка добавляет оглавление и выполняет
+три прохода pdflatex, проверяя moving arguments через auxiliary files.
+Страницы MuPDF при 108 dpi совпадают попиксельно без image XObjects.
+Структурные тесты подтверждают правку/удаление Heading и значения формулы,
+сохранение fallback и отказ для display в заголовке без Office imports.

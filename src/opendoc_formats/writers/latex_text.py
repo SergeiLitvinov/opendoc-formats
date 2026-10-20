@@ -99,8 +99,8 @@ def native_text(document: DocumentModel, *, limits: DocumentLimits | None) -> st
         visible = []
         for run in block.content:
             if isinstance(run, Formula):
-                if heading is not None:
-                    return None  # Moving arguments need a separate TeX profile.
+                if heading is not None and run.display:
+                    return None  # Display math is not a heading argument.
                 parts.append(formula_tex(run))
                 visible.append('F')  # Formula source whitespace is not paragraph whitespace.
                 continue

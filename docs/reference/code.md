@@ -1249,7 +1249,7 @@ Located SDK quota failures, preserving unknown error text without guessed fields
 
 Импорты: отсутствуют
 
-Тесты: [test_latex.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_latex.py#L1), [test_full_contract.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_full_contract.py#L1), [test_latex_list_acceptance.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_list_acceptance.py#L1), [test_latex_math_acceptance.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_math_acceptance.py#L1), [test_latex_native_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_native_text.py#L1)
+Тесты: [test_latex.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_latex.py#L1), [test_full_contract.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_full_contract.py#L1), [test_latex_heading_acceptance.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_heading_acceptance.py#L1), [test_latex_list_acceptance.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_list_acceptance.py#L1), [test_latex_math_acceptance.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_math_acceptance.py#L1), [test_latex_native_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_native_text.py#L1)
 
 ## src/opendoc_formats/support/mapping_composition.py
 
