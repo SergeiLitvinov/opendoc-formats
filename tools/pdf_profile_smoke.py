@@ -80,6 +80,18 @@ def main() -> None:
             transport = output / 'ocr-warnings.json'
             assert write_document(warned.document, transport).success
             assert any(i.message == 'Own installed OCR warning' for i in read_document(transport).issues)
+            from opendoc_formats.errors import OperationCancelledError
+
+            class CancelledOcrEngine:
+                is_available = True
+
+                def recognize_pdf_geometry(self, *args, **kwargs):
+                    raise OperationCancelledError('Own installed cancellation')
+
+            cancelled = read_document(source, options=ImportOptions(
+                pdf_mode='structure', ocr_engine_factory=lambda **kwargs: CancelledOcrEngine(), cancelled=lambda: False,
+            ))
+            assert cancelled.document is None and not cancelled.success and cancelled.issues[0].code == 'import.cancelled'
             report = write_document(result.document, output / "document.pdf")
             assert report.success, report.to_dict()
             assert read_document(output / "document.pdf").success

@@ -3,18 +3,23 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
 from opendoc_model import DocumentLimits, DocumentModel, FontReference, Formula, Image, TextRun, set_font_reference, walk_model
 
+from opendoc_formats.support.cancellation import check_cancelled
 
-def attach_text_paint(document: DocumentModel, path: str | Path, *, limits: DocumentLimits | None) -> None:
+
+def attach_text_paint(document: DocumentModel, path: str | Path, *, limits: DocumentLimits | None,
+                      cancelled: Callable[[], bool] | None = None) -> None:
     from opendoc_formats.readers.pdf_content import content_only_pdf
 
-    with content_only_pdf(path) as native:
+    with content_only_pdf(path, cancelled=cancelled) as native:
         indices = []
         for page in native:
+            check_cancelled(cancelled, 'PDF paint page')
             from opendoc_formats.readers.pdf_graphics_state import native_paint_states
 
             evidence = native_paint_states(page, limits=limits)
@@ -27,6 +32,7 @@ def attach_text_paint(document: DocumentModel, path: str | Path, *, limits: Docu
                        or bool(clips and not (clips == 1 and len(image_clip_profiles(page)) == 1)))
             index: dict[tuple[float, float], list[tuple[dict[str, Any], int]]] = defaultdict(list)
             for trace in page.get_texttrace():
+                check_cancelled(cancelled, 'PDF paint text trace')
                 for offset, character in enumerate(trace['chars']):
                     index[_point_key(character[2])].append((trace, offset))
             from opendoc_formats.readers.pdf_font_bindings import painted_font_programs
@@ -34,8 +40,10 @@ def attach_text_paint(document: DocumentModel, path: str | Path, *, limits: Docu
             programs = painted_font_programs(page, document.resources, set(index))
             indices.append((index, unknown, programs, evidence))
         for section, (index, unknown, programs, graphics) in zip(document.sections, indices, strict=True):
+            check_cancelled(cancelled, 'PDF paint model section')
             section.properties['pdf_graphics'] = graphics
             for reference in walk_model(section, limits=limits):
+                check_cancelled(cancelled, 'PDF paint model node')
                 run = reference.node
                 if isinstance(run, Image):
                     resource = document.resources.get(run.resource_id)

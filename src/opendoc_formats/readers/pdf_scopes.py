@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import replace
 
 from opendoc_model import (
@@ -67,8 +68,13 @@ def needs_scene(evidence: dict) -> bool:
     return False
 
 
-def attach_pdf_scopes(document: DocumentModel, *, limits: DocumentLimits | None, include_neutral: bool = False) -> None:
+def attach_pdf_scopes(document: DocumentModel, *, limits: DocumentLimits | None, include_neutral: bool = False,
+                       cancelled: Callable[[], bool] | None = None) -> None:
+    from opendoc_formats.support.cancellation import check_cancelled
+
+    check_cancelled(cancelled, 'PDF scopes')
     for index, section in enumerate(document.sections):
+        check_cancelled(cancelled, 'PDF scope section')
         evidence = section.properties.get('pdf_graphics', {})
         if 'pdf_scene_id' in section.properties:
             continue  # An explicitly removed scene is never regenerated from native evidence.
@@ -151,3 +157,4 @@ def attach_pdf_scopes(document: DocumentModel, *, limits: DocumentLimits | None,
         set_vector_scene(document, scene, limits=limits)
         section.properties['pdf_scene_id'] = identifier
         section.properties['pdf_scene_complete'] = len(covered) == len(evidence['paints'])
+    check_cancelled(cancelled, 'PDF scopes completion')

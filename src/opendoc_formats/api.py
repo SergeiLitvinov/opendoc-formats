@@ -10,6 +10,7 @@ from typing import cast
 
 from opendoc_model import ArtifactLimitError, DiagnosticIssue, DocumentLimits, DocumentModel, IssueSeverity, get_integration
 
+from opendoc_formats.errors import OperationCancelledError
 from opendoc_formats.support.backends import missing_backends
 from opendoc_formats.text_profile import TextEncodingError, TextProfile
 
@@ -151,6 +152,8 @@ class AdapterRegistry:
             document = adapter.reader(source, options)
         except ArtifactLimitError as error:
             return limit_failure(error)
+        except OperationCancelledError as error:
+            return failure('import.cancelled', str(error))
         except TextEncodingError as error:
             return ImportResult(None, identifier, (DiagnosticIssue(
                 "import.txt-encoding", IssueSeverity.ERROR, str(error), str(source), reason=error.reason,
@@ -166,6 +169,8 @@ class AdapterRegistry:
             return limit_failure(error)
         if errors:
             return failure("import.invalid-model", "; ".join(errors))
+        if options.cancelled and options.cancelled():
+            return failure('import.cancelled', 'Import cancelled during validation; result discarded')
         return ImportResult(document, identifier, issues, options.document_limits)
 
 
@@ -264,7 +269,7 @@ def _epub(path: Path, options: ImportOptions) -> DocumentModel:
 def _pdf(path: Path, options: ImportOptions) -> DocumentModel:
     reader = cast(Callable[..., DocumentModel], import_module("opendoc_formats.readers.pdf_model").read_pdf_model)
     return reader(path=path, mode=options.pdf_mode, ocr_engine_factory=options.ocr_engine_factory,
-                  limits=options.document_limits)
+                  limits=options.document_limits, cancelled=options.cancelled)
 
 
 def _json(path: Path, options: ImportOptions) -> DocumentModel:

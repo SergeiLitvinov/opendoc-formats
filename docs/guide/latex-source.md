@@ -135,7 +135,8 @@ XObjects отсутствуют. Тест опционален при отсут
 Незакрытые группы, math delimiters и mismatched environments дают
 `InvalidDocumentError`; превышение профиля — `ResourceLimitError`, отмена —
 `OperationCancelledError`. Reader failures остаются исключениями по общему контракту
-реестра. Отмена до вызова reader даёт стандартный `import.cancelled`.
+реестра. Прямой reader выбрасывает `OperationCancelledError`; `read_document`
+возвращает `import.cancelled` без модели также при отмене внутри reader.
 
 ### Нативные TeX-формулы
 

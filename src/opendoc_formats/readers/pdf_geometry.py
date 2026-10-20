@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 from bisect import bisect_right
+from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from statistics import median
 from typing import Any, TypeAlias
+
+from opendoc_formats.errors import OperationCancelledError
+from opendoc_formats.support.cancellation import check_cancelled
 
 PdfBox: TypeAlias = tuple[float, float, float, float]
 
@@ -110,27 +114,31 @@ class PdfGeometryDocument:
     warnings: list[str] = field(default_factory=list)
 
 
-def extract_pdf_geometry(path: str | Path, *, exclude_interactions: bool = False) -> PdfGeometryDocument:
+def extract_pdf_geometry(path: str | Path, *, exclude_interactions: bool = False,
+                         cancelled: Callable[[], bool] | None = None) -> PdfGeometryDocument:
     """Извлечь координатную структуру PDF через PyMuPDF."""
 
     import fitz  # type: ignore[import-not-found]
 
+    check_cancelled(cancelled, 'PDF geometry')
     source = Path(path)
     if not source.is_file():
         raise FileNotFoundError(source)
     pages: list[PdfPageGeometry] = []
     from opendoc_formats.readers.pdf_content import content_only_pdf
 
-    with (content_only_pdf(source) if exclude_interactions else fitz.open(str(source))) as document:
+    with (content_only_pdf(source, cancelled=cancelled) if exclude_interactions else fitz.open(str(source))) as document:
         metadata = {str(key): str(value or "") for key, value in (document.metadata or {}).items()}
         warnings: list[str] = []
         for page_index, page in enumerate(document):
+            check_cancelled(cancelled, 'PDF geometry page')
             # Table analysis may mutate the backend page's crop/rotation temporarily.
             width, height, rotation = float(page.rect.width), float(page.rect.height), int(page.rotation)
             # Keep hidden glyphs as source content. The measured clip scope,
             # rather than destructive extraction, determines their visibility.
             raw = page.get_text("dict", sort=False, flags=fitz.TEXTFLAGS_DICT & ~fitz.TEXT_MEDIABOX_CLIP,
                                 clip=fitz.INFINITE_RECT()) or {}
+            check_cancelled(cancelled, 'PDF native text extraction')
             text_blocks: list[PdfTextBlockGeometry] = []
             image_blocks: list[PdfImageGeometry] = []
             for block_index, block in enumerate(raw.get("blocks", [])):
@@ -148,7 +156,8 @@ def extract_pdf_geometry(path: str | Path, *, exclude_interactions: bool = False
                             colorspace=str(block.get("cs-name", "")),
                         )
                     )
-            tables = _find_tables(page, warnings, page_index + 1)
+            tables = _find_tables(page, warnings, page_index + 1, cancelled=cancelled)
+            check_cancelled(cancelled, 'PDF table analysis')
             pages.append(
                 PdfPageGeometry(
                     number=page_index + 1,
@@ -160,11 +169,14 @@ def extract_pdf_geometry(path: str | Path, *, exclude_interactions: bool = False
                     tables=tuple(tables),
                 )
             )
+    check_cancelled(cancelled, 'PDF geometry completion')
     return PdfGeometryDocument(pages=pages, metadata=metadata, warnings=warnings)
 
 
-def _find_tables(page: Any, warnings: list[str], page_number: int) -> list[PdfTableGeometry]:
+def _find_tables(page: Any, warnings: list[str], page_number: int, *,
+                 cancelled: Callable[[], bool] | None = None) -> list[PdfTableGeometry]:
     for strategy in ("lines_strict", "text"):
+        check_cancelled(cancelled, 'PDF table strategy')
         try:
             kwargs = {"strategy": strategy}
             if strategy == "text":
@@ -178,6 +190,8 @@ def _find_tables(page: Any, warnings: list[str], page_number: int) -> list[PdfTa
             ]
             if tables:
                 return tables
+        except OperationCancelledError:
+            raise
         except Exception as error:  # noqa: BLE001 - layout analysis is best-effort
             warnings.append(f"pymupdf tables page {page_number} ({strategy}): {type(error).__name__}: {error}")
     return []

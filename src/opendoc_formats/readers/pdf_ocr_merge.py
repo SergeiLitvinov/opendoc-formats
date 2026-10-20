@@ -17,12 +17,15 @@ OCR-данных.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any
 
+from opendoc_formats.errors import OperationCancelledError
 from opendoc_formats.readers.pdf_classify import classify_text_block, repeated_margin_roles
 from opendoc_formats.readers.pdf_geometry import PdfGeometryDocument, PdfTableGeometry, PdfTextBlockGeometry
 from opendoc_formats.readers.pdf_layout import analyze_reading_order
 from opendoc_formats.readers.pdf_ocr_types import MergedTextBlock, OcrPageResult
+from opendoc_formats.support.cancellation import check_cancelled
 from opendoc_formats.types import Block, BlockType, DocFormat, Table, Text
 
 # Минимальная длина текста на странице, при которой text layer считается достаточным.
@@ -149,6 +152,7 @@ def merge_pdf_with_ocr(
     ocr_pages: list[OcrPageResult] | None = None,
     *,
     use_text_layer: bool = True,
+    cancelled: Callable[[], bool] | None = None,
 ) -> Text:
     """Merge PDF geometry text layer with optional OCR results.
 
@@ -162,12 +166,14 @@ def merge_pdf_with_ocr(
     Returns:
         A ``Text`` with per-block ``confidence``, ``source`` and ``bbox`` in meta.
     """
+    check_cancelled(cancelled, 'PDF OCR merge')
     all_blocks: list[Block] = []
     all_tables: list[Table] = []
     plain_parts: list[str] = []
     margin_roles = repeated_margin_roles(geometry)
 
     for page_index, page in enumerate(geometry.pages):
+        check_cancelled(cancelled, 'PDF OCR merge page')
         page_number = page_index + 1
         ocr_page = ocr_pages[page_index] if ocr_pages and page_index < len(ocr_pages) else None
 
@@ -197,6 +203,7 @@ def merge_pdf_with_ocr(
 
         layout = analyze_reading_order([*merged_geometry, *tables], page.width)
         for reading_index, ordered_block in enumerate(layout.blocks):
+            check_cancelled(cancelled, 'PDF OCR merge block')
             source = ordered_block.block
             text = source.text
             if not text.strip():
@@ -253,6 +260,7 @@ def merge_pdf_with_ocr(
             if not meta.get("excluded_from_plain"):
                 plain_parts.append(text)
 
+    check_cancelled(cancelled, 'PDF OCR merge completion')
     return Text(
         blocks=all_blocks,
         tables=all_tables,
@@ -302,6 +310,7 @@ def read_pdf_scenario(
     ocr_engine: Any = None,
     scale: int = 3,
     handwriting: bool = False,
+    *, cancelled: Callable[[], bool] | None = None,
 ) -> Text:
     """Read a PDF in a unified «text layer + OCR» scenario.
 
@@ -330,10 +339,11 @@ def read_pdf_scenario(
 
     from opendoc_formats.readers.pdf import extract_pdf_geometry as _extract_geometry
 
-    geometry = _extract_geometry(path)
+    check_cancelled(cancelled, 'PDF scenario')
+    geometry = _extract_geometry(path, cancelled=cancelled)
 
     if mode == PDF_SCENARIO_FAST:
-        return merge_pdf_with_ocr(geometry, None)
+        return merge_pdf_with_ocr(geometry, None, cancelled=cancelled)
 
     ocr_pages: list[OcrPageResult] | None = None
     if ocr_engine is not None and ocr_engine.is_available:
@@ -341,14 +351,17 @@ def read_pdf_scenario(
             ocr_pages = ocr_engine.recognize_pdf_geometry(path, scale=scale, handwriting=handwriting)
             if geometry.pages and not ocr_pages:
                 geometry.warnings.append('OCR engine returned no page results')
+        except OperationCancelledError:
+            raise
         except Exception as exc:  # noqa: BLE001
             geometry.warnings.append(f"OCR failed: {exc}")
     else:
         geometry.warnings.append('OCR engine requested but none available')
 
+    check_cancelled(cancelled, 'PDF scenario OCR')
     if mode == PDF_SCENARIO_SCAN:
-        return merge_pdf_with_ocr(geometry, ocr_pages, use_text_layer=False)
-    return merge_pdf_with_ocr(geometry, ocr_pages)
+        return merge_pdf_with_ocr(geometry, ocr_pages, use_text_layer=False, cancelled=cancelled)
+    return merge_pdf_with_ocr(geometry, ocr_pages, cancelled=cancelled)
 
 
 def read_pdf_with_ocr(
@@ -356,6 +369,7 @@ def read_pdf_with_ocr(
     ocr_engine: Any = None,
     scale: int = 3,
     handwriting: bool = False,
+    *, cancelled: Callable[[], bool] | None = None,
 ) -> Text:
     """Read a PDF, merging text layer with OCR if an OCR engine is available.
 
@@ -381,6 +395,7 @@ def read_pdf_with_ocr(
         ocr_engine=ocr_engine,
         scale=scale,
         handwriting=handwriting,
+        cancelled=cancelled,
     )
 
 

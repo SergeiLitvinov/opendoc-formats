@@ -11,6 +11,7 @@ Provides:
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -18,11 +19,13 @@ from typing import Any
 from opendoc_model import ArtifactLimitError, ImageCrop
 from opendoc_model.color import ColorValue
 
+from opendoc_formats.errors import OperationCancelledError
 from opendoc_formats.readers.pdf_geometry import (
     PdfBox,
     PdfGeometryDocument,
     PdfPageGeometry,
 )
+from opendoc_formats.support.cancellation import check_cancelled
 
 
 @dataclass(frozen=True)
@@ -113,7 +116,8 @@ def _pdf_drawing_color(value: object, *, alpha: float) -> ColorValue | None:
         return None
 
 
-def extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[str]]:
+def extract_pdf_images(path: str | Path, *, cancelled: Callable[[], bool] | None = None
+                       ) -> tuple[list[ExtractedPdfImage], list[str]]:
     """Extract all raster image pixel data from a PDF.
 
     Uses PyMuPDF's ``page.get_images()`` + ``document.extract_image()`` to
@@ -122,6 +126,7 @@ def extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[
 
     Every painted occurrence is retained, including repeated xrefs and inline images.
     """
+    check_cancelled(cancelled, 'PDF images')
     import fitz
 
     source = Path(path)
@@ -133,9 +138,11 @@ def extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[
 
     with fitz.open(str(source)) as document:
         for page_number, page in enumerate(document, start=1):
+            check_cancelled(cancelled, 'PDF image page')
             # Match get_image_info's TextPage flags: whitespace filtering can renumber blocks.
             page_dict = page.get_text("dict", sort=False, flags=fitz.TEXT_PRESERVE_IMAGES,
                                       clip=fitz.INFINITE_RECT()) or {}
+            check_cancelled(cancelled, 'PDF native image extraction')
             image_blocks = [block for block in page_dict.get("blocks", []) if block.get("type") == 1]
             infos = {item["number"]: item for item in page.get_image_info(xrefs=True)}
             from opendoc_formats.readers.pdf_image_clips import clipped_image_placement, image_clip_profiles
@@ -148,6 +155,7 @@ def extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[
             masks = {int(item[0]): int(item[1]) for item in page.get_images(full=True)}
             paint_images = [(index, box) for index, (kind, box) in enumerate(page.get_bboxlog()) if kind == 'fill-image']
             for block_index, block in enumerate(image_blocks):
+                check_cancelled(cancelled, 'PDF image occurrence')
                 from opendoc_formats.errors import ResourceLimitError
 
                 width, height = int(block.get("width", 0)), int(block.get("height", 0))
@@ -196,10 +204,12 @@ def extract_pdf_images(path: str | Path) -> tuple[list[ExtractedPdfImage], list[
                 ))
 
     images.sort(key=lambda img: (img.page, img.number))
+    check_cancelled(cancelled, 'PDF images')
     return images, warnings
 
 
-def extract_pdf_vector_drawings(path: str | Path) -> tuple[list[PdfVectorDrawing], list[str]]:
+def extract_pdf_vector_drawings(path: str | Path, *, cancelled: Callable[[], bool] | None = None
+                                ) -> tuple[list[PdfVectorDrawing], list[str]]:
     """Extract vector drawing commands from a PDF.
 
     Uses PyMuPDF's ``page.get_drawings()`` to retrieve vector paths,
@@ -208,6 +218,7 @@ def extract_pdf_vector_drawings(path: str | Path) -> tuple[list[PdfVectorDrawing
     """
     from opendoc_formats.readers.pdf_content import content_only_pdf
 
+    check_cancelled(cancelled, 'PDF vectors')
     source = Path(path)
     if not source.is_file():
         raise FileNotFoundError(source)
@@ -215,10 +226,13 @@ def extract_pdf_vector_drawings(path: str | Path) -> tuple[list[PdfVectorDrawing
     drawings: list[PdfVectorDrawing] = []
     warnings: list[str] = []
 
-    with content_only_pdf(source) as document:
+    with content_only_pdf(source, cancelled=cancelled) as document:
         for page_number, page in enumerate(document, start=1):
+            check_cancelled(cancelled, 'PDF vector page')
             try:
                 raw = page.get_drawings(extended=True)
+            except OperationCancelledError:
+                raise
             except Exception as exc:  # noqa: BLE001
                 warnings.append(f"page {page_number} get_drawings: {type(exc).__name__}: {exc}")
                 continue
@@ -226,6 +240,7 @@ def extract_pdf_vector_drawings(path: str | Path) -> tuple[list[PdfVectorDrawing
             states = []
             draw_index = 0
             for draw in raw:
+                check_cancelled(cancelled, 'PDF vector occurrence')
                 level = draw.get("level", 0)
                 while states and states[-1][0] >= level:
                     states.pop()
@@ -283,6 +298,7 @@ def extract_pdf_vector_drawings(path: str | Path) -> tuple[list[PdfVectorDrawing
                     )
                 )
 
+    check_cancelled(cancelled, 'PDF vectors completion')
     return drawings, warnings
 
 
@@ -308,6 +324,7 @@ def enrich_geometry_with_images(
     geometry: PdfGeometryDocument,
     images: list[ExtractedPdfImage] | None = None,
     vector_drawings: list[PdfVectorDrawing] | None = None,
+    *, cancelled: Callable[[], bool] | None = None,
 ) -> PdfGeometryDocument:
     """Merge extracted images and vector drawings into a geometry document.
 
@@ -315,6 +332,7 @@ def enrich_geometry_with_images(
     in the document with the supplied extracted images and vector drawings,
     grouped by page number.
     """
+    check_cancelled(cancelled, 'PDF geometry enrichment')
     if not images and not vector_drawings:
         return geometry
 
@@ -330,6 +348,7 @@ def enrich_geometry_with_images(
 
     enriched_pages: list[PdfPageGeometry] = []
     for page in geometry.pages:
+        check_cancelled(cancelled, 'PDF enrichment page')
         pn = page.number
         page_images = tuple(images_by_page.get(pn, []))
         page_vectors = tuple(vectors_by_page.get(pn, []))
@@ -347,6 +366,7 @@ def enrich_geometry_with_images(
             )
         )
 
+    check_cancelled(cancelled, 'PDF enrichment completion')
     return PdfGeometryDocument(
         pages=enriched_pages,
         metadata=geometry.metadata,

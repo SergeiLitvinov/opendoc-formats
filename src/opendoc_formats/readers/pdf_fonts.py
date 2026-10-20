@@ -2,12 +2,17 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 
 from opendoc_model import ArtifactLimitError, DocumentLimits, Provenance, Resource, ResourceKind
 
+from opendoc_formats.support.cancellation import check_cancelled
 
-def extract_pdf_fonts(path: str | Path, *, limits: DocumentLimits | None = None) -> dict[str, Resource]:
+
+def extract_pdf_fonts(path: str | Path, *, limits: DocumentLimits | None = None,
+                      cancelled: Callable[[], bool] | None = None) -> dict[str, Resource]:
+    check_cancelled(cancelled, 'PDF fonts')
     import fitz
 
     budget = limits or DocumentLimits()
@@ -16,7 +21,9 @@ def extract_pdf_fonts(path: str | Path, *, limits: DocumentLimits | None = None)
     total = 0
     with fitz.open(path) as document:
         for page in document:
+            check_cancelled(cancelled, 'PDF font page')
             for entry in page.get_fonts(full=True):
+                check_cancelled(cancelled, 'PDF font program')
                 xref = entry[0]
                 if not xref or xref in seen:
                     continue
@@ -37,4 +44,5 @@ def extract_pdf_fonts(path: str | Path, *, limits: DocumentLimits | None = None)
                                                  properties={'pdf_font_name': name, 'pdf_font_xref': xref},
                                                  provenance=Provenance(source_format='pdf', source_path=str(path),
                                                                        object_id=f'font-xref-{xref}'))
+    check_cancelled(cancelled, 'PDF fonts completion')
     return resources

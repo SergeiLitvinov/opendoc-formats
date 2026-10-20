@@ -37,6 +37,8 @@ from opendoc_model.document_model import (
 )
 from opendoc_model.units import canonical_coordinate_contract
 
+from opendoc_formats.errors import OperationCancelledError
+from opendoc_formats.support.cancellation import check_cancelled
 from opendoc_formats.types import BlockType, DocFormat
 
 
@@ -50,6 +52,7 @@ def read_pdf_model(
     mode: str | None = None,
     ocr_engine_factory: Callable[..., Any] | None = None,
     limits: DocumentLimits | None = None,
+    cancelled: Callable[[], bool] | None = None,
 ) -> DocumentModel:
     """Извлечь PDF в богатую модель с текстом, таблицами и изображениями.
 
@@ -87,8 +90,9 @@ def read_pdf_model(
         extract_pdf_vector_drawings,
     )
 
+    check_cancelled(cancelled, 'PDF import')
     path = str(path)
-    geometry = extract_pdf_geometry(path, exclude_interactions=True)
+    geometry = extract_pdf_geometry(path, exclude_interactions=True, cancelled=cancelled)
     engine = f"pymupdf+{scenario}+document-model"
     ocr_pages = None
 
@@ -102,29 +106,34 @@ def read_pdf_model(
             if ocr_engine_factory is not None
             else None
         )
+        check_cancelled(cancelled, 'PDF OCR initialization')
         if ocr_engine is not None and ocr_engine.is_available:
             try:
                 ocr_pages = ocr_engine.recognize_pdf_geometry(path, handwriting=handwriting)
                 if geometry.pages and not ocr_pages:
                     geometry.warnings.append('OCR engine returned no page results')
+            except OperationCancelledError:
+                raise
             except Exception as exc:  # noqa: BLE001
                 geometry.warnings.append(f"OCR failed: {exc}")
         else:
             geometry.warnings.append("OCR engine requested but none available")
 
-    images, img_warnings = extract_pdf_images(path)
-    vectors, vec_warnings = extract_pdf_vector_drawings(path)
-    geometry = enrich_geometry_with_images(geometry, images, vectors)
+    check_cancelled(cancelled, 'PDF OCR')
+    images, img_warnings = extract_pdf_images(path, cancelled=cancelled)
+    vectors, vec_warnings = extract_pdf_vector_drawings(path, cancelled=cancelled)
+    geometry = enrich_geometry_with_images(geometry, images, vectors, cancelled=cancelled)
 
     from opendoc_formats.readers.pdf_ocr_merge import merge_pdf_with_ocr
 
-    semantic = merge_pdf_with_ocr(geometry, ocr_pages, use_text_layer=(scenario != PDF_SCENARIO_SCAN))
+    semantic = merge_pdf_with_ocr(geometry, ocr_pages, use_text_layer=(scenario != PDF_SCENARIO_SCAN), cancelled=cancelled)
 
     all_warnings: list[str] = list(semantic.warnings) + img_warnings + vec_warnings
 
     from opendoc_formats.support.pdf_mapping_history import HISTORY_KEY, attach_history_map, load_history
 
     history_routes, history_issues = load_history(path)
+    check_cancelled(cancelled, 'PDF mapping history')
     from opendoc_model import Anchor, set_anchor
 
     from opendoc_formats.support.object_mapping import _result_id
@@ -135,9 +144,10 @@ def read_pdf_model(
     resources: dict[str, Resource] = {}
     from opendoc_formats.readers.pdf_fonts import extract_pdf_fonts
 
-    resources.update(extract_pdf_fonts(path, limits=limits))
+    resources.update(extract_pdf_fonts(path, limits=limits, cancelled=cancelled))
 
     for page in geometry.pages:
+        check_cancelled(cancelled, 'PDF model page')
         blocks: list[RichBlock] = []
         headers: list[RichBlock] = []
         footers: list[RichBlock] = []
@@ -153,6 +163,7 @@ def read_pdf_model(
             )
 
         for semantic_block in (block for block in semantic.blocks if block.page == page.number):
+            check_cancelled(cancelled, 'PDF model block')
             box = _pdf_box(semantic_block.meta.get("bbox"))
             properties = {
                 "legacy_type": semantic_block.type.value,
@@ -334,12 +345,13 @@ def read_pdf_model(
     from opendoc_formats.readers.pdf_interactive import attach_pdf_interactions
     from opendoc_formats.readers.pdf_paint import attach_text_paint
 
-    attach_text_paint(document, path, limits=limits)
-    attach_pdf_interactions(document, path, limits=limits)
+    attach_text_paint(document, path, limits=limits, cancelled=cancelled)
+    attach_pdf_interactions(document, path, limits=limits, cancelled=cancelled)
     from opendoc_formats.readers.pdf_scopes import attach_pdf_scopes
 
-    attach_pdf_scopes(document, limits=limits)
+    attach_pdf_scopes(document, limits=limits, cancelled=cancelled)
     attach_history_map(document, path, matched_history, history_issues, limits=limits)
+    check_cancelled(cancelled, 'PDF import completion')
     return document
 
 

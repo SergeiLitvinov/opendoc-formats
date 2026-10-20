@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -65,9 +66,13 @@ def _actions(pdf: Any, xref: int) -> dict[str, Any]:
     return actions
 
 
-def attach_pdf_interactions(model: DocumentModel, source: str | Path, *, limits: DocumentLimits | None = None) -> None:
+def attach_pdf_interactions(model: DocumentModel, source: str | Path, *, limits: DocumentLimits | None = None,
+                            cancelled: Callable[[], bool] | None = None) -> None:
     import fitz
 
+    from opendoc_formats.support.cancellation import check_cancelled
+
+    check_cancelled(cancelled, 'PDF interactions')
     source = Path(source)
     pages, annotations, forms, records = [], [], [], []
     count = 0
@@ -105,6 +110,7 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path, *, limits:
             fitz.PDF_WIDGET_TYPE_BUTTON: "button",
         }
         for index, page in enumerate(pdf, 1):
+            check_cancelled(cancelled, 'PDF interaction page')
             page_id = f"pdf-page-{index}"
             native_page = read_page_geometry(page, page_id)
             source_rotation = page.rotation
@@ -122,6 +128,7 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path, *, limits:
                 record("pdf.page-geometry", PreservationState.OPAQUE, index, page.xref, "unsupported-user-unit",
                        "UserUnit geometry retained in source PDF; shared regions are not inferred")
             for ordinal, link in enumerate(page.get_links(), 1):
+                check_cancelled(cancelled, 'PDF link')
                 xref = int(link.get("xref", 0))
                 target = link.get("uri") or (f"#pdf-page-{link['page'] + 1}" if link.get("page", -1) >= 0 else None)
                 annotations.append(
@@ -139,6 +146,7 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path, *, limits:
                     "pdf.link", PreservationState.SEMANTIC, index, xref, "parsed-link", "Link destination retained as inert data"
                 )
             for annotation in page.annots() or ():
+                check_cancelled(cancelled, 'PDF annotation')
                 xref, kind = int(annotation.xref), int(annotation.type[0])
                 if kind not in note_types:
                     record(
@@ -180,6 +188,7 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path, *, limits:
                     "Finite annotation profile imported",
                 )
             for widget in page.widgets() or ():
+                check_cancelled(cancelled, 'PDF widget')
                 xref, kind = int(widget.xref), int(widget.field_type)
                 if kind not in form_types or not isinstance(widget.field_value, (str, int, float, bool, type(None))):
                     record(
@@ -283,6 +292,7 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path, *, limits:
     from opendoc_formats.pdf_graphics import paint_clips
 
     for index, section in enumerate(model.sections):
+        check_cancelled(cancelled, 'PDF interaction paint section')
         evidence = section.properties.get('pdf_graphics')
         if evidence is None:
             continue
@@ -345,6 +355,7 @@ def attach_pdf_interactions(model: DocumentModel, source: str | Path, *, limits:
 
     with fitz.open(source) as pdf:
         import_pdf_outline(model, pdf=pdf, source=str(source))
+    check_cancelled(cancelled, 'PDF interactions completion')
 
 
 def _simple_script_action(pdf: Any, xref: int, actions: dict[str, Any]) -> bool:

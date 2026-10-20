@@ -89,10 +89,10 @@ def _with_pymupdf(path: str) -> Text:
     return analyze_pdf_geometry(extract_pdf_geometry(path))
 
 
-def read_pdf_geometry(path: str | Path) -> PdfGeometryDocument:
+def read_pdf_geometry(path: str | Path, *, cancelled: Callable[[], bool] | None = None) -> PdfGeometryDocument:
     """Публичный геометрический импорт PDF без семантических эвристик."""
 
-    return extract_pdf_geometry(path)
+    return extract_pdf_geometry(path, cancelled=cancelled)
 
 
 def read_pdf(path: str) -> Text:
