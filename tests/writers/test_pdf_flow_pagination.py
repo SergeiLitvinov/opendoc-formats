@@ -14,10 +14,10 @@ from opendoc_formats.writers.pdf_writer import write_pdf_model
 from tests.writers.test_pdf_docx_rasters import own_pixels
 
 
-def own_source(path, lines=4):
+def own_source(path, lines=4, width=240):
     document = Document()
     page = document.sections[0]
-    page.page_width, page.page_height = Pt(240), Pt(300)
+    page.page_width, page.page_height = Pt(width), Pt(300)
     page.left_margin = page.right_margin = page.top_margin = page.bottom_margin = Pt(20)
     normal = document.styles['Normal']
     normal.font.name, normal.font.size = 'Arial', Pt(10)
@@ -38,8 +38,9 @@ def own_source(path, lines=4):
 
 @pytest.mark.parametrize('alignment', ['left', 'center', 'right'])
 @pytest.mark.parametrize('angle', [0, 3])
-def test_overflow_body_images_keep_following_text_and_geometry(tmp_path, alignment, angle):
-    model = own_source(tmp_path / 'own.docx')
+@pytest.mark.parametrize('width', [200, 240])
+def test_overflow_body_images_keep_following_text_and_geometry(tmp_path, alignment, angle, width):
+    model = own_source(tmp_path / 'own.docx', width=width)
     for block in model.sections[0].blocks:
         if isinstance(block, Paragraph) and any(isinstance(run, Image) for run in block.content):
             block.alignment = alignment
@@ -57,7 +58,10 @@ def test_overflow_body_images_keep_following_text_and_geometry(tmp_path, alignme
         assert report.metrics.get('pdf_flow_page_breaks')
         assert document_to_json(model) == expected
         with pymupdf.open(target) as pdf:
-            text = ''.join(page.get_text() for page in pdf)
+            extracted = ''.join(page.get_text() for page in pdf)
+            text = ' '.join(extracted.split())
+            if width == 200:
+                assert 'Own final paragraph must remain visible.' not in extracted
             for caption in ('Own first caption', 'Own second caption', 'Own final paragraph must remain visible.'):
                 assert text.count(caption) == 1
             images = []
@@ -70,17 +74,17 @@ def test_overflow_body_images_keep_following_text_and_geometry(tmp_path, alignme
             assert len(images) == 2
             for (_, rectangle), height in zip(images, (46.8, 72)):
                 radians = math.radians(angle)
-                width = 72 * math.cos(radians) + height * math.sin(radians)
+                raster_width = 72 * math.cos(radians) + height * math.sin(radians)
                 height = height * math.cos(radians) + 72 * math.sin(radians)
-                assert rectangle[2] - rectangle[0] == pytest.approx(width, abs=.01)
+                assert rectangle[2] - rectangle[0] == pytest.approx(raster_width, abs=.01)
                 assert rectangle[3] - rectangle[1] == pytest.approx(height, abs=.01)
                 assert 20 <= rectangle[1] < rectangle[3] <= 280
                 if alignment == 'center':
-                    assert (rectangle[0]+rectangle[2])/2 == pytest.approx(120, abs=.01)
+                    assert (rectangle[0]+rectangle[2])/2 == pytest.approx(width/2, abs=.01)
                 elif alignment == 'left':
                     assert rectangle[0] == pytest.approx(20, abs=.01)
                 else:
-                    assert rectangle[2] == pytest.approx(220, abs=.01)
+                    assert rectangle[2] == pytest.approx(width-20, abs=.01)
             for number, rectangle in images:
                 for word in pdf[number].get_text('words'):
                     assert not (pymupdf.Rect(rectangle) & pymupdf.Rect(word[:4])).get_area()
