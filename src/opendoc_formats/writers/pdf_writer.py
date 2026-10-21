@@ -11,6 +11,7 @@ from opendoc_model import ArtifactLimitError, DocumentLimits
 from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import Block, DocumentModel, Formula, FormulaFormat, Paragraph, Section, Table
 
+from opendoc_formats.errors import OperationCancelledError
 from opendoc_formats.fonts.html_embedding import archived_font_stylesheet
 from opendoc_formats.writers.color_preflight import preflight_colors
 from opendoc_formats.writers.font_preflight import prepare_fonts
@@ -109,7 +110,7 @@ def write_pdf_model(
             anchor_positions: dict[str, tuple[int, tuple[float, float]]] = {}
             flow_ids = {r.location: r.flow_id for r in rasters[section_index] if r.flow_id is not None}
             section_pdf, renderer = _render_section(document, section, section_index, report, flow_positions, flow_ids,
-                                                    anchor_positions, mapping, limits=limits)
+                                                    anchor_positions, mapping, limits=limits, cancelled=check_cancelled)
             from opendoc_formats.writers.pdf_text_verify import verify_section_text
 
             try:
@@ -255,6 +256,8 @@ def write_pdf_model(
             mapping_publication(report, 'published')
     except ArtifactLimitError:
         raise
+    except OperationCancelledError:
+        raise
     except Exception as error:  # noqa: BLE001 - backend failures must be represented in the report
         report.add(IssueSeverity.ERROR, "pdf-write", str(error))
         mapping_publication(report, 'rejected', code='pdf.write-rejected', reason='write-failed')
@@ -277,7 +280,7 @@ def _render_section(
     flow_ids: dict[str, str],
     anchor_positions: dict[str, tuple[int, tuple[float, float]]],
     mapping: Any = None,
-    *, limits: DocumentLimits | None = None,
+    *, limits: DocumentLimits | None = None, cancelled: Callable[[], bool] | None = None,
 ) -> tuple[Any, _HtmlRenderer]:
     import fitz
 
@@ -290,7 +293,8 @@ def _render_section(
         source_format=document.source_format,
         version=document.version,
     )
-    from opendoc_formats.writers.pdf_flow import PdfFlowRenderer, record_position
+    from opendoc_formats.support.cancellation import check_cancelled
+    from opendoc_formats.writers.pdf_flow import PdfFlowRenderer, next_flow_break, record_position
 
     renderer = PdfFlowRenderer(section_model, report, flow_ids, mapping, limits=limits)
     main_html = renderer._blocks(section.blocks, f"sections[{section_index}].blocks")
@@ -323,7 +327,8 @@ def _render_section(
             + "\nhtml, body { background: transparent; } body { margin: 0; }"
         )
         archive = fitz.Archive(str(font_workspace.path))
-        story = fitz.Story(html=main_html or "<p></p>", user_css=css, archive=archive)
+        trial_positions: dict[tuple[str, int], tuple[float, ...]] = {}
+        trial_anchors: dict[str, tuple[int, tuple[float, float]]] = {}
 
         def page_function(_page_number: int, _mediabox: Any, device: Any, after: int) -> None:
             if after:
@@ -336,7 +341,7 @@ def _render_section(
                     max(4, page.margin_top.pt - 4),
                 )
                 _draw_fixed_story(header_html, css, header_box, device, report, "header", archive=archive,
-                                  flow_positions=flow_positions, page_number=_page_number - 1)
+                                  flow_positions=trial_positions, page_number=_page_number - 1)
             if footer_html:
                 footer_box = fitz.Rect(
                     page.margin_left.pt,
@@ -345,17 +350,43 @@ def _render_section(
                     page.height.pt - 2,
                 )
                 _draw_fixed_story(footer_html, css, footer_box, device, report, "footer", archive=archive,
-                                  flow_positions=flow_positions, page_number=_page_number - 1)
+                                  flow_positions=trial_positions, page_number=_page_number - 1)
 
         def position_function(position: Any) -> None:
-            record_position(flow_positions, position)
+            record_position(trial_positions, position)
             if position.id and position.open_close & 1:
-                anchor_positions.setdefault(position.id, (position.page_num - 1, (position.rect[0], position.rect[1])))
+                trial_anchors.setdefault(position.id, (position.page_num - 1, (position.rect[0], position.rect[1])))
 
-        section_pdf = story.write_with_links(rect_function, pagefn=page_function, positionfn=position_function)
-    if isinstance(section_pdf, fitz.Document):
-        return section_pdf, renderer
-    return fitz.open(stream=section_pdf.read(), filetype="pdf"), renderer
+        forced: set[str] = set()
+        trial_issue_start = len(report.issues)
+        for attempt in range(33):
+            check_cancelled(cancelled, 'PDF pagination')
+            trial_positions.clear()
+            trial_anchors.clear()
+            story = fitz.Story(html=main_html or "<p></p>", user_css=css, archive=archive)
+            section_pdf = story.write_with_links(rect_function, pagefn=page_function, positionfn=position_function)
+            if not isinstance(section_pdf, fitz.Document):
+                section_pdf = fitz.open(stream=section_pdf.read(), filetype="pdf")
+            try:
+                retry = next_flow_break(main_html, trial_positions, content_box.y1, forced)
+                if retry is None:
+                    flow_positions.update(trial_positions)
+                    anchor_positions.update(trial_anchors)
+                    if forced:
+                        report.metrics.setdefault('pdf_flow_page_breaks', []).extend(
+                            location for location, token in flow_ids.items() if token in forced
+                        )
+                    break
+                if attempt == 32:
+                    raise ValueError('PDF inline raster pagination exceeds 32 retries')
+                main_html, token = retry
+                forced.add(token)
+            except Exception:
+                section_pdf.close()
+                raise
+            section_pdf.close()
+            del report.issues[trial_issue_start:]
+    return section_pdf, renderer
 
 
 def _verify_pdf_font_embedding(pdf: Any, document: DocumentModel, report: ConversionReport) -> None:

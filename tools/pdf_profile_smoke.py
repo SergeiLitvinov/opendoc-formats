@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import unicodedata
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -65,6 +66,40 @@ def main() -> None:
             result = read_document(source)
             assert result.success, result.issues
             assert "Native PDF" in str(result.document)
+            from opendoc_model import (
+                Box,
+                DocumentModel,
+                Image,
+                Length,
+                PageSettings,
+                Paragraph,
+                Resource,
+                ResourceKind,
+                Section,
+                TextRun,
+            )
+
+            pixels = fitz.Pixmap(fitz.csRGB, (0, 0, 12, 18), False)
+            pixels.clear_with(255)
+            flow = DocumentModel(sections=[Section(
+                page=PageSettings(width=Length(240), height=Length(300), margin_left=Length(20),
+                                  margin_right=Length(20), margin_top=Length(20), margin_bottom=Length(20)),
+                blocks=[*[Paragraph([TextRun(f'Own row {i}')]) for i in range(6)],
+                        Paragraph([Image('own', box=Box(0, 0, 72, 46.8), properties={'placement': 'inline'})]),
+                        Paragraph([TextRun('Own first caption')]),
+                        Paragraph([Image('own', box=Box(0, 0, 72, 72), properties={'placement': 'inline'})]),
+                        Paragraph([TextRun('Own second caption')]), Paragraph([TextRun('Own final paragraph')])],
+            )], resources={'own': Resource('own', ResourceKind.RASTER_IMAGE, 'image/png', data=pixels.tobytes('png'))})
+            flow_target = output / 'flow.pdf'
+            flow_report = write_document(document_from_json(document_to_json(flow)), flow_target)
+            assert flow_report.success, flow_report.issues
+            assert flow_report.metrics.get('pdf_flow_page_breaks')
+            with fitz.open(flow_target) as flow_pdf:
+                flow_text = ' '.join(unicodedata.normalize('NFKC', ''.join(page.get_text() for page in flow_pdf)).split())
+                assert all(flow_text.count(text) == 1 for text in (
+                    'Own first caption', 'Own second caption', 'Own final paragraph',
+                ))
+                assert sum(len(page.get_image_info()) for page in flow_pdf) == 2
             from opendoc_formats.errors import OperationCancelledError
             from opendoc_formats.writers.pdf_docx_model import prepare_pdf_docx
 

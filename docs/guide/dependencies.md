@@ -7,6 +7,12 @@ pdfminer, Pillow или lxml. Лицензия PyMuPDF — AGPL-3.0 либо к�
 для отдельного permissive text-only маршрута остаётся `pdf-text` с BSD-3-Clause pypdf.
 Таблица ниже перечисляет все альтернативные профили, а не обязательную общую установку.
 
+Профили `pdf`, `pdf-rich` и `pdf-docx` ограничивают PyMuPDF веткой `>=1.24,<2`.
+В [метаданных PyMuPDF 2.0](https://pypi.org/pypi/PyMuPDF/2.0/json) обязательны
+NumPy, ONNX Runtime, networkx, PyYAML, pymupdf-layout, pymupdf4llm, psutil и tabulate.
+Эти движки не используются адаптером и не входят в проверенный минимальный
+PDF-профиль. Переход на major 2 требует отдельной проверки API, качества и лицензий.
+
 Экспорт EPUB входит в базовый профиль: собственный writer **MIT**, модель OpenDoc
 **MIT**, ZIP/XML/HTML parsing — стандартная библиотека Python (**PSF License Agreement**).
 EbookLib, lxml и BeautifulSoup для записи не используются. Extra `epub` нужен для импорта;
@@ -34,7 +40,7 @@ lxml для нативного текстового экспорта со спи
 | --- | --- | --- | --- |
 | opendoc-model 0.17.0 | обязательный | Общий контракт документа; официальный release wheel | MIT |
 | pypdf 6.19.0 | pdf-text | Альтернативное извлечение текста | BSD-3-Clause |
-| PyMuPDF 1.28.2 | pdf-rich, pdf; транзитивно pdf-docx | Богатый импорт, геометрия, вектор/растр, рендер и PDF writer | AGPL-3.0 или коммерческая лицензия Artifex |
+| PyMuPDF 1.28.2 | pdf-rich, pdf, pdf-docx | Богатый импорт, геометрия, вектор/растр, рендер и PDF writer | AGPL-3.0 или коммерческая лицензия Artifex |
 | pdf2docx 0.5.13 | pdf-docx | Отдельный прямой PDF → DOCX маршрут | MIT; зависит от AGPL/commercial PyMuPDF и OpenCV; upstream помечен как не поддерживаемый активно |
 | pdfplumber 0.11.10 | pdf-layout | Альтернативное извлечение текста/геометрии PDF | MIT; pdfminer.six, Pillow, pypdfium2 и их компоненты |
 | python-docx 1.2.0 | docx | OOXML DOCX, rich reader/writer и DOCX → TeX | MIT; использует lxml |

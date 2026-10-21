@@ -197,6 +197,10 @@ pages и repagination диагностируются.
 affine с shear/reflection и single-image quadrilateral clip проходит два цикла
 с точным RGB. Inline image следует потоку; нулевые offsets paragraph anchor
 имеют flow fallback с located LOSS для floating wrap. Mixed paint order диагностируется.
+Переполнение body-абзаца с inline изображением вызывает ограниченный перенос
+на следующую страницу без изменения размера/обрезки/поворота; проверяются
+геометрия, подписи и весь следующий текст. Table cells и разбиение одного
+смешанного абзаца с несколькими изображениями остаются вне этого профиля.
 Подробности и границы — в [описании форматов](formats.md) и
 [корпусе PDF](../development/corpus.md#pdf-размещения-растра-и-обрезка).
 

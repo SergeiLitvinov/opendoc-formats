@@ -1430,6 +1430,7 @@ pdf = [
 ]
 pdf-docx = [
     { name = "pdf2docx" },
+    { name = "pymupdf" },
 ]
 pdf-layout = [
     { name = "pdfplumber" },
@@ -1459,8 +1460,9 @@ requires-dist = [
     { name = "pdf2docx", marker = "extra == 'pdf-docx'", specifier = ">=0.2" },
     { name = "pdfplumber", marker = "extra == 'pdf-layout'", specifier = ">=0.11" },
     { name = "pillow", marker = "extra == 'pptx'", specifier = ">=10" },
-    { name = "pymupdf", marker = "extra == 'pdf'", specifier = ">=1.24" },
-    { name = "pymupdf", marker = "extra == 'pdf-rich'", specifier = ">=1.24" },
+    { name = "pymupdf", marker = "extra == 'pdf'", specifier = ">=1.24,<2" },
+    { name = "pymupdf", marker = "extra == 'pdf-docx'", specifier = ">=1.24,<2" },
+    { name = "pymupdf", marker = "extra == 'pdf-rich'", specifier = ">=1.24,<2" },
     { name = "pypdf", marker = "extra == 'pdf-text'", specifier = ">=4" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8" },
     { name = "python-docx", marker = "extra == 'docx'", specifier = ">=1.1" },

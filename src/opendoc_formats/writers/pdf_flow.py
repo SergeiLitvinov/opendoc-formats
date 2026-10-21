@@ -20,6 +20,10 @@ class PdfFlowRenderer(_HtmlRenderer):
         super().__init__(document, report, limits=limits)
         self.flow_ids = flow_ids
         self.mapping = mapping
+        self.flow_paragraphs: dict[str, list[str]] = {}
+        for location, token in flow_ids.items():
+            if '.content[' in location and '.rows[' not in location:
+                self.flow_paragraphs.setdefault(location.rsplit('.content[', 1)[0], []).append(token)
 
     def _paragraph(self, paragraph: Paragraph, location: str) -> str:
         if paragraph.box is not None and paragraph.provenance is not None and paragraph.provenance.source_format == 'pdf':
@@ -32,7 +36,8 @@ class PdfFlowRenderer(_HtmlRenderer):
         anchor = get_anchor(paragraph)
         if anchor is not None:
             paragraph = replace(paragraph, properties={**paragraph.properties, "anchor_id": anchor.id})
-        return super()._paragraph(paragraph, location)
+        rendered = super()._paragraph(paragraph, location)
+        return ''.join(f'<!--{token}-break-->' for token in self.flow_paragraphs.get(location, ())) + rendered
 
     def _image(self, image: Image, location: str, *, block_level: bool) -> str:
         token = self.flow_ids.get(location)
@@ -68,3 +73,29 @@ def record_position(positions: dict[tuple[str, int], tuple[float, ...]], positio
     if key in positions and positions[key] != current:
         raise ValueError("Inline raster placeholder spans multiple pages")
     positions[key] = current
+
+
+def next_flow_break(
+    html: str, positions: dict[tuple[str, int], tuple[float, ...]], bottom: float,
+    forced: set[str],
+) -> tuple[str, str] | None:
+    """Move the first overflowing body raster paragraph, never resize its frame.
+
+    Story can report completion with an inline-block below its placement rectangle.
+    Only private markers before complete body paragraphs permit a bounded retry;
+    table cells and running content retain their separate rejection policies.
+    """
+    candidates = []
+    for (token, _page), rectangle in positions.items():
+        if token.endswith('-frame') or rectangle[3] <= bottom + .01:
+            continue
+        marker = f'<!--{token}-break-->'
+        offset = html.find(marker)
+        if offset >= 0:
+            candidates.append((offset, token, marker))
+    if not candidates:
+        return None
+    _, token, marker = min(candidates)
+    if token in forced:
+        raise ValueError('Inline raster paragraph still overflows after a page break')
+    return html.replace(marker, marker + '<div style="page-break-before:always"></div>', 1), token

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "lock_sha256": "056763258c7cc01a246b7c0b84f8d82b47a058d72f12b3eeae0d469dc01c6da7",
-  "configuration_sha256": "b9b58ff15e94c3399452eb65013e86947758207c184e161799d934bd4d6db8de",
+  "lock_sha256": "e745df302d5f81659057b7d30b6b59427c7e387d071fb446602c175f23fa12e0",
+  "configuration_sha256": "8fe42d8608535180688c10303ab37f7e2297e063e370b5bf6a00d79ab4ea9e18",
   "packages": [
     {
       "name": "ast-serialize",
