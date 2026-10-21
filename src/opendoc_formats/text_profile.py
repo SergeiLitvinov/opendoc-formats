@@ -7,6 +7,8 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
+
 _BOMS = {"utf-8": codecs.BOM_UTF8, "utf-16-le": codecs.BOM_UTF16_LE, "utf-16-be": codecs.BOM_UTF16_BE}
 _NEWLINES = {"lf": "\n", "crlf": "\r\n", "cr": "\r"}
 
@@ -37,6 +39,7 @@ class TextEncodingError(ValueError):
 
 
 def decode_text(data: bytes, profile: TextProfile) -> tuple[str, str, bool]:
+    checkpoint()
     if data.startswith((codecs.BOM_UTF32_LE, codecs.BOM_UTF32_BE)):
         raise TextEncodingError("unsupported-encoding", "UTF-32 is outside the text profile")
     detected = next((encoding for encoding, bom in _BOMS.items() if data.startswith(bom)), None)
@@ -55,6 +58,7 @@ def decode_text(data: bytes, profile: TextProfile) -> tuple[str, str, bool]:
         raise TextEncodingError(
             reason, "Cannot decode text strictly; choose an explicit encoding for BOM-less legacy text",
         ) from error
+    checkpoint()
     if "\x00" in text:
         raise TextEncodingError(
             "binary-or-ambiguous", "NUL text is outside the profile; UTF-16 without BOM requires explicit encoding",
@@ -63,15 +67,17 @@ def decode_text(data: bytes, profile: TextProfile) -> tuple[str, str, bool]:
 
 
 def normalize_newlines(text: str) -> str:
+    checkpoint()
     return text.replace("\r\n", "\n").replace("\r", "\n")
 
 
 def source_profile(text: str, encoding: str, bom: bool) -> dict[str, Any]:
-    separators = re.findall(r"\r\n|\r|\n", text)
+    separators = [match.group() for match in cancellable_items(re.finditer(r"\r\n|\r|\n", text))]
     return {"encoding": encoding, "bom": bom, "line_separators": separators, "line_separator": "\n"}
 
 
 def encode_text(text: str, profile: TextProfile, original: dict[str, Any]) -> tuple[bytes, dict[str, Any], bool]:
+    checkpoint()
     encoding = original.get("encoding", "utf-8") if profile.encoding == "auto" else profile.encoding
     if encoding not in {*_BOMS, "cp1251"}:
         raise ValueError("Invalid source text encoding")
@@ -84,16 +90,18 @@ def encode_text(text: str, profile: TextProfile, original: dict[str, Any]) -> tu
         separators = original.get("line_separators")
         if separators is None:
             separators = ["\n"] * text.count("\n")
-        if not isinstance(separators, list) or any(item not in _NEWLINES.values() for item in separators):
+        if not isinstance(separators, list) or any(item not in _NEWLINES.values() for item in cancellable_items(separators)):
             raise ValueError("Invalid source newline profile")
         if len(separators) != text.count("\n"):
             changed = True
             separators = ["\n"] * text.count("\n")
         lines = text.split("\n")
-        rendered = "".join(line + separator for line, separator in zip(lines, separators, strict=False)) + lines[-1]
+        rendered = "".join(line + separator for line, separator in
+                           cancellable_items(zip(lines, separators, strict=False))) + lines[-1]
     else:
         rendered = text.replace("\n", _NEWLINES[profile.newline])
     data = rendered.encode(encoding, errors="strict")
+    checkpoint()
     if bom:
         data = _BOMS[encoding] + data
     reopened, _, _ = decode_text(data, TextProfile(encoding, "require" if bom else "forbid"))

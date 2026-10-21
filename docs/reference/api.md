@@ -182,7 +182,7 @@ write(self, document: DocumentModel, path: str | Path, *, format_id: str | None=
 
 ### default_exporter_registry
 
-[Исходник, строка 343](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L343)
+[Исходник, строка 346](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L346)
 
 ```python
 default_exporter_registry() -> ExporterRegistry
@@ -190,7 +190,7 @@ default_exporter_registry() -> ExporterRegistry
 
 ### write_document
 
-[Исходник, строка 367](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L367)
+[Исходник, строка 370](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L370)
 
 ```python
 write_document(document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport
@@ -200,7 +200,7 @@ write_document(document: DocumentModel, path: str | Path, *, format_id: str | No
 
 ### TextProfile
 
-[Исходник, строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L15)
+[Исходник, строка 17](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L17)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -210,11 +210,11 @@ write_document(document: DocumentModel, path: str | Path, *, format_id: str | No
 
 ### TextEncodingError
 
-[Исходник, строка 33](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L33)
+[Исходник, строка 35](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L35)
 
 ### TextEncodingError.__init__
 
-[Исходник, строка 34](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L34)
+[Исходник, строка 36](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L36)
 
 ```python
 __init__(self, reason: str, message: str) -> None
@@ -222,7 +222,7 @@ __init__(self, reason: str, message: str) -> None
 
 ### decode_text
 
-[Исходник, строка 39](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L39)
+[Исходник, строка 41](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L41)
 
 ```python
 decode_text(data: bytes, profile: TextProfile) -> tuple[str, str, bool]
@@ -230,7 +230,7 @@ decode_text(data: bytes, profile: TextProfile) -> tuple[str, str, bool]
 
 ### normalize_newlines
 
-[Исходник, строка 65](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L65)
+[Исходник, строка 69](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L69)
 
 ```python
 normalize_newlines(text: str) -> str
@@ -238,7 +238,7 @@ normalize_newlines(text: str) -> str
 
 ### source_profile
 
-[Исходник, строка 69](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L69)
+[Исходник, строка 74](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L74)
 
 ```python
 source_profile(text: str, encoding: str, bom: bool) -> dict[str, Any]
@@ -246,7 +246,7 @@ source_profile(text: str, encoding: str, bom: bool) -> dict[str, Any]
 
 ### encode_text
 
-[Исходник, строка 74](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L74)
+[Исходник, строка 79](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L79)
 
 ```python
 encode_text(text: str, profile: TextProfile, original: dict[str, Any]) -> tuple[bytes, dict[str, Any], bool]

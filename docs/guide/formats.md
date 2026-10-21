@@ -364,6 +364,10 @@ model.metadata.update({
 
 ### Профиль TXT
 
+Нативные TXT reader/writer поддерживают кооперативную отмену внутри обхода
+абзацев/таблиц и обработки переводов строк с сохранением прежнего назначения;
+границы и API описаны в [ресурсах и отмене](resources.md#отмена-txt).
+
 ```python
 from opendoc_formats import ExportOptions, ImportOptions, TextProfile, read_document, write_document
 

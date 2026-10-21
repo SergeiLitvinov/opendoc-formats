@@ -155,7 +155,7 @@ class ExporterRegistry:
             staged = Path(directory) / output.name
             try:
                 written = (
-                    _txt(document, staged, profile=options.txt_profile)
+                    _txt(document, staged, profile=options.txt_profile, cancelled=options.cancelled)
                     if exporter.writer is _txt else _json(document, staged, limits=options.document_limits)
                     if exporter.writer is _json else exporter.writer(
                         document, staged, limits=options.document_limits, cancelled=options.cancelled,
@@ -325,10 +325,13 @@ def _json(document: DocumentModel, path: Path, *, limits: DocumentLimits | None 
     return ConversionReport(path)
 
 
-def _txt(document: DocumentModel, path: Path, *, profile: TextProfile | None = None) -> ConversionReport:
+def _txt(
+    document: DocumentModel, path: Path, *, profile: TextProfile | None = None,
+    cancelled: Callable[[], bool] | None = None,
+) -> ConversionReport:
     from opendoc_formats.writers.txt_writer import write_txt_model
 
-    return write_txt_model(document, path, profile=profile)
+    return write_txt_model(document, path, profile=profile, cancelled=cancelled)
 
 
 def _validator(identifier: str) -> OutputValidator:

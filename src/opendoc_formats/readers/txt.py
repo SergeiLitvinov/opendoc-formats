@@ -7,11 +7,19 @@ from pathlib import Path
 from typing import Union
 
 from opendoc_formats.readers._txt_model import read_txt_model as read_txt_model
+from opendoc_formats.support.cancellation import cancellation_scope, checkpoint
 from opendoc_formats.text_profile import TextProfile, decode_text, normalize_newlines
 from opendoc_formats.types import Block, BlockType, DocFormat, Text
 
 
-def read_txt(path: Union[str, Path], *, profile: TextProfile | None = None) -> Text:
+def read_txt(
+    path: Union[str, Path], *, profile: TextProfile | None = None, cancelled: Callable[[], bool] | None = None,
+) -> Text:
+    with cancellation_scope(cancelled, 'TXT import'):
+        return _read_txt(path, profile=profile)
+
+
+def _read_txt(path: Union[str, Path], *, profile: TextProfile | None) -> Text:
     p = Path(path)
     if not p.is_file():
         raise FileNotFoundError(p)
@@ -22,6 +30,7 @@ def read_txt(path: Union[str, Path], *, profile: TextProfile | None = None) -> T
     if profile.newline != "preserve":
         separator = {"lf": "\n", "crlf": "\r\n", "cr": "\r"}[profile.newline]
         text = normalize_newlines(text).replace("\n", separator)
+    checkpoint()
     return Text(
         blocks=[Block(type=BlockType.PARAGRAPH, text=text)],
         plain=text,

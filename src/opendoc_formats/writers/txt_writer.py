@@ -2,19 +2,28 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from pathlib import Path
 
 import opendoc_model as od
 from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import Formula, Image, PageSettings, Paragraph, Table, TextRun, TextStyle
 
+from opendoc_formats.support.cancellation import cancellable_items, cancellation_scope, checkpoint
 from opendoc_formats.support.io import atomic_write_bytes
 from opendoc_formats.text_profile import TextProfile, encode_text
 
 
 def write_txt_model(
     document: od.DocumentModel, output_path: str | Path, *, profile: TextProfile | None = None,
+    cancelled: Callable[[], bool] | None = None,
+) -> od.ConversionReport:
+    with cancellation_scope(cancelled, 'TXT export', check_on_exit=False):
+        return _write_txt_model(document, output_path, profile=profile)
+
+
+def _write_txt_model(
+    document: od.DocumentModel, output_path: str | Path, *, profile: TextProfile | None,
 ) -> od.ConversionReport:
     profile = TextProfile("utf-8", "forbid", "lf") if profile is None else profile
     if not isinstance(profile, TextProfile):
@@ -40,6 +49,7 @@ def write_txt_model(
             )
 
     def inline(item: od.Inline) -> str:
+        checkpoint()
         if isinstance(item, TextRun):
             if item.style != TextStyle() or item.properties:
                 loss("styles")
@@ -57,6 +67,7 @@ def write_txt_model(
     def blocks(items: Iterable[od.Block]) -> str:
         lines = []
         for block in items:
+            checkpoint()
             if block.box is not None:
                 loss("page_geometry")
             if isinstance(block, Paragraph):
@@ -65,7 +76,8 @@ def write_txt_model(
                 lines.append("".join(inline(item) for item in block.content))
             elif isinstance(block, Table):
                 loss("tables")
-                lines.extend("\t".join(blocks(cell.blocks) for cell in row.cells) for row in block.rows)
+                lines.extend("\t".join(blocks(cell.blocks) for cell in cancellable_items(row.cells))
+                             for row in cancellable_items(block.rows))
             else:
                 lines.append(inline(block))
         return "\n".join(lines)
@@ -73,6 +85,7 @@ def write_txt_model(
     try:
         sections = []
         for section in document.sections:
+            checkpoint()
             if section.page != PageSettings():
                 loss("page_geometry")
             if any(
@@ -102,7 +115,8 @@ def write_txt_model(
         data, metrics, changed = encode_text(text, profile, original)
         if changed:
             report.add(IssueSeverity.LOSS, "txt-newlines", "Line count changed; original mixed newlines replaced by LF")
-        atomic_write_bytes(report.output_path, data)
+        checkpoint()
+        atomic_write_bytes(report.output_path, data, before_replace=checkpoint)
         report.metrics.update(characters=len(text), line_separator="\n", **metrics)
     except (OSError, ValueError, TypeError) as error:
         report.add(IssueSeverity.ERROR, "txt-write", str(error))

@@ -218,7 +218,7 @@ def _import_issues(
 
 def _txt(path: Path, options: ImportOptions) -> DocumentModel:
     reader = cast(Callable[..., DocumentModel], import_module("opendoc_formats.readers.txt").read_txt_model)
-    return reader(path, profile=options.txt_profile)
+    return reader(path, profile=options.txt_profile, cancelled=options.cancelled)
 
 
 def _html(path: Path, options: ImportOptions) -> DocumentModel:
