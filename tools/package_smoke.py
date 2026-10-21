@@ -110,6 +110,18 @@ def main() -> None:
             native_tex = document_from_json(document_to_json(read_document(native_target).document))
             assert native_tex.sections[0].blocks[0].plain_text == 'Own [text] & percent 100%'
         headings = root / 'source-headings.tex'
+        scripts = root / 'source-scripts.tex'
+        scripts.write_text(r'\begin{document}Own\textsuperscript{\bfseries B\normalfont N} '
+                           r'and H\textsubscript{2}O.\end{document}', encoding='utf-8')
+        script_model = read_document(scripts).document
+        for index in range(2):
+            script_target = root / f'scripts-{index}.tex'
+            script_report = write_document(document_from_json(document_to_json(script_model)), script_target)
+            assert script_report.success and script_report.metrics['latex_route'] == 'native-text-v1'
+            script_model = read_document(script_target).document
+            runs = script_model.sections[0].blocks[0].content
+            assert any(run.style.superscript for run in runs) and any(run.style.subscript for run in runs)
+            assert r'\textsuperscript{{\bfseries B}N}' in script_target.read_text(encoding='utf-8')
         headings.write_text(r'\begin{document}\section{Own}\subsection*{Child}'
                             r'\subsubsection{Math $x^2$}\end{document}', encoding='utf-8')
         native_headings = read_document(headings).document

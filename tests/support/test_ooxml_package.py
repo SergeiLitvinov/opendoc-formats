@@ -2,6 +2,7 @@
 
 from types import SimpleNamespace
 
+import pytest
 from opendoc_model.document_model import PackageGraph, PackagePart, PackageRelationship
 
 from opendoc_formats.ooxml.package import (
@@ -81,6 +82,44 @@ def test_load_package_graph_preserves_recursive_and_external_relationships():
 def test_point_to_emu_conversion_uses_shared_ooxml_unit():
     assert EMU_PER_POINT == 12700
     assert points_to_emu(72) == 914400
+
+
+def test_cancel_during_part_creation_stops_before_next_part(monkeypatch):
+    from copy import deepcopy
+    from threading import Event
+
+    from docx import Document
+
+    from opendoc_formats.errors import OperationCancelledError
+    from opendoc_formats.ooxml import package
+    from opendoc_formats.support.cancellation import cancellation_scope, checkpoint
+
+    root = Document().part
+    graph = PackageGraph(format='ooxml', root=str(root.partname))
+    for index in range(3):
+        graph.add_part(PackagePart(f'/own/part{index}.xml', 'application/xml', b'<own/>'))
+    original = deepcopy(graph)
+    relationships = tuple(root.rels)
+    uri_type, part_type = package._opc_types(root)
+    stop, created = Event(), []
+
+    def create(*args):
+        assert not created, 'Part construction continued after cancellation'
+        part = part_type(*args)
+        created.append(part)
+        stop.set()
+        return part
+
+    with monkeypatch.context() as context:
+        context.setattr(package, '_opc_types', lambda owner: (uri_type, create))
+        with pytest.raises(OperationCancelledError):
+            with cancellation_scope(stop.is_set, 'own package restoration'):
+                restore_package_graph(root, graph)
+    assert len(created) == 1
+    assert graph == original
+    assert tuple(root.rels) == relationships
+    checkpoint()
+    restore_package_graph(root, graph)
 
 
 def test_load_package_graph_keeps_comments_smartart_and_ole_payloads():

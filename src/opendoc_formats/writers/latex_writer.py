@@ -6,7 +6,7 @@ from tempfile import TemporaryDirectory
 
 from opendoc_model import ArtifactLimitError, ConversionReport, DocumentLimits, DocumentModel, IssueSeverity
 
-from opendoc_formats.support.cancellation import cancellation_scope, checkpoint
+from opendoc_formats.support.cancellation import cancellable_items, cancellation_scope, checkpoint
 from opendoc_formats.support.io import atomic_copy, atomic_write_bytes
 
 
@@ -29,18 +29,24 @@ def _write_latex_model(
         report.add(IssueSeverity.ERROR, 'model', error)
     if not report.success:
         return report
-    from opendoc_model import Formula, walk_model
+    from opendoc_model import Formula, TextRun, walk_model
 
-    from opendoc_formats.writers.latex_text import native_text
+    from opendoc_formats.writers.latex_text import _TextScriptProfileError, native_text
 
     has_formulas = any(isinstance(ref.node, Formula) for ref in walk_model(document, limits=limits))
+    has_scripts = any(isinstance(ref.node, TextRun) and (ref.node.style.superscript or ref.node.style.subscript)
+                      for ref in cancellable_items(walk_model(document, limits=limits)))
 
     try:
         source = native_text(document, limits=limits)
     except ArtifactLimitError:
         raise
+    except _TextScriptProfileError as error:
+        report.add(IssueSeverity.ERROR, 'latex.text-script-profile', str(error))
+        return report
     except ValueError as error:
-        report.add(IssueSeverity.ERROR, 'latex.formula-profile' if has_formulas else 'latex.list-profile', str(error))
+        report.add(IssueSeverity.ERROR, 'latex.formula-profile' if has_formulas else
+                   'latex.text-script-profile' if has_scripts else 'latex.list-profile', str(error))
         return report
     if source is not None:
         atomic_write_bytes(output, source.encode('utf-8'), max_bytes=None, before_replace=checkpoint)
@@ -52,6 +58,10 @@ def _write_latex_model(
     from opendoc_formats.support.backends import missing_backends
 
     integration = get_integration(document, limits=limits)
+    if has_scripts or integration and any((r.issue.reason or '').startswith('text-script-') for r in integration.preservation):
+        report.add(IssueSeverity.ERROR, 'latex.text-script-profile',
+                   'Text scripts outside the native profile cannot use the DOCX bridge without losing their structure')
+        return report
     if (has_formulas or integration and (integration.formula_trees
             or any((r.issue.reason or '').startswith('math-') for r in integration.preservation))):
         report.add(IssueSeverity.ERROR, 'latex.formula-profile',

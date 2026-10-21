@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import bisect
+import hashlib
 import re
 import unicodedata
 from dataclasses import dataclass, replace
@@ -44,7 +45,8 @@ from opendoc_formats.tex_lists import paragraph_markers
 from opendoc_formats.tex_math import formula_markers
 
 _HEADINGS = {"section": 1, "subsection": 2, "subsubsection": 3, "paragraph": 4, "subparagraph": 5, "chapter": 1}
-_STYLES = {"textbf": "bold", "textit": "italic", "emph": "italic", "underline": "underline", "texttt": "monospace"}
+_STYLES = {"textbf": "bold", "textit": "italic", "emph": "italic", "underline": "underline", "texttt": "monospace",
+           "textsuperscript": "superscript", "textsubscript": "subscript"}
 _ACCENTS = {
     "'": "\u0301",
     "`": "\u0300",
@@ -147,6 +149,8 @@ class _Parser:
         self.after_list: bool | None = None
         self.math_markers = formula_markers(text, tokens, limits=limits)
         self.math_marker_index = 0
+        self.text_script_scope: dict | None = None
+        self.script_namespace: str | None = None
 
     def adjacent_par(self, *, before: bool) -> bool:
         index, step = (self.index-2, -1) if before else (self.index, 1)
@@ -247,7 +251,8 @@ class _Parser:
                 value,
                 replace(style),
                 link=link,
-                properties={"source_span": self.span(token), **(properties or {})},
+                properties={"source_span": self.span(token), **(properties or {}),
+                            **({'latex_text_script_scope': dict(self.text_script_scope)} if self.text_script_scope else {})},
                 provenance=self.provenance(token),
             )
         )
@@ -475,6 +480,14 @@ class _Parser:
                     if target in {"itemize", "enumerate"}:
                         self.list_stack.pop()
                 elif name in _STYLES:
+                    scripted = bool(style.superscript or style.subscript)
+                    if ((name in {'textsuperscript', 'textsubscript'} and (scripted or style.underline))
+                            or name == 'underline' and scripted):
+                        self.warn(token, 'text-script-nesting',
+                                  'Nested text scripts or script/underline order require a separate semantic profile')
+                    if name == 'emph' and style.italic:
+                        self.warn(token, 'text-script-emphasis' if scripted else 'emphasis-toggle',
+                                  'Nested emphasis toggling requires an explicit font-state profile')
                     self.skip_space()
                     if self.index >= len(self.tokens) or self.tokens[self.index].value != "{":
                         raise InvalidDocumentError("Styled LaTeX text requires a group")
@@ -482,13 +495,41 @@ class _Parser:
                     changed = (
                         replace(style, font_family="monospace") if name == "texttt" else replace(style, **{_STYLES[name]: True})
                     )
-                    self.walk(changed, group=True, depth=depth + 1)
+                    if name in {'textbf', 'textit', 'emph'}:
+                        changed.properties = {**style.properties,
+                                              'latex_'+_STYLES[name]+'_declaration': False}
+                    parent_scope = self.text_script_scope
+                    script_command = name in {'textsuperscript', 'textsubscript'}
+                    before = len(self.current), len(self.blocks)
+                    if script_command:
+                        if self.script_namespace is None:
+                            identity = hashlib.sha256(str(self.path.resolve()).encode('utf-8'))
+                            identity.update(self.text.encode('utf-8'))
+                            self.script_namespace = identity.hexdigest()[:24]
+                        self.text_script_scope = {
+                            'kind': _STYLES[name], 'id': f'tex-script-{self.script_namespace}-{token.start}',
+                        }
+                    try:
+                        self.walk(changed, group=True, depth=depth + 1)
+                    finally:
+                        self.text_script_scope = parent_scope
+                    if script_command and (len(self.blocks) != before[1]
+                            or not any(isinstance(run, TextRun) and run.text.strip() for run in self.current[before[0]:])):
+                        self.warn(token, 'text-script-empty-or-block',
+                                  'Empty/block text script requires an explicit layout profile')
                 elif name in {"bfseries", "itshape", "normalfont"}:
                     style = (
-                        TextStyle()
+                        TextStyle(superscript=style.superscript, subscript=style.subscript)
                         if name == "normalfont"
                         else replace(style, **{"bold" if name == "bfseries" else "italic": True})
                     )
+                    if name != 'normalfont':
+                        style.properties = {**style.properties,
+                                            'latex_'+('bold' if name == 'bfseries' else 'italic')+'_declaration': True}
+                    # A control-word delimiter is not visible text; a blank line still emits a paragraph break.
+                    if (self.index < len(self.tokens) and self.tokens[self.index].kind == 'space'
+                            and not re.search(r'\n[ \t\r]*\n', self.tokens[self.index].value)):
+                        self.index += 1
                 elif name in {"(", "["}:
                     self.math(token, ")" if name == "(" else "]", style, name == "[")
                 elif name in _HEADINGS:

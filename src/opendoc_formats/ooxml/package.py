@@ -9,7 +9,7 @@ from typing import Any
 from opendoc_model.document_model import PackageGraph, PackagePart, PackageRelationship
 from opendoc_model.units import EMU_PER_POINT, points_to_emu
 
-from opendoc_formats.support.cancellation import checkpoint
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 
 DOCX_ROOT_PART = "/word/document.xml"
 
@@ -94,31 +94,32 @@ def restore_package_graph(
     package = root_part.package
     source_parts = dict(source_parts or {})
     scopes = [(graph.root, root_part, protected_roots)] + [
-        (name, part, getattr(part, "_opendoc_opaque_roots", ())) for name, part in source_parts.items()
+        (name, part, getattr(part, "_opendoc_opaque_roots", ())) for name, part in cancellable_items(source_parts.items())
     ]
     for name, _, roots in scopes:
         checkpoint()
-        source_ids = {edge.id for edge in graph.relationships if edge.source == name}
+        source_ids = {edge.id for edge in cancellable_items(graph.relationships) if edge.source == name}
         for root in roots:
             checkpoint()
             for node in root.iter():
                 checkpoint()
-                for attribute, value in node.attrib.items():
+                for attribute, value in cancellable_items(node.attrib.items()):
                     if attribute.startswith("{" + _RELATIONSHIP_BASE + "}") and value not in source_ids:
                         raise ValueError(f"Opaque OOXML refers to an unretained source relationship: {name}#{value}")
-    parts = {name: part_type(pack_uri_type(part.name), part.media_type, part.data, package) for name, part in graph.parts.items()}
+    parts = {name: part_type(pack_uri_type(part.name), part.media_type, part.data, package)
+             for name, part in cancellable_items(graph.parts.items())}
     parts.update(source_parts)
     running_types = {f"{_RELATIONSHIP_BASE}/{name}" for name in ("header", "footer")}
     root_relationship_types = {
-        relationship.relationship_type for relationship in graph.relationships
+        relationship.relationship_type for relationship in cancellable_items(graph.relationships)
         if relationship.source == graph.root and relationship.relationship_type not in running_types
     }
     for relationship_id, relationship in list(root_part.rels.items()):
         checkpoint()
         if relationship.reltype in root_relationship_types and relationship.reltype != f"{_RELATIONSHIP_BASE}/image":
             root_part.drop_rel(relationship_id)
-    occupied = set(graph.parts) | {str(part.partname) for part in package.iter_parts()}
-    for part in list(package.iter_parts()):
+    occupied = set(cancellable_items(graph.parts)) | {str(part.partname) for part in cancellable_items(package.iter_parts())}
+    for part in list(cancellable_items(package.iter_parts())):
         checkpoint()
         name = str(part.partname)
         if name not in graph.parts:
@@ -172,12 +173,12 @@ def _reserve_relationship_id(root_part: Any, relationship_id: str, protected_roo
     element = getattr(root_part, "element", None)
     if element is None:
         return
-    protected = {node for root in protected_roots for node in root.iter()}
+    protected = {node for root in cancellable_items(protected_roots) for node in cancellable_items(root.iter())}
     for node in element.iter():
         checkpoint()
         if node in protected:
             continue
-        for attribute, value in list(node.attrib.items()):
+        for attribute, value in cancellable_items(list(node.attrib.items())):
             if value == relationship_id and attribute.startswith("{" + _RELATIONSHIP_BASE + "}"):
                 node.set(attribute, replacement_id)
 

@@ -31,6 +31,10 @@ LIST_PROPERTIES = {LIST_PROPERTY, ANCHOR_PROPERTY, 'list_kind', 'list_level', 'l
                    'latex_list_par_before', 'latex_par_after_list'}
 
 
+class _TextScriptProfileError(ValueError):
+    """The common script role or its native scope cannot be projected faithfully."""
+
+
 def native_text(document: DocumentModel, *, limits: DocumentLimits | None) -> str | None:
     """Return TeX only when every visible object is within the text profile."""
     if len(document.sections) != 1 or document.footnotes:
@@ -100,27 +104,58 @@ def native_text(document: DocumentModel, *, limits: DocumentLimits | None) -> st
             return None
         parts = []
         visible = []
+        active_script = None
         for run in block.content:
             checkpoint()
             if isinstance(run, Formula):
+                if active_script is not None:
+                    parts.append('}')
+                    active_script = None
                 if heading is not None and run.display:
                     return None  # Display math is not a heading argument.
                 parts.append(formula_tex(run))
                 visible.append('F')  # Formula source whitespace is not paragraph whitespace.
                 continue
-            if (not isinstance(run, TextRun) or run.link or run.visual_surrogate or set(run.properties)-{'source_span'}
+            if (not isinstance(run, TextRun) or run.link or run.visual_surrogate
+                    or set(run.properties)-{'source_span', 'latex_text_script_scope'}
                     or any(getattr(run.style, field.name) not in (None, {}) for field in fields(run.style)
-                           if field.name not in {'bold', 'italic', 'underline'})):
+                           if field.name not in {'bold', 'italic', 'underline', 'superscript', 'subscript', 'properties'})
+                    or set(run.style.properties)-{'latex_bold_declaration', 'latex_italic_declaration'}
+                    or any(type(value) is not bool for value in run.style.properties.values())):
                 return None
+            scripted = bool(run.style.superscript or run.style.subscript)
+            if run.style.superscript and run.style.subscript or scripted and run.style.underline:
+                raise _TextScriptProfileError('Simultaneous scripts and script/underline ordering have no native text profile')
+            kind = 'superscript' if run.style.superscript else 'subscript' if run.style.subscript else None
+            scope = run.properties.get('latex_text_script_scope')
+            if scope is not None and (not isinstance(scope, dict) or set(scope) != {'kind', 'id'}
+                    or not isinstance(scope.get('kind'), str) or scope['kind'] not in {'superscript', 'subscript'}
+                    or not isinstance(scope.get('id'), str)
+                    or not 0 < len(scope['id']) <= 256):
+                raise _TextScriptProfileError('Invalid native text script scope')
+            identity = scope['id'] if scope is not None and scope['kind'] == kind else None
+            script = (kind, identity) if kind is not None else None
+            if script != active_script:
+                if active_script is not None:
+                    parts.append('}')
+                if script is not None:
+                    parts.append('\\text'+kind+'{')
+                active_script = script
             # Square brackets must remain text, never \[ display-math delimiters.
             replacements = {'[': '{[}', ']': '{]}', '^': r'\textasciicircum{}'}
             text = ''.join(replacements.get(char, escape_latex(char)) for char in cancellable_items(run.text))
             for enabled, command in [(run.style.underline, 'underline'), (run.style.italic, 'textit'),
                                      (run.style.bold, 'textbf')]:
                 if enabled:
-                    text = '\\'+command+'{'+text+'}'
+                    declaration = {'textbf': ('bold', 'bfseries'), 'textit': ('italic', 'itshape')}.get(command)
+                    if declaration and run.style.properties.get('latex_'+declaration[0]+'_declaration'):
+                        text = '{\\'+declaration[1]+' '+text+'}'
+                    else:
+                        text = '\\'+command+'{'+text+'}'
             parts.append(text)
             visible.append(run.text)
+        if active_script is not None:
+            parts.append('}')
         plain = ''.join(visible)
         # TeX collapses arbitrary whitespace; do not claim exact text preservation.
         empty_item = not plain and item is not None and item.continuation_of is None and not heading

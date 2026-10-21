@@ -465,6 +465,9 @@ JSON, включая оформление, ресурсы, package и diagnostic
 публикация дополнительно отделена staging и его последними проверками.
 Установленный wheel проверяется также через `tools/package_smoke.py --all-formats`:
 отмена внутри DOCX/PPTX writers сохраняет хеш готового файла назначения.
+`tests/support/test_ooxml_package.py` дополнительно проверяет отмену после
+создания первой части OOXML в DOCX: следующая часть не создаётся,
+исходный граф и связи корня неизменны; повторное восстановление успешно.
 
 ## Отмена HTML, EPUB и TeX export
 
@@ -500,3 +503,21 @@ document. Поздний сигнал после Model validation отбрасы
 представление. Converter наследует import signal при отсутствии export options.
 `tools/pdf_profile_smoke.py pdf` проверяет ту же подготовку и отмену в установленном
 минимальном PDF-профиле без DOCX/Pillow/lxml и альтернативных PDF-движков.
+
+## Нативные текстовые индексы TeX
+
+`tests/writers/test_latex_text_scripts.py` проверяет общие superscript/subscript
+в тексте, списках и заголовках, два JSON/TeX цикла, изменение/снятие роли,
+разбиение run внутри одного scope и запрет Office imports. Вложенные индексы,
+underline ordering, пустые/многоабзацные аргументы и nested emphasis имеют located
+opaque records; unsupported styles/objects и некорректные scope hints отказывают
+до публикации и сохраняют назначение. Флаг из native hint не восстанавливает
+снятый/изменённый общий стиль.
+
+`tests/writers/test_latex_text_scripts_acceptance.py` компилирует пять собственных
+оригиналов и по два JSON/TeX цикла. Каждый вариант проходит три pdflatex запуска
+с оглавлением и `-no-shell-escape`; страницы MuPDF при 108 dpi совпадают попиксельно
+без image XObjects. Проверены font declarations/normalfont внутри индексов,
+соседние отдельные scopes и отличия italic correction между itshape и textit.
+`tools/package_smoke.py` подтверждает маршрут установленного базового wheel
+без Office и дополнительных зависимостей.
