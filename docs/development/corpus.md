@@ -1,5 +1,17 @@
 # Document quality corpus
 
+## FONT и сохранённый OOXML
+
+`tests/writers/test_docx_opaque_fonts.py` строит собственный smartTag с
+`OwnSmartToken` между обычными runs. Два публичных DOCX/Model/JSON цикла
+сохраняют XML, исходник, FONT references и cmap выбранных font programs;
+все глифы opaque-текста остаются в программах, дополнительного `font-glyphs`
+LOSS нет. Известная `docx.smart-tags` LOSS остаётся при каждом импорте.
+Проверяется full-program policy для retained OOXML и прежняя semantic subsetting
+policy для обычного документа. Полнота opaque-only font inventory и отображение
+всех возможных wrappers не выводятся из этой приёмки: C-FONT-OPAQUE-01 остаётся
+открытым для этих профилей.
+
 `tests/writers/test_pdf_unicode.py` constructs a project-owned OpenType font at
 runtime with `fi` and `ti` ligatures. Its native Story PDF checks repeated text
 and exact RGB pixel equality before/after ToUnicode restoration. No third-party

@@ -129,7 +129,7 @@ Extensible model export with validation and atomic publication.
 Embed deterministic obfuscated OpenType subsets into DOCX packages.
 
 - `embed_docx_fonts(target: object, document: DocumentModel, report: ConversionReport) -> None` — [строка 19](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/docx_embedding.py#L19)
-- `verify_docx_font_embedding(output: str | Path, report: ConversionReport) -> None` — [строка 104](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/docx_embedding.py#L104)
+- `verify_docx_font_embedding(output: str | Path, report: ConversionReport) -> None` — [строка 109](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/fonts/docx_embedding.py#L109)
 
 Импорты: `__future__`, `docx.opc.constants`, `docx.opc.packuri`, `docx.opc.part`, `docx.oxml`, `docx.oxml.ns`, `lxml`, `opendoc_formats.fonts.embedding`, `opendoc_formats.support.cancellation`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `pathlib`, `uuid`
 

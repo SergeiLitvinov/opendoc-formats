@@ -675,6 +675,16 @@ API и координатный контракт движка: [Page](https://py
 диагностируется как потеря. `report.lossless` допускает предупреждения и не гарантирует
 одинаковое визуальное отображение на разных системах.
 
+При сохранении opaque OOXML в DOCX выбранные разрешённые font programs
+встраиваются целиком: текст/начертания внутри native fragment могут отсутствовать
+в семантических runs и потому не дают полного glyph inventory для subsetting.
+Метрика `font_embedding.subset_policy` равна `full-for-retained-ooxml`;
+обычный семантический документ использует `semantic-usage`. Это может увеличить
+размер DOCX, но не удаляет FONT references и не скрывает `docx.smart-tags` LOSS.
+Уже отсутствующие во входной программе глифы по-прежнему дают `font-glyphs` LOSS.
+Полный выбор opaque-only faces и их каскад остаются
+[C-FONT-OPAQUE-01](../development/format-requests.md#c-font-opaque-01).
+
 ## Отдельные конвертеры
 
 `writers.pdf_to_docx` предлагает прямые движки PDF → DOCX; Pandoc/LibreOffice используются

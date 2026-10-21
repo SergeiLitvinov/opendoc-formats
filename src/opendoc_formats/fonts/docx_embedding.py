@@ -25,13 +25,17 @@ def embed_docx_fonts(target: object, document: DocumentModel, report: Conversion
         report.add(IssueSeverity.LOSS, "font-embedding", "DOCX font table is unavailable")
         return
     embedded = source_bytes = subset_bytes = 0
+    # Retained native XML can use glyphs/variants absent from the semantic runs.
+    # Keep the selected programs intact rather than guess that hidden usage.
+    retained_xml = any(getattr(part, '_opendoc_opaque_roots', ())
+                       for part in cancellable_items(target.part.package.iter_parts()))
     for index, usage in enumerate(collect_font_usages(document), start=1):
         checkpoint()
         if not usage.embeddable:
             continue
         try:
             source_size = usage.path.stat().st_size
-            data = subset_font(usage)
+            data = usage.path.read_bytes() if retained_xml else subset_font(usage)
             font_key = _font_key(usage, data)
             part = _font_part(target, data, font_key, index)
             relationship_id = font_table.relate_to(part, RT.FONT)
@@ -47,6 +51,7 @@ def embed_docx_fonts(target: object, document: DocumentModel, report: Conversion
         "source_bytes": source_bytes,
         "subset_bytes": subset_bytes,
         "target": "docx",
+        "subset_policy": "full-for-retained-ooxml" if retained_xml else "semantic-usage",
     }
 
 
