@@ -4,10 +4,13 @@ from __future__ import annotations
 
 from opendoc_model import Border, BorderSet, ColorValue, DocumentModel, Image, Paragraph, Section, Table, TextRun, set_borders
 
+from opendoc_formats.support.cancellation import checkpoint
+
 
 def project_table_borders(document: DocumentModel, section: Section) -> None:
     removed: set[int] = set()
     for table in (block for block in section.blocks if isinstance(block, Table)):
+        checkpoint()
         local_removed: set[int] = set()
         strokes = []
         cells = [cell for row in table.rows for cell in row.cells]
@@ -17,6 +20,7 @@ def project_table_borders(document: DocumentModel, section: Section) -> None:
             continue
         sides: dict[int, dict] = {id(cell): {} for cell in cells}
         for block in section.blocks:
+            checkpoint()
             if not isinstance(block, Paragraph) or len(block.content) != 1 or not isinstance(block.content[0], Image):
                 continue
             image = block.content[0]
@@ -47,6 +51,7 @@ def project_table_borders(document: DocumentModel, section: Section) -> None:
             coordinate, start, end = p[1 - axis], min(p[axis], q[axis]), max(p[axis], q[axis])
             matches = []
             for cell in cells:
+                checkpoint()
                 box = cell.properties.get('pdf_cell_bbox')
                 if not box:
                     continue
@@ -68,6 +73,7 @@ def project_table_borders(document: DocumentModel, section: Section) -> None:
         if table.box is None or any(_intersects_foreign_graphic(block, local_removed, strokes) for block in section.blocks):
             continue
         for cell in cells:
+            checkpoint()
             if sides[id(cell)]:
                 set_borders(cell, BorderSet(sides[id(cell)]))
         removed.update(local_removed)
@@ -78,6 +84,7 @@ def _intersects_foreign_graphic(block: object, known: set[int], strokes: list[tu
     if id(block) in known or not isinstance(block, Paragraph):
         return False
     for image in block.content:
+        checkpoint()
         if not isinstance(image, Image) or image.box is None:
             continue
         b = image.box
@@ -90,6 +97,7 @@ def _intersects_foreign_graphic(block: object, known: set[int], strokes: list[tu
 def _covered(start: float, end: float, intervals: list[tuple[float, float]]) -> bool:
     cursor = start
     for first, last in sorted(intervals):
+        checkpoint()
         if first > cursor + .001:
             return False
         cursor = max(cursor, last)

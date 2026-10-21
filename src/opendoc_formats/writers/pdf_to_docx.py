@@ -51,7 +51,10 @@ class PdfModelConverter(BaseConverter):
                     result.add(IssueSeverity.ERROR, 'pdf-docx.import',
                                'PDF import did not produce a usable model', str(input_path))
                 return result
-            options = self.export_options or ExportOptions(document_limits=imported.document_limits)
+            options = self.export_options or ExportOptions(
+                document_limits=imported.document_limits,
+                cancelled=self.import_options.cancelled if self.import_options else None,
+            )
             limits = options.document_limits
             gate = options.quality_gate
             source_issues = list(result.issues)

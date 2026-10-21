@@ -15,6 +15,7 @@ from xml.etree import ElementTree as ET
 from opendoc_model import Box, DocumentLimits, DocumentModel, Image, Section, walk_model
 
 from opendoc_formats.pdf_graphics import axis_rectangle, paint_clips, rectangle_points
+from opendoc_formats.support.cancellation import checkpoint
 from opendoc_formats.writers.pdf_docx_graphics import SVG, install_svg
 
 
@@ -68,6 +69,7 @@ def project_rectangular_groups(document: DocumentModel, section: Section, eviden
     budget = limits or DocumentLimits()
     vectors = {}
     for ref in walk_model(section, limits=limits):
+        checkpoint()
         image = ref.node
         if isinstance(image, Image) and document.resources[image.resource_id].media_type == 'application/pdf+vector':
             vectors[image.properties['pdf_paint_seq']] = image
@@ -75,6 +77,7 @@ def project_rectangular_groups(document: DocumentModel, section: Section, eviden
         raise ValueError('No verified vector group content')
     rectangles = {}
     for sequence, image in vectors.items():
+        checkpoint()
         paint, clips = paint_clips(evidence, sequence, {'fill-path'}, compositing=True)
         resource = document.resources[image.resource_id]
         props = resource.properties
@@ -90,6 +93,7 @@ def project_rectangular_groups(document: DocumentModel, section: Section, eviden
             raise ValueError('Rectangle placement/geometry needs a verified axis-aligned frame')
         bounds = [image.box.x, image.box.y, image.box.x+image.box.width, image.box.y+image.box.height]
         for clip in clips:
+            checkpoint()
             points = rectangle_points(clip)
             region = axis_rectangle(points) if points else None
             if region is None:
@@ -105,18 +109,21 @@ def project_rectangular_groups(document: DocumentModel, section: Section, eviden
     order = evidence.get('paint_order', list(range(len(evidence['paints']))))
     ranks = {sequence: index for index, sequence in enumerate(order)}
     for sequence, paint in enumerate(evidence['paints']):
+        checkpoint()
         if sequence in vectors:
             continue
         if any(g['opacity'] != 1 or g['knockout'] or g['blendmode']
                for key in paint['groups'] if (g := evidence['groups'][key])):
             raise ValueError('Mixed text/image compositing group needs a verified native target representation')
         for vector_seq, (box, _) in rectangles.items():
+            checkpoint()
             b = paint['bbox']
             if ((ranks[sequence] < ranks[vector_seq] or sequence < first)
                     and box[0] < b[2] and b[0] < box[2] and box[1] < b[3] and b[1] < box[3]):
                 raise ValueError('Group backdrop interleaves text or raster content')
     children = {None: []}
     for sequence in order:
+        checkpoint()
         paint = evidence['paints'][sequence]
         if sequence not in vectors:
             continue
@@ -130,6 +137,7 @@ def project_rectangular_groups(document: DocumentModel, section: Section, eviden
         children[parent].append(('p', sequence))
 
     def evaluate(key: tuple, backdrop: tuple, x: float, y: float) -> tuple[tuple, float, bool]:
+        checkpoint()
         if key[0] == 'p':
             box, color = rectangles[key[1]]
             if not (box[0] <= x < box[2] and box[1] <= y < box[3]):
@@ -139,6 +147,7 @@ def project_rectangular_groups(document: DocumentModel, section: Section, eviden
         initial = (0., 0., 0., 0.) if state['isolated'] else backdrop
         current, alpha, shape = initial, 0., False
         for child in children[key]:
+            checkpoint()
             result, child_alpha, child_shape = evaluate(child, current, x, y)
             if child_shape:
                 current = result
@@ -146,6 +155,7 @@ def project_rectangular_groups(document: DocumentModel, section: Section, eviden
                 shape = True
         source = (*[(current[i]-(1-alpha)*initial[i])*state['opacity'] for i in range(3)],
                   alpha*state['opacity'])
+        checkpoint()
         return _over(backdrop, source, state['blendmode']), source[3], shape
 
     xs = sorted({v for box, _ in rectangles.values() for v in (box[0], box[2])})
@@ -156,7 +166,9 @@ def project_rectangular_groups(document: DocumentModel, section: Section, eviden
     root = ET.Element(f'{{{SVG}}}svg', {'width': f'{frame.width}pt', 'height': f'{frame.height}pt',
                                      'viewBox': f'0 0 {frame.width} {frame.height}'})
     for top, bottom in zip(ys, ys[1:]):
+        checkpoint()
         for left, right in zip(xs, xs[1:]):
+            checkpoint()
             color = (0., 0., 0., 0.)
             for child in children[None]:
                 color, _, _ = evaluate(child, color, (left+right)/2, (top+bottom)/2)
@@ -176,6 +188,7 @@ def project_rectangular_groups(document: DocumentModel, section: Section, eviden
 
     def prune(blocks: list) -> None:
         for block in blocks:
+            checkpoint()
             if hasattr(block, 'content'):
                 block.content[:] = [node for node in block.content if id(node) not in removed]
             if hasattr(block, 'blocks'):
@@ -185,6 +198,7 @@ def project_rectangular_groups(document: DocumentModel, section: Section, eviden
     prune(section.blocks)
     result = deepcopy(evidence)
     for paint in result['paints']:
+        checkpoint()
         paint['groups'] = []
     result['paints'][first]['kind'] = 'fill-image'
     result['paints'][first]['clips'] = []

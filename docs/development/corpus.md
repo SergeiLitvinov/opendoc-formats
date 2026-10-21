@@ -480,3 +480,23 @@ XHTML start tag/image, EPUB XML, TeX символа/токенизации/ма�
 после успешного прямого commit не даёт ложный отказ. При неактивном callback
 HTML/TeX совпадают побайтно; содержимое каждого ZIP member EPUB совпадает при
 фиксированном времени OPF metadata. ZIP timestamps не выдаются за format semantics.
+
+## Отмена подготовки PDF → DOCX
+
+`tests/writers/test_pdf_docx_preparation_cancellation.py` использует собственные
+двухстраничные PDF: текстовые колонки, merged table, repeated image Form, curved
+clip, neutral/opacity groups и многокомандный вектор. Без сигнала проверяется
+полный JSON частного Word view и исходной модели. Отмена после первого объекта
+проверена для прямой подготовки, direct writer и реестра: lines/baselines,
+tables/borders, image transform, clip commands, SVG, native groups и compositor.
+Для native group используется принятый профиль с явной правкой typed clip;
+исходные Form clips не удаляются неявно. Сценарий общей opacity проверяет
+подготовку и отмену, не отменяя последующий отказ quality gate.
+
+Проверены source bytes/JSON, прежнее назначение, отсутствие `.partial`, повторная
+подготовка и восстановление контекста. Отмена font provider не превращается в
+warning. Отмена между командами вектора сохраняет тип ошибки и закрывает native
+document. Поздний сигнал после Model validation отбрасывает подготовленное
+представление. Converter наследует import signal при отсутствии export options.
+`tools/pdf_profile_smoke.py pdf` проверяет ту же подготовку и отмену в установленном
+минимальном PDF-профиле без DOCX/Pillow/lxml и альтернативных PDF-движков.

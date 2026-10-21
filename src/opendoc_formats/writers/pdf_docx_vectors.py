@@ -7,8 +7,11 @@ from xml.etree import ElementTree as ET
 
 from opendoc_model import Box, DocumentModel, Image, Resource, ResourceKind
 
+from opendoc_formats.support.cancellation import checkpoint
+
 
 def convert_vector(document: DocumentModel, image: Image, location: str) -> None:
+    checkpoint()
     resource = document.resources.get(image.resource_id)
     if resource is None or resource.media_type != 'application/pdf+vector':
         return
@@ -19,7 +22,7 @@ def convert_vector(document: DocumentModel, image: Image, location: str) -> None
     from opendoc_formats.writers.pdf_vectors import PdfVector, _validate, draw_vectors
 
     _validate(image, resource)
-    import fitz
+    import pymupdf as fitz
 
     assert image.box is not None
     original = image.box
@@ -30,7 +33,14 @@ def convert_vector(document: DocumentModel, image: Image, location: str) -> None
     with fitz.open() as native:
         page = native.new_page(width=width, height=height)
         placed = replace(image, box=Box(padding, padding, original.width, original.height))
-        draw_vectors(page, [PdfVector(placed, resource, location)], lambda: False)
+
+        def cancelled() -> bool:
+            # Raise the format cancellation before the legacy renderer maps True to ValueError.
+            checkpoint()
+            return False
+
+        draw_vectors(page, [PdfVector(placed, resource, location)], cancelled)
+        checkpoint()
         svg = page.get_svg_image(text_as_path=False).encode('utf-8')
     from opendoc_formats.writers.pdf_docx_graphics import clip_svg, word_svg_bytes
 
@@ -42,6 +52,7 @@ def convert_vector(document: DocumentModel, image: Image, location: str) -> None
     svg = word_svg_bytes(root)
     identifier = resource.id + '-word-svg'
     while identifier in document.resources:
+        checkpoint()
         identifier += '-derived'
     document.resources[identifier] = Resource(identifier, ResourceKind.VECTOR_IMAGE, media_type='image/svg+xml',
                                               data=svg, properties={'pdf_source_resource': resource.id},

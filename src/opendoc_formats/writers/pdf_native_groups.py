@@ -27,6 +27,7 @@ from opendoc_model import (
 )
 
 from opendoc_formats.ooxml.group_geometry import preview_svg
+from opendoc_formats.support.cancellation import checkpoint
 
 
 def project_native_groups(document: DocumentModel, section: Section, scene: VectorScene | None, evidence: dict,
@@ -60,6 +61,7 @@ def project_native_groups(document: DocumentModel, section: Section, scene: Vect
     painted, selected, consumed = set(), [], set()
 
     def descend(key: str, group_ids: list[str], leaves: list) -> None:
+        checkpoint()
         if key in groups:
             group = groups[key]
             if (not neutral(group.compositing) or group.transform != AffineTransform()
@@ -67,6 +69,7 @@ def project_native_groups(document: DocumentModel, section: Section, scene: Vect
                 raise ValueError('Editable PDF group clip/isolation/color space has no verified native Word representation')
             group_ids.append(key)
             for child in group.children:
+                checkpoint()
                 descend(child, group_ids, leaves)
         else:
             occurrence = occurrences[key]
@@ -109,23 +112,28 @@ def project_native_groups(document: DocumentModel, section: Section, scene: Vect
             consumed.update(group_ids)
         else:
             for child in group.children:
+                checkpoint()
                 select(child)
 
     for key in scene.roots:
+        checkpoint()
         select(key)
     if logical-consumed:
         raise ValueError('Some logical PDF groups have no native target binding')
     replacements = {}
     for root_id, group_ids, leaves in selected:
+        checkpoint()
         sequences = {node.properties['pdf_paint_seq'] for _, node, _ in leaves}
         if len(sequences) != len(leaves) or painted & sequences:
             raise ValueError('Repeated PDF native group paint needs independent occurrence mapping')
         painted.update(sequences)
         first = min(sequences)
         for sequence in sequences:
+            checkpoint()
             replacements[sequence] = first
     order = []
     for sequence in evidence.get('paint_order', range(len(evidence['paints']))):
+        checkpoint()
         replacement = replacements.get(sequence, sequence)
         if not order or replacement != order[-1]:
             order.append(replacement)
@@ -135,6 +143,7 @@ def project_native_groups(document: DocumentModel, section: Section, scene: Vect
     result['paint_order'] = order
     removed = set()
     for root_id, group_ids, leaves in selected:
+        checkpoint()
         x = min(node.box.x for _, node, _ in leaves)
         y = min(node.box.y for _, node, _ in leaves)
         right = max(node.box.x+node.box.width for _, node, _ in leaves)
@@ -143,6 +152,7 @@ def project_native_groups(document: DocumentModel, section: Section, scene: Vect
         image = min((node for _, node, _ in leaves), key=lambda n: n.properties['pdf_paint_seq'])
         paths = []
         for key, node, props in leaves:
+            checkpoint()
             box = node.box
             a, b, w, h = box.x-x, box.y-y, box.width, box.height
             commands = tuple(PathCommand(op, v) for op, v in [('move', (a, b)), ('line', (a+w, b)),
@@ -153,6 +163,7 @@ def project_native_groups(document: DocumentModel, section: Section, scene: Vect
                 removed.add(id(node))
         identifier = scene.id+'-native-'+root_id
         def logical_children(key: str) -> list[str]:
+            checkpoint()
             if key in groups and groups[key].extra.get('pdf_clip_wrapper'):
                 return [leaf for child in groups[key].children for leaf in logical_children(child)]
             return [key]
@@ -176,6 +187,7 @@ def project_native_groups(document: DocumentModel, section: Section, scene: Vect
 
     def prune(blocks: list) -> None:
         for block in blocks:
+            checkpoint()
             if hasattr(block, 'content'):
                 block.content[:] = [node for node in block.content if id(node) not in removed]
             if hasattr(block, 'blocks'):

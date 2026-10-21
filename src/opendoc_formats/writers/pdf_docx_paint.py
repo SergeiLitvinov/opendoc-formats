@@ -4,15 +4,19 @@ from __future__ import annotations
 
 from opendoc_model import Box, DocumentLimits, Image, Paragraph, Section, Table, TextRun, walk_model
 
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
+
 
 def prepare_text_paint(paragraph: Paragraph) -> None:
     if paragraph.box is not None:
         box = paragraph.box
         paragraph.properties['pdf_paint_bbox'] = [box.x, box.y, box.x + box.width, box.y + box.height]
-    runs = [run for run in paragraph.content if isinstance(run, TextRun) and run.properties.get('pdf_origin')]
+    runs = [run for run in cancellable_items(paragraph.content)
+            if isinstance(run, TextRun) and run.properties.get('pdf_origin')]
     if not runs:
         return
     for run in runs:
+        checkpoint()
         size = run.style.font_size.pt if run.style.font_size else 0
         if size <= 0 or round(size * 2) == 0 or abs(size * 2 - round(size * 2)) > .001:
             raise ValueError('PDF font size cannot be represented without rounding in native Word half-points')
@@ -34,6 +38,7 @@ def _overlap(a: Box, b: Box) -> bool:
 def prepare_page_paint(section: Section, *, limits: DocumentLimits | None) -> None:
     paragraphs, tables, images = [], [], []
     for reference in walk_model(section, limits=limits):
+        checkpoint()
         node = reference.node
         if isinstance(node, Paragraph) and node.box is not None:
             paragraphs.append(node)
@@ -43,7 +48,9 @@ def prepare_page_paint(section: Section, *, limits: DocumentLimits | None) -> No
             images.append(node)
     table_ranges = []
     for table in tables:
+        checkpoint()
         for reference in walk_model(table, limits=limits):
+            checkpoint()
             paragraph = reference.node
             if not isinstance(paragraph, Paragraph) or not paragraph.properties.get('pdf_paint_range'):
                 continue
@@ -54,6 +61,7 @@ def prepare_page_paint(section: Section, *, limits: DocumentLimits | None) -> No
                 x1, y1 = max(box[2] for box in boxes), max(box[3] for box in boxes)
                 table_ranges.append((Box(x0, y0, x1 - x0, y1 - y0), *paragraph.properties['pdf_paint_range']))
     for image in images:
+        checkpoint()
         sequence = image.properties.get('pdf_paint_seq')
         if type(sequence) is not int or sequence < 0:
             raise ValueError('PDF image/vector paint order remains unknown')
@@ -61,6 +69,7 @@ def prepare_page_paint(section: Section, *, limits: DocumentLimits | None) -> No
         behind = front = False
         image_box = _paint_box(image)
         for box, first, last in table_ranges:
+            checkpoint()
             if not _overlap(image_box, box):
                 continue
             if first < sequence < last:
@@ -72,6 +81,7 @@ def prepare_page_paint(section: Section, *, limits: DocumentLimits | None) -> No
         if behind and front:
             raise ValueError('PDF graphic must lie both above and below overlapping native table text')
         for paragraph in paragraphs:
+            checkpoint()
             paint = paragraph.properties.get('pdf_paint_range')
             if not paint or not _overlap(image_box, _paint_box(paragraph)):
                 continue

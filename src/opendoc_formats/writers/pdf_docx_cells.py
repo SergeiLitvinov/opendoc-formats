@@ -17,6 +17,7 @@ from opendoc_model import (
 )
 
 from opendoc_formats.fonts.word_metrics import word_line_ascent, word_line_descent
+from opendoc_formats.support.cancellation import checkpoint
 
 
 def prepare_cell_baselines(cell: TableCell) -> None:
@@ -26,6 +27,7 @@ def prepare_cell_baselines(cell: TableCell) -> None:
         return
     metrics = []
     for paragraph in paragraphs:
+        checkpoint()
         runs = [run for run in paragraph.content if isinstance(run, TextRun) and run.text]
         values = [(word_line_ascent(run.style), word_line_descent(run.style),
                    run.style.properties.get('docx_run_position_pt', 0)) for run in runs]
@@ -44,6 +46,7 @@ def prepare_cell_baselines(cell: TableCell) -> None:
     cell.properties['margins_twips'] = {**cell.properties.margins_twips, 'top': max(0, round(top * 20)),
                                        'left': max(0, round(left * 20))}
     for index, paragraph in enumerate(paragraphs):
+        checkpoint()
         paragraph.properties['left_indent_pt'] = round((origins[index][0] - origins[0][0]) * 20) / 20
         if index + 1 < len(paragraphs):
             gap = origins[index + 1][1] - origins[index][1] - metrics[index][1] - metrics[index + 1][0]
@@ -57,6 +60,7 @@ def fit_virtual_tables(document: DocumentModel, *, limits: DocumentLimits | None
     if document.source_format != 'pdf':
         return
     for reference in walk_model(document, limits=limits):
+        checkpoint()
         table = reference.node
         if (not isinstance(table, Table) or table.properties.get('pdf', {}).get('table_strategy') != 'text'
                 or table.box is None):
@@ -64,6 +68,7 @@ def fit_virtual_tables(document: DocumentModel, *, limits: DocumentLimits | None
         cells = [cell for row in table.rows for cell in row.cells]
         offsets, sizes = [], []
         for cell in cells:
+            checkpoint()
             runs = [run for paragraph in cell.blocks if isinstance(paragraph, Paragraph)
                     for run in paragraph.content if isinstance(run, TextRun) and run.text]
             if not runs or not cell.properties.get('pdf_text_origin'):
@@ -76,10 +81,12 @@ def fit_virtual_tables(document: DocumentModel, *, limits: DocumentLimits | None
         shift = min([0, *offsets])
         padding = 2 * max(sizes, default=0)
         for cell in cells:
+            checkpoint()
             box = cell.properties.get('pdf_cell_bbox')
             if box:
                 cell.properties['pdf_cell_bbox'] = [box[0], box[1] + shift, box[2], box[3] + shift]
         for row in table.rows:
+            checkpoint()
             if row.cells:
                 cell = row.cells[-1]
                 box = cell.properties['pdf_cell_bbox']
@@ -91,6 +98,7 @@ def fit_virtual_tables(document: DocumentModel, *, limits: DocumentLimits | None
             table.properties['grid_widths_twips'] = grid
         extra = 0
         for cell in table.rows[-1].cells:
+            checkpoint()
             prepare_cell_baselines(cell)
             lines = [paragraph for paragraph in cell.blocks if isinstance(paragraph, Paragraph)
                      and paragraph.properties.get('pdf_text_origin')]

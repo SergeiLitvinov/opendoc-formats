@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 from copy import deepcopy
 from dataclasses import replace
 
@@ -25,6 +26,9 @@ from opendoc_model import (
 )
 from opendoc_model.limits import DocumentLimits
 
+from opendoc_formats.errors import OperationCancelledError
+from opendoc_formats.support.cancellation import cancellable_items, cancellation_requested, cancellation_scope, checkpoint
+
 _STANDARD_FONTS = {
     'Times-Roman': 'Times New Roman', 'Times-Bold': 'Times New Roman',
     'Times-Italic': 'Times New Roman', 'Times-BoldItalic': 'Times New Roman',
@@ -34,26 +38,43 @@ _STANDARD_FONTS = {
 }
 
 
-def prepare_pdf_docx(document: DocumentModel, *, limits: DocumentLimits | None = None) -> DocumentModel:
+def prepare_pdf_docx(
+    document: DocumentModel, *, limits: DocumentLimits | None = None, cancelled: Callable[[], bool] | None = None,
+) -> DocumentModel:
+    """Prepare a private Word view; inherit an active writer scope unless a callback is supplied."""
+    if cancelled is not None:
+        with cancellation_scope(cancelled, 'PDF to DOCX preparation'):
+            return _prepare_pdf_docx(document, limits=limits)
+    return _prepare_pdf_docx(document, limits=limits)
+
+
+def _prepare_pdf_docx(document: DocumentModel, *, limits: DocumentLimits | None) -> DocumentModel:
+    checkpoint()
     if document.source_format != 'pdf':
         raise ValueError('Fixed-layout PDF preparation requires a PDF model')
     prepared = deepcopy(document)
+    checkpoint()
     from opendoc_formats.readers.pdf_scopes import attach_pdf_scopes
 
-    attach_pdf_scopes(prepared, limits=limits, include_neutral=True)
+    attach_pdf_scopes(prepared, limits=limits, include_neutral=True, cancelled=cancellation_requested)
+    checkpoint()
     from opendoc_formats.fonts.resource_fonts import _plain_name, font_program_names
 
     embedded_names = {_plain_name(resource.properties['pdf_font_name']) for resource in prepared.resources.values()
                       if resource.kind is ResourceKind.FONT and resource.data
                       and isinstance(resource.properties.get('pdf_font_name'), str)}
     for resource in prepared.resources.values():
+        checkpoint()
         if resource.kind is ResourceKind.FONT and resource.data and resource.media_type in {'font/ttf', 'font/otf'}:
             try:
                 _, names = font_program_names(resource.data)
                 embedded_names.update(_plain_name(name) for name in names)
+            except OperationCancelledError:
+                raise
             except Exception:  # noqa: BLE001 - the font resource preflight reports the located failure
                 pass
     for section in prepared.sections:
+        checkpoint()
         from opendoc_formats.writers.pdf_docx_borders import project_table_borders
         from opendoc_formats.writers.pdf_docx_graphics import prepare_section_graphics
 
@@ -62,6 +83,7 @@ def prepare_pdf_docx(document: DocumentModel, *, limits: DocumentLimits | None =
         for name in ('blocks', 'headers', 'footers'):
             setattr(section, name, _split_lines(getattr(section, name)))
     for reference in walk_model(prepared, limits=limits):
+        checkpoint()
         node = reference.node
         if isinstance(node, Paragraph):
             from opendoc_formats.writers.pdf_docx_paint import prepare_text_paint
@@ -100,11 +122,13 @@ def prepare_pdf_docx(document: DocumentModel, *, limits: DocumentLimits | None =
             _prepare_table(node)
     prepared.metadata['pdf_docx_layout'] = {'version': 1, 'source_format': 'pdf'}
     for section in prepared.sections:
+        checkpoint()
         from opendoc_formats.writers.pdf_docx_paint import prepare_page_paint
 
         prepare_page_paint(section, limits=limits)
         _rotate_page(section, limits=limits)
     prepared.validate(limits=limits)
+    checkpoint()
     return prepared
 
 
@@ -124,6 +148,7 @@ def _rotate_page(section: Section, *, limits: DocumentLimits | None) -> None:
         return y, width - x
 
     for reference in walk_model(section, limits=limits):
+        checkpoint()
         node = reference.node
         if isinstance(node, Table):
             raise ValueError('Rotated PDF tables require a verified editable Word representation')
@@ -142,6 +167,7 @@ def _rotate_page(section: Section, *, limits: DocumentLimits | None) -> None:
 def _split_lines(blocks: list) -> list:
     result = []
     for block in blocks:
+        checkpoint()
         if isinstance(block, Formula) and block.properties.get('pdf_native_lines'):
             from opendoc_formats.readers.pdf_geometry import PdfLineGeometry, PdfSpanGeometry, PdfTextBlockGeometry
             from opendoc_formats.readers.pdf_model import _pdf_text_runs
@@ -157,6 +183,7 @@ def _split_lines(blocks: list) -> list:
                               properties=properties, provenance=block.provenance)
             paints = iter(span.get('paint', {}) for spans in properties['pdf_native_lines'] for span in spans)
             for run in block.content:
+                checkpoint()
                 if isinstance(run, TextRun) and run.properties.get('pdf_origin'):
                     paint = deepcopy(next(paints))
                     identifier = paint.pop('pdf_font_resource', None)
@@ -171,6 +198,7 @@ def _split_lines(blocks: list) -> list:
             continue
         offset = 0
         for index, (box, count) in enumerate(zip(boxes, counts)):
+            checkpoint()
             if index:
                 offset += 1
             if (not isinstance(box, list) or len(box) != 4 or type(count) is not int or count < 0
@@ -194,7 +222,8 @@ def _split_lines(blocks: list) -> list:
 
 
 def _prepare_baselines(paragraph: Paragraph) -> None:
-    runs = [item for item in paragraph.content if isinstance(item, TextRun) and item.properties.get('pdf_origin')]
+    runs = [item for item in cancellable_items(paragraph.content)
+            if isinstance(item, TextRun) and item.properties.get('pdf_origin')]
     if not runs:
         return
     main = max(runs, key=lambda run: run.style.font_size.pt if run.style.font_size else 0)
@@ -205,6 +234,7 @@ def _prepare_baselines(paragraph: Paragraph) -> None:
     base = [first_origin[index] + offset * normal[index] for index in (0, 1)]
     paragraph.properties['pdf_text_origin'] = base
     for run in runs:
+        checkpoint()
         shift = sum((base[index] - run.properties['pdf_origin'][index]) * normal[index] for index in (0, 1))
         if abs(shift * 2 - round(shift * 2)) > .001:
             raise ValueError('PDF run baseline shift cannot be represented without rounding in native Word half-points')
@@ -238,6 +268,7 @@ def _prepare_table(table: Table) -> None:
     columns, bands = table.properties.get('pdf_column_edges'), table.properties.get('pdf_row_edges')
     grid = [round((right - left) * 20) for left, right in zip(columns, columns[1:])] if columns else []
     for row_index, row in enumerate(table.rows):
+        checkpoint()
         boxes = [cell.properties.get('pdf_cell_bbox') for cell in row.cells]
         if any(not isinstance(box, list) or len(box) != 4 for box in boxes):
             raise ValueError(f'PDF table cell geometry unresolved at row {row_index}')
@@ -246,6 +277,7 @@ def _prepare_table(table: Table) -> None:
                                                 round((max(box[3] for box in boxes) - min(box[1] for box in boxes)) * 20))
         row.properties['docx_height_rule'] = 'exact'
         for cell, box in zip(row.cells, boxes):
+            checkpoint()
             if cell.properties.get('pdf_cell_layout_uncertain'):
                 raise ValueError(f'PDF table text placement unresolved at row {row_index}')
             if cell.properties.get('pdf_cell_rotated_text'):

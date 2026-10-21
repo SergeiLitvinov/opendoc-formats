@@ -45,6 +45,12 @@ def checkpoint() -> None:
     check_cancelled(cancelled, operation)
 
 
+def cancellation_requested() -> bool:
+    """Bridge the active Formats scope to a helper's explicit boolean callback."""
+    cancelled, _ = _scope.get()
+    return bool(cancelled is not None and cancelled())
+
+
 def cancellable_items(items: Iterable[_Item]) -> Iterator[_Item]:
     """Keep comprehension traversal cancellable without changing order or values."""
     for item in items:

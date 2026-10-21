@@ -6,8 +6,11 @@ import math
 
 from opendoc_model import Box, Image
 
+from opendoc_formats.support.cancellation import checkpoint
+
 
 def prepare_image_transform(image: Image) -> None:
+    checkpoint()
     if image.properties.get('pdf_graphics_state_unknown'):
         raise ValueError('PDF image clipping or graphics group is outside the measured native Word profile')
     matrix = image.properties.get('pdf_image_transform')

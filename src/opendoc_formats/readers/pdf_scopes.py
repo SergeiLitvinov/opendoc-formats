@@ -25,6 +25,7 @@ from opendoc_model import (
 )
 
 from opendoc_formats.pdf_graphics import axis_rectangle, contains, rectangle_points
+from opendoc_formats.support.cancellation import checkpoint
 
 BLENDS = ('normal', 'multiply', 'screen', 'overlay', 'darken', 'lighten', 'color-dodge',
           'color-burn', 'hard-light', 'soft-light', 'difference', 'exclusion', 'hue',
@@ -37,8 +38,10 @@ def scope_color_spaces(evidence: dict) -> dict[int | None, GroupColorSpace]:
     names = {'DeviceRGB': 'rgb', 'DeviceGray': 'gray', 'DeviceCMYK': 'cmyk'}
     spaces = {None: GroupColorSpace(names.get(evidence.get('device_color_space')))}
     for paint in evidence['paints']:
+        checkpoint()
         parent = None
         for key in paint['groups']:
+            checkpoint()
             native = evidence['groups'][key]['colorspace']
             value = spaces[parent] if native is None else GroupColorSpace(names.get(native), extra={'pdf_native_name': native})
             if key in spaces and spaces[key] != value:
@@ -88,6 +91,7 @@ def attach_pdf_scopes(document: DocumentModel, *, limits: DocumentLimits | None,
         if any(evidence['clips'][key].get('unknown') for key in used_clips):
             continue
         for key, clip in enumerate(evidence['clips']):
+            check_cancelled(cancelled, 'PDF clip scope')
             if clip.get('unknown'):
                 continue
             commands = tuple(PathCommand({'M': 'move', 'L': 'line', 'C': 'cubic', 'Z': 'close'}[c[0]], tuple(c[1:]))
@@ -102,6 +106,7 @@ def attach_pdf_scopes(document: DocumentModel, *, limits: DocumentLimits | None,
         nodes = [(ordinal, ref.node) for ordinal, ref in enumerate(walk_model(section, limits=limits))
                  if isinstance(ref.node, (Image, TextRun)) and type(ref.node.properties.get('pdf_paint_seq')) is int]
         for ordinal, node in sorted(nodes, key=lambda pair: (pair[1].properties['pdf_paint_seq'], pair[0])):
+            check_cancelled(cancelled, 'PDF paint occurrence')
             sequence = node.properties.get('pdf_paint_seq')
             if type(sequence) is not int or not 0 <= sequence < len(evidence['paints']):
                 continue
@@ -114,6 +119,7 @@ def attach_pdf_scopes(document: DocumentModel, *, limits: DocumentLimits | None,
                 set_anchor(node, anchor, limits=limits)
             parent = None
             for key in paint['groups']:
+                check_cancelled(cancelled, 'PDF group ancestry')
                 group_id = f'group-{key}'
                 if group_id not in groups:
                     native = evidence['groups'][key]
@@ -129,6 +135,7 @@ def attach_pdf_scopes(document: DocumentModel, *, limits: DocumentLimits | None,
             space = color_spaces[paint['groups'][-1] if paint['groups'] else None]
             neutral = replace(NEUTRAL, color_space=space)
             for offset, key in enumerate(paint['clips']):
+                check_cancelled(cancelled, 'PDF clip ancestry')
                 clip_group = f'{occurrence_id}-clip-{offset}'
                 groups[clip_group] = neutral
                 children[clip_group] = []
@@ -139,6 +146,7 @@ def attach_pdf_scopes(document: DocumentModel, *, limits: DocumentLimits | None,
             covered.add(sequence)
         scopes = []
         for key, value in groups.items():
+            check_cancelled(cancelled, 'PDF typed group')
             clip_id = None
             if '-clip-' in key:
                 occurrence_id, offset = key.rsplit('-clip-', 1)

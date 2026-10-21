@@ -65,6 +65,27 @@ def main() -> None:
             result = read_document(source)
             assert result.success, result.issues
             assert "Native PDF" in str(result.document)
+            from opendoc_formats.errors import OperationCancelledError
+            from opendoc_formats.writers.pdf_docx_model import prepare_pdf_docx
+
+            original = document_to_json(result.document)
+            prepared = prepare_pdf_docx(result.document)
+            assert document_to_json(prepare_pdf_docx(result.document, cancelled=lambda: False)) == document_to_json(prepared)
+            polls = 0
+
+            def stop_preparation() -> bool:
+                nonlocal polls
+                polls += 1
+                return polls >= 12
+
+            try:
+                prepare_pdf_docx(result.document, cancelled=stop_preparation)
+            except OperationCancelledError:
+                pass
+            else:
+                raise AssertionError('PDF to Word preparation ignored cancellation')
+            assert polls == 12 and document_to_json(result.document) == original
+            assert all(importlib.util.find_spec(name) is None for name in absent)
             from opendoc_formats.readers.pdf_ocr_types import OcrPageResult
 
             class OwnOcrEngine:

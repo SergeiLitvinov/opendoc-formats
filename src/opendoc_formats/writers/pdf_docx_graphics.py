@@ -22,12 +22,14 @@ from opendoc_model import (
 )
 
 from opendoc_formats.pdf_graphics import axis_rectangle, contains, finite_number, paint_clips, rectangle_points
+from opendoc_formats.support.cancellation import checkpoint
 
 SVG = 'http://www.w3.org/2000/svg'
 XLINK = 'http://www.w3.org/1999/xlink'
 
 
 def prepare_section_graphics(document: DocumentModel, section: Section, *, limits: DocumentLimits | None) -> None:
+    checkpoint()
     from opendoc_model import get_vector_scene
 
     from opendoc_formats.writers.pdf_scope_projection import project_scopes
@@ -55,18 +57,22 @@ def prepare_section_graphics(document: DocumentModel, section: Section, *, limit
         evidence = project_rectangular_groups(document, section, evidence, limits=limits)
     supported = {'fill-path', 'stroke-path', 'fill-image', 'fill-text', 'stroke-text', 'ignore-text'}
     for sequence, paint in enumerate(evidence.get('paints', [])):
+        checkpoint()
         paint_clips(evidence, sequence, supported)
         if paint['kind'] in {'fill-image', 'fill-text'} and finite_number(paint.get('alpha')) != 1:
             raise ValueError('PDF per-operation transparency requires a verified target representation')
     if evidence.get('unknown'):
         raise ValueError('Native PDF graphics state could not be measured')
     for location in walk_model(section, limits=limits):
+        checkpoint()
         image = location.node
         if isinstance(image, TextRun) and image.properties.get('pdf_origin'):
             verify_text_clip(image.properties, evidence)
         elif isinstance(image, Formula):
             for line in image.properties.get('pdf_native_lines', []):
+                checkpoint()
                 for span in line:
+                    checkpoint()
                     verify_text_clip(span['paint'], evidence)
         if not isinstance(image, Image):
             continue
@@ -81,6 +87,7 @@ def prepare_section_graphics(document: DocumentModel, section: Section, *, limit
             # Target-local clearance; the public source and native PDF writer remain conservative.
             active = []
             for clip in clips:
+                checkpoint()
                 points = rectangle_points(clip)
                 bounds = axis_rectangle(points) if points else None
                 if bounds is None or not contains(bounds, paint['bbox']):
@@ -98,6 +105,7 @@ def prepare_section_graphics(document: DocumentModel, section: Section, *, limit
 def verify_text_clip(properties: dict, evidence: dict) -> None:
     paint, clips = paint_clips(evidence, properties.get('pdf_paint_seq'), {'fill-text', 'stroke-text', 'ignore-text'})
     for clip in clips:
+        checkpoint()
         points = rectangle_points(clip)
         bounds = axis_rectangle(points) if points else None
         if bounds is None or not contains(bounds, paint.get('ink_bbox', paint['bbox'])):
@@ -120,6 +128,7 @@ def _clip_raster(document: DocumentModel, image: Image, resource: Resource, clip
     left, top, right, bottom = 0., 0., 1., 1.
     rectangular = True
     for clip in clips:
+        checkpoint()
         points = rectangle_points(clip)
         unit = [((d*(x-e) - c*(y-f))/determinant, (-b*(x-e) + a*(y-f))/determinant)
                 for x, y in points] if points else None
@@ -163,18 +172,21 @@ def clip_svg(root: ET.Element, clips: list[dict], box: Box, *, max_commands: int
     # Each clip intersects the previous clip. Disjoint subpaths retain their winding rule.
     children = list(root)
     for child in children:
+        checkpoint()
         root.remove(child)
     definitions = ET.SubElement(root, f'{{{SVG}}}defs')
     parent = root
     existing = {element.get('id') for child in children for element in child.iter() if element.get('id')}
     command_count = 0
     for index, clip in enumerate(clips):
+        checkpoint()
         identifier = f'odf-native-clip-{index}'
         while identifier in existing:
             identifier += '-clip'
         existing.add(identifier)
         path = []
         for command in _word_clip_commands(clip['commands'], max_commands):
+            checkpoint()
             command_count += 1
             if command_count > max_commands:
                 raise ValueError('Word SVG clip representation exceeds command budget')
@@ -217,6 +229,7 @@ def _word_clip_commands(commands: list[list], maximum: int) -> list[list]:
         cubic([middle, e, c, p3], depth+1)
 
     for command in commands:
+        checkpoint()
         if command[0] == 'C':
             if current is None:
                 raise ValueError('Clip curve has no starting point')
@@ -236,6 +249,7 @@ def _word_clip_commands(commands: list[list], maximum: int) -> list[list]:
 def install_svg(document: DocumentModel, image: Image, source: Resource, root: ET.Element, box: Box) -> None:
     identifier = source.id + '-word-clip'
     while identifier in document.resources:
+        checkpoint()
         identifier += '-derived'
     document.resources[identifier] = replace(source, id=identifier, kind=ResourceKind.VECTOR_IMAGE,
                                               media_type='image/svg+xml', data=word_svg_bytes(root),
