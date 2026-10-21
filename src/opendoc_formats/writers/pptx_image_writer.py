@@ -9,6 +9,8 @@ from typing import Any
 import opendoc_model as od
 from opendoc_model.diagnostics import IssueSeverity
 
+from opendoc_formats.support.cancellation import checkpoint
+
 
 def write_image(
     slide: Any,
@@ -62,4 +64,5 @@ def write_image(
     picture._element.nvPicPr.cNvPr.set("descr", image.alt_text)
     if image.crop:
         for side in ("left", "top", "right", "bottom"):
+            checkpoint()
             setattr(picture, f"crop_{side}", getattr(image.crop, side))

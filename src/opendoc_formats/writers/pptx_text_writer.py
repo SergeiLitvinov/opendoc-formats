@@ -9,6 +9,7 @@ from opendoc_model.color import ColorValue
 from opendoc_model.diagnostics import IssueSeverity
 from opendoc_model.document_model import Formula, FormulaFormat, TextRun
 
+from opendoc_formats.support.cancellation import checkpoint
 from opendoc_formats.writers.pptx_paragraph_writer import configure_frame, configure_paragraph
 
 
@@ -42,10 +43,12 @@ def write_text(frame: Any, block: od.Block, report: od.ConversionReport, locatio
     paragraph_index = 0
     configure_paragraph(paragraph, block, paragraph_index)
     for item in block.content:
+        checkpoint()
         if isinstance(item, Formula):
             write_formula(paragraph, item, report, location)
         elif isinstance(item, TextRun):
             for index, text in enumerate(item.text.split("\n")):
+                checkpoint()
                 if index:
                     if item.properties.get("pptx_break") == "line":
                         paragraph.add_line_break()

@@ -12,6 +12,7 @@ from opendoc_model.properties import TableCellProperties, TableProperties, Table
 
 from opendoc_formats.ooxml.borders import export_borders
 from opendoc_formats.ooxml.widths import export_width
+from opendoc_formats.support.cancellation import checkpoint
 
 BlockWriter = Callable[
     [Any, list[Block], DocumentModel, ConversionReport, str, dict[str, int]],
@@ -69,13 +70,16 @@ def write_table(
                 location,
             )
     for row_index, column_index, cell in placements:
+        checkpoint()
         if cell.row_span > 1 or cell.column_span > 1:
             target.cell(row_index, column_index).merge(target.cell(row_index + cell.row_span - 1,
                                                                   column_index + cell.column_span - 1))
     position_iter = iter(placements)
     for row_index, source_row in enumerate(source.rows):
+        checkpoint()
         _apply_row_properties(target.rows[row_index], source_row.properties, report, f'{location}.rows[{row_index}]')
         for cell_index, source_cell in enumerate(source_row.cells):
+            checkpoint()
             _, column_index, _ = next(position_iter)
             target_cell = target.cell(row_index, column_index)
             if document.source_format == 'pdf' and source_cell.properties.get('pdf_text_origin') is not None:
@@ -111,6 +115,7 @@ def _clear_container(container: Any) -> None:
 
     element = container._element
     for child in list(element):
+        checkpoint()
         if etree.QName(child).localname in {"p", "tbl"}:
             element.remove(child)
 
@@ -139,6 +144,7 @@ def _apply_table_properties(table: Any, properties: TableProperties) -> None:
             table.alignment = alignment
     columns = table._tbl.xpath("./w:tblGrid/w:gridCol")
     for column, width in zip(columns, properties.grid_widths_twips, strict=False):
+        checkpoint()
         column.set(qn("w:w"), str(width))
 
 
@@ -178,6 +184,7 @@ def _apply_cell_properties(cell: Any, properties: TableCellProperties) -> None:
             margin_node = OxmlElement("w:tcMar")
             cell_properties.append(margin_node)
         for edge, value in properties.margins_twips.items():
+            checkpoint()
             node = margin_node.find(qn(f"w:{edge}"))
             if node is None:
                 node = OxmlElement(f"w:{edge}")

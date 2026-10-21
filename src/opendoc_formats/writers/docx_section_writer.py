@@ -8,6 +8,8 @@ from typing import Any
 from opendoc_model.diagnostics import ConversionReport
 from opendoc_model.document_model import Block, DocumentModel, Section
 
+from opendoc_formats.support.cancellation import checkpoint
+
 BlockWriter = Callable[
     [Any, list[Block], DocumentModel, ConversionReport, str, dict[str, int]],
     None,
@@ -46,6 +48,7 @@ def _apply_page_settings(target: Any, source: Section) -> None:
         ("footer_distance", source.properties.footer_distance_pt),
         ("gutter", source.properties.gutter_pt),
     ):
+        checkpoint()
         if value is not None:
             setattr(target, name, Pt(value))
     if source.properties.different_first_page_header_footer is not None:
@@ -92,6 +95,7 @@ def _write_header_footer(
         ),
     )
     for container, blocks, linkage_property, collection_name in definitions:
+        checkpoint()
         if linkage_property not in source.properties and not blocks and collection_name.startswith(("first_page_", "even_page_")):
             continue
         linked = bool(source.properties.get(linkage_property))
@@ -117,6 +121,7 @@ def _clear_container(container: Any) -> None:
 
     element = container._element
     for child in list(element):
+        checkpoint()
         if etree.QName(child).localname in {"p", "tbl"}:
             element.remove(child)
 

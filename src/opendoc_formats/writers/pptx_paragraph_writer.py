@@ -7,6 +7,8 @@ from typing import Any
 import opendoc_model as od
 from opendoc_model.diagnostics import IssueSeverity
 
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
+
 A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
 
 
@@ -24,20 +26,23 @@ def configure_frame(frame: Any, block: od.Block, report: od.ConversionReport, lo
         mode = autofit.get("mode")
         if mode in ("noAutofit", "normAutofit", "spAutoFit"):
             for child in list(body):
+                checkpoint()
                 if child.tag in (A + "noAutofit", A + "normAutofit", A + "spAutoFit"):
                     body.remove(child)
             node = etree.Element(A + mode)
             if mode == "normAutofit":
                 for attr in ("fontScale", "lnSpcReduction"):
+                    checkpoint()
                     if attr in autofit:
                         node.set(attr, str(autofit[attr]))
             # Autofit follows preset text warp and precedes scene/shape 3D and extensions.
-            position = next((i for i, child in enumerate(body) if child.tag != A + "prstTxWarp"), len(body))
+            position = next((i for i, child in cancellable_items(enumerate(body)) if child.tag != A + "prstTxWarp"), len(body))
             body.insert(position, node)
         else:
             report.add(IssueSeverity.LOSS, "styles", "Неизвестный режим автоподбора текста не перенесён.", location)
     frame.word_wrap = settings.get("wrap", "square") != "none"
     for key, side in (("lIns", "left"), ("rIns", "right"), ("tIns", "top"), ("bIns", "bottom")):
+        checkpoint()
         if key in settings:
             setattr(frame, f"margin_{side}", Pt(settings[key]))
     anchors = {"t": MSO_ANCHOR.TOP, "ctr": MSO_ANCHOR.MIDDLE, "b": MSO_ANCHOR.BOTTOM}
@@ -64,6 +69,7 @@ def configure_paragraph(paragraph: Any, block: od.Block, index: int) -> None:
         ("line_spacing_pt", "line_spacing_pt"),
         ("line_spacing_pct", "line_spacing"),
     ):
+        checkpoint()
         if block.properties.get(field) is not None:
             settings[key] = block.properties[field]
             if key.startswith("line_spacing"):
@@ -83,17 +89,20 @@ def configure_paragraph(paragraph: Any, block: od.Block, index: int) -> None:
         paragraph.font.size = Pt(settings["default_font_size_pt"])
     properties = paragraph._p.get_or_add_pPr()
     for key in ("marL", "marR", "indent", "defTabSz"):
+        checkpoint()
         if key in settings:
             properties.set(key, str(int(Pt(settings[key]))))
     if "tabs" in settings:
         tabs = etree.SubElement(properties, A + "tabLst")
         for tab in settings["tabs"]:
+            checkpoint()
             etree.SubElement(tabs, A + "tab", pos=str(int(Pt(tab["position_pt"]))), algn=tab.get("alignment", "l"))
     for tag, pt_key, ratio_key in (
         ("lnSpc", "line_spacing_pt", "line_spacing_pct"),
         ("spcBef", "space_before_pt", "space_before_pct"),
         ("spcAft", "space_after_pt", "space_after_pct"),
     ):
+        checkpoint()
         if pt_key in settings or ratio_key in settings:
             node = etree.SubElement(properties, A + tag)
             points = pt_key in settings
@@ -112,7 +121,7 @@ def configure_paragraph(paragraph: Any, block: od.Block, index: int) -> None:
         etree.SubElement(properties, A + "buChar", char=settings["bullet_char"])
     order = {
         tag: index
-        for index, tag in enumerate(
+        for index, tag in cancellable_items(enumerate(
             (
                 "lnSpc",
                 "spcBef",
@@ -132,6 +141,6 @@ def configure_paragraph(paragraph: Any, block: od.Block, index: int) -> None:
                 "defRPr",
                 "extLst",
             )
-        )
+        ))
     }
     properties[:] = sorted(properties, key=lambda node: order.get(node.tag.removeprefix(A), 99))

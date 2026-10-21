@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -10,6 +11,7 @@ from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import Box, DocumentModel, Formula, Image, Paragraph, Section, Table
 from opendoc_model.limits import DocumentLimits
 
+from opendoc_formats.support.cancellation import cancellation_scope, checkpoint
 from opendoc_formats.writers.pptx_chart_writer import write_chart
 from opendoc_formats.writers.pptx_geometry_writer import write_shape
 from opendoc_formats.writers.pptx_image_writer import write_image
@@ -20,19 +22,31 @@ from opendoc_formats.writers.pptx_text_writer import set_color, write_text
 
 def write_pptx_model(
     document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None = None,
+    cancelled: Callable[[], bool] | None = None,
+) -> ConversionReport:
+    """Write editable PPTX, cancelling before publication without changing the destination."""
+    with cancellation_scope(cancelled, 'PPTX export', check_on_exit=False):
+        return _write_pptx_model(document, output_path, limits=limits)
+
+
+def _write_pptx_model(
+    document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None = None,
 ) -> ConversionReport:
     from pptx import Presentation
     from pptx.util import Pt
 
     report = ConversionReport(Path(output_path))
     errors = document.validate(limits=limits)
+    checkpoint()
     if errors:
         for error in errors:
+            checkpoint()
             report.add(IssueSeverity.ERROR, "model", error)
         return report
     from opendoc_formats.writers.color_inheritance import materialize_docx_colors
 
     document = materialize_docx_colors(document, limits=limits)
+    checkpoint()
     from opendoc_formats.writers.color_preflight import preflight_colors
 
     preflight_colors(document, report, target='pptx')
@@ -41,6 +55,7 @@ def write_pptx_model(
     page = sections[0].page
     target.slide_width, target.slide_height = Pt(page.width.pt), Pt(page.height.pt)
     for index, section in enumerate(sections):
+        checkpoint()
         location = f"sections[{index}]"
         slide = target.slides.add_slide(target.slide_layouts[6])
         if (section.page.width.pt, section.page.height.pt) != (page.width.pt, page.height.pt):
@@ -56,6 +71,7 @@ def write_pptx_model(
         y = section.page.margin_top.pt
         entries = []
         for number, block in enumerate(section.blocks):
+            checkpoint()
             box = block.box or Box(
                 section.page.margin_left.pt,
                 y,
@@ -95,8 +111,16 @@ def write_pptx_model(
     if document.package:
         report.add(IssueSeverity.LOSS, "package", "Исходные темы, макеты, анимации и непрозрачные части пакета не перенесены.")
     report.metrics["slides"] = len(target.slides)
-    report.output_path.parent.mkdir(parents=True, exist_ok=True)
-    target.save(str(report.output_path))
+    from tempfile import TemporaryDirectory
+
+    from opendoc_formats.support.io import atomic_copy
+
+    with TemporaryDirectory(prefix='opendoc_formats_pptx_writer_') as directory:
+        staged = Path(directory) / 'output.pptx'
+        checkpoint()
+        target.save(str(staged))
+        checkpoint()
+        atomic_copy(staged, report.output_path, max_bytes=None, before_replace=checkpoint)
     return report
 
 

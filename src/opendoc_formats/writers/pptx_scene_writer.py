@@ -10,6 +10,8 @@ from typing import Any
 import opendoc_model as od
 from opendoc_model.diagnostics import IssueSeverity
 
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
+
 A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
 P = "{http://schemas.openxmlformats.org/presentationml/2006/main}"
 
@@ -58,17 +60,21 @@ def restore_connections(
 
     identities = defaultdict(list)
     for identity, shapes in (groups or {}).items():
+        checkpoint()
         identities[identity].extend(shapes)
     for block, shape, _ in entries:
+        checkpoint()
         identity = block.properties.get("pptx", {}).get("object_id")
         if identity is not None:
             identities[str(identity)].append(shape)
     for block, shape, location in entries:
+        checkpoint()
         links = block.properties.get("pptx", {}).get("shape", {}).get("connections", {})
         parent = shape._element.find(P + "nvCxnSpPr/" + P + "cNvCxnSpPr")
         if not links or parent is None:
             continue
         for tag in ("stCxn", "endCxn"):
+            checkpoint()
             link = links.get(tag)
             if link is None:
                 continue
@@ -82,16 +88,20 @@ def restore_connections(
 
 def restore_groups(slide: Any, entries: list[tuple[od.Block, Any, str]], report: od.ConversionReport) -> dict[str, list[Any]]:
     """Restore nesting with identity group transforms and absolute child geometry."""
-    items = [(shape, block.properties.get("pptx", {}).get("groups", []), location) for block, shape, location in entries]
+    items = [
+        (shape, block.properties.get("pptx", {}).get("groups", []), location)
+        for block, shape, location in cancellable_items(entries)
+    ]
     seen = set()
     identities = defaultdict(list)
 
     def assemble(rows: list[tuple[Any, list[dict[str, Any]], str]], depth: int = 0, prefix: tuple[str, ...] = ()) -> list[Any]:
         result = []
         for identity, run in groupby(rows, key=lambda row: str(row[1][depth].get("id")) if len(row[1]) > depth else None):
+            checkpoint()
             run = list(run)
             if identity is None:
-                result.extend(row[0] for row in run)
+                result.extend(row[0] for row in cancellable_items(run))
                 continue
             key = (*prefix, identity)
             if key in seen:

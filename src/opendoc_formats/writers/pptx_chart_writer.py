@@ -8,6 +8,7 @@ from typing import Any
 import opendoc_model as od
 from opendoc_model.diagnostics import IssueSeverity
 
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 from opendoc_formats.writers.pptx_chart_settings import configure_chart
 from opendoc_formats.writers.pptx_combo_writer import compose_combo, install_combo, is_combo
 from opendoc_formats.writers.pptx_label_writer import configure_labels
@@ -67,10 +68,11 @@ def _chart_data(data: dict[str, Any]) -> Any:
             raise ValueError("missing categories")
         result.categories = data["categories"]
     for series in data["series"]:
+        checkpoint()
         if "categories" in series and series["categories"] != data.get("categories"):
             raise ValueError("incompatible series categories")
         if not numeric:
-            values = [_number(value, missing=True) for value in series["values"]]
+            values = [_number(value, missing=True) for value in cancellable_items(series["values"])]
             if len(values) != len(data["categories"]):
                 raise ValueError("category/value mismatch")
             result.add_series(series.get("name", ""), values)
@@ -78,11 +80,12 @@ def _chart_data(data: dict[str, Any]) -> Any:
         dimensions = [series["x_values"], series["values"]]
         if kind == "bubbleChart":
             dimensions.append(series["bubble_sizes"])
-        if not dimensions[0] or len({len(values) for values in dimensions}) != 1:
+        if not dimensions[0] or len({len(values) for values in cancellable_items(dimensions)}) != 1:
             raise ValueError("XY dimension mismatch")
         target = result.add_series(series.get("name", ""))
         for point in zip(*dimensions):
-            values = tuple(_number(value) for value in point)
+            checkpoint()
+            values = tuple(_number(value) for value in cancellable_items(point))
             if kind == "bubbleChart" and values[2] < 0:
                 raise ValueError("negative bubble size")
             target.add_data_point(*values)
@@ -110,6 +113,7 @@ def write_chart(
         chart.has_title = True
         chart.chart_title.text_frame.text = data["title"]
     for source, target in zip(data["series"], chart.series):
+        checkpoint()
         configure_statistics(source=source, target=target, options=data, report=report, location=location)
         configure_points(
             source=source, target=target, kind=source.get("chart_type", data.get("chart_type")), report=report, location=location

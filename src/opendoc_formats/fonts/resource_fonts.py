@@ -11,8 +11,10 @@ from typing import Any, Iterator
 
 from opendoc_model import DocumentLimits, DocumentModel, IssueSeverity, ResourceKind, TextStyle, get_font_reference
 
+from opendoc_formats.errors import OperationCancelledError
 from opendoc_formats.fonts.resolver import FontFace, FontResolution, FontResolver, _read_face
 from opendoc_formats.support.artifacts import ArtifactWorkspace
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 
 
 def _plain_name(name: str) -> str:
@@ -82,7 +84,11 @@ class ResourceFontResolver(FontResolver):
 @contextmanager
 def document_font_resolver(document: DocumentModel, report: Any, *,
                            limits: DocumentLimits | None = None) -> Iterator[FontResolver]:
-    fonts = [resource for resource in document.resources.values() if resource.kind is ResourceKind.FONT and resource.data]
+    fonts = [
+        resource
+        for resource in cancellable_items(document.resources.values())
+        if resource.kind is ResourceKind.FONT and resource.data
+    ]
     system = FontResolver.system()
     with ArtifactWorkspace(prefix='opendoc_formats_font_resources_') as workspace:
         faces = []
@@ -93,6 +99,7 @@ def document_font_resolver(document: DocumentModel, report: Any, *,
         resource_faces = {}
         pdf = document.metadata.get('pdf_docx_layout') is not None
         for index, resource in enumerate(fonts):
+            checkpoint()
             location = f'resources[{resource.id!r}]'
             if resource.media_type not in {'font/ttf', 'font/otf'}:
                 report.add(IssueSeverity.LOSS, 'font-resource', 'Word cannot embed this font program profile', location)
@@ -100,6 +107,7 @@ def document_font_resolver(document: DocumentModel, report: Any, *,
             try:
                 family, names = font_program_names(resource.data)
                 for name in names:
+                    checkpoint()
                     aliases[_plain_name(name)] = family
                 path = workspace.write_bytes(f'font-{index}.ttf', resource.data)
                 face = _read_face(path)
@@ -123,9 +131,11 @@ def document_font_resolver(document: DocumentModel, report: Any, *,
                     italic = variant in {'embedItalic', 'embedBoldItalic'} if variant else face.italic
                     bindings[(_plain_name(native), bold, italic)] = face
                 faces.append(face)
+            except OperationCancelledError:
+                raise
             except Exception as error:  # noqa: BLE001 - untrusted font programs need located diagnostics
                 report.add(IssueSeverity.LOSS, 'font-resource', f'Embedded font could not be used: {error}', location)
-        ambiguous = {face.family for face in faces
+        ambiguous = {face.family for face in cancellable_items(faces)
                      if pdf and len(variants[(face.normalized_family, face.weight, face.italic)]) > 1}
         yield ResourceFontResolver(FontResolver(faces), aliases, system, native_names, bindings, strict=pdf,
                                    resource_faces=resource_faces, ambiguous=ambiguous, report=report, limits=limits)

@@ -17,6 +17,8 @@ from opendoc_model import (
 from opendoc_model.color import ColorValue
 from opendoc_model.limits import DocumentLimits
 
+from opendoc_formats.support.cancellation import checkpoint
+
 
 def materialize_docx_colors(document: DocumentModel, limits: DocumentLimits | None = None) -> DocumentModel:
     if document.source_format != 'docx':
@@ -25,6 +27,7 @@ def materialize_docx_colors(document: DocumentModel, limits: DocumentLimits | No
     from opendoc_formats.ooxml.spacing import prepare_legacy_spacing_view
 
     for style in prepared.styles.values():
+        checkpoint()
         prepare_legacy_spacing_view(style, limits)
     context = DocumentModel(styles=prepared.styles, resources=prepared.resources)
     cache = {}
@@ -41,6 +44,7 @@ def materialize_docx_colors(document: DocumentModel, limits: DocumentLimits | No
         return style.color if style is not None else None
 
     for reference in walk_model(prepared, limits=limits):
+        checkpoint()
         paragraph = reference.node
         if not isinstance(paragraph, Paragraph):
             continue
@@ -48,6 +52,7 @@ def materialize_docx_colors(document: DocumentModel, limits: DocumentLimits | No
         from opendoc_formats.ooxml.paragraph_indent import ATTRIBUTES, effective_indent
 
         for key in ATTRIBUTES:
+            checkpoint()
             value = effective_indent(document, paragraph, key)
             paragraph.properties.pop(key, None)
             if value is not None:
@@ -55,6 +60,7 @@ def materialize_docx_colors(document: DocumentModel, limits: DocumentLimits | No
         from opendoc_formats.ooxml.paragraph_flow import FIELDS, effective_flow
 
         for key in FIELDS:
+            checkpoint()
             value = effective_flow(document, paragraph, key)
             paragraph.properties.pop(key, None)
             if value is not None:
@@ -71,6 +77,7 @@ def materialize_docx_colors(document: DocumentModel, limits: DocumentLimits | No
             paragraph.properties['line_spacing' if declaration.rule == 'relative' else 'line_spacing_pt'] = declaration.value
         inherited = named_color(paragraph.style_id)
         for run in paragraph.content:
+            checkpoint()
             if isinstance(run, TextRun) and run.style.color is None:
                 character = named_color(run.style.properties.base_style_id)
                 run.style.color = deepcopy(character if character is not None else inherited)

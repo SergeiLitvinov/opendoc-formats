@@ -6,6 +6,8 @@ from typing import Any
 
 from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 
+from opendoc_formats.support.cancellation import checkpoint
+
 C = "{http://schemas.openxmlformats.org/drawingml/2006/chart}"
 FLAGS = {
     "hidden": "delete",
@@ -22,11 +24,13 @@ FLAGS = {
 def configure_labels(*, chart: Any, data: dict[str, Any], report: ConversionReport, location: str) -> None:
     offset = 0
     for index, plot in enumerate(chart.plots):
+        checkpoint()
         sources = data["series"][offset : offset + len(plot.series)]
         settings = data.get("data_labels") if index == 0 else sources[0].get("plot", {}).get("data_labels")
         if settings is not None:
             _write_labels(plot._element, settings, report, location)
         for source, target in zip(sources, plot.series):
+            checkpoint()
             if "data_labels" in source:
                 _write_labels(target._element, source["data_labels"], report, location)
         offset += len(plot.series)
@@ -68,6 +72,7 @@ def _write_labels(parent: Any, settings: Any, report: ConversionReport, location
         else:
             invalid("position")
     for key in FLAGS:
+        checkpoint()
         if key not in ("hidden", "show_leader_lines"):
             flag(key)
     if "separator" in settings:

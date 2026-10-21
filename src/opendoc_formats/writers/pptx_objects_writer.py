@@ -8,6 +8,7 @@ import opendoc_model as od
 from opendoc_model.diagnostics import IssueSeverity
 from opendoc_model.document_model import Paragraph
 
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 from opendoc_formats.writers.pptx_cell_writer import configure_cell
 from opendoc_formats.writers.pptx_text_writer import write_text
 
@@ -18,19 +19,22 @@ def write_table(
     from pptx.util import Pt
 
     rows = len(block.rows)
-    columns = max((len(row.cells) for row in block.rows), default=0)
+    columns = max((len(row.cells) for row in cancellable_items(block.rows)), default=0)
     if not rows or not columns:
         report.add(IssueSeverity.LOSS, "tables", "Пустая таблица пропущена.", location)
         return
     table = slide.shapes.add_table(rows, columns, *geometry).table
     widths = block.properties.get("column_widths_pt", [])
-    if len(widths) == columns and all(width > 0 for width in widths):
+    if len(widths) == columns and all(width > 0 for width in cancellable_items(widths)):
         for column, width in zip(table.columns, widths):
+            checkpoint()
             column.width = Pt(width)
     for r, row in enumerate(block.rows):
+        checkpoint()
         if row.properties.get("height_pt", 0) > 0:
             table.rows[r].height = Pt(row.properties["height_pt"])
         for c, cell in enumerate(row.cells):
+            checkpoint()
             target = table.cell(r, c)
             cell_location = f"{location}.rows[{r}].cells[{c}]"
             if target.is_spanned:
@@ -44,6 +48,7 @@ def write_table(
                     report.add(IssueSeverity.LOSS, "tables", "Некорректное объединение ячеек пропущено.", location)
             paragraph_count = 0
             for child in cell.blocks:
+                checkpoint()
                 if isinstance(child, Paragraph):
                     write_text(target.text_frame, child, report, cell_location, append=paragraph_count > 0)
                     paragraph_count += 1

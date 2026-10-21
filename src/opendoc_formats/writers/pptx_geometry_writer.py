@@ -7,6 +7,7 @@ from typing import Any
 import opendoc_model as od
 from opendoc_model.diagnostics import IssueSeverity
 
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 from opendoc_formats.writers.pptx_text_writer import set_color
 
 A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
@@ -19,7 +20,9 @@ def write_shape(
     from pptx.util import Pt
 
     preset = meta.get("prst")
-    shape_type = next((value for value in MSO_AUTO_SHAPE_TYPE if value.xml_value == preset), None) if preset else None
+    shape_type = (
+        next((value for value in cancellable_items(MSO_AUTO_SHAPE_TYPE) if value.xml_value == preset), None) if preset else None
+    )
     if meta.get("kind") == "cxnSp":
         x, y, width, height = geometry
         shape = slide.shapes.add_connector(MSO_CONNECTOR_TYPE.STRAIGHT, x, y, x + width, y + height)
@@ -70,10 +73,16 @@ def _restore_geometry(shape: Any, xml: str, report: od.ConversionReport, locatio
             raise ValueError("invalid geometry root")
         # Geometry contains only local DrawingML data, never OPC relationships.
         for node in root.iter():
-            if not isinstance(node.tag, str) or not node.tag.startswith(A) or any(key.startswith("{") for key in node.attrib):
+            checkpoint()
+            if (
+                not isinstance(node.tag, str)
+                or not node.tag.startswith(A)
+                or any(key.startswith("{") for key in cancellable_items(node.attrib))
+            ):
                 raise ValueError("non-local geometry")
         properties = shape._element.spPr
         for child in list(properties):
+            checkpoint()
             if child.tag in (A + "prstGeom", A + "custGeom"):
                 properties.remove(child)
         properties.insert(1 if properties.find(A + "xfrm") is not None else 0, root)
@@ -89,18 +98,21 @@ def _restore_line_geometry(shape: Any, values: dict[str, Any]) -> None:
     line = shape._element.spPr.get_or_add_ln()
     allowed = {"headEnd": {"type", "w", "len"}, "tailEnd": {"type", "w", "len"}, "prstDash": {"val"}, "noFill": set()}
     for tag, attributes in values.items():
+        checkpoint()
         if tag not in allowed:
             continue
         for old in list(line):
+            checkpoint()
             if old.tag == A + tag or (tag == "noFill" and old.tag in (A + "solidFill", A + "gradFill")):
                 line.remove(old)
         child = etree.SubElement(line, A + tag)
         for key, value in attributes.items():
+            checkpoint()
             if key in allowed[tag]:
                 child.set(key, str(value))
     order = {
         name: index
-        for index, name in enumerate(
+        for index, name in cancellable_items(enumerate(
             (
                 "noFill",
                 "solidFill",
@@ -115,6 +127,6 @@ def _restore_line_geometry(shape: Any, values: dict[str, Any]) -> None:
                 "tailEnd",
                 "extLst",
             )
-        )
+        ))
     }
     line[:] = sorted(line, key=lambda node: order.get(node.tag.removeprefix(A), 99))

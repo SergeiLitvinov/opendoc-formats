@@ -6,6 +6,8 @@ from typing import Any
 
 from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
+
 C = "{http://schemas.openxmlformats.org/drawingml/2006/chart}"
 NUMERIC_SETTINGS = {
     "gap_width": ("gapWidth", 0, 500, ("barChart",), ("c:overlap", "c:serLines", "c:axId", "c:extLst")),
@@ -18,10 +20,13 @@ NUMERIC_SETTINGS = {
 def configure_plots(*, chart: Any, data: dict[str, Any], report: ConversionReport, location: str) -> None:
     offset = 0
     for index, plot in enumerate(chart.plots):
+        checkpoint()
         sources = data["series"][offset : offset + len(plot.series)]
         settings = data if index == 0 else sources[0].get("plot", {})
         for source in sources[1:] if index else []:
+            checkpoint()
             for key in (*NUMERIC_SETTINGS, "vary_colors"):
+                checkpoint()
                 if source.get("plot", {}).get(key) != settings.get(key):
                     report.add(
                         IssueSeverity.LOSS, "styles", f"Противоречивое свойство набора {key}: использован первый ряд.", location
@@ -40,11 +45,12 @@ def _configure(parent: Any, settings: dict[str, Any], report: ConversionReport, 
         parent.insert_element_before(etree.Element(C + tag, val=value), *successors)
 
     for key, (tag, minimum, maximum, kinds, successors) in NUMERIC_SETTINGS.items():
+        checkpoint()
         if key not in settings:
             continue
         try:
             value = float(settings[key])
-            if isinstance(settings[key], bool) or parent.tag not in {C + kind for kind in kinds}:
+            if isinstance(settings[key], bool) or parent.tag not in {C + kind for kind in cancellable_items(kinds)}:
                 raise ValueError("unsupported property")
             if not minimum <= value <= maximum or not value.is_integer():
                 raise ValueError("invalid value")

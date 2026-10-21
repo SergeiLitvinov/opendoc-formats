@@ -8,6 +8,8 @@ from typing import Any
 from opendoc_model.color import ColorValue
 from opendoc_model.diagnostics import IssueSeverity
 
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
+
 C = "{http://schemas.openxmlformats.org/drawingml/2006/chart}"
 A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
 KINDS = {"barChart", "lineChart", "areaChart", "scatterChart", "bubbleChart"}
@@ -68,12 +70,14 @@ def _trend(settings: dict[str, Any]) -> Any:
     _line(result, settings)
     etree.SubElement(result, C + "trendlineType", val=kind)
     for key, expected, minimum, maximum in (("order", "poly", 2, 6), ("period", "movingAvg", 2, 255)):
+        checkpoint()
         if key in settings or kind == expected:
             value = _number(settings.get(key, 2), minimum=minimum)
             if kind != expected or value != int(value) or value > maximum:
                 raise ValueError(f"недопустимый {key}")
             etree.SubElement(result, C + key, val=str(int(value)))
     for key in ("forward", "backward", "intercept"):
+        checkpoint()
         if key not in settings:
             continue
         if kind == "movingAvg" or (key == "intercept" and kind not in {"linear", "poly", "exp"}):
@@ -83,6 +87,7 @@ def _trend(settings: dict[str, Any]) -> Any:
             raise ValueError("пересечение экспоненциального тренда должно быть положительным")
         etree.SubElement(result, C + key, val=str(value))
     for key, tag in (("show_r_squared", "dispRSqr"), ("show_equation", "dispEq")):
+        checkpoint()
         if key in settings:
             value = settings[key]
             if not isinstance(value, bool) or (kind == "movingAvg" and value):
@@ -105,6 +110,7 @@ def _errors(settings: dict[str, Any], kind: str, direction: str, count: int) -> 
         raise ValueError("неподдержанный тип погрешностей")
     result = etree.Element(C + "errBars")
     for tag, value in (("errDir", direction), ("errBarType", mode), ("errValType", value_type)):
+        checkpoint()
         etree.SubElement(result, C + tag, val=value)
     if value_type != "cust" and ("plus" in settings or "minus" in settings):
         raise ValueError("массивы допустимы только для пользовательских погрешностей")
@@ -112,6 +118,7 @@ def _errors(settings: dict[str, Any], kind: str, direction: str, count: int) -> 
         if "value" in settings:
             raise ValueError("пользовательские погрешности не принимают общую величину")
         for side in ("plus", "minus"):
+            checkpoint()
             if side in settings or mode in {"both", side}:
                 _custom_values(result, side, settings.get(side), count)
     elif value_type == "stdErr":
@@ -134,6 +141,7 @@ def _custom_values(parent: Any, side: str, values: Any, count: int) -> None:
     etree.SubElement(literal, C + "formatCode").text = "General"
     etree.SubElement(literal, C + "ptCount", val=str(count))
     for index, value in enumerate(values):
+        checkpoint()
         if value is None:
             continue
         number = _number(value)
@@ -147,6 +155,7 @@ def configure_statistics(*, source: dict[str, Any], target: Any, options: dict[s
         "x" if kind == "barChart" and source.get("plot", {}).get("bar_direction", options.get("bar_direction")) == "bar" else "y"
     )
     for key in ("trendline", "error_bars"):
+        checkpoint()
         settings = source.get(key)
         if settings is None:
             continue
@@ -160,9 +169,9 @@ def configure_statistics(*, source: dict[str, Any], target: Any, options: dict[s
                 raise ValueError("тренд накопительного ряда не поддержан")
             if key == "trendline":
                 items = settings if isinstance(settings, list) else [settings]
-                if not 1 <= len(items) <= 64 or any(not isinstance(item, dict) for item in items):
+                if not 1 <= len(items) <= 64 or any(not isinstance(item, dict) for item in cancellable_items(items)):
                     raise ValueError("неподдержанные настройки тренда")
-                elements = [_trend(item) for item in items]
+                elements = [_trend(item) for item in cancellable_items(items)]
             else:
                 items = settings if isinstance(settings, list) else [settings]
                 if not items or len(items) > (2 if kind in {"scatterChart", "bubbleChart"} else 1):
@@ -170,6 +179,7 @@ def configure_statistics(*, source: dict[str, Any], target: Any, options: dict[s
                 directions = set()
                 elements = []
                 for item in items:
+                    checkpoint()
                     if not isinstance(item, dict):
                         raise ValueError("неподдержанные настройки погрешностей")
                     axis = item.get("direction", direction)
@@ -178,6 +188,7 @@ def configure_statistics(*, source: dict[str, Any], target: Any, options: dict[s
                     directions.add(axis)
                     elements.append(_errors(item, kind, direction, len(source.get("values", []))))
             for element in elements:
+                checkpoint()
                 before = ("c:errBars",) if key == "trendline" else ()
                 target._element.insert_element_before(
                     element, *before, "c:cat", "c:val", "c:xVal", "c:yVal", "c:bubbleSize", "c:extLst"

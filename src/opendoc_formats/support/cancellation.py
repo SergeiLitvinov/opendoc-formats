@@ -20,23 +20,27 @@ def check_cancelled(cancelled: Callable[[], bool] | None, operation: str) -> Non
 
 
 @contextmanager
-def cancellation_scope(cancelled: Callable[[], bool] | None, operation: str) -> Iterator[None]:
-    """Bind a callback to one synchronous native import, restoring nested/concurrent state.
+def cancellation_scope(
+    cancelled: Callable[[], bool] | None, operation: str, *, check_on_exit: bool = True,
+) -> Iterator[None]:
+    """Bind a callback to synchronous native work, restoring nested/concurrent state.
 
     Native helpers share this context rather than storing runtime state in Model
-    objects. Only explicitly scoped readers activate implicit checkpoints.
+    objects. Writers check at the publication boundary instead of on scope exit:
+    observing cancellation after a successful replace must not claim rollback.
     """
     check_cancelled(cancelled, operation)
     token = _scope.set((cancelled, operation))
     try:
         yield
-        check_cancelled(cancelled, operation)
+        if check_on_exit:
+            check_cancelled(cancelled, operation)
     finally:
         _scope.reset(token)
 
 
 def checkpoint() -> None:
-    """Check the active native import, or do nothing outside a reader scope."""
+    """Check the active native operation, or do nothing outside an explicit scope."""
     cancelled, operation = _scope.get()
     check_cancelled(cancelled, operation)
 

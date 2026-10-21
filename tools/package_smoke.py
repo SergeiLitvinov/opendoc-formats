@@ -264,6 +264,17 @@ def main() -> None:
                     assert cancelled.document is None and any(issue.code == 'import.cancelled' for issue in cancelled.issues)
                     assert hashlib.sha256(path.read_bytes()).hexdigest() == digest
                     assert document_to_json(read_document(path).document) == document_to_json(result.document)
+                    export_polls = 0
+
+                    def stop_export() -> bool:
+                        nonlocal export_polls
+                        export_polls += 1
+                        return export_polls >= 12
+
+                    cancelled_export = write_document(document, path, options=ExportOptions(cancelled=stop_export))
+                    assert export_polls == 12 and not cancelled_export.success
+                    assert any(issue.feature == 'export.cancelled' for issue in cancelled_export.issues)
+                    assert hashlib.sha256(path.read_bytes()).hexdigest() == digest
             if args.all_formats and format_id == "docx":
                 from opendoc_model import (
                     Heading,

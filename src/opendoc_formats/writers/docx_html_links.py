@@ -5,6 +5,8 @@ from __future__ import annotations
 from hashlib import sha256
 from typing import Any
 
+from opendoc_formats.support.cancellation import cancellable_items
+
 
 def bookmark_name(identifier: str) -> str:
     return "html_" + sha256(identifier.encode("utf-8")).hexdigest()[:32]
@@ -15,7 +17,7 @@ def add_bookmark(paragraph: Any, identifier: str) -> None:
     from docx.oxml.ns import qn
 
     existing = paragraph.part.element.findall(".//" + qn("w:bookmarkStart"))
-    number = max([int(node.get(qn("w:id"), "0")) for node in existing] + [0]) + 1
+    number = max([int(node.get(qn("w:id"), "0")) for node in cancellable_items(existing)] + [0]) + 1
     start, end = OxmlElement("w:bookmarkStart"), OxmlElement("w:bookmarkEnd")
     start.set(qn("w:id"), str(number))
     start.set(qn("w:name"), bookmark_name(identifier))

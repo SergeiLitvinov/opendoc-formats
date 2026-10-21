@@ -12,6 +12,7 @@ from typing import Any, cast
 
 from opendoc_model import ArtifactLimitError, ConversionReport, DocumentLimits, DocumentModel, IssueSeverity
 
+from opendoc_formats.errors import OperationCancelledError
 from opendoc_formats.support.backends import missing_backends
 from opendoc_formats.support.object_mapping import get_object_mapping, mapping_publication, mapping_result_matches
 from opendoc_formats.text_profile import TextProfile, decode_text
@@ -54,7 +55,7 @@ class _ModelWriter:
         writer = cast(Callable[..., ConversionReport], getattr(
             import_module('opendoc_formats.writers.' + self.module), self.name,
         ))
-        if self.module == 'pdf_writer':
+        if self.module in {'pdf_writer', 'docx_writer', 'pptx_writer'}:
             return writer(document, path, limits=limits, cancelled=cancelled)
         return writer(document, path, limits=limits)
 
@@ -162,6 +163,8 @@ class ExporterRegistry:
                 )
             except ArtifactLimitError as error:
                 return limit_failure(error)
+            except OperationCancelledError:
+                return fail('export.cancelled', 'Export cancelled inside native writer; staged result discarded')
             if not isinstance(written, ConversionReport):
                 return fail("export.invalid-result", "Writer did not return an OpenDoc ConversionReport")
             report = written

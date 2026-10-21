@@ -6,6 +6,7 @@ from typing import Any
 
 from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 
+from opendoc_formats.support.cancellation import checkpoint
 from opendoc_formats.writers.pptx_text_writer import set_color
 
 
@@ -17,6 +18,7 @@ def configure_points(*, source: dict[str, Any], target: Any, kind: str, report: 
         report.add(IssueSeverity.LOSS, "styles", "Некорректное оформление точек диаграммы пропущено.", location)
         return
     for key, settings in points.items():
+        checkpoint()
         try:
             index = int(key)
             if isinstance(key, bool) or str(index) != str(key) or not 0 <= index < len(source["values"]):

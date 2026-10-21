@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from functools import partial
 from pathlib import Path
 from typing import Any
@@ -19,10 +20,12 @@ from opendoc_model.document_model import (
 )
 from opendoc_model.limits import DocumentLimits
 
+from opendoc_formats.errors import OperationCancelledError
 from opendoc_formats.fonts import FontResolver
 from opendoc_formats.fonts.docx_embedding import embed_docx_fonts, verify_docx_font_embedding
 from opendoc_formats.ooxml.headings import retain_derived_styles
 from opendoc_formats.ooxml.package import restore_package_graph
+from opendoc_formats.support.cancellation import cancellable_items, cancellation_scope, checkpoint
 from opendoc_formats.writers.color_preflight import preflight_colors
 from opendoc_formats.writers.docx_drawing_writer import write_image
 from opendoc_formats.writers.docx_section_writer import configure_section, section_start_type
@@ -34,24 +37,38 @@ from opendoc_formats.writers.font_preflight import prepare_fonts
 
 def write_docx_model(
     document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None = None,
+    cancelled: Callable[[], bool] | None = None,
+) -> ConversionReport:
+    """Write editable DOCX, cancelling before publication without changing the destination."""
+    with cancellation_scope(cancelled, 'DOCX export', check_on_exit=False):
+        return _write_docx_model(document, output_path, limits=limits)
+
+
+def _write_docx_model(
+    document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None = None,
 ) -> ConversionReport:
     """Записать ``DocumentModel`` в DOCX и вернуть отчёт о потерях."""
 
     output = Path(output_path)
     report = ConversionReport(output)
     errors = document.validate(limits=limits)
+    checkpoint()
     if errors:
         from opendoc_formats.writers.html_resources import document_images
 
         for image, location in document_images(document):
+            checkpoint()
             if image.resource_id not in document.resources:
                 report.add(IssueSeverity.ERROR, 'image', f'Resource {image.resource_id!r} is missing', location)
     for error in errors:
+        checkpoint()
         report.add(IssueSeverity.ERROR, 'model', error)
     if not report.success:
         return report
-    native_pdf = (document.source_format == 'pdf' and any(
-        section.properties.get('pdf', {}).get('coordinate_space') == 'pymupdf-unrotated' for section in document.sections))
+    native_pdf = document.source_format == "pdf" and any(
+        section.properties.get("pdf", {}).get("coordinate_space") == "pymupdf-unrotated"
+        for section in cancellable_items(document.sections)
+    )
     if native_pdf:
         report.metrics.update({'pdf_docx_layout_profile': 'opendoc-v1', 'assessment_complete': False})
         _check_pdf_projection_source(document, report, limits=limits)
@@ -71,6 +88,7 @@ def write_docx_model(
 
         projections = document.metadata.get('pdf_docx_group_projection', [])
         for failure in document.metadata.get('pdf_docx_group_structure_loss', []):
+            checkpoint()
             report.add(IssueSeverity.LOSS, 'pdf-docx.group-structure', failure['reason'], failure['group'])
         if projections:
             report.metrics['pdf_docx_group_projection'] = projections
@@ -79,6 +97,7 @@ def write_docx_model(
                        'Typed source scopes remain in the input Model.', 'document')
         seen_fonts = set()
         for reference in walk_model(document, limits=limits):
+            checkpoint()
             run = reference.node
             name = run.style.properties.get('pdf_source_font') if isinstance(run, TextRun) else None
             if name is not None and name not in seen_fonts:
@@ -91,9 +110,10 @@ def write_docx_model(
     from opendoc_formats.ooxml.group_geometry import scene_profile
 
     integration = get_integration(document, limits=limits)
-    images = {a.id for ref in walk_model(document, limits=limits) if isinstance(ref.node, Image)
+    images = {a.id for ref in cancellable_items(walk_model(document, limits=limits)) if isinstance(ref.node, Image)
               if (a := get_anchor(ref.node, limits=limits)) is not None}
     for scene in integration.scenes if integration else ():
+        checkpoint()
         if scene.scope_version != 1:
             continue
         try:
@@ -118,6 +138,7 @@ def _write_validated_docx(
     from docx.enum.section import WD_SECTION
 
     document = prepare_fonts(document, report, limits=limits, resolver=resolver)
+    checkpoint()
     _reject_pdf_losses(report)
     if not report.success:
         return report
@@ -133,12 +154,13 @@ def _write_validated_docx(
         bool(section.properties.odd_and_even_pages_header_footer)
         or bool(section.even_page_headers)
         or bool(section.even_page_footers)
-        for section in document.sections
+        for section in cancellable_items(document.sections)
     )
 
     sections = document.sections or [Section()]
     counters = {"paragraphs": 0, "tables": 0, "images": 0, "formulas": 0}
     for section_index, source_section in enumerate(sections):
+        checkpoint()
         if section_index == 0:
             target_section = target.sections[0]
         else:
@@ -148,7 +170,9 @@ def _write_validated_docx(
         _write_blocks(target, source_section.blocks, document, report, f"sections[{section_index}]", counters, limits=limits)
 
     embed_docx_fonts(target, document, report)
+    checkpoint()
     _restore_package_graph(target, document, report, limits=limits)
+    checkpoint()
     _reject_pdf_losses(report)
     if not report.success:
         return report
@@ -158,13 +182,17 @@ def _write_validated_docx(
 
         with ArtifactWorkspace(prefix="opendoc_formats_docx_writer_") as workspace:
             staged = workspace.artifact_path("output.docx")
+            checkpoint()
             target.save(staged)
+            checkpoint()
             workspace.validate_artifact(staged)
             verify_docx_font_embedding(staged, report)
             _reject_pdf_losses(report)
             if not report.success:
                 return report
-            atomic_copy(staged, output)
+            atomic_copy(staged, output, before_replace=checkpoint)
+    except OperationCancelledError:
+        raise
     except Exception as error:  # noqa: BLE001 - diagnostic boundary must return a report
         report.add(IssueSeverity.ERROR, "docx-write", str(error))
         return report
@@ -177,7 +205,7 @@ def _write_validated_docx(
 def _reject_pdf_losses(report: ConversionReport) -> None:
     if report.metrics.get('pdf_docx_layout_profile') != 'opendoc-v1':
         return
-    losses = [issue for issue in report.issues if issue.severity is IssueSeverity.LOSS]
+    losses = [issue for issue in cancellable_items(report.issues) if issue.severity is IssueSeverity.LOSS]
     if losses and report.success:
         report.add(IssueSeverity.ERROR, 'pdf-docx.loss-rejected',
                    'The measured PDF → Word profile rejects known preservation losses', losses[0].location)
@@ -192,6 +220,7 @@ def _check_pdf_projection_source(
     if integration is None:
         return
     for name in ('annotations', 'forms'):
+        checkpoint()
         if getattr(integration, name):
             report.add(IssueSeverity.ERROR, 'pdf-docx.interactions',
                        'PDF interactions are outside the measured native Word profile', f'integration.{name}')
@@ -199,6 +228,7 @@ def _check_pdf_projection_source(
         report.add(IssueSeverity.ERROR, 'pdf-docx.outline',
                    'PDF outline projection is outside the measured native Word profile', 'integration.extra.pdf_outline')
     for record in integration.preservation:
+        checkpoint()
         if record.state in {PreservationState.OPAQUE, PreservationState.LOST, PreservationState.REJECTED}:
             report.add(IssueSeverity.ERROR, 'pdf-docx.source-unknown', record.issue.message, record.issue.location)
 
@@ -206,6 +236,7 @@ def _check_pdf_projection_source(
 def _write_metadata(target: Any, metadata: dict[str, Any]) -> None:
     properties = target.core_properties
     for name in ("title", "subject", "author", "keywords", "comments"):
+        checkpoint()
         value = metadata.get(name)
         if value is not None:
             setattr(properties, name, str(value))
@@ -216,14 +247,17 @@ def _restore_package_graph(
 ) -> None:
     graph = document.package
     source_parts = {
-        part._opendoc_source_part: part for part in target.part.package.iter_parts()
+        part._opendoc_source_part: part for part in cancellable_items(target.part.package.iter_parts())
         if getattr(part, "_opendoc_source_part", None)
     }
     relationship_namespace = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
     for part in target.part.package.iter_parts():
+        checkpoint()
         has_references = any(
             key.startswith(relationship_namespace)
-            for root in getattr(part, "_opendoc_opaque_roots", ()) for node in root.iter() for key in node.attrib
+            for root in cancellable_items(getattr(part, "_opendoc_opaque_roots", ()))
+            for node in cancellable_items(root.iter())
+            for key in cancellable_items(node.attrib)
         )
         if part is not target.part and has_references and not getattr(part, "_opendoc_source_part", None):
             report.add(IssueSeverity.ERROR, "package-graph", "Opaque running content has no source part binding")
@@ -231,9 +265,9 @@ def _restore_package_graph(
     if graph is None or graph.format != "ooxml":
         if any(
             key.startswith(relationship_namespace)
-            for part in target.part.package.iter_parts()
-            for root in getattr(part, "_opendoc_opaque_roots", ())
-            for node in root.iter() for key in node.attrib
+            for part in cancellable_items(target.part.package.iter_parts())
+            for root in cancellable_items(getattr(part, "_opendoc_opaque_roots", ()))
+            for node in cancellable_items(root.iter()) for key in cancellable_items(node.attrib)
         ):
             report.add(IssueSeverity.ERROR, "package-graph", "Opaque OOXML relationships require their source package graph")
         return
@@ -246,6 +280,8 @@ def _restore_package_graph(
             source_parts=source_parts,
         )
     except ArtifactLimitError:
+        raise
+    except OperationCancelledError:
         raise
     except Exception as error:  # noqa: BLE001 - foreign package parts are a diagnostic boundary
         report.add(IssueSeverity.ERROR, "package-graph", f"OOXML package graph could not be restored: {error}")
@@ -261,8 +297,11 @@ def _restore_document_protection(target: Any, metadata: dict[str, Any], report: 
         protection = parse_xml(str(raw_xml))
         settings = target.settings._element
         for existing in settings.xpath("./w:documentProtection"):
+            checkpoint()
             settings.remove(existing)
         settings.append(protection)
+    except OperationCancelledError:
+        raise
     except Exception as error:  # noqa: BLE001 - foreign OOXML is a diagnostic boundary
         report.add(
             IssueSeverity.LOSS,
@@ -281,6 +320,7 @@ def _write_blocks(
     *, limits: DocumentLimits | None = None,
 ) -> None:
     for index, block in enumerate(blocks):
+        checkpoint()
         block_location = f"{location}.blocks[{index}]"
         if isinstance(block, Paragraph):
             if block.properties.get("docx_raw_block_xml"):
@@ -319,6 +359,8 @@ def _write_raw_block(container: Any, raw_xml: str, report: ConversionReport, loc
         roots = getattr(container.part, "_opendoc_opaque_roots", [])
         roots.append(element)
         container.part._opendoc_opaque_roots = roots
+    except OperationCancelledError:
+        raise
     except Exception as error:  # noqa: BLE001 - foreign OOXML is a diagnostic boundary
         report.add(IssueSeverity.LOSS, "docx-block-ooxml", f"raw block OOXML could not be restored: {error}", location)
 

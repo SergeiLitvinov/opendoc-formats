@@ -7,6 +7,7 @@ from typing import Any
 import opendoc_model as od
 from opendoc_model.diagnostics import IssueSeverity
 
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 from opendoc_formats.writers.pptx_text_writer import set_color
 
 A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
@@ -20,6 +21,7 @@ def configure_cell(cell: Any, properties: dict[str, Any], report: od.ConversionR
     from pptx.util import Pt
 
     for side, value in properties.get("margins_twips", {}).items():
+        checkpoint()
         if side in ("left", "right", "top", "bottom"):
             setattr(cell, f"margin_{side}", Pt(value / 20))
     anchors = {"top": MSO_ANCHOR.TOP, "center": MSO_ANCHOR.MIDDLE, "bottom": MSO_ANCHOR.BOTTOM}
@@ -39,6 +41,7 @@ def configure_cell(cell: Any, properties: dict[str, Any], report: od.ConversionR
         set_color(cell.fill.fore_color, canonical or fill, report, location)
     tcpr = cell._tc.get_or_add_tcPr()
     for tag, border in properties.get("pptx_borders", {}).items():
+        checkpoint()
         if tag not in ("lnL", "lnR", "lnT", "lnB", "lnTlToBr", "lnBlToTr"):
             report.add(IssueSeverity.LOSS, "tables", "Неизвестная граница ячейки не перенесена.", location)
             continue
@@ -58,7 +61,7 @@ def configure_cell(cell: Any, properties: dict[str, Any], report: od.ConversionR
         tcpr.insert(0, line)
     order = {
         name: index
-        for index, name in enumerate(
+        for index, name in cancellable_items(enumerate(
             (
                 "lnL",
                 "lnR",
@@ -76,6 +79,6 @@ def configure_cell(cell: Any, properties: dict[str, Any], report: od.ConversionR
                 "headers",
                 "extLst",
             )
-        )
+        ))
     }
     tcpr[:] = sorted(tcpr, key=lambda node: order.get(node.tag.removeprefix(A), 99))

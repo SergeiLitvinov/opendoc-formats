@@ -7,6 +7,7 @@ from opendoc_model.document_model import DocumentModel
 from opendoc_model.limits import DocumentLimits
 
 from opendoc_formats.fonts import FontResolver, prepare_document_fonts
+from opendoc_formats.support.cancellation import checkpoint
 
 
 def prepare_fonts(
@@ -19,6 +20,7 @@ def prepare_fonts(
     prepared.validate(limits=limits)
     report.metrics["font_resolution"] = font_report.to_dict()
     for resolution in font_report.substitutions:
+        checkpoint()
         if resolution.path is None:
             report.add(
                 IssueSeverity.LOSS,
@@ -32,6 +34,7 @@ def prepare_fonts(
                 f"font {resolution.requested!r} replaced by {resolution.resolved!r} (distance {resolution.metric_distance:.3f})",
             )
     for resolution in font_report.resolutions.values():
+        checkpoint()
         if resolution.path is not None and not resolution.embeddable:
             report.add(
                 IssueSeverity.WARNING,

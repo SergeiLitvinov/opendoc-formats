@@ -11,7 +11,9 @@ from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import VECTOR_IMAGE_MEDIA_TYPES, DocumentModel, Image, Resource
 from opendoc_model.units import degrees_to_ooxml_angle
 
+from opendoc_formats.errors import OperationCancelledError
 from opendoc_formats.ooxml.package import points_to_emu
+from opendoc_formats.support.cancellation import checkpoint
 
 
 def write_image(
@@ -43,6 +45,8 @@ def write_image(
         try:
             _add_vector_picture(paragraph, image, resource, document)
             return
+        except OperationCancelledError:
+            raise
         except Exception as error:  # noqa: BLE001 - malformed vector resources must produce a diagnostic
             report.add(
                 IssueSeverity.LOSS,
@@ -63,6 +67,8 @@ def write_image(
         _apply_image_transform(shape._inline, image)
         _apply_image_effects(shape._inline, image)
         _apply_image_placement(shape._inline, image)
+    except OperationCancelledError:
+        raise
     except Exception as error:  # noqa: BLE001 - image backends raise several library-specific errors
         report.add(
             IssueSeverity.LOSS,
@@ -178,6 +184,7 @@ def _apply_image_transform(drawing: Any, image: Image) -> None:
         ("r", image.crop.right),
         ("b", image.crop.bottom),
     ):
+        checkpoint()
         if value:
             source.set(attribute, str(round(value * 100000)))
     blips = fills[0].xpath("./a:blip")
@@ -194,6 +201,7 @@ def _apply_image_effects(drawing: Any, image: Image) -> None:
         raw_effects = image.properties.blip_effects_xml
         if raw_effects:
             for raw_xml in raw_effects:
+                checkpoint()
                 effect = parse_xml(raw_xml)
                 extension_lists = blip.xpath("./a:extLst")
                 blip.insert(blip.index(extension_lists[0]) if extension_lists else len(blip), effect)
@@ -213,9 +221,11 @@ def _apply_image_effects(drawing: Any, image: Image) -> None:
         (image.properties.line_xml, {"ln"}),
         (image.properties.shape_effects_xml, {"effectLst", "effectDag"}),
     ):
+        checkpoint()
         if not raw_xml:
             continue
         for child in list(shape):
+            checkpoint()
             if etree.QName(child).localname in names:
                 shape.remove(child)
         shape.append(parse_xml(raw_xml))
@@ -241,6 +251,7 @@ def _apply_image_placement(drawing: Any, image: Image) -> None:
         ("layoutInCell", str(int(properties.layout_in_cell if properties.layout_in_cell is not None else True))),
         ("allowOverlap", str(int(properties.allow_overlap if properties.allow_overlap is not None else True))),
     ):
+        checkpoint()
         drawing.set(name, default)
 
     simple_position = OxmlElement("wp:simplePos")
@@ -248,6 +259,7 @@ def _apply_image_placement(drawing: Any, image: Image) -> None:
     simple_position.set("y", "0")
     drawing.insert(0, simple_position)
     for index, (axis, coordinate) in enumerate((("H", "x"), ("V", "y")), 1):
+        checkpoint()
         position = OxmlElement(f"wp:position{axis}")
         relative_from = properties.horizontal_relative_from if axis == "H" else properties.vertical_relative_from
         position.set("relativeFrom", relative_from or "page")
@@ -280,6 +292,7 @@ def _apply_image_placement(drawing: Any, image: Image) -> None:
             polygon_element = OxmlElement("wp:wrapPolygon")
             polygon_element.set("edited", str(int(bool(polygon.get("edited", False)))))
             for index, point in enumerate(points):
+                checkpoint()
                 if not isinstance(point, dict):
                     continue
                 node = OxmlElement("wp:start" if index == 0 else "wp:lineTo")

@@ -97,9 +97,12 @@ def restore_package_graph(
         (name, part, getattr(part, "_opendoc_opaque_roots", ())) for name, part in source_parts.items()
     ]
     for name, _, roots in scopes:
+        checkpoint()
         source_ids = {edge.id for edge in graph.relationships if edge.source == name}
         for root in roots:
+            checkpoint()
             for node in root.iter():
+                checkpoint()
                 for attribute, value in node.attrib.items():
                     if attribute.startswith("{" + _RELATIONSHIP_BASE + "}") and value not in source_ids:
                         raise ValueError(f"Opaque OOXML refers to an unretained source relationship: {name}#{value}")
@@ -111,20 +114,24 @@ def restore_package_graph(
         if relationship.source == graph.root and relationship.relationship_type not in running_types
     }
     for relationship_id, relationship in list(root_part.rels.items()):
+        checkpoint()
         if relationship.reltype in root_relationship_types and relationship.reltype != f"{_RELATIONSHIP_BASE}/image":
             root_part.drop_rel(relationship_id)
     occupied = set(graph.parts) | {str(part.partname) for part in package.iter_parts()}
     for part in list(package.iter_parts()):
+        checkpoint()
         name = str(part.partname)
         if name not in graph.parts:
             continue
         path = PurePosixPath(name)
         index = 1
         while (candidate := str(path.with_name(f"{path.stem}-opendoc{index}{path.suffix}"))) in occupied:
+            checkpoint()
             index += 1
         part.partname = pack_uri_type(candidate)
         occupied.add(candidate)
     for relationship in graph.relationships:
+        checkpoint()
         if relationship.source == graph.root and relationship.relationship_type in running_types:
             continue  # section content and bindings are generated from the editable model
         source = root_part if relationship.source == graph.root else parts[relationship.source]
@@ -167,6 +174,7 @@ def _reserve_relationship_id(root_part: Any, relationship_id: str, protected_roo
         return
     protected = {node for root in protected_roots for node in root.iter()}
     for node in element.iter():
+        checkpoint()
         if node in protected:
             continue
         for attribute, value in list(node.attrib.items()):

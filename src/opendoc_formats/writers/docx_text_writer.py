@@ -9,8 +9,10 @@ from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import DocumentModel, Formula, FormulaFormat, Image, Paragraph, TextRun
 from opendoc_model.limits import DocumentLimits
 
+from opendoc_formats.errors import OperationCancelledError
 from opendoc_formats.ooxml.headings import export_heading
 from opendoc_formats.ooxml.package import RELATIONSHIP_TYPE
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 from opendoc_formats.writers.docx_drawing_writer import write_image
 from opendoc_formats.writers.docx_notes_writer import write_note_reference
 from opendoc_formats.writers.docx_style_writer import apply_numbering, apply_paragraph_format, apply_text_style
@@ -118,6 +120,7 @@ def write_paragraph_content(
     """Записать упорядоченное содержимое абзаца."""
 
     for index, item in enumerate(source.content):
+        checkpoint()
         item_location = f"{location}.content[{index}]"
         if isinstance(item, TextRun):
             from opendoc_formats.ooxml.run_position import native_position
@@ -129,13 +132,13 @@ def write_paragraph_content(
                 continue
             from opendoc_formats.ooxml.paragraph_flow import FIELDS
 
-            if any(item.style.properties.get(key) is not None for key in FIELDS):
+            if any(item.style.properties.get(key) is not None for key in cancellable_items(FIELDS)):
                 report.add(IssueSeverity.ERROR, 'docx.paragraph-flow',
                            'An inline run style does not declare paragraph flow in Word', item_location + '.style')
                 continue
             from opendoc_formats.ooxml.paragraph_indent import ATTRIBUTES
 
-            if any(item.style.properties.get(key) is not None for key in ATTRIBUTES):
+            if any(item.style.properties.get(key) is not None for key in cancellable_items(ATTRIBUTES)):
                 report.add(IssueSeverity.ERROR, 'docx.paragraph-indent',
                            'An inline run style does not declare paragraph indentation in Word', item_location + '.style')
                 continue
@@ -216,6 +219,8 @@ def write_formula(paragraph: Any, formula: Formula, report: ConversionReport, lo
         try:
             paragraph._p.append(parse_xml(formula.value))
             return
+        except OperationCancelledError:
+            raise
         except Exception as error:  # noqa: BLE001 - malformed foreign XML is reported as a loss
             report.add(IssueSeverity.LOSS, "formula", f"invalid OMML replaced by fallback: {error}", location)
     else:
@@ -290,6 +295,7 @@ def _write_raw_field(paragraph: Any, raw_elements: list[str]) -> None:
     from docx.oxml import parse_xml
 
     for raw_xml in raw_elements:
+        checkpoint()
         paragraph._p.append(parse_xml(raw_xml))
 
 
@@ -302,6 +308,8 @@ def _write_raw_inline(paragraph: Any, raw_xml: str, report: ConversionReport, lo
         roots = getattr(paragraph.part, "_opendoc_opaque_roots", [])
         roots.append(element)
         paragraph.part._opendoc_opaque_roots = roots
+    except OperationCancelledError:
+        raise
     except Exception as error:  # noqa: BLE001 - foreign OOXML is a diagnostic boundary
         report.add(IssueSeverity.LOSS, "docx-inline-ooxml", f"raw inline OOXML could not be restored: {error}", location)
 

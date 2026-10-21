@@ -11,6 +11,7 @@ from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import DocumentModel
 
 from opendoc_formats.fonts.embedding import FontUsage, collect_font_usages, subset_font
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 
 _FONT_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.obfuscatedFont"
 
@@ -25,6 +26,7 @@ def embed_docx_fonts(target: object, document: DocumentModel, report: Conversion
         return
     embedded = source_bytes = subset_bytes = 0
     for index, usage in enumerate(collect_font_usages(document), start=1):
+        checkpoint()
         if not usage.embeddable:
             continue
         try:
@@ -66,6 +68,7 @@ def _obfuscate(data: bytes, font_key: UUID) -> bytes:
     result = bytearray(data)
     key = font_key.bytes[::-1]
     for index in range(min(32, len(result))):
+        checkpoint()
         result[index] ^= key[index % 16]
     return bytes(result)
 
@@ -76,7 +79,7 @@ def _register_font(font_table: object, usage: FontUsage, relationship_id: str, f
     from lxml import etree
 
     root = etree.fromstring(font_table.blob)
-    font = next((item for item in root.findall(qn("w:font")) if item.get(qn("w:name")) == usage.family), None)
+    font = next((item for item in cancellable_items(root.findall(qn("w:font"))) if item.get(qn("w:name")) == usage.family), None)
     if font is None:
         font = OxmlElement("w:font")
         font.set(qn("w:name"), usage.family)
@@ -104,7 +107,11 @@ def verify_docx_font_embedding(output: str | Path, report: ConversionReport) -> 
         return
     try:
         with zipfile.ZipFile(output) as package:
-            font_parts = [name for name in package.namelist() if name.startswith("word/fonts/") and name.endswith(".odttf")]
+            font_parts = [
+                name
+                for name in cancellable_items(package.namelist())
+                if name.startswith("word/fonts/") and name.endswith(".odttf")
+            ]
             font_table = package.read("word/fontTable.xml")
             relationships = package.read("word/_rels/fontTable.xml.rels")
     except (OSError, KeyError, zipfile.BadZipFile) as error:

@@ -13,6 +13,9 @@ from typing import Iterable
 import opendoc_model as od
 from opendoc_model.document_model import DocumentModel, Paragraph, Table, TextRun, TextStyle
 
+from opendoc_formats.errors import OperationCancelledError
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
+
 
 @dataclass(frozen=True)
 class FontFace:
@@ -62,15 +65,15 @@ class FontResolutionReport:
 
     @property
     def substitutions(self) -> list[FontResolution]:
-        return [item for item in self.resolutions.values() if not item.exact]
+        return [item for item in cancellable_items(self.resolutions.values()) if not item.exact]
 
     @property
     def missing_glyphs(self) -> dict[str, tuple[str, ...]]:
-        return {name: item.missing_glyphs for name, item in self.resolutions.items() if item.missing_glyphs}
+        return {name: item.missing_glyphs for name, item in cancellable_items(self.resolutions.items()) if item.missing_glyphs}
 
     def to_dict(self) -> dict[str, object]:
         return {
-            "resolutions": {name: item.to_dict() for name, item in sorted(self.resolutions.items())},
+            "resolutions": {name: item.to_dict() for name, item in cancellable_items(sorted(self.resolutions.items()))},
             "substitution_count": len(self.substitutions),
             "fonts_with_missing_glyphs": len(self.missing_glyphs),
         }
@@ -86,8 +89,10 @@ class FontResolver:
 
     @classmethod
     def system(cls, search_paths: Iterable[str | Path] | None = None) -> FontResolver:
-        paths = tuple(Path(path) for path in search_paths) if search_paths is not None else _system_font_paths()
-        return cls(_load_faces(tuple(str(path.resolve()) for path in paths)))
+        paths = (
+            tuple(Path(path) for path in cancellable_items(search_paths)) if search_paths is not None else _system_font_paths()
+        )
+        return cls(_load_faces(tuple(str(path.resolve()) for path in cancellable_items(paths))))
 
     @property
     def faces(self) -> tuple[FontFace, ...]:
@@ -99,7 +104,7 @@ class FontResolver:
     def resolve(self, family: str, text: str = "", *, bold: bool = False, italic: bool = False) -> FontResolution:
         requested = family.strip() or "sans-serif"
         normalized = _normalize_family(requested)
-        exact_faces = [face for face in self._faces if face.normalized_family == normalized]
+        exact_faces = [face for face in cancellable_items(self._faces) if face.normalized_family == normalized]
         candidates = exact_faces or list(self._faces)
         if not candidates:
             return FontResolution(requested, requested, None, False, 1.0, tuple(sorted(set(text))), False)
@@ -130,13 +135,19 @@ class FontResolver:
 
 @lru_cache(maxsize=8)
 def _load_faces(search_paths: tuple[str, ...]) -> tuple[FontFace, ...]:
-    paths = tuple(Path(path) for path in search_paths)
+    paths = tuple(Path(path) for path in cancellable_items(search_paths))
     extensions = ("*.ttf", "*.otf")
     files = sorted(
-        {file.resolve() for root in paths if root.is_dir() for pattern in extensions for file in root.rglob(pattern)},
+        {
+            file.resolve()
+            for root in cancellable_items(paths)
+            if root.is_dir()
+            for pattern in cancellable_items(extensions)
+            for file in cancellable_items(root.rglob(pattern))
+        },
         key=lambda item: str(item).casefold(),
     )
-    return tuple(face for path in files if (face := _read_face(path)) is not None)
+    return tuple(face for path in cancellable_items(files) if (face := _read_face(path)) is not None)
 
 
 def prepare_document_fonts(
@@ -151,6 +162,7 @@ def prepare_document_fonts(
     if registry.supports_resource_references and next(od.iter_font_references(prepared, limits=limits), None) is not None:
         context = DocumentModel(styles=prepared.styles, resources=prepared.resources)
         for style in prepared.styles.values():
+            checkpoint()
             effective = od.resolve_style(context, style, limits=limits)
             reference = od.get_font_reference(effective, limits=limits)
             if reference is not None:
@@ -158,10 +170,12 @@ def prepare_document_fonts(
                 if style.font_family is None:
                     style.font_family = effective.font_family
         for location in od.walk_model(prepared, limits=limits):
+            checkpoint()
             paragraph = location.node
             if not isinstance(paragraph, Paragraph):
                 continue
             for run in paragraph.content:
+                checkpoint()
                 if not isinstance(run, TextRun):
                     continue
                 if od.get_font_reference(run.style, limits=limits) is not None:
@@ -200,8 +214,10 @@ def prepare_document_fonts(
             texts.append(text)
 
     for style in prepared.styles.values():
+        checkpoint()
         collect_style(style, "")
     for section in prepared.sections:
+        checkpoint()
         for collection in (
             section.headers,
             section.first_page_headers,
@@ -211,19 +227,23 @@ def prepare_document_fonts(
             section.first_page_footers,
             section.even_page_footers,
         ):
+            checkpoint()
             for block in collection:
+                checkpoint()
                 _resolve_block_fonts(block, collect_style)
 
     for key, usage in sorted(usages.items()):
+        checkpoint()
         styles = usage["styles"]
         texts = usage["text"]
         if not isinstance(styles, list) or not styles or not isinstance(texts, list):
             continue
         style = styles[0]
-        text = "".join(str(value) for value in texts)
+        text = "".join(str(value) for value in cancellable_items(texts))
         resolution = registry.resolve_style(style, text)
         report.resolutions[key] = resolution
         for used_style in styles:
+            checkpoint()
             used_style.font_family = resolution.resolved
             used_style.properties["font_resolution"] = resolution.to_dict()
     prepared.metadata["font_resolution"] = report.to_dict()
@@ -233,12 +253,16 @@ def prepare_document_fonts(
 def _resolve_block_fonts(block: od.Block, resolve_style: Callable[[od.TextStyle, str], None]) -> None:
     if isinstance(block, Paragraph):
         for item in block.content:
+            checkpoint()
             if isinstance(item, TextRun):
                 resolve_style(item.style, item.text)
     elif isinstance(block, Table):
         for row in block.rows:
+            checkpoint()
             for cell in row.cells:
+                checkpoint()
                 for child in cell.blocks:
+                    checkpoint()
                     _resolve_block_fonts(child, resolve_style)
 
 
@@ -267,16 +291,18 @@ def _read_face(path: Path) -> FontFace | None:
         )
         font.close()
         return face
+    except OperationCancelledError:
+        raise
     except Exception:  # noqa: BLE001 - malformed/system fonts are skipped independently
         return None
 
 
 def _missing(face: FontFace, text: str) -> set[str]:
-    return {character for character in text if not character.isspace() and ord(character) not in face.glyphs}
+    return {character for character in cancellable_items(text) if not character.isspace() and ord(character) not in face.glyphs}
 
 
 def _normalize_family(name: str) -> str:
-    return "".join(character for character in name.casefold() if character.isalnum())
+    return "".join(character for character in cancellable_items(name.casefold()) if character.isalnum())
 
 
 def _generic_class(name: str) -> str:

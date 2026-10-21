@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
+
 
 def apply_html_list(paragraph: Any, properties: dict[str, Any]) -> None:
     from docx.oxml import OxmlElement
@@ -16,7 +18,9 @@ def apply_html_list(paragraph: Any, properties: dict[str, Any]) -> None:
     key = properties["html_list_id"]
     root = part.element
     if key not in cache:
-        abstract_id = max([int(n.get(qn("w:abstractNumId"))) for n in root.findall(qn("w:abstractNum"))] + [-1]) + 1
+        abstract_id = (
+            max([int(n.get(qn("w:abstractNumId"))) for n in cancellable_items(root.findall(qn("w:abstractNum")))] + [-1]) + 1
+        )
         abstract = OxmlElement("w:abstractNum")
         abstract.set(qn("w:abstractNumId"), str(abstract_id))
         level = OxmlElement("w:lvl")
@@ -27,6 +31,7 @@ def apply_html_list(paragraph: Any, properties: dict[str, Any]) -> None:
             ("numFmt", "decimal" if ordered else "bullet"),
             ("lvlText", "%1." if ordered else "•"),
         ):
+            checkpoint()
             node = OxmlElement("w:" + tag)
             node.set(qn("w:val"), str(value))
             level.append(node)

@@ -8,6 +8,7 @@ from opendoc_model import DocumentLimits, DocumentModel, Image, VectorScene, get
 
 from opendoc_formats.ooxml.group_geometry import axis_transform, paint_style, rectangle, scene_profile
 from opendoc_formats.ooxml.package import points_to_emu
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 
 A = 'http://schemas.openxmlformats.org/drawingml/2006/main'
 WPG = 'http://schemas.microsoft.com/office/word/2010/wordprocessingGroup'
@@ -18,7 +19,9 @@ WPC = 'http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas'
 def bound_scene(document: DocumentModel, image: Image, *, limits: DocumentLimits | None = None) -> VectorScene | None:
     anchor = get_anchor(image, limits=limits)
     integration = get_integration(document, limits=limits)
-    scenes = [s for s in integration.scenes if anchor is not None and s.node_id == anchor.id] if integration else []
+    scenes = (
+        [s for s in cancellable_items(integration.scenes) if anchor is not None and s.node_id == anchor.id] if integration else []
+    )
     if len(scenes) > 1:
         raise ValueError('Multiple scenes are bound to the same drawing')
     if not scenes and image.properties.get('docx_group_scene'):
@@ -48,7 +51,7 @@ def write_group(paragraph: Any, image: Image, scene: VectorScene) -> None:
     data = run.xpath('.//a:graphicData')[0]
     data.set('uri', WPC)
     root = etree.SubElement(data, f'{{{WPC}}}wpc', nsmap={'wpc': WPC, 'wpg': WPG, 'wps': WPS})
-    background = next((p for p in scene.paths if p.extra.get('docx_canvas_background')), None)
+    background = next((p for p in cancellable_items(scene.paths) if p.extra.get('docx_canvas_background')), None)
     bg = etree.SubElement(root, f'{{{WPC}}}bg')
     if background is None:
         etree.SubElement(bg, f'{{{A}}}noFill')
@@ -58,7 +61,7 @@ def write_group(paragraph: Any, image: Image, scene: VectorScene) -> None:
         etree.SubElement(rgb, f'{{{A}}}alpha', val=str(round(alpha*100_000)))
     whole = etree.SubElement(root, f'{{{WPC}}}whole')
     etree.SubElement(etree.SubElement(whole, f'{{{A}}}ln'), f'{{{A}}}noFill')
-    paths, groups = {p.id: p for p in scene.paths}, {g.id: g for g in scene.groups}
+    paths, groups = {p.id: p for p in cancellable_items(scene.paths)}, {g.id: g for g in cancellable_items(scene.groups)}
     counter = identifier
 
     def transform(parent: Any, off: tuple, extent: tuple, child_off: tuple | None = None,
@@ -66,8 +69,11 @@ def write_group(paragraph: Any, image: Image, scene: VectorScene) -> None:
         node = etree.SubElement(parent, f'{{{A}}}xfrm')
         for tag, values, names in [('off', off, ('x', 'y')), ('ext', extent, ('cx', 'cy')),
                                    ('chOff', child_off, ('x', 'y')), ('chExt', child_extent, ('cx', 'cy'))]:
+            checkpoint()
             if values is not None:
-                etree.SubElement(node, f'{{{A}}}{tag}', **{name: str(points_to_emu(v)) for name, v in zip(names, values)})
+                etree.SubElement(
+                    node, f"{{{A}}}{tag}", **{name: str(points_to_emu(v)) for name, v in cancellable_items(zip(names, values))}
+                )
 
     def emit(key: str, parent: Any) -> None:
         nonlocal counter
@@ -83,6 +89,7 @@ def write_group(paragraph: Any, image: Image, scene: VectorScene) -> None:
             transform(props, (box.x, box.y), (box.width, box.height),
                       ((box.x-tx)/sx, (box.y-ty)/sy), (box.width/sx, box.height/sy))
             for child in group.children:
+                checkpoint()
                 emit(child, target)
         else:
             path = paths[key]
@@ -103,6 +110,7 @@ def write_group(paragraph: Any, image: Image, scene: VectorScene) -> None:
             etree.SubElement(target, f'{{{WPS}}}bodyPr')
 
     for key in scene.roots:
+        checkpoint()
         if background is None or key != background.id:
             emit(key, root)
     drawing = run.xpath('.//wp:inline')[0]

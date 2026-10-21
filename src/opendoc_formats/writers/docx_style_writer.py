@@ -10,6 +10,8 @@ from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import TextStyle
 from opendoc_model.limits import DocumentLimits
 
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
+
 
 def write_styles(
     target: Any, styles: dict[str, TextStyle], report: ConversionReport, *, limits: DocumentLimits | None = None,
@@ -18,6 +20,7 @@ def write_styles(
 
     created: dict[str, Any] = {}
     for style_id, source in styles.items():
+        checkpoint()
         properties = source.properties
         if properties.get('docx_run_position_pt') is not None:
             report.add(IssueSeverity.ERROR, 'docx.run-position',
@@ -25,13 +28,17 @@ def write_styles(
             continue
         from opendoc_formats.ooxml.paragraph_flow import FIELDS, export_flow
 
-        if properties.style_type in {'character', 'table'} and any(properties.get(key) is not None for key in FIELDS):
+        if properties.style_type in {"character", "table"} and any(
+            properties.get(key) is not None for key in cancellable_items(FIELDS)
+        ):
             report.add(IssueSeverity.ERROR, 'docx.paragraph-flow',
                        'Paragraph flow requires a paragraph style or document defaults', f'styles[{style_id}]')
             continue
         from opendoc_formats.ooxml.paragraph_indent import ATTRIBUTES
 
-        if properties.style_type in {'character', 'table'} and any(properties.get(key) is not None for key in ATTRIBUTES):
+        if properties.style_type in {"character", "table"} and any(
+            properties.get(key) is not None for key in cancellable_items(ATTRIBUTES)
+        ):
             report.add(IssueSeverity.ERROR, 'docx.paragraph-indent',
                        'Paragraph indentation requires a paragraph style or document defaults', f'styles[{style_id}]')
             continue
@@ -83,6 +90,7 @@ def write_styles(
             style.priority = properties.priority
 
     for style_id, source in styles.items():
+        checkpoint()
         style = created.get(style_id)
         base_style = created.get(source.properties.base_style_id)
         if style is not None and base_style is not None and style != base_style:

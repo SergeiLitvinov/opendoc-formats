@@ -8,6 +8,8 @@ from typing import Any
 import opendoc_model as od
 from opendoc_model.diagnostics import IssueSeverity
 
+from opendoc_formats.support.cancellation import checkpoint
+
 C = "{http://schemas.openxmlformats.org/drawingml/2006/chart}"
 
 
@@ -39,6 +41,7 @@ def configure_chart(chart: Any, data: dict[str, Any], report: od.ConversionRepor
         if len(values) > 1:
             targets["secondary_value"] = ValueAxis(values[1])
     for name, axis in targets.items():
+        checkpoint()
         settings = axes.get(name, {})
         if not settings:
             continue
@@ -57,6 +60,7 @@ def _axis(axis: Any, settings: dict[str, Any]) -> None:
         ("major_unit", "major_unit"),
         ("minor_unit", "minor_unit"),
     ):
+        checkpoint()
         if key in settings:
             value = float(settings[key])
             if not math.isfinite(value) or (key.endswith("unit") and value <= 0):
