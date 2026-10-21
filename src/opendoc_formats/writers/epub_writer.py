@@ -6,6 +6,7 @@ import base64
 import hashlib
 import io
 import xml.etree.ElementTree as ET
+from collections.abc import Callable
 from copy import deepcopy
 from dataclasses import replace
 from datetime import datetime, timezone
@@ -26,6 +27,7 @@ from opendoc_model import (
 )
 
 from opendoc_formats.epub_metadata import export_dc_values
+from opendoc_formats.support.cancellation import cancellable_items, cancellation_scope, checkpoint
 from opendoc_formats.support.io import atomic_write_bytes
 from opendoc_formats.writers.html_resources import document_images
 from opendoc_formats.writers.html_writer import write_html_model
@@ -43,6 +45,7 @@ _SVG_CASE = {name.lower(): name for name in ("viewBox", "preserveAspectRatio", "
 
 
 def _xml(root: ET.Element) -> bytes:
+    checkpoint()
     return ET.tostring(root, encoding="utf-8", xml_declaration=True)
 
 
@@ -58,6 +61,7 @@ class _Xhtml(HTMLParser):
         self.byte_count = 0
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        checkpoint()
         self.count += 1
         if self.count > 100_000 or len(self.stack) >= 128:
             raise ValueError("EPUB XHTML structure exceeds limits")
@@ -101,6 +105,7 @@ class _Xhtml(HTMLParser):
         return name
 
     def handle_endtag(self, tag: str) -> None:
+        checkpoint()
         if tag in _VOID:
             return
         if not self.stack or self.stack[-1][0] != tag:
@@ -113,6 +118,7 @@ class _Xhtml(HTMLParser):
             self.handle_endtag(tag)
 
     def handle_data(self, data: str) -> None:
+        checkpoint()
         if self.stack:
             parent = self.stack[-1][1]
             if len(parent):
@@ -128,6 +134,7 @@ def _chapters(root: ET.Element, report: ConversionReport) -> list[tuple[str, ET.
     sections = list(body)
     chapters = []
     for index, section in enumerate(sections):
+        checkpoint()
         chapter = ET.Element(root.tag, dict(root.attrib))
         head = root.find("head")
         if head is not None:
@@ -140,11 +147,15 @@ def _chapters(root: ET.Element, report: ConversionReport) -> list[tuple[str, ET.
         chapters = [("chapter.xhtml", root)]
     targets: dict[str, list[str]] = {}
     for name, chapter in chapters:
+        checkpoint()
         for node in chapter.iter():
+            checkpoint()
             if node.get("id"):
                 targets.setdefault(node.attrib["id"], []).append(name)
     for name, chapter in chapters:
+        checkpoint()
         for node in chapter.iter("a"):
+            checkpoint()
             href = node.get("href", "")
             if not href.startswith("#"):
                 continue
@@ -167,10 +178,12 @@ def _navigation(chapters: list[tuple[str, ET.Element]], title: str, language: st
     ET.SubElement(nav, "h1").text = title
     listing = ET.SubElement(nav, "ol")
     for chapter_index, (name, chapter) in enumerate(chapters):
-        headings = [node for node in chapter.iter() if node.tag in {f"h{i}" for i in range(1, 7)}]
-        used = {node.get("id") for node in chapter.iter() if node.get("id")}
+        checkpoint()
+        headings = [node for node in cancellable_items(chapter.iter()) if node.tag in {f"h{i}" for i in range(1, 7)}]
+        used = {node.get("id") for node in cancellable_items(chapter.iter()) if node.get("id")}
         parents: list[tuple[int, ET.Element]] = []
         for index, heading in enumerate(headings):
+            checkpoint()
             anchor = heading.get("id")
             if not anchor:
                 anchor = f"epub-heading-{index}"
@@ -197,6 +210,16 @@ def _navigation(chapters: list[tuple[str, ET.Element]], title: str, language: st
 
 def write_epub_model(
     document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None = None,
+    cancelled: Callable[[], bool] | None = None,
+) -> ConversionReport:
+    """Write finite EPUB with cooperative cancellation and atomic publication."""
+    with cancellation_scope(cancelled, 'EPUB export', check_on_exit=False):
+        return _write_epub_model(document, output_path, limits=limits, cancelled=cancelled)
+
+
+def _write_epub_model(
+    document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None = None,
+    cancelled: Callable[[], bool] | None = None,
 ) -> ConversionReport:
     """Write one XHTML spine item per section, with TOC, MathML and local assets.
 
@@ -213,6 +236,7 @@ def write_epub_model(
         requested = {image.resource_id for image, _ in document_images(document)}
         image_bytes = 0
         for resource_id in requested:
+            checkpoint()
             resource = document.resources.get(resource_id)
             if resource is not None:
                 if resource.data is not None:
@@ -223,7 +247,8 @@ def write_epub_model(
                 raise ValueError("EPUB input images exceed 64 MiB")
         with TemporaryDirectory(prefix=".opendoc-formats-epub-", dir=output.parent) as directory:
             html = Path(directory) / "chapter.html"
-            rendered = write_html_model(rendered_document, html, limits=limits)
+            rendered = write_html_model(rendered_document, html, limits=limits, cancelled=cancelled)
+            checkpoint()
             report.issues.extend(rendered.issues)
             if not rendered.success:
                 return report
@@ -240,6 +265,7 @@ def write_epub_model(
         chapter_bytes = {}
         total_chapter_bytes = 0
         for name, content in chapters:
+            checkpoint()
             data = _xml(content)
             total_chapter_bytes += len(data)
             if total_chapter_bytes > _MAX_BYTES:
@@ -250,6 +276,7 @@ def write_epub_model(
         identifier = "urn:sha256:" + hashlib.sha256(b"".join(chapter_bytes.values())).hexdigest()
         dc.setdefault("identifier", (identifier,))
         for name, values in dc.items():
+            checkpoint()
             for index, value in enumerate(values):
                 attributes = {"id": "book-id"} if name == "identifier" and index == 0 else {}
                 ET.SubElement(metadata, f"{{{_DC}}}{name}", attributes).text = value
@@ -258,6 +285,7 @@ def write_epub_model(
         )
         manifest = ET.SubElement(package, f"{{{_OPF}}}manifest")
         for index, (name, content) in enumerate(chapters):
+            checkpoint()
             properties = [tag for tag, name_tag in (("mathml", "math"), ("svg", "svg"))
                           if any(node.tag == name_tag for node in content.iter())]
             ET.SubElement(manifest, f"{{{_OPF}}}item", {
@@ -269,9 +297,11 @@ def write_epub_model(
             "id": "nav", "href": "nav.xhtml", "media-type": "application/xhtml+xml", "properties": "nav",
         })
         for index, (name, (media, _)) in enumerate(parser.assets.items()):
+            checkpoint()
             ET.SubElement(manifest, f"{{{_OPF}}}item", {"id": f"asset-{index}", "href": name, "media-type": media})
         spine = ET.SubElement(package, f"{{{_OPF}}}spine")
         for index in range(len(chapters)):
+            checkpoint()
             ET.SubElement(spine, f"{{{_OPF}}}itemref", {"idref": "chapter" if index == 0 else f"chapter-{index + 1}"})
         container_ns = "urn:oasis:names:tc:opendocument:xmlns:container"
         container = ET.Element(f"{{{container_ns}}}container", {"version": "1.0"})
@@ -286,15 +316,18 @@ def write_epub_model(
             archive.writestr("META-INF/container.xml", _xml(container))
             archive.writestr("OPS/book.opf", _xml(package))
             for name, data in chapter_bytes.items():
+                checkpoint()
                 archive.writestr("OPS/" + name, data)
             archive.writestr("OPS/nav.xhtml", _xml(nav))
             for name, (_, raw) in parser.assets.items():
+                checkpoint()
                 archive.writestr("OPS/" + name, raw)
         if buffer.tell() > _MAX_BYTES:
             raise ValueError("EPUB output exceeds 64 MiB")
         integration = get_integration(document, limits=limits)
         if integration is not None:
             for record in integration.preservation:
+                checkpoint()
                 if (
                     record.state is not PreservationState.SEMANTIC
                     and not record.issue.code.startswith(("html-", "html.", "epub."))
@@ -302,6 +335,7 @@ def write_epub_model(
                     report.add(IssueSeverity.LOSS, "epub.source-feature", record.issue.message, record.issue.location)
         image_ids = {image.resource_id for image, _ in document_images(document)}
         for resource_id in document.resources.keys() - image_ids:
+            checkpoint()
             report.add(
                 IssueSeverity.LOSS, "epub.unreferenced-resource",
                 "Source resource is not reconstructed in the EPUB manifest", f"resources[{resource_id}]",
@@ -313,7 +347,7 @@ def write_epub_model(
             "Reading systems may reflow the shared HTML presentation",
         )
         report.metrics.update({"epub_spine_items": len(chapters), "epub_assets": len(parser.assets), "epub_bytes": buffer.tell()})
-        atomic_write_bytes(output, buffer.getvalue())
+        atomic_write_bytes(output, buffer.getvalue(), before_replace=checkpoint)
     except ArtifactLimitError:
         raise
     except (OSError, ValueError, ET.ParseError) as error:

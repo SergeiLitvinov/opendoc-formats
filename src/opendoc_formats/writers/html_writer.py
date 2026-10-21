@@ -31,6 +31,7 @@ from opendoc_model.units import points_to_css_px
 
 from opendoc_formats.fonts.html_embedding import embedded_font_stylesheet
 from opendoc_formats.html_tables import IMPORTED, SCOPE_TO_HTML
+from opendoc_formats.support.cancellation import cancellation_scope, checkpoint
 from opendoc_formats.writers.color_preflight import preflight_colors
 from opendoc_formats.writers.font_preflight import prepare_fonts
 from opendoc_formats.writers.html_borders import table_border_styles
@@ -94,6 +95,15 @@ _HEADING_RE = re.compile(r"^(?:heading|заголовок)\s*([1-6])$", re.IGNOR
 
 def write_html_model(
     document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None = None,
+    cancelled: Callable[[], bool] | None = None,
+) -> ConversionReport:
+    """Write self-contained HTML with cancellation before atomic publication."""
+    with cancellation_scope(cancelled, 'HTML export', check_on_exit=False):
+        return _write_html_model(document, output_path, limits=limits)
+
+
+def _write_html_model(
+    document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None = None,
 ) -> ConversionReport:
     """Записать ``DocumentModel`` в один переносимый HTML-файл."""
 
@@ -105,6 +115,7 @@ def write_html_model(
     integration = get_integration(document, limits=limits)
     if integration is not None:
         for record in integration.preservation:
+            checkpoint()
             if (
                 record.issue.code.startswith(("html-", "html.", "epub.", "latex."))
                 and record.state is not PreservationState.SEMANTIC
@@ -116,12 +127,14 @@ def write_html_model(
                     record.issue.location,
                 )
     normalized = HtmlNormalizeStage().execute(document, StageContext(output))
+    checkpoint()
     report.issues.extend(normalized.report.issues)
     report.metrics.update(normalized.report.metrics)
     if not report.success:
         return report
     document = normalized.value
     prepared = HtmlResourceStage().execute(document, StageContext(output))
+    checkpoint()
     report.issues.extend(prepared.report.issues)
     report.metrics.update(prepared.report.metrics)
     if not report.success:
@@ -135,6 +148,7 @@ def write_html_model(
     document = materialize_docx_colors(document, limits=limits)
     preflight_colors(document, report, target="html")
     layout = HtmlLayoutStage().execute(document, StageContext(output))
+    checkpoint()
     report.issues.extend(layout.report.issues)
     report.metrics.update(layout.report.metrics)
     if not report.success:
@@ -179,6 +193,7 @@ class _HtmlRenderer:
         self.caption_ids = set()
         self.caption_owners = set()
         for reference in walk_model(document, limits=limits):
+            checkpoint()
             node = reference.node
             if isinstance(node, Paragraph) and (anchor := get_anchor(node)) is not None:
                 self.caption_nodes[anchor.id] = (node, reference.path)
@@ -191,6 +206,7 @@ class _HtmlRenderer:
     def stylesheet(self, *, include_page_rules: bool = True) -> str:
         pages = []
         for index, section in enumerate(self.document.sections or [Section()]):
+            checkpoint()
             page = section.page
             pages.append(
                 f"@page ta-page-{index} {{ size: {page.width.pt:g}pt {page.height.pt:g}pt; "
@@ -235,6 +251,7 @@ class _HtmlRenderer:
         return "\n".join(self._section(section, index) for index, section in enumerate(sections))
 
     def _section(self, section: Section, index: int) -> str:
+        checkpoint()
         if _has_content(section.headers) or _has_content(section.footers):
             self.report.add(
                 IssueSeverity.LOSS,
@@ -269,6 +286,7 @@ class _HtmlRenderer:
         overrides = {}
         pending = []
         for index, block in enumerate(blocks):
+            checkpoint()
             anchor = get_anchor(block) if isinstance(block, (Paragraph, Table)) else None
             if anchor is not None and anchor.id in self.caption_ids:
                 overrides[index] = ""
@@ -299,6 +317,7 @@ class _HtmlRenderer:
                              else self._block(block, f"{location}[{visible[offset][0]}]"))
 
     def _block(self, block: Block, location: str) -> str:
+        checkpoint()
         if isinstance(block, Paragraph):
             return self._paragraph(block, location)
         if isinstance(block, Table):
@@ -377,6 +396,7 @@ class _HtmlRenderer:
         return f"<{tag}{anchor_attr}{_style_attribute(styles)}>{content}</{tag}>"
 
     def _inline(self, item: TextRun | Formula | Image, location: str) -> str:
+        checkpoint()
         if isinstance(item, TextRun):
             return self._run(item, location)
         if isinstance(item, Formula):
@@ -405,6 +425,7 @@ class _HtmlRenderer:
         return f"<span{attributes}>{content}</span>" if attributes else content
 
     def _formula(self, formula: Formula, location: str, *, block_level: bool) -> str:
+        checkpoint()
         classes = "ta-formula ta-formula-display" if formula.display or block_level else "ta-formula"
         if formula.format in (FormulaFormat.MATHML, FormulaFormat.OMML):
             try:
@@ -426,6 +447,7 @@ class _HtmlRenderer:
         )
 
     def _image(self, image: Image, location: str, *, block_level: bool) -> str:
+        checkpoint()
         resource = self.document.resources.get(image.resource_id)
         if resource is None:
             self.report.add(IssueSeverity.ERROR, "image", f"resource {image.resource_id!r} not found", location)
@@ -453,6 +475,7 @@ class _HtmlRenderer:
         group = None
         groups = {item.id: item.kind for item in semantics.row_groups} if semantics else {}
         for row_index, row in enumerate(table.rows):
+            checkpoint()
             next_group = row.properties.get("html_row_group", "tbody")
             if not isinstance(next_group, str) or next_group not in {"thead", "tbody", "tfoot"}:
                 next_group = "tbody"
@@ -471,6 +494,7 @@ class _HtmlRenderer:
                 group = next_identity
             cells = []
             for cell_index, cell in enumerate(row.cells):
+                checkpoint()
                 attributes = ""
                 if cell.row_span > 1:
                     attributes += f' rowspan="{cell.row_span}"'
@@ -871,10 +895,12 @@ def _numeric_chart_series(raw_series: Any) -> list[dict[str, Any]]:
         return []
     result = []
     for index, item in enumerate(raw_series):
+        checkpoint()
         if not isinstance(item, dict):
             continue
         values = []
         for value in item.get("values") or []:
+            checkpoint()
             try:
                 number = float(value)
             except (TypeError, ValueError):
@@ -1516,11 +1542,13 @@ def _stacked_values(
 
 
 def _series_value(series: dict[str, Any], index: int) -> float:
+    checkpoint()
     values = series["values"]
     return values[index] if index < len(values) else 0.0
 
 
 def _point_color(item: dict[str, Any], index: int) -> str:
+    checkpoint()
     """Цвет отдельной точки данных (``c:dPt``) либо цвет серии."""
     points = item.get("data_points")
     if isinstance(points, dict):
@@ -1878,6 +1906,7 @@ def _chart_legend(series: list[dict[str, Any]], position: str) -> list[str]:
 
 
 def _svg_label(x: float, y: float, value: str, *, anchor: str, fill: str | None = None) -> str:
+    checkpoint()
     fill_attr = f' fill="{escape(fill, quote=True)}"' if fill else ' fill="#374151"'
     return (
         f'<text x="{x:g}" y="{y:g}" text-anchor="{anchor}" font-family="Arial" font-size="12"{fill_attr}>{escape(value)}</text>'
@@ -1980,6 +2009,7 @@ def _safe_mathml(value: str) -> str:
     except (ET.ParseError, ValueError) as error:
         raise ValueError(str(error)) from error
     for element in root.iter():
+        checkpoint()
         namespace, _, name = element.tag[1:].partition("}") if element.tag.startswith("{") else (None, "", element.tag)
         if namespace not in {None, _MATHML_NAMESPACE}:
             raise ValueError(f"foreign element {name!r} is not allowed")

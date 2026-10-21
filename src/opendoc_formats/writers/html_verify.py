@@ -12,6 +12,7 @@ from urllib.parse import unquote
 
 from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 
+from opendoc_formats.support.cancellation import checkpoint
 from opendoc_formats.writers.stages import StageContext, StageKind, StageResult, StageValue
 
 
@@ -22,6 +23,7 @@ class _NavigationParser(HTMLParser):
         self.links: list[tuple[str, int]] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        checkpoint()
         attributes = dict(attrs)
         if attributes.get("id"):
             self.ids[attributes["id"]] += 1
@@ -55,6 +57,7 @@ class HtmlVerifyStage:
             return StageResult(value, report)
         missing = ambiguous = 0
         for target, line in parser.links:
+            checkpoint()
             count = parser.ids[target]
             if count == 1 or (count == 0 and target.lower() == "top"):
                 continue
@@ -82,4 +85,5 @@ def publish_verified_html(html: str, output: Path, report: ConversionReport) -> 
         report.issues.extend(verified.report.issues)
         report.metrics.update(verified.report.metrics)
         if report.success:
+            checkpoint()
             os.replace(candidate, output)

@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from opendoc_formats.errors import InvalidDocumentError, ResourceLimitError
+from opendoc_formats.support.cancellation import checkpoint
 
 _TOKEN = re.compile(r"\\(?:[A-Za-z@]+|\r\n|[\s\S])|[{}$&\[\]#~]|[ \t\r\n]+|[^\\{}$&\[\]#~%\s]+")
 
@@ -24,6 +25,7 @@ def tokenize_tex(text: str, *, max_tokens: int = 250_000) -> list[TexToken]:
     result = []
     index = 0
     while index < len(text):
+        checkpoint()
         if text[index] == "%":
             newline = text.find("\n", index)
             index = len(text) if newline < 0 else newline + 1

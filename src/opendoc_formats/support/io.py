@@ -185,7 +185,10 @@ def atomic_write_text(
     return target
 
 
-def atomic_write_bytes(path: PathLike, data: bytes, *, max_bytes: int | None = 100 * 1024 * 1024) -> Path:
+def atomic_write_bytes(
+    path: PathLike, data: bytes, *, max_bytes: int | None = 100 * 1024 * 1024,
+    before_replace: Callable[[], None] | None = None,
+) -> Path:
     """Атомарно записать байты (см. ``atomic_write_text``)."""
     target = Path(path)
     _check_output_quota(len(data), max_bytes)
@@ -193,6 +196,8 @@ def atomic_write_bytes(path: PathLike, data: bytes, *, max_bytes: int | None = 1
     partial = target.with_name(f".{target.name}.{uuid.uuid4().hex}.partial")
     try:
         partial.write_bytes(data)
+        if before_replace is not None:
+            before_replace()
         os.replace(partial, target)
     finally:
         partial.unlink(missing_ok=True)

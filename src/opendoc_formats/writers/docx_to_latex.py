@@ -11,6 +11,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from opendoc_formats.errors import OperationCancelledError
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 from opendoc_formats.support.latex import PREAMBLE as _PREAMBLE
 from opendoc_formats.support.latex import escape_latex as _escape_latex
 from opendoc_formats.types import Block, BlockType, Table, Text
@@ -32,7 +34,7 @@ def _run_text(run: Any) -> str:
 
 
 def _para_to_latex(para: Any) -> str:
-    return "".join(_run_text(r) for r in para.runs)
+    return "".join(_run_text(r) for r in cancellable_items(para.runs))
 
 
 def _table_to_latex(table: Table) -> str:
@@ -43,6 +45,7 @@ def _table_to_latex(table: Table) -> str:
     spec = "|" + "|".join(["l"] * ncols) + "|"
     lines = [r"\begin{table}[ht]", r"\centering", rf"\begin{{tabular}}{{{spec}}}", r"\hline"]
     for row in rows:
+        checkpoint()
         cells = [_escape_latex(c) for c in row]
         while len(cells) < ncols:
             cells.append("")
@@ -79,6 +82,7 @@ class DocxToLatexConverter(BaseConverter):
 
             check_archive_safety(input_path)
             doc = DocxDocument(str(input_path))
+            checkpoint()
             from opendoc_formats.types import DocFormat
 
             text = Text(source_format=DocFormat.DOCX)
@@ -95,6 +99,7 @@ class DocxToLatexConverter(BaseConverter):
                 return None
 
             for para in doc.paragraphs:
+                checkpoint()
                 style = (para.style.name or "") if para.style else ""
                 content = _para_to_latex(para).strip()
                 if not content:
@@ -119,12 +124,16 @@ class DocxToLatexConverter(BaseConverter):
                         text.blocks.append(Block(type=BlockType.PARAGRAPH, text=content))
 
             for table in doc.tables:
-                text.tables.append(Table(rows=[[c.text.strip() for c in row.cells] for row in table.rows]))
+                checkpoint()
+                text.tables.append(Table(rows=[[c.text.strip() for c in cancellable_items(row.cells)]
+                                               for row in cancellable_items(table.rows)]))
 
             tex = self._render(text, title=input_path.stem)
             from opendoc_formats.support.io import atomic_write_text
 
             atomic_write_text(output_path, tex, encoding="utf-8")
+        except OperationCancelledError:
+            raise
         except Exception as e:  # noqa: BLE001
             return ConversionResult(input_path, output_path, False, str(e))
 
@@ -141,6 +150,7 @@ class DocxToLatexConverter(BaseConverter):
 
         in_list = False
         for block in text.blocks:
+            checkpoint()
             if block.type.value == "heading":
                 if in_list:
                     parts.append(r"\end{itemize}")
@@ -172,6 +182,7 @@ class DocxToLatexConverter(BaseConverter):
             parts.append("")
 
         for table in text.tables:
+            checkpoint()
             if table.rows:
                 parts.append(_table_to_latex(table))
                 parts.append("")

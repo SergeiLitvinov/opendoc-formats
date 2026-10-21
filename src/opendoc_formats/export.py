@@ -55,7 +55,7 @@ class _ModelWriter:
         writer = cast(Callable[..., ConversionReport], getattr(
             import_module('opendoc_formats.writers.' + self.module), self.name,
         ))
-        if self.module in {'pdf_writer', 'docx_writer', 'pptx_writer'}:
+        if self.module in {'pdf_writer', 'docx_writer', 'pptx_writer', 'html_writer', 'epub_writer', 'latex_writer'}:
             return writer(document, path, limits=limits, cancelled=cancelled)
         return writer(document, path, limits=limits)
 

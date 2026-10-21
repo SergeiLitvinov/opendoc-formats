@@ -8,6 +8,8 @@ from pathlib import Path
 
 from opendoc_model.document_model import Block, DocumentModel, Paragraph, Table, TextRun
 
+from opendoc_formats.support.cancellation import checkpoint
+
 
 @dataclass(frozen=True)
 class FontUsage:
@@ -27,8 +29,10 @@ def collect_font_usages(document: DocumentModel) -> list[FontUsage]:
 
     def collect(blocks: list[Block]) -> None:
         for block in blocks:
+            checkpoint()
             if isinstance(block, Paragraph):
                 for item in block.content:
+                    checkpoint()
                     if not isinstance(item, TextRun):
                         continue
                     resolution = item.style.properties.get("font_resolution")
@@ -45,10 +49,13 @@ def collect_font_usages(document: DocumentModel) -> list[FontUsage]:
                     subsettable[key] = bool(resolution.get("subsettable", True))
             elif isinstance(block, Table):
                 for row in block.rows:
+                    checkpoint()
                     for cell in row.cells:
+                        checkpoint()
                         collect(cell.blocks)
 
     for section in document.sections:
+        checkpoint()
         for blocks in (
             section.blocks,
             section.headers,

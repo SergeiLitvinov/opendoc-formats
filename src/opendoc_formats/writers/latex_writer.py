@@ -1,13 +1,27 @@
 """Native text-to-TeX export, with the established bridge for other objects."""
 
+from collections.abc import Callable
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from opendoc_model import ArtifactLimitError, ConversionReport, DocumentLimits, DocumentModel, IssueSeverity
 
+from opendoc_formats.support.cancellation import cancellation_scope, checkpoint
+from opendoc_formats.support.io import atomic_copy, atomic_write_bytes
+
 
 def write_latex_model(
     document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None = None,
+    cancelled: Callable[[], bool] | None = None,
+) -> ConversionReport:
+    """Write native TeX or the established bridge, cancelling before publication."""
+    with cancellation_scope(cancelled, 'TeX export', check_on_exit=False):
+        return _write_latex_model(document, output_path, limits=limits, cancelled=cancelled)
+
+
+def _write_latex_model(
+    document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None = None,
+    cancelled: Callable[[], bool] | None = None,
 ) -> ConversionReport:
     output = Path(output_path)
     report = ConversionReport(output)
@@ -29,7 +43,7 @@ def write_latex_model(
         report.add(IssueSeverity.ERROR, 'latex.formula-profile' if has_formulas else 'latex.list-profile', str(error))
         return report
     if source is not None:
-        output.write_bytes(source.encode('utf-8'))
+        atomic_write_bytes(output, source.encode('utf-8'), max_bytes=None, before_replace=checkpoint)
         report.metrics.update(latex_route='native-text-v1', assessment_complete=False)
         report.add(IssueSeverity.LOSS, 'latex-layout', 'Native TeX preserves the finite text profile, not measured page layout')
         return report
@@ -61,13 +75,18 @@ def write_latex_model(
     report.metrics['latex_route'] = 'docx-bridge'
     with TemporaryDirectory(prefix="opendoc-formats-latex-") as directory:
         intermediate = Path(directory) / "document.docx"
-        first = write_docx_model(document, intermediate, limits=limits)
+        first = write_docx_model(document, intermediate, limits=limits, cancelled=cancelled)
+        checkpoint()
         report.issues.extend(first.issues)
         if not first.success:
             return report
-        second = DocxToLatexConverter().convert(intermediate, output)
+        staged = Path(directory) / 'output.tex'
+        second = DocxToLatexConverter().convert(intermediate, staged)
+        checkpoint()
         report.issues.extend(second.issues)
         report.metrics.update(second.metrics)
+        if second.success:
+            atomic_copy(staged, output, max_bytes=None, before_replace=checkpoint)
     report.add(
         IssueSeverity.LOSS, "latex-layout", "LaTeX uses the DOCX bridge; exact layout and complex objects are not guaranteed"
     )

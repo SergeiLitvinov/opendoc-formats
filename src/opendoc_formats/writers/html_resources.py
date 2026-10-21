@@ -11,6 +11,7 @@ from pathlib import Path
 from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import Block, DocumentModel, Image, Paragraph, Resource, Table
 
+from opendoc_formats.support.cancellation import checkpoint
 from opendoc_formats.writers.stages import StageContext, StageKind, StageResult, StageValue
 
 IMAGE_MEDIA_TYPE = re.compile(r"^image/[a-zA-Z0-9.+-]+$")
@@ -18,16 +19,20 @@ IMAGE_MEDIA_TYPE = re.compile(r"^image/[a-zA-Z0-9.+-]+$")
 
 def _images(blocks: list[Block], location: str) -> Iterator[tuple[Image, str]]:
     for index, block in enumerate(blocks):
+        checkpoint()
         path = f"{location}[{index}]"
         if isinstance(block, Image):
             yield block, path
         elif isinstance(block, Paragraph):
             for offset, item in enumerate(block.content):
+                checkpoint()
                 if isinstance(item, Image):
                     yield item, f"{path}.content[{offset}]"
         elif isinstance(block, Table):
             for row_index, row in enumerate(block.rows):
+                checkpoint()
                 for cell_index, cell in enumerate(row.cells):
+                    checkpoint()
                     yield from _images(cell.blocks, f"{path}.rows[{row_index}].cells[{cell_index}].blocks")
 
 
@@ -48,6 +53,7 @@ class HtmlResourceStage:
         byte_count = 0
         references = 0
         for image, location in document_images(value):
+            checkpoint()
             if context.cancelled():
                 report.add(IssueSeverity.ERROR, "cancelled", "Resource preparation cancelled")
                 return StageResult(value, report)
@@ -66,6 +72,7 @@ class HtmlResourceStage:
                     raw = resource.data
                 elif resource.source is not None:
                     raw = Path(resource.source).read_bytes()
+                    checkpoint()
                 else:
                     raise ValueError(f"resource {key!r} has no content")
                 resources[key] = replace(resource, data=raw)
@@ -87,6 +94,7 @@ class HtmlResourceStage:
 def document_images(document: DocumentModel) -> Iterator[tuple[Image, str]]:
     """Изображения в отображаемых блоках и колонтитулах, включая таблицы."""
     for section_index, section in enumerate(document.sections):
+        checkpoint()
         for name in ("blocks", "headers", "footers"):
             yield from _images(getattr(section, name), f"sections[{section_index}].{name}")
 

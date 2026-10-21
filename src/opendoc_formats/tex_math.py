@@ -9,6 +9,7 @@ from opendoc_model import ArtifactLimitError, DocumentLimits, Formula, FormulaFo
 
 from opendoc_formats.errors import InvalidDocumentError
 from opendoc_formats.readers.tex_source import TexToken, tokenize_tex
+from opendoc_formats.support.cancellation import checkpoint
 
 ARGUMENTS = {**dict.fromkeys(('frac', 'dfrac', 'tfrac', 'binom', 'dbinom', 'tbinom', 'overset', 'underset'), 2),
              **dict.fromkeys(('sqrt', 'mathrm', 'mathbf', 'mathit', 'mathsf', 'mathtt', 'mathcal', 'mathbb', 'mathfrak',
@@ -44,6 +45,7 @@ def validate_math(value: str) -> None:
         return index
 
     for index, token in enumerate(tokens):
+        checkpoint()
         if token.kind == 'space':
             if re.search(r'\n[ \t\r]*\n', token.value):
                 raise ValueError('Paragraph breaks are outside the formula profile')
@@ -102,6 +104,7 @@ def validate_math(value: str) -> None:
     if re.search(r'(?<!\\)%[^\n]*$', value):
         raise ValueError('Formula ends in an unterminated comment')
     for index, token in enumerate(tokens):
+        checkpoint()
         if token.kind != 'command' or token.value not in ARGUMENTS:
             continue
         cursor = following(index+1)

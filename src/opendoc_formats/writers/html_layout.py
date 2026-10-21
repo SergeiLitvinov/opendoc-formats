@@ -12,6 +12,7 @@ from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import Box, DocumentModel, Image, Paragraph, Table
 from opendoc_model.units import points_to_css_px
 
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 from opendoc_formats.writers.stages import StageContext, StageKind, StageResult, StageValue
 
 
@@ -33,6 +34,7 @@ class HtmlLayoutStage:
         counts = {"positioned_blocks": 0, "origin_blocks": 0, "affine_objects": 0, "inline_images": 0}
 
         def prepare(node: od.Block, *, positioned: bool) -> od.Block:
+            checkpoint()
             if context.cancelled():
                 raise _CancelledError
             affine = _pptx_affine(node.properties) if positioned else None
@@ -46,6 +48,7 @@ class HtmlLayoutStage:
         def blocks(items: Iterable[od.Block]) -> list[od.Block]:
             result = []
             for node in items:
+                checkpoint()
                 if isinstance(node, Paragraph):
                     node = replace(
                         node,
@@ -56,8 +59,9 @@ class HtmlLayoutStage:
                     node = replace(
                         node,
                         rows=[
-                            replace(row, cells=[replace(cell, blocks=blocks(cell.blocks)) for cell in row.cells])
-                            for row in node.rows
+                            replace(row, cells=[replace(cell, blocks=blocks(cell.blocks))
+                                                for cell in cancellable_items(row.cells)])
+                            for row in cancellable_items(node.rows)
                         ],
                     )
                     node = prepare(node, positioned=True)

@@ -9,6 +9,7 @@ from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import DocumentModel
 
 from opendoc_formats.fonts.embedding import collect_font_usages, subset_font
+from opendoc_formats.support.cancellation import checkpoint
 
 _MIME_TYPES = {".ttf": "font/ttf", ".otf": "font/otf", ".woff": "font/woff", ".woff2": "font/woff2"}
 
@@ -29,6 +30,7 @@ def embedded_font_stylesheet(
     }
 
     for key, resolution in sorted(resolutions.items()):
+        checkpoint()
         if not isinstance(resolution, dict) or not resolution.get("path"):
             continue
         path = Path(str(resolution["path"]))
@@ -43,6 +45,7 @@ def embedded_font_stylesheet(
         mime = _MIME_TYPES.get(suffix)
         try:
             source_data = path.read_bytes()
+            checkpoint()
             usage = usage_by_identity.get(identity)
             data = subset_font(usage) if subset_fonts and usage is not None else source_data
         except OSError as error:

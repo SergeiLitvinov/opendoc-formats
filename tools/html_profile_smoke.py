@@ -7,7 +7,7 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 from opendoc_model.document_codec import document_from_json, document_to_json
 
-from opendoc_formats import read_document, write_document
+from opendoc_formats import ExportOptions, read_document, write_document
 
 
 def main():
@@ -41,6 +41,18 @@ def main():
             assert parsed.table.td.find("span", lang="fr").get_text() == "douze"
             ids = [node["id"] for node in parsed.find_all(id=True)]
             assert len(ids) == len(set(ids))
+            previous = target.read_bytes()
+            polls = 0
+
+            def stop_export():
+                nonlocal polls
+                polls += 1
+                return polls >= 12
+
+            cancelled = write_document(model, target, options=ExportOptions(cancelled=stop_export))
+            assert polls == 12 and not cancelled.success
+            assert any(issue.feature == 'export.cancelled' for issue in cancelled.issues)
+            assert target.read_bytes() == previous
             source = target
         assert (root / "source.html").read_bytes() == original
     print("Installed minimal HTML profile passed: two JSON cycles, languages and table semantics")

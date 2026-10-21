@@ -158,6 +158,19 @@ def main() -> None:
         assert read_epub_package(book).spine == (("chapter", "yes"),)
         assert read_epub_package(book).dc_values["creator"] == ("Own author",)
         assert read_epub_package(book).metadata["identifier"] == "urn:example:installed"
+        for cancel_model, cancel_target in ((native_tex, native_target), (native_math, target), (native_tex, book)):
+            previous = cancel_target.read_bytes()
+            export_polls = 0
+
+            def stop_text_export() -> bool:
+                nonlocal export_polls
+                export_polls += 1
+                return export_polls >= 12
+
+            refused_export = write_document(cancel_model, cancel_target, options=ExportOptions(cancelled=stop_text_export))
+            assert export_polls == 12 and not refused_export.success
+            assert any(issue.feature == 'export.cancelled' for issue in refused_export.issues)
+            assert cancel_target.read_bytes() == previous
         for encoding in ("utf-8", "utf-16-le", "utf-16-be", "cp1251"):
             source = root / "profile.txt"
             original = "Первая\r\nВторая\rПоследняя\n".encode(encoding)

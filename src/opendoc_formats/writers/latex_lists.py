@@ -2,6 +2,7 @@
 
 from opendoc_model import Anchor, DocumentLimits, DocumentModel, Paragraph, get_anchor, get_list_item, iter_list_numbers
 
+from opendoc_formats.support.cancellation import checkpoint
 from opendoc_formats.tex_lists import paragraph_marker
 
 
@@ -16,9 +17,11 @@ def list_paragraphs(document: DocumentModel, paragraphs: list[tuple[Paragraph, s
 
     def close(depth: int) -> None:
         while len(stack) > depth:
+            checkpoint()
             emit('\\end{'+stack.pop()['environment']+'}')
 
     for index, (paragraph, text) in enumerate(paragraphs):
+        checkpoint()
         anchor = get_anchor(paragraph, limits=limits)
         item = get_list_item(paragraph, limits=limits)
         if item is None:
@@ -31,6 +34,7 @@ def list_paragraphs(document: DocumentModel, paragraphs: list[tuple[Paragraph, s
         if anchor is None:
             identifier = f'tex-native-node-{index}'
             while identifier in existing:
+                checkpoint()
                 identifier += '-new'
             anchor = Anchor(identifier)
             existing.add(identifier)

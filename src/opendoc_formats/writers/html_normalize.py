@@ -10,6 +10,7 @@ import opendoc_model as od
 from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import DocumentModel, Paragraph, Table, TextRun
 
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 from opendoc_formats.writers.stages import StageContext, StageKind, StageResult, StageValue
 
 
@@ -54,13 +55,14 @@ class HtmlNormalizeStage:
         def blocks(items: Iterable[od.Block], location: str) -> list[od.Block]:
             result = []
             for index, node in enumerate(items):
+                checkpoint()
                 path = f"{location}[{index}]"
                 if isinstance(node, Paragraph):
                     node = replace(
                         node,
                         content=[
                             run(item, f"{path}.content[{offset}]") if isinstance(item, TextRun) else item
-                            for offset, item in enumerate(node.content)
+                            for offset, item in cancellable_items(enumerate(node.content))
                         ],
                     )
                 elif isinstance(node, Table):
@@ -77,10 +79,10 @@ class HtmlNormalizeStage:
                                             f"{path}.rows[{row_index}].cells[{cell_index}].blocks",
                                         ),
                                     )
-                                    for cell_index, cell in enumerate(row.cells)
+                                    for cell_index, cell in cancellable_items(enumerate(row.cells))
                                 ],
                             )
-                            for row_index, row in enumerate(node.rows)
+                            for row_index, row in cancellable_items(enumerate(node.rows))
                         ],
                     )
                 result.append(node)

@@ -19,6 +19,7 @@ from opendoc_model import (
     get_list_item,
 )
 
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 from opendoc_formats.support.latex import PREAMBLE, escape_latex
 from opendoc_formats.tex_math import formula_tex
 from opendoc_formats.writers.latex_lists import list_paragraphs
@@ -45,6 +46,7 @@ def native_text(document: DocumentModel, *, limits: DocumentLimits | None) -> st
         known_preamble = next((len(prefix) for prefix in (PREAMBLE, PREAMBLE.replace('\n', '\r\n'))
                                if original and original.data and original.data.startswith(prefix.encode('utf-8'))), 0)
         for record in integration.preservation:
+            checkpoint()
             if record.state is PreservationState.SEMANTIC:
                 continue
             if record.issue.code == 'latex.source':
@@ -64,6 +66,7 @@ def native_text(document: DocumentModel, *, limits: DocumentLimits | None) -> st
         return None
     body = []
     for block in section.blocks:
+        checkpoint()
         if isinstance(block, Formula):
             proxy = Paragraph(properties={'latex_par_after_list': block.properties.get('latex_par_after_list', True)})
             body.append((proxy, formula_tex(block, block=True)))
@@ -98,6 +101,7 @@ def native_text(document: DocumentModel, *, limits: DocumentLimits | None) -> st
         parts = []
         visible = []
         for run in block.content:
+            checkpoint()
             if isinstance(run, Formula):
                 if heading is not None and run.display:
                     return None  # Display math is not a heading argument.
@@ -110,7 +114,7 @@ def native_text(document: DocumentModel, *, limits: DocumentLimits | None) -> st
                 return None
             # Square brackets must remain text, never \[ display-math delimiters.
             replacements = {'[': '{[}', ']': '{]}', '^': r'\textasciicircum{}'}
-            text = ''.join(replacements.get(char, escape_latex(char)) for char in run.text)
+            text = ''.join(replacements.get(char, escape_latex(char)) for char in cancellable_items(run.text))
             for enabled, command in [(run.style.underline, 'underline'), (run.style.italic, 'textit'),
                                      (run.style.bold, 'textbf')]:
                 if enabled:
