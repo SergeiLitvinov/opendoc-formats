@@ -97,7 +97,7 @@ Format-specific errors, independent of consumers.
 
 Импорты: отсутствуют
 
-Тесты: [test_docx_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_access.py#L1), [test_office_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_office_access.py#L1), [test_package_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_package_resources.py#L1), [test_pdf_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_access.py#L1), [test_djvu_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_djvu_text.py#L1), [test_docx_layout_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_layout_roundtrip.py#L1), [test_fix_encoding.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_fix_encoding.py#L1), [test_pdf_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_import_cancellation.py#L1), [test_tex_model.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_tex_model.py#L1), [test_web_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_web_import_cancellation.py#L1), [test_latex_lists.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_lists.py#L1), [test_latex_math.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_math.py#L1)
+Тесты: [test_docx_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_access.py#L1), [test_office_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_office_access.py#L1), [test_package_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_package_resources.py#L1), [test_pdf_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_access.py#L1), [test_djvu_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_djvu_text.py#L1), [test_docx_layout_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_layout_roundtrip.py#L1), [test_fix_encoding.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_fix_encoding.py#L1), [test_office_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_office_import_cancellation.py#L1), [test_pdf_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_import_cancellation.py#L1), [test_tex_model.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_tex_model.py#L1), [test_web_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_web_import_cancellation.py#L1), [test_latex_lists.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_lists.py#L1), [test_latex_math.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_math.py#L1)
 
 ## src/opendoc_formats/export.py
 
@@ -329,11 +329,11 @@ Map whole merged-cell borders onto Word's physical continuation cells.
 
 Reusable helpers for importing and restoring OOXML package topology.
 
-- `load_package_graph(root_part: Any, *, format_name: str, supported_relationships: Collection[str], recursive_relationships: Collection[str]=(), include: RelationshipFilter | None=None) -> PackageGraph | None` — [строка 46](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/package.py#L46)
-- `package_part_for_relationship(graph: PackageGraph | None, relationship_type: str) -> PackagePart | None` — [строка 77](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/package.py#L77)
-- `restore_package_graph(root_part: Any, graph: PackageGraph, *, protected_roots: Collection[Any]=(), source_parts: Mapping[str, Any] | None=None) -> None` — [строка 83](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/package.py#L83)
+- `load_package_graph(root_part: Any, *, format_name: str, supported_relationships: Collection[str], recursive_relationships: Collection[str]=(), include: RelationshipFilter | None=None) -> PackageGraph | None` — [строка 48](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/package.py#L48)
+- `package_part_for_relationship(graph: PackageGraph | None, relationship_type: str) -> PackagePart | None` — [строка 80](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/package.py#L80)
+- `restore_package_graph(root_part: Any, graph: PackageGraph, *, protected_roots: Collection[Any]=(), source_parts: Mapping[str, Any] | None=None) -> None` — [строка 86](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/package.py#L86)
 
-Импорты: `__future__`, `collections.abc`, `docx.opc.packuri`, `docx.opc.part`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `pptx.opc.packuri`, `pptx.opc.part`, `typing`
+Импорты: `__future__`, `collections.abc`, `docx.opc.packuri`, `docx.opc.part`, `opendoc_formats.support.cancellation`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `pptx.opc.packuri`, `pptx.opc.part`, `typing`
 
 Тесты: [test_ooxml_package.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_ooxml_package.py#L1)
 
@@ -538,10 +538,10 @@ Plain-text input without application types or optional dependencies.
 
 DOCX readers for extracted text and editable OpenDoc documents.
 
-- `read_docx(path: Union[str, Path], *, include_tables: bool=True) -> Text` — [строка 41](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx.py#L41)
-- `read_docx_model(path: Union[str, Path], *, mode: ConversionMode=ConversionMode.BALANCED, limits: DocumentLimits | None=None) -> DocumentModel` — [строка 75](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx.py#L75)
+- `read_docx(path: Union[str, Path], *, include_tables: bool=True, cancelled: Callable[[], bool] | None=None) -> Text` — [строка 42](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx.py#L42)
+- `read_docx_model(path: Union[str, Path], *, mode: ConversionMode=ConversionMode.BALANCED, limits: DocumentLimits | None=None, cancelled: Callable[[], bool] | None=None) -> DocumentModel` — [строка 87](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx.py#L87)
 
-Импорты: `__future__`, `collections.abc`, `docx`, `docx.oxml.ns`, `docx.oxml.table`, `docx.oxml.text.paragraph`, `docx.table`, `docx.text.paragraph`, `lxml`, `opendoc_formats.ooxml.package`, `opendoc_formats.readers.docx_diagnostics`, `opendoc_formats.readers.docx_features`, `opendoc_formats.readers.docx_fonts`, `opendoc_formats.readers.docx_groups`, `opendoc_formats.readers.docx_section`, `opendoc_formats.readers.docx_style`, `opendoc_formats.readers.docx_table`, `opendoc_formats.readers.docx_text`, `opendoc_formats.support.io`, `opendoc_formats.types`, `opendoc_model`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
+Импорты: `__future__`, `collections.abc`, `docx`, `docx.oxml.ns`, `docx.oxml.table`, `docx.oxml.text.paragraph`, `docx.table`, `docx.text.paragraph`, `lxml`, `opendoc_formats.ooxml.package`, `opendoc_formats.readers.docx_diagnostics`, `opendoc_formats.readers.docx_features`, `opendoc_formats.readers.docx_fonts`, `opendoc_formats.readers.docx_groups`, `opendoc_formats.readers.docx_section`, `opendoc_formats.readers.docx_style`, `opendoc_formats.readers.docx_table`, `opendoc_formats.readers.docx_text`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.io`, `opendoc_formats.types`, `opendoc_model`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
 
 Тесты: [test_format_audit.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_format_audit.py#L1), [test_docx_layout_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_layout_roundtrip.py#L1), [test_docx_model.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_model.py#L1), [test_docx_typed_widths.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_typed_widths.py#L1), [test_full_contract.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_full_contract.py#L1), [test_docx_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_docx_writer.py#L1), [test_html_normalize.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_normalize.py#L1)
 
@@ -549,53 +549,53 @@ DOCX readers for extracted text and editable OpenDoc documents.
 
 Evidence-based partial preservation assessment of advanced DOCX objects.
 
-- `attach_docx_diagnostics(document: Any, model: DocumentModel, source: Path, *, limits: DocumentLimits | None=None) -> None` — [строка 113](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_diagnostics.py#L113)
+- `attach_docx_diagnostics(document: Any, model: DocumentModel, source: Path, *, limits: DocumentLimits | None=None) -> None` — [строка 117](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_diagnostics.py#L117)
 
-Импорты: `__future__`, `collections`, `dataclasses`, `lxml`, `opendoc_formats.ooxml.borders`, `opendoc_formats.ooxml.layout`, `opendoc_formats.ooxml.paragraph_flow`, `opendoc_formats.ooxml.paragraph_indent`, `opendoc_formats.ooxml.positioned_text`, `opendoc_formats.ooxml.spacing`, `opendoc_formats.readers.docx_features`, `opendoc_model`, `pathlib`, `typing`
+Импорты: `__future__`, `collections`, `dataclasses`, `lxml`, `opendoc_formats.ooxml.borders`, `opendoc_formats.ooxml.layout`, `opendoc_formats.ooxml.paragraph_flow`, `opendoc_formats.ooxml.paragraph_indent`, `opendoc_formats.ooxml.positioned_text`, `opendoc_formats.ooxml.spacing`, `opendoc_formats.readers.docx_features`, `opendoc_formats.support.cancellation`, `opendoc_model`, `pathlib`, `typing`
 
 ## src/opendoc_formats/readers/docx_drawing.py
 
 DOCX drawing importer for raster/vector resources and anchor geometry.
 
-- `read_run_images(run: Any, model: DocumentModel) -> list[Image]` — [строка 25](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_drawing.py#L25)
-- `read_run_vml_colors(run: Any) -> tuple[list[dict[str, Any]], list[str]]` — [строка 80](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_drawing.py#L80)
+- `read_run_images(run: Any, model: DocumentModel) -> list[Image]` — [строка 26](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_drawing.py#L26)
+- `read_run_vml_colors(run: Any) -> tuple[list[dict[str, Any]], list[str]]` — [строка 83](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_drawing.py#L83)
 
-Импорты: `__future__`, `docx.oxml.ns`, `lxml`, `opendoc_formats.ooxml.color`, `opendoc_formats.readers.docx_groups`, `opendoc_formats.readers.docx_style`, `opendoc_formats.readers.svg_color`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
+Импорты: `__future__`, `docx.oxml.ns`, `lxml`, `opendoc_formats.ooxml.color`, `opendoc_formats.readers.docx_groups`, `opendoc_formats.readers.docx_style`, `opendoc_formats.readers.svg_color`, `opendoc_formats.support.cancellation`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
 
 ## src/opendoc_formats/readers/docx_features.py
 
 Inventory advanced DOCX features and their preservation level.
 
-- `inspect_docx_features(document: Any) -> dict[str, Any]` — [строка 25](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_features.py#L25)
+- `inspect_docx_features(document: Any) -> dict[str, Any]` — [строка 27](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_features.py#L27)
 
-Импорты: `__future__`, `collections`, `lxml`, `typing`
+Импорты: `__future__`, `collections`, `lxml`, `opendoc_formats.support.cancellation`, `typing`
 
 ## src/opendoc_formats/readers/docx_fonts.py
 
 Decode document-owned Word font programs into bounded Model resources.
 
-- `read_embedded_fonts(document: object, *, limits: DocumentLimits | None=None) -> dict[str, Resource]` — [строка 13](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_fonts.py#L13)
-- `attach_font_references(model: DocumentModel, *, limits: DocumentLimits | None=None) -> None` — [строка 50](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_fonts.py#L50)
+- `read_embedded_fonts(document: object, *, limits: DocumentLimits | None=None) -> dict[str, Resource]` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_fonts.py#L15)
+- `attach_font_references(model: DocumentModel, *, limits: DocumentLimits | None=None) -> None` — [строка 55](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_fonts.py#L55)
 
-Импорты: `__future__`, `docx.opc.constants`, `lxml`, `opendoc_formats.fonts.docx_embedding`, `opendoc_model`, `uuid`
+Импорты: `__future__`, `docx.opc.constants`, `lxml`, `opendoc_formats.fonts.docx_embedding`, `opendoc_formats.support.cancellation`, `opendoc_model`, `uuid`
 
 ## src/opendoc_formats/readers/docx_groups.py
 
 Parse native Word groups into editable official vector paths and groups.
 
-- `stage_groups(run: Any, model: DocumentModel) -> list[Image]` — [строка 43](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_groups.py#L43)
-- `attach_groups(model: DocumentModel, *, limits: DocumentLimits | None) -> None` — [строка 78](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_groups.py#L78)
-- `parse_group(drawing: Any, identifier: str, node_id: str, *, limits: DocumentLimits | None) -> VectorScene` — [строка 92](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_groups.py#L92)
+- `stage_groups(run: Any, model: DocumentModel) -> list[Image]` — [строка 44](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_groups.py#L44)
+- `attach_groups(model: DocumentModel, *, limits: DocumentLimits | None) -> None` — [строка 80](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_groups.py#L80)
+- `parse_group(drawing: Any, identifier: str, node_id: str, *, limits: DocumentLimits | None) -> VectorScene` — [строка 95](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_groups.py#L95)
 
-Импорты: `__future__`, `dataclasses`, `lxml`, `opendoc_formats.ooxml.group_geometry`, `opendoc_formats.readers.docx_drawing`, `opendoc_model`, `typing`
+Импорты: `__future__`, `dataclasses`, `lxml`, `opendoc_formats.ooxml.group_geometry`, `opendoc_formats.readers.docx_drawing`, `opendoc_formats.support.cancellation`, `opendoc_model`, `typing`
 
 ## src/opendoc_formats/readers/docx_notes.py
 
 Чтение ссылок на сноски из текстовых runs DOCX.
 
-- `append_note_references(content: list[Any], run: Any, style: TextStyle) -> None` — [строка 10](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_notes.py#L10)
+- `append_note_references(content: list[Any], run: Any, style: TextStyle) -> None` — [строка 12](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_notes.py#L12)
 
-Импорты: `__future__`, `docx.oxml.ns`, `opendoc_model.document_model`, `typing`
+Импорты: `__future__`, `docx.oxml.ns`, `opendoc_formats.support.cancellation`, `opendoc_model.document_model`, `typing`
 
 ## src/opendoc_formats/readers/docx_section.py
 
@@ -609,30 +609,30 @@ DOCX section importer for page geometry and running content.
 
 DOCX style resolver for inheritance, themes, defaults, and numbering.
 
-- `read_document_styles(document: Any, model: DocumentModel | None=None) -> dict[str, TextStyle]` — [строка 14](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_style.py#L14)
-- `read_document_defaults(document: Any, model: DocumentModel) -> TextStyle | None` — [строка 35](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_style.py#L35)
-- `read_run_style(run: Any, paragraph: Any, model: DocumentModel | None=None) -> TextStyle` — [строка 87](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_style.py#L87)
-- `read_paragraph_properties(paragraph: Any) -> dict[str, Any]` — [строка 133](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_style.py#L133)
-- `document_theme_colors(model: DocumentModel) -> dict[str, str]` — [строка 177](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_style.py#L177)
+- `read_document_styles(document: Any, model: DocumentModel | None=None) -> dict[str, TextStyle]` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_style.py#L15)
+- `read_document_defaults(document: Any, model: DocumentModel) -> TextStyle | None` — [строка 37](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_style.py#L37)
+- `read_run_style(run: Any, paragraph: Any, model: DocumentModel | None=None) -> TextStyle` — [строка 89](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_style.py#L89)
+- `read_paragraph_properties(paragraph: Any) -> dict[str, Any]` — [строка 135](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_style.py#L135)
+- `document_theme_colors(model: DocumentModel) -> dict[str, str]` — [строка 179](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_style.py#L179)
 
-Импорты: `__future__`, `docx.enum.style`, `docx.oxml.ns`, `lxml`, `opendoc_formats.ooxml.layout`, `opendoc_formats.ooxml.package`, `opendoc_formats.ooxml.paragraph_flow`, `opendoc_formats.ooxml.paragraph_indent`, `opendoc_formats.ooxml.spacing`, `opendoc_model.color`, `opendoc_model.document_model`, `typing`
+Импорты: `__future__`, `docx.enum.style`, `docx.oxml.ns`, `lxml`, `opendoc_formats.ooxml.layout`, `opendoc_formats.ooxml.package`, `opendoc_formats.ooxml.paragraph_flow`, `opendoc_formats.ooxml.paragraph_indent`, `opendoc_formats.ooxml.spacing`, `opendoc_formats.support.cancellation`, `opendoc_model.color`, `opendoc_model.document_model`, `typing`
 
 ## src/opendoc_formats/readers/docx_table.py
 
 DOCX table importer for spans, geometry, fills, margins, and styles.
 
-- `read_table(table: Any, model: DocumentModel, read_blocks: BlockReader) -> Table` — [строка 17](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_table.py#L17)
+- `read_table(table: Any, model: DocumentModel, read_blocks: BlockReader) -> Table` — [строка 18](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_table.py#L18)
 
-Импорты: `__future__`, `collections.abc`, `docx.oxml.ns`, `docx.table`, `lxml`, `opendoc_formats.ooxml.borders`, `opendoc_formats.ooxml.layout`, `opendoc_formats.ooxml.merged_cell_borders`, `opendoc_formats.ooxml.table_position`, `opendoc_formats.ooxml.widths`, `opendoc_model.document_model`, `typing`
+Импорты: `__future__`, `collections.abc`, `docx.oxml.ns`, `docx.table`, `lxml`, `opendoc_formats.ooxml.borders`, `opendoc_formats.ooxml.layout`, `opendoc_formats.ooxml.merged_cell_borders`, `opendoc_formats.ooxml.table_position`, `opendoc_formats.ooxml.widths`, `opendoc_formats.support.cancellation`, `opendoc_model.document_model`, `typing`
 
 ## src/opendoc_formats/readers/docx_text.py
 
 Чтение абзацев и строчного содержимого DOCX.
 
-- `read_paragraph(paragraph: Any, model: DocumentModel) -> Paragraph` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_text.py#L15)
-- `read_block_ooxml(element: Any) -> Paragraph` — [строка 113](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_text.py#L113)
+- `read_paragraph(paragraph: Any, model: DocumentModel) -> Paragraph` — [строка 16](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_text.py#L16)
+- `read_block_ooxml(element: Any) -> Paragraph` — [строка 116](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx_text.py#L116)
 
-Импорты: `__future__`, `docx.oxml.ns`, `docx.text.hyperlink`, `docx.text.run`, `lxml`, `opendoc_formats.ooxml.headings`, `opendoc_formats.ooxml.layout`, `opendoc_formats.ooxml.paragraph_frame`, `opendoc_formats.ooxml.positioned_text`, `opendoc_formats.ooxml.run_position`, `opendoc_formats.readers.docx_drawing`, `opendoc_formats.readers.docx_notes`, `opendoc_formats.readers.docx_style`, `opendoc_model.document_model`, `typing`
+Импорты: `__future__`, `docx.oxml.ns`, `docx.text.hyperlink`, `docx.text.run`, `lxml`, `opendoc_formats.ooxml.headings`, `opendoc_formats.ooxml.layout`, `opendoc_formats.ooxml.paragraph_frame`, `opendoc_formats.ooxml.positioned_text`, `opendoc_formats.ooxml.run_position`, `opendoc_formats.readers.docx_drawing`, `opendoc_formats.readers.docx_notes`, `opendoc_formats.readers.docx_style`, `opendoc_formats.support.cancellation`, `opendoc_model.document_model`, `typing`
 
 ## src/opendoc_formats/readers/epub.py
 
@@ -1000,10 +1000,10 @@ Retain native PDF cell geometry and text styling in reconstructed Model tables.
 
 PPTX → Text / DocumentModel импортёры.
 
-- `read_pptx(path: Union[str, Path], *, include_tables: bool=True) -> Text` — [строка 359](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx.py#L359)
-- `read_pptx_model(path: Union[str, Path], *, mode: ConversionMode=ConversionMode.BALANCED, limits: DocumentLimits | None=None) -> DocumentModel` — [строка 400](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx.py#L400)
+- `read_pptx(path: Union[str, Path], *, include_tables: bool=True, cancelled: Callable[[], bool] | None=None) -> Text` — [строка 366](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx.py#L366)
+- `read_pptx_model(path: Union[str, Path], *, mode: ConversionMode=ConversionMode.BALANCED, limits: DocumentLimits | None=None, cancelled: Callable[[], bool] | None=None) -> DocumentModel` — [строка 418](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx.py#L418)
 
-Импорты: `__future__`, `dataclasses`, `lxml`, `opendoc_formats.ooxml.color`, `opendoc_formats.readers.pptx_chart_data`, `opendoc_formats.readers.pptx_diagnostics`, `opendoc_formats.readers.pptx_geometry`, `opendoc_formats.readers.pptx_numeric_cache`, `opendoc_formats.readers.pptx_paragraph`, `opendoc_formats.readers.pptx_picture`, `opendoc_formats.readers.pptx_placeholder`, `opendoc_formats.readers.pptx_table`, `opendoc_formats.readers.pptx_theme_fonts`, `opendoc_formats.support.io`, `opendoc_formats.types`, `opendoc_model`, `opendoc_model.color`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `pptx`, `pptx.opc.constants`, `typing`
+Импорты: `__future__`, `collections.abc`, `dataclasses`, `lxml`, `opendoc_formats.errors`, `opendoc_formats.ooxml.color`, `opendoc_formats.readers.pptx_chart_data`, `opendoc_formats.readers.pptx_diagnostics`, `opendoc_formats.readers.pptx_geometry`, `opendoc_formats.readers.pptx_numeric_cache`, `opendoc_formats.readers.pptx_paragraph`, `opendoc_formats.readers.pptx_picture`, `opendoc_formats.readers.pptx_placeholder`, `opendoc_formats.readers.pptx_table`, `opendoc_formats.readers.pptx_theme_fonts`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.io`, `opendoc_formats.types`, `opendoc_model`, `opendoc_model.color`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `pptx`, `pptx.opc.constants`, `typing`
 
 Тесты: [test_pptx_visual_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pptx_visual_roundtrip.py#L1), [test_source_coverage.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_source_coverage.py#L1), [test_mathml_decorations.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_mathml_decorations.py#L1), [test_mathml_pptx.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_mathml_pptx.py#L1), [test_pptx_chart_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_chart_roundtrip.py#L1), [test_pptx_combo_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_combo_roundtrip.py#L1), [test_pptx_custom_errors.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_custom_errors.py#L1), [test_pptx_error_directions.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_error_directions.py#L1), [test_pptx_geometry_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_geometry_roundtrip.py#L1), [test_pptx_label_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_label_roundtrip.py#L1), [test_pptx_multiple_trends.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_multiple_trends.py#L1), [test_pptx_office_regressions.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_office_regressions.py#L1), [test_pptx_placeholder_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_placeholder_roundtrip.py#L1), [test_pptx_plot_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_plot_roundtrip.py#L1), [test_pptx_point_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_point_roundtrip.py#L1), [test_pptx_statistics_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_statistics_roundtrip.py#L1), [test_pptx_table_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_table_roundtrip.py#L1), [test_pptx_text_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_text_roundtrip.py#L1), [test_pptx_theme_fonts.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_theme_fonts.py#L1), [test_pptx_trend_forecast.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_trend_forecast.py#L1), [test_pptx_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_writer.py#L1)
 
@@ -1011,42 +1011,42 @@ PPTX → Text / DocumentModel импортёры.
 
 Indexed chart caches: preserve absent points and numeric XY dimensions.
 
-- `cached_values(node: Any) -> list[str | None]` — [строка 10](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_chart_data.py#L10)
-- `numeric_series(series: Any) -> dict[str, Any]` — [строка 29](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_chart_data.py#L29)
-- `plot_settings(node: Any) -> dict[str, str | None]` — [строка 45](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_chart_data.py#L45)
-- `plot_appearance(node: Any) -> dict[str, Any]` — [строка 54](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_chart_data.py#L54)
+- `cached_values(node: Any) -> list[str | None]` — [строка 12](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_chart_data.py#L12)
+- `numeric_series(series: Any) -> dict[str, Any]` — [строка 32](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_chart_data.py#L32)
+- `plot_settings(node: Any) -> dict[str, str | None]` — [строка 48](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_chart_data.py#L48)
+- `plot_appearance(node: Any) -> dict[str, Any]` — [строка 58](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_chart_data.py#L58)
 
-Импорты: `__future__`, `typing`
+Импорты: `__future__`, `opendoc_formats.support.cancellation`, `typing`
 
 ## src/opendoc_formats/readers/pptx_diagnostics.py
 
 Partial, source-located PPTX preservation diagnostics; never execute content.
 
-- `PptxDiagnostics` — [строка 24](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_diagnostics.py#L24)
-- `__init__(self, source: Path) -> None` — [строка 25](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_diagnostics.py#L25)
-- `record(self, feature: str, reason: str, message: str, node: Any=None, *, state: PreservationState=PreservationState.LOST, resource_id: str | None=None) -> None` — [строка 31](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_diagnostics.py#L31)
-- `slide(self, slide: Any, page: int, original_part: str) -> None` — [строка 49](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_diagnostics.py#L49)
-- `graphic(self, element: Any, *, resource_id: str | None=None) -> None` — [строка 64](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_diagnostics.py#L64)
-- `attach(self, document: DocumentModel, *, limits: DocumentLimits | None=None) -> None` — [строка 77](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_diagnostics.py#L77)
+- `PptxDiagnostics` — [строка 26](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_diagnostics.py#L26)
+- `__init__(self, source: Path) -> None` — [строка 27](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_diagnostics.py#L27)
+- `record(self, feature: str, reason: str, message: str, node: Any=None, *, state: PreservationState=PreservationState.LOST, resource_id: str | None=None) -> None` — [строка 33](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_diagnostics.py#L33)
+- `slide(self, slide: Any, page: int, original_part: str) -> None` — [строка 52](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_diagnostics.py#L52)
+- `graphic(self, element: Any, *, resource_id: str | None=None) -> None` — [строка 68](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_diagnostics.py#L68)
+- `attach(self, document: DocumentModel, *, limits: DocumentLimits | None=None) -> None` — [строка 81](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_diagnostics.py#L81)
 
-Импорты: `__future__`, `opendoc_model`, `pathlib`, `typing`
+Импорты: `__future__`, `opendoc_formats.support.cancellation`, `opendoc_model`, `pathlib`, `typing`
 
 ## src/opendoc_formats/readers/pptx_geometry.py
 
 Format-local native geometry and identity needed by the PPTX reverse path.
 
-- `shape_geometry(element: Any) -> dict[str, Any]` — [строка 14](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_geometry.py#L14)
-- `remember_shape_identity(block: od.Block, element: Any) -> None` — [строка 45](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_geometry.py#L45)
+- `shape_geometry(element: Any) -> dict[str, Any]` — [строка 16](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_geometry.py#L16)
+- `remember_shape_identity(block: od.Block, element: Any) -> None` — [строка 48](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_geometry.py#L48)
 
-Импорты: `__future__`, `dataclasses`, `lxml`, `typing`
+Импорты: `__future__`, `dataclasses`, `lxml`, `opendoc_formats.support.cancellation`, `typing`
 
 ## src/opendoc_formats/readers/pptx_numeric_cache.py
 
 Чтение числовых массивов диаграммы с сохранением пропущенных индексов.
 
-- `indexed_numbers(node: Any) -> list[str | None]` — [строка 10](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_numeric_cache.py#L10)
+- `indexed_numbers(node: Any) -> list[str | None]` — [строка 12](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_numeric_cache.py#L12)
 
-Импорты: `__future__`, `typing`
+Импорты: `__future__`, `opendoc_formats.support.cancellation`, `typing`
 
 Тесты: [test_pptx_custom_errors.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_custom_errors.py#L1)
 
@@ -1054,13 +1054,13 @@ Format-local native geometry and identity needed by the PPTX reverse path.
 
 Explicit paragraph and frame formatting from DrawingML.
 
-- `merge_text_styles(inherited: od.TextStyle | None, explicit: od.TextStyle) -> od.TextStyle` — [строка 12](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_paragraph.py#L12)
-- `paragraph_metadata(element: Any, alignments: dict[str, str]) -> dict[str, Any]` — [строка 28](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_paragraph.py#L28)
-- `paragraph_properties(properties: dict[str, Any], alignments: dict[str, str]) -> dict[str, Any]` — [строка 33](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_paragraph.py#L33)
-- `merge_paragraph_settings(inherited: dict[str, Any], explicit: dict[str, Any]) -> dict[str, Any]` — [строка 73](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_paragraph.py#L73)
-- `frame_metadata(body: Any) -> dict[str, Any]` — [строка 89](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_paragraph.py#L89)
+- `merge_text_styles(inherited: od.TextStyle | None, explicit: od.TextStyle) -> od.TextStyle` — [строка 14](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_paragraph.py#L14)
+- `paragraph_metadata(element: Any, alignments: dict[str, str]) -> dict[str, Any]` — [строка 31](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_paragraph.py#L31)
+- `paragraph_properties(properties: dict[str, Any], alignments: dict[str, str]) -> dict[str, Any]` — [строка 36](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_paragraph.py#L36)
+- `merge_paragraph_settings(inherited: dict[str, Any], explicit: dict[str, Any]) -> dict[str, Any]` — [строка 80](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_paragraph.py#L80)
+- `frame_metadata(body: Any) -> dict[str, Any]` — [строка 98](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_paragraph.py#L98)
 
-Импорты: `__future__`, `copy`, `dataclasses`, `opendoc_model.document_model`, `typing`
+Импорты: `__future__`, `copy`, `dataclasses`, `opendoc_formats.support.cancellation`, `opendoc_model.document_model`, `typing`
 
 ## src/opendoc_formats/readers/pptx_picture.py
 
@@ -1074,11 +1074,11 @@ Read SVG companions and cropping without flattening vector resources.
 
 Наследование оформления текстовых заполнителей из макета и образца.
 
-- `placeholder_chain(element: Any, layout: Any, master: Any) -> list[Any]` — [строка 29](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_placeholder.py#L29)
-- `inherited_frame(chain: list[Any], element: Any) -> dict[str, Any]` — [строка 57](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_placeholder.py#L57)
-- `inherited_paragraph(chain: list[Any], body: Any, level: int, meta: dict[str, Any], style: Any, *, parse_style: Any, alignments: dict[str, str], colors: dict[str, str]) -> tuple[dict[str, Any], Any]` — [строка 66](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_placeholder.py#L66)
+- `placeholder_chain(element: Any, layout: Any, master: Any) -> list[Any]` — [строка 30](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_placeholder.py#L30)
+- `inherited_frame(chain: list[Any], element: Any) -> dict[str, Any]` — [строка 58](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_placeholder.py#L58)
+- `inherited_paragraph(chain: list[Any], body: Any, level: int, meta: dict[str, Any], style: Any, *, parse_style: Any, alignments: dict[str, str], colors: dict[str, str]) -> tuple[dict[str, Any], Any]` — [строка 68](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_placeholder.py#L68)
 
-Импорты: `__future__`, `opendoc_formats.readers.pptx_paragraph`, `typing`
+Импорты: `__future__`, `opendoc_formats.readers.pptx_paragraph`, `opendoc_formats.support.cancellation`, `typing`
 
 Тесты: [test_pptx_placeholder_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_placeholder_roundtrip.py#L1)
 
@@ -1086,18 +1086,18 @@ Read SVG companions and cropping without flattening vector resources.
 
 Editable table cells, including paragraph structure and explicit cell appearance.
 
-- `read_table(element: Any, box: od.Box | None, slide_part: Any, theme_colors: dict[str, str], parse_runs: Callable[..., None], resolve_color: Callable[..., Any], alignments: dict[str, str]) -> od.Table` — [строка 16](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_table.py#L16)
+- `read_table(element: Any, box: od.Box | None, slide_part: Any, theme_colors: dict[str, str], parse_runs: Callable[..., None], resolve_color: Callable[..., Any], alignments: dict[str, str]) -> od.Table` — [строка 17](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_table.py#L17)
 
-Импорты: `__future__`, `collections.abc`, `opendoc_formats.readers.pptx_paragraph`, `opendoc_model.document_model`, `typing`
+Импорты: `__future__`, `collections.abc`, `opendoc_formats.readers.pptx_paragraph`, `opendoc_formats.support.cancellation`, `opendoc_model.document_model`, `typing`
 
 ## src/opendoc_formats/readers/pptx_theme_fonts.py
 
 Материализация ссылок на шрифты темы в текстовых фрагментах PPTX.
 
-- `slide_theme_fonts(slide: Any) -> dict[str, str]` — [строка 40](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_theme_fonts.py#L40)
-- `materialize_theme_fonts(blocks: list[Any], fonts: dict[str, str]) -> None` — [строка 56](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_theme_fonts.py#L56)
+- `slide_theme_fonts(slide: Any) -> dict[str, str]` — [строка 44](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_theme_fonts.py#L44)
+- `materialize_theme_fonts(blocks: list[Any], fonts: dict[str, str]) -> None` — [строка 61](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_theme_fonts.py#L61)
 
-Импорты: `__future__`, `lxml`, `opendoc_model.document_model`, `pptx.opc.constants`, `typing`
+Импорты: `__future__`, `lxml`, `opendoc_formats.support.cancellation`, `opendoc_model.document_model`, `pptx.opc.constants`, `typing`
 
 Тесты: [test_pptx_theme_fonts.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_theme_fonts.py#L1)
 
@@ -1190,9 +1190,14 @@ Availability checks for optional modules, including missing dotted parents.
 
 Cooperative checkpoints for native format work; never interrupt a backend call.
 
-- `check_cancelled(cancelled: Callable[[], bool] | None, operation: str) -> None` — [строка 8](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/cancellation.py#L8)
+- `check_cancelled(cancelled: Callable[[], bool] | None, operation: str) -> None` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/cancellation.py#L15)
+- `cancellation_scope(cancelled: Callable[[], bool] | None, operation: str) -> Iterator[None]` — [строка 23](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/cancellation.py#L23)
+- `checkpoint() -> None` — [строка 38](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/cancellation.py#L38)
+- `cancellable_items(items: Iterable[_Item]) -> Iterator[_Item]` — [строка 44](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/cancellation.py#L44)
 
-Импорты: `collections.abc`, `opendoc_formats.errors`
+Импорты: `collections.abc`, `contextlib`, `contextvars`, `opendoc_formats.errors`, `typing`
+
+Тесты: [test_office_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_office_import_cancellation.py#L1)
 
 ## src/opendoc_formats/support/document_adapters.py
 

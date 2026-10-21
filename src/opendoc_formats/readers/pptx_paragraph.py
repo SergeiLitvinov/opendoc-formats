@@ -6,6 +6,8 @@ from typing import Any
 
 import opendoc_model as od
 
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
+
 A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
 
 
@@ -17,6 +19,7 @@ def merge_text_styles(inherited: od.TextStyle | None, explicit: od.TextStyle) ->
 
     result = deepcopy(inherited) if inherited is not None else TextStyle()
     for field in fields(TextStyle):
+        checkpoint()
         value = getattr(explicit, field.name)
         if field.name == "properties":
             result.properties.update(deepcopy(value))
@@ -37,6 +40,7 @@ def paragraph_properties(properties: dict[str, Any], alignments: dict[str, str])
     if properties.get("algn"):
         result["alignment"] = alignments.get(properties.get("algn"), properties.get("algn"))
     for key in ("marL", "marR", "indent", "defTabSz"):
+        checkpoint()
         if properties.get(key) is not None:
             result[key] = float(properties.get(key)) / 12700
     if properties.get("lvl") is not None:
@@ -45,12 +49,14 @@ def paragraph_properties(properties: dict[str, Any], alignments: dict[str, str])
     if tabs is not None:
         result["tabs"] = [
             {"position_pt": float(tab.get("pos", "0")) / 12700, "alignment": tab.get("algn", "l")}
-            for tab in tabs.findall(A + "tab")
+            for tab in cancellable_items(tabs.findall(A + "tab"))
         ]
     for tag, key in (("lnSpc", "line_spacing"), ("spcBef", "space_before"), ("spcAft", "space_after")):
+        checkpoint()
         node = properties.find(A + tag)
         if node is not None:
             for child, suffix, divisor in (("spcPts", "pt", 100), ("spcPct", "pct", 100000)):
+                checkpoint()
                 value = node.find(A + child)
                 if value is not None:
                     result[f"{key}_{suffix}"] = float(value.get("val", "0")) / divisor
@@ -59,6 +65,7 @@ def paragraph_properties(properties: dict[str, Any], alignments: dict[str, str])
         ("buFont", "typeface", "bullet_font"),
         ("buAutoNum", "type", "numbered"),
     ):
+        checkpoint()
         node = properties.find(A + tag)
         if node is not None:
             result[key] = node.get(attr)
@@ -79,8 +86,10 @@ def merge_paragraph_settings(inherited: dict[str, Any], explicit: dict[str, Any]
         ("space_after_pt", "space_after_pct"),
     )
     for family in families:
-        if any(key in explicit for key in family):
+        checkpoint()
+        if any(key in explicit for key in cancellable_items(family)):
             for key in family:
+                checkpoint()
                 result.pop(key, None)
     result.update(explicit)
     return result
@@ -92,14 +101,17 @@ def frame_metadata(body: Any) -> dict[str, Any]:
         return {}
     result = {key: properties.get(key) for key in ("anchor", "wrap", "vert") if properties.get(key) is not None}
     for tag in ("noAutofit", "normAutofit", "spAutoFit"):
+        checkpoint()
         node = properties.find(A + tag)
         if node is not None:
             result["autofit"] = {"mode": tag}
             for attr in ("fontScale", "lnSpcReduction"):
+                checkpoint()
                 if node.get(attr) is not None:
                     result["autofit"][attr] = int(node.get(attr))
             break
     for key in ("lIns", "rIns", "tIns", "bIns"):
+        checkpoint()
         if properties.get(key) is not None:
             result[key] = float(properties.get(key)) / 12700
     return result

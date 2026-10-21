@@ -6,6 +6,8 @@ from typing import Any
 
 from opendoc_model.document_model import TextRun, TextStyle
 
+from opendoc_formats.support.cancellation import checkpoint
+
 
 def append_note_references(content: list[Any], run: Any, style: TextStyle) -> None:
     """Добавить footnote/endnote references из ``run`` в поток абзаца."""
@@ -13,6 +15,7 @@ def append_note_references(content: list[Any], run: Any, style: TextStyle) -> No
     from docx.oxml.ns import qn
 
     for reference in run._r.xpath(".//w:footnoteReference"):
+        checkpoint()
         content.append(
             TextRun(
                 "",
@@ -24,6 +27,7 @@ def append_note_references(content: list[Any], run: Any, style: TextStyle) -> No
             )
         )
     for reference in run._r.xpath(".//w:endnoteReference"):
+        checkpoint()
         content.append(
             TextRun(
                 "",

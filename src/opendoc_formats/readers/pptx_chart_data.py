@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
+
 C = "{http://schemas.openxmlformats.org/drawingml/2006/chart}"
 
 
@@ -13,12 +15,13 @@ def cached_values(node: Any) -> list[str | None]:
     points = node.findall(".//" + C + "pt")
     count = node.find(".//" + C + "ptCount")
     length = int(count.get("val", "0")) if count is not None else 0
-    indexed = [(int(point.get("idx", str(position))), point) for position, point in enumerate(points)]
-    length = max(length, max((index + 1 for index, _ in indexed), default=0))
+    indexed = [(int(point.get("idx", str(position))), point) for position, point in cancellable_items(enumerate(points))]
+    length = max(length, max((index + 1 for index, _ in cancellable_items(indexed)), default=0))
     if not 0 <= length <= 100000:
         raise ValueError("chart cache exceeds 100000 points")
     result = [None] * length
     for index, point in indexed:
+        checkpoint()
         if index < 0:
             raise ValueError("negative chart point index")
         value = point.find(C + "v")
@@ -45,6 +48,7 @@ def numeric_series(series: Any) -> dict[str, Any]:
 def plot_settings(node: Any) -> dict[str, str | None]:
     result = {}
     for tag, key in (("grouping", "grouping"), ("barDir", "bar_direction")):
+        checkpoint()
         element = node.find(C + tag)
         if element is not None:
             result[key] = element.get("val")
@@ -60,6 +64,7 @@ def plot_appearance(node: Any) -> dict[str, Any]:
         ("firstSliceAng", "first_slice_angle"),
         ("holeSize", "hole_size"),
     ):
+        checkpoint()
         element = node.find(C + tag)
         if element is not None and element.get("val") is not None:
             try:

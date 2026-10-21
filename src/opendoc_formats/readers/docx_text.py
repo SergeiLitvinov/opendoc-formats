@@ -10,6 +10,7 @@ from opendoc_formats.ooxml.headings import import_heading
 from opendoc_formats.readers.docx_drawing import read_run_images, read_run_vml_colors
 from opendoc_formats.readers.docx_notes import append_note_references
 from opendoc_formats.readers.docx_style import read_paragraph_properties, read_run_style
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 
 
 def read_paragraph(paragraph: Any, model: DocumentModel) -> Paragraph:
@@ -33,6 +34,7 @@ def read_paragraph(paragraph: Any, model: DocumentModel) -> Paragraph:
     children = list(paragraph._p.iterchildren())
     index = 0
     while index < len(children):
+        checkpoint()
         child = children[index]
         local_name = etree.QName(child).localname
         if local_name == "r":
@@ -46,6 +48,7 @@ def read_paragraph(paragraph: Any, model: DocumentModel) -> Paragraph:
             hyperlink = Hyperlink(child, paragraph)
             anchor = child.get(qn("w:anchor"))
             for run in hyperlink.runs:
+                checkpoint()
                 _append_run_content(content, run, paragraph, model, link=hyperlink.url or None, anchor=anchor)
         elif local_name == "bookmarkStart":
             content.append(
@@ -116,7 +119,8 @@ def read_block_ooxml(element: Any) -> Paragraph:
     from lxml import etree
 
     local_name = etree.QName(element).localname
-    text = "".join(node.text or "" for node in element.iter() if etree.QName(node).localname in {"t", "delText", "instrText"})
+    text = "".join(node.text or "" for node in cancellable_items(element.iter())
+                   if etree.QName(node).localname in {"t", "delText", "instrText"})
     properties: dict[str, Any] = {
         "docx_raw_block_xml": etree.tostring(element, encoding="unicode"),
         "docx_raw_block_type": local_name,
@@ -171,9 +175,11 @@ def _read_complex_field(children: list[Any], start: int, paragraph: Any, model: 
     result_style = read_run_style(Run(children[start], paragraph), paragraph, model)
     index = start
     while index < len(children):
+        checkpoint()
         child = children[index]
         raw_xml.append(etree.tostring(child, encoding="unicode"))
         for field_char in child.xpath(".//w:fldChar"):
+            checkpoint()
             field_type = field_char.get(qn("w:fldCharType"))
             if field_type == "begin":
                 depth += 1
@@ -182,12 +188,12 @@ def _read_complex_field(children: list[Any], start: int, paragraph: Any, model: 
             elif field_type == "end":
                 depth -= 1
         if not separated:
-            instruction_parts.extend(node.text or "" for node in child.xpath(".//w:instrText"))
+            instruction_parts.extend(node.text or "" for node in cancellable_items(child.xpath(".//w:instrText")))
         elif depth > 0:
             texts = child.xpath(".//w:t")
             if texts and not result_parts:
                 result_style = read_run_style(Run(child, paragraph), paragraph, model)
-            result_parts.extend(node.text or "" for node in texts)
+            result_parts.extend(node.text or "" for node in cancellable_items(texts))
         index += 1
         if depth == 0:
             return (
@@ -210,7 +216,8 @@ def _preserved_inline_ooxml(element: Any, *, advanced_types: set[str] | None = N
     from lxml import etree
 
     local_name = etree.QName(element).localname
-    text = "".join(node.text or "" for node in element.iter() if etree.QName(node).localname in {"t", "delText", "instrText"})
+    text = "".join(node.text or "" for node in cancellable_items(element.iter())
+                   if etree.QName(node).localname in {"t", "delText", "instrText"})
     properties: dict[str, Any] = {
         "docx_raw_inline_xml": etree.tostring(element, encoding="unicode"),
         "docx_raw_inline_type": local_name,
@@ -236,6 +243,7 @@ def _advanced_run_types(element: Any) -> set[str]:
 
     detected: set[str] = set()
     for node in element.iter():
+        checkpoint()
         qname = etree.QName(node)
         local_name = qname.localname
         namespace = qname.namespace or ""

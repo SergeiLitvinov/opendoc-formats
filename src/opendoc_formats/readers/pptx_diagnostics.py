@@ -17,6 +17,8 @@ from opendoc_model import (
     set_integration,
 )
 
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
+
 P = "{http://schemas.openxmlformats.org/presentationml/2006/main}"
 A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
 
@@ -34,6 +36,7 @@ class PptxDiagnostics:
     ) -> None:
         shape = node
         while shape is not None and shape.tag not in {P + name for name in ("sp", "grpSp", "pic", "graphicFrame", "cxnSp")}:
+            checkpoint()
             shape = shape.getparent()
         identity = shape.find(".//" + P + "cNvPr") if shape is not None else None
         object_id = identity.get("id") if identity is not None else None
@@ -58,6 +61,7 @@ class PptxDiagnostics:
             A + "sp3d": ("pptx.3d", "unsupported-3d", "3D shape settings are not imported"),
         }
         for node in slide._element.iter():
+            checkpoint()
             if node.tag in features:
                 self.record(*features[node.tag], node)
 
@@ -77,6 +81,6 @@ class PptxDiagnostics:
     def attach(self, document: DocumentModel, *, limits: DocumentLimits | None = None) -> None:
         set_integration(document, IntegrationModel(
             preservation=tuple(self.records),
-            assessed_features=tuple(dict.fromkeys(record.issue.code for record in self.records)),
+            assessed_features=tuple(dict.fromkeys(record.issue.code for record in cancellable_items(self.records))),
             assessment_complete=False,
         ), limits=limits)

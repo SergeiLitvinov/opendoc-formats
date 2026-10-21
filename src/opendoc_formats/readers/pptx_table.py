@@ -9,6 +9,7 @@ import opendoc_model as od
 from opendoc_model.document_model import Paragraph, Table, TableCell, TableRow
 
 from opendoc_formats.readers.pptx_paragraph import frame_metadata, paragraph_metadata
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 
 A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
 
@@ -24,10 +25,13 @@ def read_table(
 ) -> od.Table:
     rows = []
     for row in element.findall(A + "tr"):
+        checkpoint()
         cells = []
         for cell in row.findall(A + "tc"):
+            checkpoint()
             blocks = []
             for paragraph in cell.findall(A + "txBody/" + A + "p"):
+                checkpoint()
                 content = []
                 parse_runs(paragraph, content, slide_part, theme_colors=theme_colors)
                 meta = paragraph_metadata(paragraph, alignments)
@@ -49,7 +53,7 @@ def read_table(
     properties = {}
     grid = element.find(A + "tblGrid")
     if grid is not None:
-        properties["column_widths_pt"] = [float(column.get("w", "0")) / 12700 for column in grid]
+        properties["column_widths_pt"] = [float(column.get("w", "0")) / 12700 for column in cancellable_items(grid)]
     return Table(rows, box=box, properties=properties)
 
 
@@ -58,6 +62,7 @@ def _cell_settings(properties: dict[str, Any], colors: dict[str, str], resolve: 
         return {}
     result = {}
     for key, side in (("marL", "left"), ("marR", "right"), ("marT", "top"), ("marB", "bottom")):
+        checkpoint()
         if properties.get(key) is not None:
             result.setdefault("margins_twips", {})[side] = round(float(properties.get(key)) / 635)
     if properties.get("anchor") is not None:
@@ -72,6 +77,7 @@ def _cell_settings(properties: dict[str, Any], colors: dict[str, str], resolve: 
         result["fill"] = "none"
     borders = {}
     for tag in ("lnL", "lnR", "lnT", "lnB", "lnTlToBr", "lnBlToTr"):
+        checkpoint()
         line = properties.find(A + tag)
         if line is None:
             continue

@@ -31,6 +31,7 @@ from opendoc_model import (
 )
 
 from opendoc_formats.ooxml.group_geometry import preview_svg
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 
 A = '{http://schemas.openxmlformats.org/drawingml/2006/main}'
 WPG = '{http://schemas.microsoft.com/office/word/2010/wordprocessingGroup}'
@@ -47,8 +48,9 @@ def stage_groups(run: Any, model: DocumentModel) -> list[Image]:
 
     result = []
     for drawing in run._r.xpath('.//wp:anchor | .//wp:inline'):
+        checkpoint()
         data = drawing.find(A+'graphic/'+A+'graphicData')
-        roots = [child for child in data if child.tag in {WPG+'wgp', WPC+'wpc'}] if data is not None else []
+        roots = [child for child in cancellable_items(data) if child.tag in {WPG+'wgp', WPC+'wpc'}] if data is not None else []
         if not roots:
             continue
         if len(roots) != 1:
@@ -79,6 +81,7 @@ def attach_groups(model: DocumentModel, *, limits: DocumentLimits | None) -> Non
     from lxml import etree
 
     for ref in walk_model(model, limits=limits):
+        checkpoint()
         image = ref.node
         if not isinstance(image, Image) or 'docx_group_pending' not in image.properties:
             continue
@@ -111,17 +114,18 @@ def parse_group(drawing: Any, identifier: str, node_id: str, *, limits: Document
         if props is None:
             raise ValueError('Missing native group properties')
         for effect in (props.find(A+'effectLst'), props.find(A+'effectDag')):
+            checkpoint()
             if effect is not None and (len(effect) or effect.tag == A+'effectDag'):
                 raise ValueError('Native group effect needs a verified non-raster projection')
         if any(child.tag not in {A+n for n in ('xfrm', 'prstGeom', 'solidFill', 'ln', 'effectLst', 'effectDag', 'extLst')}
-               for child in props):
+               for child in cancellable_items(props)):
             raise ValueError('Unsupported native group/shape paint property')
         extensions = props.find(A+'extLst')
         if extensions is not None:
             # Word stores its inactive theme outline here after an explicit noFill.
             hidden_line = '{http://schemas.microsoft.com/office/drawing/2010/main}hiddenLine'
             if any(ext.tag != A+'ext' or ext.get('uri') != '{91240B29-F687-4F45-9708-019B960494DF}'
-                   or len(ext) != 1 or ext[0].tag != hidden_line for ext in extensions):
+                   or len(ext) != 1 or ext[0].tag != hidden_line for ext in cancellable_items(extensions)):
                 raise ValueError('Unverified native drawing extension')
         tr = props.find(A+'xfrm')
         if tr is None or any(tr.get(name, '0') not in ('0', 'false') for name in ('rot', 'flipH', 'flipV')):
@@ -154,7 +158,7 @@ def parse_group(drawing: Any, identifier: str, node_id: str, *, limits: Document
             color = ColorValue.from_hex('FFFFFF' if node.get('val') == 'white' else '000000')
         else:
             raise ValueError('Native group color needs a separately verified color resolver')
-        if any(child.tag != A+'alpha' for child in node) or len(node) > 1:
+        if any(child.tag != A+'alpha' for child in cancellable_items(node)) or len(node) > 1:
             raise ValueError('Unsupported native group color transform')
         alpha = node.find(A+'alpha')
         return Paint(color, int(alpha.get('val'))/100_000 if alpha is not None else 1.)
@@ -167,8 +171,9 @@ def parse_group(drawing: Any, identifier: str, node_id: str, *, limits: Document
             label = node.find(WPG+'cNvPr')
             index = len(groups)
             groups.append(None)
-            children = [visit(c, depth+1) for c in node if c.tag in {WPG+'grpSp', WPS+'wsp'}]
-            if any(c.tag not in {WPG+n for n in ('cNvPr', 'cNvGrpSpPr', 'grpSpPr', 'grpSp')} | {WPS+'wsp'} for c in node):
+            children = [visit(c, depth+1) for c in cancellable_items(node) if c.tag in {WPG+'grpSp', WPS+'wsp'}]
+            if any(c.tag not in {WPG+n for n in ('cNvPr', 'cNvGrpSpPr', 'grpSpPr', 'grpSp')} | {WPS+'wsp'}
+                   for c in cancellable_items(node)):
                 raise ValueError('Unsupported native group child')
             groups[index] = VectorGroup(key, tuple(children), transform=compose(outer, matrix), compositing=NEUTRAL,
                                         extra={'docx_name': label.get('name', key) if label is not None else key})
@@ -181,11 +186,12 @@ def parse_group(drawing: Any, identifier: str, node_id: str, *, limits: Document
         if (geometry is None or geometry.get('prst') != 'rect' or line is None or line.find(A+'noFill') is None
                 or fill is None):
             raise ValueError('Native group requires explicit RGB rectangles without strokes')
-        if any(child.tag != A+'avLst' or len(child) for child in geometry):
+        if any(child.tag != A+'avLst' or len(child) for child in cancellable_items(geometry)):
             raise ValueError('Adjusted native geometry is outside the verified rectangle profile')
-        if any(child.tag not in {WPS+n for n in ('cNvPr', 'cNvSpPr', 'spPr', 'style', 'bodyPr')} for child in node):
+        if any(child.tag not in {WPS+n for n in ('cNvPr', 'cNvSpPr', 'spPr', 'style', 'bodyPr')}
+               for child in cancellable_items(node)):
             raise ValueError('Unsupported native shape member')
-        if any(len(child) for child in node if child.tag == WPS+'cNvPr'):
+        if any(len(child) for child in cancellable_items(node) if child.tag == WPS+'cNvPr'):
             raise ValueError('Native shape links/extensions need an explicit projection')
         if node.find('.//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}txbxContent') is not None:
             raise ValueError('Mixed native text group is outside the verified profile')
@@ -220,7 +226,7 @@ def parse_group(drawing: Any, identifier: str, node_id: str, *, limits: Document
         background, whole = root.find(WPC+'bg'), root.find(WPC+'whole')
         if background is None or len(background) != 1 or whole is None:
             raise ValueError('Canvas background/outline is outside the verified profile')
-        if any(child.tag != A+'ln' or child.find(A+'noFill') is None for child in whole):
+        if any(child.tag != A+'ln' or child.find(A+'noFill') is None for child in cancellable_items(whole)):
             raise ValueError('Canvas stroke/effect needs a verified native projection')
         canvas_background = None
         if background[0].tag == A+'solidFill':
@@ -241,9 +247,9 @@ def parse_group(drawing: Any, identifier: str, node_id: str, *, limits: Document
             raise ValueError('Native group viewport differs from its drawing frame')
         allowed = {WPG+n for n in ('cNvPr', 'cNvGrpSpPr', 'grpSpPr', 'grpSp')} | {WPS+'wsp'}
         paint_tags = {WPG+'grpSp', WPS+'wsp'}
-    if any(c.tag not in allowed for c in root):
+    if any(c.tag not in allowed for c in cancellable_items(root)):
         raise ValueError('Unsupported native group viewport member')
-    roots = tuple(visit(child, 1, matrix) for child in root if child.tag in paint_tags)
+    roots = tuple(visit(child, 1, matrix) for child in cancellable_items(root) if child.tag in paint_tags)
     if canvas_background is not None:
         roots = (canvas_background, *roots)
     return VectorScene(identifier, width, height, paths=tuple(paths), groups=tuple(groups), roots=roots,

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from pathlib import Path
 from typing import Any, Union
 
@@ -34,23 +34,33 @@ from opendoc_formats.readers.docx_style import (
 )
 from opendoc_formats.readers.docx_table import read_table
 from opendoc_formats.readers.docx_text import read_block_ooxml, read_paragraph
+from opendoc_formats.support.cancellation import cancellable_items, cancellation_scope, checkpoint
 from opendoc_formats.support.io import check_archive_safety
 from opendoc_formats.types import Block, BlockType, DocFormat, Table, Text
 
 
-def read_docx(path: Union[str, Path], *, include_tables: bool = True) -> Text:
+def read_docx(path: Union[str, Path], *, include_tables: bool = True, cancelled: Callable[[], bool] | None = None) -> Text:
+    """Read flat text with cooperative cancellation; never return a partial result."""
+    with cancellation_scope(cancelled, 'DOCX text import'):
+        return _read_docx(path, include_tables=include_tables)
+
+
+def _read_docx(path: Union[str, Path], *, include_tables: bool) -> Text:
     from docx import Document  # type: ignore[import-not-found]
 
     p = Path(path)
     if not p.is_file():
         raise FileNotFoundError(p)
     check_archive_safety(p)
+    checkpoint()
     doc = Document(str(p))
+    checkpoint()
     blocks: list[Block] = []
     tables: list[Table] = []
     plain: list[str] = []
 
     for para in doc.paragraphs:
+        checkpoint()
         t = para.text
         blocks.append(Block(type=BlockType.PARAGRAPH, text=t))
         if t:
@@ -58,9 +68,11 @@ def read_docx(path: Union[str, Path], *, include_tables: bool = True) -> Text:
 
     if include_tables:
         for tbl in doc.tables:
-            rows = [[cell.text for cell in row.cells] for row in tbl.rows]
+            checkpoint()
+            rows = [[cell.text for cell in cancellable_items(row.cells)] for row in cancellable_items(tbl.rows)]
             tables.append(Table(rows=rows))
             for row in rows:
+                checkpoint()
                 plain.append(" | ".join(row))
 
     return Text(
@@ -77,6 +89,15 @@ def read_docx_model(
     *,
     mode: ConversionMode = ConversionMode.BALANCED,
     limits: DocumentLimits | None = None,
+    cancelled: Callable[[], bool] | None = None,
+) -> DocumentModel:
+    """Import editable DOCX with resources and cooperative cancellation."""
+    with cancellation_scope(cancelled, 'DOCX model import'):
+        return _read_docx_model(path, mode=mode, limits=limits)
+
+
+def _read_docx_model(
+    path: Union[str, Path], *, mode: ConversionMode, limits: DocumentLimits | None,
 ) -> DocumentModel:
     """Импортировать DOCX в богатую модель с оформлением и ресурсами."""
 
@@ -88,27 +109,35 @@ def read_docx_model(
     if not source.is_file():
         raise FileNotFoundError(source)
     check_archive_safety(source)
+    checkpoint()
     document = OpenDocument(str(source))
+    checkpoint()
     model = DocumentModel(
         mode=mode,
         source_format=DocFormat.DOCX.value,
         metadata=_document_metadata(document, source),
     )
     model.package = _load_docx_package_graph(document)
+    checkpoint()
     from opendoc_formats.readers.docx_fonts import read_embedded_fonts
 
     model.resources.update(read_embedded_fonts(document, limits=limits))
+    checkpoint()
     model.metadata["docx_features"] = inspect_docx_features(document)
+    checkpoint()
     model.styles = read_document_styles(document, model)
+    checkpoint()
     document_defaults = read_document_defaults(document, model)
     if document_defaults is not None:
         model.styles["__doc_defaults__"] = document_defaults
         for style in model.styles.values():
+            checkpoint()
             if style.properties.style_type == 'paragraph' and style.properties.base_style_id is None:
                 style.properties['base_style_id'] = '__doc_defaults__'
 
     section_blocks: list[list[RichBlock]] = [[]]
     for item in _iter_container_content(document):
+        checkpoint()
         if isinstance(item, DocxParagraph):
             section_blocks[-1].append(read_paragraph(item, model))
             if item._p.pPr is not None and item._p.pPr.sectPr is not None:
@@ -121,6 +150,7 @@ def read_docx_model(
     if len(section_blocks) > 1 and not section_blocks[-1]:
         section_blocks.pop()
     for index, blocks in enumerate(section_blocks):
+        checkpoint()
         source_section = document.sections[min(index, len(document.sections) - 1)]
         model.sections.append(
             read_section(
@@ -136,8 +166,11 @@ def read_docx_model(
     from opendoc_formats.readers.docx_groups import attach_groups
 
     attach_groups(model, limits=limits)
+    checkpoint()
     attach_font_references(model, limits=limits)
+    checkpoint()
     _attach_docx_provenance(model, source)
+    checkpoint()
     attach_docx_diagnostics(document, model, source, limits=limits)
     return model
 
@@ -158,7 +191,8 @@ def _attach_docx_provenance(model: DocumentModel, source: Path) -> None:
         if getattr(block, "provenance", None) is None:
             block.provenance = origin(object_id, package_part, f"parsed {type(block).__name__.lower()}")
         surrogate = getattr(block, "visual_surrogate", None)
-        if surrogate is not None and not any(event.fallback_reason == surrogate.reason for event in block.provenance.events):
+        if surrogate is not None and not any(
+                event.fallback_reason == surrogate.reason for event in cancellable_items(block.provenance.events)):
             block.provenance = block.provenance.transformed(
                 "fallback.visual-surrogate",
                 detail=f"linked visual surrogate {surrogate.resource_id}",
@@ -166,6 +200,7 @@ def _attach_docx_provenance(model: DocumentModel, source: Path) -> None:
             )
         if isinstance(block, Paragraph):
             for inline_index, item in enumerate(block.content):
+                checkpoint()
                 if getattr(item, "provenance", None) is None:
                     item.provenance = origin(f"{object_id}-inline-{inline_index}", package_part, "parsed inline content")
                 item_surrogate = getattr(item, "visual_surrogate", None)
@@ -177,8 +212,11 @@ def _attach_docx_provenance(model: DocumentModel, source: Path) -> None:
                     )
         elif isinstance(block, RichTable):
             for row_index, row in enumerate(block.rows):
+                checkpoint()
                 for cell_index, cell in enumerate(row.cells):
+                    checkpoint()
                     for child_index, child in enumerate(cell.blocks):
+                        checkpoint()
                         annotate(child, f"{object_id}-r{row_index}-c{cell_index}-b{child_index}", package_part)
 
     collections = (
@@ -191,12 +229,16 @@ def _attach_docx_provenance(model: DocumentModel, source: Path) -> None:
         ("even_page_footers", "/word/footer.xml"),
     )
     for section_index, section in enumerate(model.sections):
+        checkpoint()
         if section.provenance is None:
             section.provenance = origin(f"section-{section_index}", "/word/document.xml", "parsed section properties")
         for collection_name, package_part in collections:
+            checkpoint()
             for block_index, block in enumerate(getattr(section, collection_name)):
+                checkpoint()
                 annotate(block, f"section-{section_index}-{collection_name}-{block_index}", package_part)
     for resource_id, resource in model.resources.items():
+        checkpoint()
         if resource.provenance is None:
             package_part = f"/word/media/{resource.filename}" if resource.filename else "/word/media"
             resource.provenance = origin(resource_id, package_part, "copied embedded resource")
@@ -214,7 +256,7 @@ def _load_docx_package_graph(document: Any) -> PackageGraph | None:
     supported.add(image_type)
     preview_ids = {
         node.get("{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id")
-        for node in document.element.iter("{urn:schemas-microsoft-com:vml}imagedata")
+        for node in cancellable_items(document.element.iter("{urn:schemas-microsoft-com:vml}imagedata"))
     }
     recursive = {
         RELATIONSHIP_TYPE["footnotes"],
@@ -243,8 +285,10 @@ def _document_uses_numbering(document: Any) -> bool:
 
     if document.element.xpath(".//w:pPr/w:numPr"):
         return True
-    used_style_ids = {node.get(qn("w:val")) for node in document.element.xpath(".//w:pPr/w:pStyle") if node.get(qn("w:val"))}
-    return any(style.style_id in used_style_ids and bool(style.element.xpath("./w:pPr/w:numPr")) for style in document.styles)
+    used_style_ids = {node.get(qn("w:val")) for node in cancellable_items(document.element.xpath(".//w:pPr/w:pStyle"))
+                      if node.get(qn("w:val"))}
+    return any(style.style_id in used_style_ids and bool(style.element.xpath("./w:pPr/w:numPr"))
+               for style in cancellable_items(document.styles))
 
 
 def _document_metadata(document: Any, source: Path) -> dict[str, Any]:
@@ -268,6 +312,7 @@ def _container_blocks(container: Any, model: DocumentModel) -> list[RichBlock]:
 
     result: list[RichBlock] = []
     for item in _iter_container_content(container):
+        checkpoint()
         if isinstance(item, DocxParagraph):
             result.append(read_paragraph(item, model))
         elif isinstance(item, DocxTable):
@@ -289,6 +334,7 @@ def _iter_container_content(container: Any) -> Iterator[Any]:
     parent = container._body if hasattr(container, "_body") else container
     root = parent._element
     for element in root.iterchildren():
+        checkpoint()
         if isinstance(element, CT_P):
             yield DocxParagraph(element, parent)
         elif isinstance(element, CT_Tbl):

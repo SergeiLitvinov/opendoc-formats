@@ -10,6 +10,7 @@ from opendoc_formats.readers.pptx_paragraph import (
     merge_text_styles,
     paragraph_properties,
 )
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 
 A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
 P = "{http://schemas.openxmlformats.org/presentationml/2006/main}"
@@ -33,7 +34,7 @@ def placeholder_chain(element: Any, layout: Any, master: Any) -> list[Any]:
         return []
     matches = [
         shape
-        for shape in layout.iter(P + "sp")
+        for shape in cancellable_items(layout.iter(P + "sp"))
         if (candidate := shape.find(f"{P}nvSpPr/{P}nvPr/{P}ph")) is not None and candidate.get("idx", "0") == ph.get("idx", "0")
     ]
     if len(matches) != 1:
@@ -47,7 +48,7 @@ def placeholder_chain(element: Any, layout: Any, master: Any) -> list[Any]:
         if master is None
         else [
             shape
-            for shape in master.iter(P + "sp")
+            for shape in cancellable_items(master.iter(P + "sp"))
             if (candidate := shape.find(f"{P}nvSpPr/{P}nvPr/{P}ph")) is not None and candidate.get("type", "obj") == kind
         ]
     )
@@ -59,6 +60,7 @@ def inherited_frame(chain: list[Any], element: Any) -> dict[str, Any]:
     # Otherwise add_shape's default centered anchor changes an imported top-aligned box.
     result = {"anchor": "t"}
     for shape in [*chain, element]:
+        checkpoint()
         result.update(frame_metadata(shape.find(P + "txBody")))
     return result
 
@@ -76,6 +78,7 @@ def inherited_paragraph(
 ) -> tuple[dict[str, Any], Any]:
     """Наложить свойства каждого уровня, сохранив независимость стилей фрагментов."""
     for shape in [*chain, None]:
+        checkpoint()
         current = shape.find(P + "txBody") if shape is not None else body
         if current is None:
             continue
@@ -83,11 +86,12 @@ def inherited_paragraph(
         if shape is not None:
             matching = [
                 paragraph.find(A + "pPr")
-                for paragraph in current.findall(A + "p")
+                for paragraph in cancellable_items(current.findall(A + "p"))
                 if paragraph.find(A + "pPr") is not None and paragraph.find(A + "pPr").get("lvl", "0") == str(level)
             ]
             nodes.extend(matching[:1])
         for properties in nodes:
+            checkpoint()
             if properties is None:
                 continue
             meta = merge_paragraph_settings(meta, paragraph_properties(properties, alignments))

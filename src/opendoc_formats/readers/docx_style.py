@@ -9,6 +9,7 @@ from opendoc_model.document_model import DocumentModel, Length, TextStyle
 
 from opendoc_formats.ooxml.layout import import_layout
 from opendoc_formats.ooxml.package import OOXML_NAMESPACES, RELATIONSHIP_TYPE, package_part_for_relationship
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 
 
 def read_document_styles(document: Any, model: DocumentModel | None = None) -> dict[str, TextStyle]:
@@ -16,6 +17,7 @@ def read_document_styles(document: Any, model: DocumentModel | None = None) -> d
 
     result: dict[str, TextStyle] = {}
     for style in document.styles:
+        checkpoint()
         if style.type not in {WD_STYLE_TYPE.PARAGRAPH, WD_STYLE_TYPE.CHARACTER, WD_STYLE_TYPE.TABLE}:
             continue
         properties = {
@@ -86,8 +88,8 @@ def read_document_defaults(document: Any, model: DocumentModel) -> TextStyle | N
 
 def read_run_style(run: Any, paragraph: Any, model: DocumentModel | None = None) -> TextStyle:
     sources = [run.font]
-    sources.extend(style.font for style in _style_chain(run.style))
-    sources.extend(style.font for style in _style_chain(paragraph.style))
+    sources.extend(style.font for style in cancellable_items(_style_chain(run.style)))
+    sources.extend(style.font for style in cancellable_items(_style_chain(paragraph.style)))
     direct_fields = [
         name
         for name in (
@@ -132,7 +134,7 @@ def read_run_style(run: Any, paragraph: Any, model: DocumentModel | None = None)
 
 def read_paragraph_properties(paragraph: Any) -> dict[str, Any]:
     properties = _resolved_paragraph_values(
-        [paragraph.paragraph_format, *[style.paragraph_format for style in _style_chain(paragraph.style)]]
+        [paragraph.paragraph_format, *[style.paragraph_format for style in cancellable_items(_style_chain(paragraph.style))]]
     )
     properties.update(_resolved_numbering_properties(paragraph))
     import_layout(properties, paragraph._p.pPr)
@@ -177,7 +179,7 @@ def _theme_color(model: DocumentModel, color_key: str) -> str | None:
 def document_theme_colors(model: DocumentModel) -> dict[str, str]:
     """Read the document DrawingML color scheme for shared OOXML adapters."""
     keys = ("dk1", "lt1", "dk2", "lt2", "accent1", "accent2", "accent3", "accent4", "accent5", "accent6", "hlink", "folHlink")
-    return {key: value for key in keys if (value := _theme_color(model, key)) is not None}
+    return {key: value for key in cancellable_items(keys) if (value := _theme_color(model, key)) is not None}
 
 
 def _xml_bool(parent: Any, local_name: str) -> bool | None:
@@ -203,7 +205,7 @@ def _xml_underline(parent: Any) -> bool | None:
 
 
 def _resolved_font_style(style: Any, *, properties: dict[str, Any], model: DocumentModel | None = None) -> TextStyle:
-    sources = [item.font for item in _style_chain(style)]
+    sources = [item.font for item in cancellable_items(_style_chain(style))]
     color = _font_color([style.font], model)
     properties.update(_font_color_properties([style.font], model))
     properties['docx_color_imported_value'] = color.to_dict() if isinstance(color, ColorValue) else color
@@ -226,6 +228,7 @@ def _style_chain(style: Any) -> list[Any]:
     seen: set[str] = set()
     current = style
     while current is not None and current.style_id not in seen:
+        checkpoint()
         seen.add(current.style_id)
         result.append(current)
         current = current.base_style
@@ -234,6 +237,7 @@ def _style_chain(style: Any) -> list[Any]:
 
 def _first_font_value(sources: list[Any], name: str) -> Any:
     for font in sources:
+        checkpoint()
         value = getattr(font, name)
         if value is not None:
             return value
@@ -244,6 +248,7 @@ def _font_family(sources: list[Any], model: DocumentModel | None) -> str | None:
     """Word theme references override literal fallback names at the same cascade level."""
 
     for font in sources:
+        checkpoint()
         records = font._element.xpath('./w:rPr/w:rFonts')
         if not records:
             continue
@@ -264,6 +269,7 @@ def _font_record_family(record: Any, model: DocumentModel | None) -> tuple[str |
     from docx.oxml.ns import qn
 
     for slot in ('ascii', 'hAnsi'):
+        checkpoint()
         theme = record.get(qn('w:' + slot + 'Theme'))
         if theme:
             return (_theme_typeface(model, theme) if model is not None else None), theme
@@ -283,6 +289,7 @@ def _underline(value: Any) -> bool | None:
 
 def _font_color(sources: list[Any], model: DocumentModel | None = None) -> ColorValue | str | None:
     for font in sources:
+        checkpoint()
         color, _ = _font_color_value(font, model)
         if color is not None:
             return color
@@ -291,6 +298,7 @@ def _font_color(sources: list[Any], model: DocumentModel | None = None) -> Color
 
 def _font_color_properties(sources: list[Any], model: DocumentModel | None) -> dict[str, Any]:
     for font in sources:
+        checkpoint()
         color, properties = _font_color_value(font, model)
         if color is not None:
             return properties
@@ -362,6 +370,7 @@ def _resolved_run_language(run: Any, paragraph: Any) -> str | None:
     if direct:
         return direct
     for style in [*_style_chain(run.style), *_style_chain(paragraph.style)]:
+        checkpoint()
         language = _style_language(style)
         if language:
             return language
@@ -379,6 +388,7 @@ def _style_language(style: Any) -> str | None:
     from docx.oxml.ns import qn
 
     for item in _style_chain(style):
+        checkpoint()
         language = item.element.xpath("./w:rPr/w:lang")
         if language:
             return language[0].get(qn("w:val"))
@@ -386,7 +396,7 @@ def _style_language(style: Any) -> str | None:
 
 
 def _style_paragraph_properties(style: Any) -> dict[str, Any]:
-    result = _resolved_paragraph_values([item.paragraph_format for item in _style_chain(style)])
+    result = _resolved_paragraph_values([item.paragraph_format for item in cancellable_items(_style_chain(style))])
     import_layout(result, style.element.pPr)
     return result
 
@@ -411,6 +421,7 @@ def _resolved_numbering_properties(paragraph: Any) -> dict[str, Any]:
         properties["numbering_source"] = "direct"
         return properties
     for style in _style_chain(paragraph.style):
+        checkpoint()
         properties = _numbering_properties(style.element.pPr)
         if properties:
             properties["numbering_source"] = "style"

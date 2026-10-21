@@ -10,6 +10,7 @@ from opendoc_model.document_model import Block, DocumentModel, Table, TableCell,
 from opendoc_formats.ooxml.borders import import_borders
 from opendoc_formats.ooxml.layout import import_common_layout, import_layout
 from opendoc_formats.ooxml.widths import import_width
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 
 BlockReader = Callable[[Any, DocumentModel], list[Block]]
 
@@ -22,10 +23,12 @@ def read_table(table: Any, model: DocumentModel, read_blocks: BlockReader) -> Ta
     active: dict[int, TableCell] = {}
     grid_count = len(table._tbl.tblGrid.gridCol_lst)
     for row in table.rows:
+        checkpoint()
         cells: list[TableCell] = []
         following: dict[int, TableCell] = {}
         column = 0
         for native_cell in row._tr.tc_lst:
+            checkpoint()
             cell = _Cell(native_cell, table)
             grid_span = cell._tc.xpath("./w:tcPr/w:gridSpan")
             column_span = int(grid_span[0].get(qn("w:val"), "1")) if grid_span else 1
@@ -36,15 +39,16 @@ def read_table(table: Any, model: DocumentModel, read_blocks: BlockReader) -> Ta
             if merge == 'continue':
                 origin = active.get(column)
                 if (origin is None or origin.column_span != column_span
-                        or any(active.get(index) is not origin for index in range(column, column + column_span))):
+                        or any(active.get(index) is not origin
+                               for index in cancellable_items(range(column, column + column_span)))):
                     raise ValueError('DOCX vertical merge has no matching origin cell')
-                if any(node.text for node in native_cell.iter(qn('w:t'))):
+                if any(node.text for node in cancellable_items(native_cell.iter(qn('w:t')))):
                     raise ValueError('DOCX merge continuation contains unresolved text')
                 from opendoc_formats.ooxml.merged_cell_borders import import_merge_borders
 
                 import_merge_borders(origin, native_cell.tcPr)
                 origin.row_span += 1
-                following.update({index: origin for index in range(column, column + column_span)})
+                following.update({index: origin for index in cancellable_items(range(column, column + column_span))})
                 column += column_span
                 continue
             if merge not in {None, 'restart'}:
@@ -59,7 +63,7 @@ def read_table(table: Any, model: DocumentModel, read_blocks: BlockReader) -> Ta
             import_borders(parsed_cell, cell._tc.tcPr)
             cells.append(parsed_cell)
             if merge == 'restart':
-                following.update({index: parsed_cell for index in range(column, column + column_span)})
+                following.update({index: parsed_cell for index in cancellable_items(range(column, column + column_span))})
             column += column_span
         active = following
         row_properties: dict[str, Any] = {}
@@ -81,7 +85,8 @@ def read_table(table: Any, model: DocumentModel, read_blocks: BlockReader) -> Ta
         }
     if table.alignment is not None:
         properties["alignment"] = table.alignment.name.lower()
-    grid_widths = [int(column.get(qn("w:w"))) for column in table._tbl.xpath("./w:tblGrid/w:gridCol") if column.get(qn("w:w"))]
+    grid_widths = [int(column.get(qn("w:w"))) for column in cancellable_items(table._tbl.xpath("./w:tblGrid/w:gridCol"))
+                   if column.get(qn("w:w"))]
     if grid_widths:
         properties["grid_widths_twips"] = grid_widths
     result = Table(rows=rows, style_id=style_id, properties=properties)
@@ -118,6 +123,7 @@ def _cell_properties(cell: Any) -> dict[str, Any]:
     if margins:
         values = {}
         for child in margins[0]:
+            checkpoint()
             value = child.get(qn("w:w"))
             if value is not None:
                 values[etree.QName(child).localname] = int(value)

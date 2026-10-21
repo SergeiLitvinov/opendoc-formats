@@ -30,6 +30,7 @@ from opendoc_formats.ooxml.paragraph_flow import native_flow_supported
 from opendoc_formats.ooxml.paragraph_indent import native_indents_supported
 from opendoc_formats.ooxml.spacing import native_spacing_supported
 from opendoc_formats.readers.docx_features import _relationship_feature
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 V = "{urn:schemas-microsoft-com:vml}"
@@ -62,7 +63,7 @@ def _feature(node: Any) -> str | None:
         return 'paragraph-flow'
     if node.tag == W + 'spacing' and not native_spacing_supported(node):
         return 'line-spacing'
-    if node.tag == W + 'tabs' and any(child.get(W + 'val') in ('start', 'end', 'num') for child in node):
+    if node.tag == W + 'tabs' and any(child.get(W + 'val') in ('start', 'end', 'num') for child in cancellable_items(node)):
         return 'tab-stops-semantics'
     if node.tag in {W + 'tblInd', W + 'tabs'} and not native_layout_supported(node):
         return 'table-indent' if node.tag == W + 'tblInd' else 'tab-stops'
@@ -89,20 +90,23 @@ def _retained_fragments(model: DocumentModel) -> Counter[bytes]:
     retained: Counter[bytes] = Counter()
     pending: list[Any] = [model.sections, model.metadata]
     while pending:
+        checkpoint()
         value = pending.pop()
         if is_dataclass(value) and not isinstance(value, type):
-            pending.extend(getattr(value, field.name) for field in fields(value))
+            pending.extend(getattr(value, field.name) for field in cancellable_items(fields(value)))
         elif isinstance(value, (list, tuple)):
             pending.extend(value)
         elif isinstance(value, dict):
             for key, item in value.items():
+                checkpoint()
                 if key in _XML_KEYS:
                     for fragment in item if isinstance(item, list) else [item]:
+                        checkpoint()
                         if not isinstance(fragment, str):
                             continue
                         try:
                             root = _parse(fragment)
-                            retained.update(_fingerprint(node) for node in root.iter() if _feature(node))
+                            retained.update(_fingerprint(node) for node in cancellable_items(root.iter()) if _feature(node))
                         except (etree.XMLSyntaxError, etree.C14NError):
                             continue
                 else:
@@ -127,6 +131,7 @@ def attach_docx_diagnostics(document: Any, model: DocumentModel, source: Path, *
         ))
 
     for part in document.part.package.iter_parts():
+        checkpoint()
         name = str(part.partname)
         stored = graph.parts.get(name) if graph is not None else None
         complete_part = stored is not None and stored.data == part.blob
@@ -137,6 +142,7 @@ def attach_docx_diagnostics(document: Any, model: DocumentModel, source: Path, *
                 root = None
             if root is not None:
                 for node in root.iter():
+                    checkpoint()
                     feature = _feature(node)
                     if feature is None:
                         continue
@@ -154,6 +160,7 @@ def attach_docx_diagnostics(document: Any, model: DocumentModel, source: Path, *
                         fragments[fingerprint] -= 1
                     record(feature, kept, name, "xpath=" + node.getroottree().getpath(node), node.get(W + "id"))
         for relation in part.rels.values():
+            checkpoint()
             feature = _relationship_feature(relation.reltype)
             if feature is None:
                 continue
@@ -162,11 +169,13 @@ def attach_docx_diagnostics(document: Any, model: DocumentModel, source: Path, *
                 not relation.is_external and graph is not None and target in graph.parts
                 and graph.parts[target].data == relation.target_part.blob
                 and any(edge.source == name and edge.id == relation.rId and edge.target == target
-                        and not edge.external and edge.relationship_type == relation.reltype for edge in graph.relationships)
+                        and not edge.external and edge.relationship_type == relation.reltype
+                        for edge in cancellable_items(graph.relationships))
             )
             record("relationship." + feature, target_kept, name, "relationship=" + relation.rId, relation.rId,
                    {"target": target, "external": relation.is_external})
     for reference in walk_model(model, limits=limits):
+        checkpoint()
         if isinstance(reference.node, TableCell) and reference.node.properties.get('docx_merge_borders_unsupported'):
             records.append(PreservationRecord(
                 issue=DiagnosticIssue('docx.merge-borders', IssueSeverity.LOSS,
@@ -178,6 +187,7 @@ def attach_docx_diagnostics(document: Any, model: DocumentModel, source: Path, *
     existing = get_integration(model, limits=limits) or IntegrationModel()
     set_integration(model, replace(existing,
         preservation=(*existing.preservation, *records),
-        assessed_features=tuple(dict.fromkeys((*existing.assessed_features, *(record.issue.code for record in records)))),
+        assessed_features=tuple(dict.fromkeys((*existing.assessed_features,
+                                              *(record.issue.code for record in cancellable_items(records))))),
         assessment_complete=False,
     ), limits=limits)

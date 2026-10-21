@@ -6,6 +6,8 @@ from typing import Any
 
 from opendoc_model.document_model import Paragraph, Table, TextRun
 
+from opendoc_formats.support.cancellation import checkpoint
+
 A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
 
 
@@ -30,7 +32,9 @@ def _font_scheme(part: Any) -> dict[str, str] | None:
         return None
     result = {}
     for family, prefix in (("majorFont", "+mj"), ("minorFont", "+mn")):
+        checkpoint()
         for tag, suffix in (("latin", "lt"), ("ea", "ea"), ("cs", "cs")):
+            checkpoint()
             font = scheme.find(f"{A}{family}/{A}{tag}")
             if font is not None and (name := font.get("typeface")):
                 result[f"{prefix}-{suffix}"] = name
@@ -47,6 +51,7 @@ def slide_theme_fonts(slide: Any) -> dict[str, str]:
         theme = _related(slide.part.package.main_document_part, RT.THEME)
     result = _font_scheme(theme) or {}
     for part in (layout.part, slide.part):
+        checkpoint()
         override = _font_scheme(_related(part, RT.THEME_OVERRIDE))
         if override is not None:
             result = override
@@ -55,14 +60,19 @@ def slide_theme_fonts(slide: Any) -> dict[str, str]:
 
 def materialize_theme_fonts(blocks: list[Any], fonts: dict[str, str]) -> None:
     for block in blocks:
+        checkpoint()
         if isinstance(block, Table):
             for row in block.rows:
+                checkpoint()
                 for cell in row.cells:
+                    checkpoint()
                     materialize_theme_fonts(cell.blocks, fonts)
         elif isinstance(block, Paragraph):
             for item in block.content:
+                checkpoint()
                 if isinstance(item, TextRun) and item.style.font_family in fonts:
                     item.style.font_family = fonts[item.style.font_family]
             for paragraph in block.properties.get("pptx", {}).get("paragraphs", []):
+                checkpoint()
                 if paragraph.get("bullet_font") in fonts:
                     paragraph["bullet_font"] = fonts[paragraph["bullet_font"]]

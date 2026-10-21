@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
+
 C = "{http://schemas.openxmlformats.org/drawingml/2006/chart}"
 
 
@@ -20,6 +22,7 @@ def indexed_numbers(node: Any) -> list[str | None]:
         count = int(count_node.get("val")) if count_node is not None else 0
         values = {}
         for point in cache.findall(C + "pt"):
+            checkpoint()
             index = int(point.get("idx", "-1"))
             if index < 0 or index >= 100000 or index in values:
                 return []
@@ -27,8 +30,8 @@ def indexed_numbers(node: Any) -> list[str | None]:
             values[index] = value.text if value is not None else None
         if count_node is None:
             count = max(values, default=-1) + 1
-        if not 0 <= count <= 100000 or any(index >= count for index in values):
+        if not 0 <= count <= 100000 or any(index >= count for index in cancellable_items(values)):
             return []
-        return [values.get(index) for index in range(count)]
+        return [values.get(index) for index in cancellable_items(range(count))]
     except (ValueError, TypeError):
         return []

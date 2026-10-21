@@ -246,7 +246,7 @@ def read_document(path: str | Path, *, format_id: str | None = None, options: Im
 
 def _docx(path: Path, options: ImportOptions) -> DocumentModel:
     reader = cast(Callable[..., DocumentModel], import_module("opendoc_formats.readers.docx").read_docx_model)
-    return reader(path, limits=options.document_limits)
+    return reader(path, limits=options.document_limits, cancelled=options.cancelled)
 
 
 def _tex(path: Path, options: ImportOptions) -> DocumentModel:
@@ -258,7 +258,7 @@ def _tex(path: Path, options: ImportOptions) -> DocumentModel:
 
 def _pptx(path: Path, options: ImportOptions) -> DocumentModel:
     reader = cast(Callable[..., DocumentModel], import_module("opendoc_formats.readers.pptx").read_pptx_model)
-    return reader(path, limits=options.document_limits)
+    return reader(path, limits=options.document_limits, cancelled=options.cancelled)
 
 
 def _epub(path: Path, options: ImportOptions) -> DocumentModel:

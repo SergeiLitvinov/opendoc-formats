@@ -251,6 +251,19 @@ def main() -> None:
                 assert result.success, result.issues
                 assert result.document.validate() == []
                 assert "Cell" in str(result.document)
+                if format_id in {'docx', 'pptx'}:
+                    native_polls = 0
+
+                    def stop_native() -> bool:
+                        nonlocal native_polls
+                        native_polls += 1
+                        return native_polls >= 12
+
+                    cancelled = read_document(path, options=ImportOptions(cancelled=stop_native))
+                    assert native_polls == 12
+                    assert cancelled.document is None and any(issue.code == 'import.cancelled' for issue in cancelled.issues)
+                    assert hashlib.sha256(path.read_bytes()).hexdigest() == digest
+                    assert document_to_json(read_document(path).document) == document_to_json(result.document)
             if args.all_formats and format_id == "docx":
                 from opendoc_model import (
                     Heading,

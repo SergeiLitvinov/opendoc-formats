@@ -20,6 +20,7 @@ from opendoc_model.units import emu_to_points, ooxml_angle_to_degrees
 
 from opendoc_formats.ooxml.color import resolve_drawingml_color
 from opendoc_formats.readers.svg_color import parse_svg_color, svg_color_catalog
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 
 
 def read_run_images(run: Any, model: DocumentModel) -> list[Image]:
@@ -30,7 +31,8 @@ def read_run_images(run: Any, model: DocumentModel) -> list[Image]:
 
     images: list[Image] = stage_groups(run, model)
     for blip in run._r.xpath(".//a:blip"):
-        if any(etree.QName(a).localname in {'wgp', 'wpc'} for a in blip.iterancestors()):
+        checkpoint()
+        if any(etree.QName(a).localname in {'wgp', 'wpc'} for a in cancellable_items(blip.iterancestors())):
             continue  # A group is one semantic viewport, never extra flattened blips.
         relationship_id = blip.get(qn("r:embed"))
         fallback_part = run.part.related_parts.get(relationship_id) if relationship_id else None
@@ -39,7 +41,8 @@ def read_run_images(run: Any, model: DocumentModel) -> list[Image]:
             continue
         resource_id = _add_image_resource(image_part, model)
         drawing = next(
-            (ancestor for ancestor in blip.iterancestors() if etree.QName(ancestor).localname in {"inline", "anchor"}),
+            (ancestor for ancestor in cancellable_items(blip.iterancestors())
+             if etree.QName(ancestor).localname in {"inline", "anchor"}),
             None,
         )
         extent = drawing.xpath("./wp:extent") if drawing is not None else []
@@ -84,13 +87,16 @@ def read_run_vml_colors(run: Any) -> tuple[list[dict[str, Any]], list[str]]:
     colors: list[dict[str, Any]] = []
     xml: list[str] = []
     for shape in run._r.xpath(".//*[local-name()='shape' or local-name()='rect' or local-name()='oval']"):
+        checkpoint()
         xml.append(etree.tostring(shape, encoding="unicode"))
         for attribute, role in (("fillcolor", "fill"), ("strokecolor", "stroke")):
+            checkpoint()
             raw = shape.get(attribute)
             color = parse_svg_color(raw) if raw else None
             if color is not None:
                 colors.append({"element": etree.QName(shape).localname, "role": role, "color": color.to_dict()})
         for child in shape:
+            checkpoint()
             local_name = etree.QName(child).localname
             if local_name not in {"fill", "stroke"}:
                 continue
@@ -120,6 +126,7 @@ def _preferred_svg_part(blip: Any, run: Any) -> Any | None:
     from docx.oxml.ns import qn
 
     for svg_blip in blip.xpath(".//*[local-name()='svgBlip']"):
+        checkpoint()
         relationship_id = svg_blip.get(qn("r:embed"))
         part = run.part.related_parts.get(relationship_id) if relationship_id else None
         if part is not None and getattr(part, "content_type", None) == "image/svg+xml":
@@ -171,17 +178,18 @@ def _drawing_properties(drawing: Any) -> dict[str, Any]:
     if placement != "anchor":
         return properties
     for axis in ("H", "V"):
+        checkpoint()
         positions = drawing.xpath(f"./wp:position{axis}")
         if not positions:
             continue
         position = positions[0]
         prefix = "horizontal" if axis == "H" else "vertical"
         properties[f"{prefix}_relative_from"] = position.get("relativeFrom")
-        align = next((child for child in position if etree.QName(child).localname == "align"), None)
+        align = next((child for child in cancellable_items(position) if etree.QName(child).localname == "align"), None)
         if align is not None:
             properties[f"{prefix}_align"] = align.text
     wrap_element = next(
-        (child for child in drawing if etree.QName(child).localname.startswith("wrap")),
+        (child for child in cancellable_items(drawing) if etree.QName(child).localname.startswith("wrap")),
         None,
     )
     if wrap_element is not None:
@@ -189,13 +197,13 @@ def _drawing_properties(drawing: Any) -> dict[str, Any]:
         if wrap_element.get("wrapText") is not None:
             properties["wrap_text"] = wrap_element.get("wrapText")
         polygon = next(
-            (child for child in wrap_element if etree.QName(child).localname == "wrapPolygon"),
+            (child for child in cancellable_items(wrap_element) if etree.QName(child).localname == "wrapPolygon"),
             None,
         )
         if polygon is not None:
             points = [
                 {"x": int(point.get("x", "0")), "y": int(point.get("y", "0"))}
-                for point in polygon
+                for point in cancellable_items(polygon)
                 if etree.QName(point).localname in {"start", "lineTo"}
             ]
             properties["wrap_polygon"] = {
@@ -208,6 +216,7 @@ def _drawing_properties(drawing: Any) -> dict[str, Any]:
         ("allowOverlap", "allow_overlap"),
         ("relativeHeight", "relative_height"),
     ):
+        checkpoint()
         value = drawing.get(source_name)
         if value is not None:
             properties[target_name] = int(value) if value.isdigit() else value
@@ -258,10 +267,11 @@ def _drawing_effects(blip: Any, model: DocumentModel) -> dict[str, Any]:
         if transform.get("flipV") is not None:
             properties["flip_vertical"] = transform.get("flipV") in {"1", "true", "on"}
 
-    effect_nodes = [child for child in blip if etree.QName(child).localname != "extLst"]
+    effect_nodes = [child for child in cancellable_items(blip) if etree.QName(child).localname != "extLst"]
     if effect_nodes:
-        properties["blip_effects_xml"] = [etree.tostring(child, encoding="unicode") for child in effect_nodes]
+        properties["blip_effects_xml"] = [etree.tostring(child, encoding="unicode") for child in cancellable_items(effect_nodes)]
     for child in effect_nodes:
+        checkpoint()
         local_name = etree.QName(child).localname
         if local_name == "alphaModFix" and child.get("amt") is not None:
             properties["opacity"] = int(child.get("amt")) / 100000
@@ -275,7 +285,7 @@ def _drawing_effects(blip: Any, model: DocumentModel) -> dict[str, Any]:
     lines = shape_properties[0].xpath("./a:ln")
     if lines:
         properties["line_xml"] = etree.tostring(lines[0], encoding="unicode")
-        solid = next((child for child in lines[0] if etree.QName(child).localname == "solidFill"), None)
+        solid = next((child for child in cancellable_items(lines[0]) if etree.QName(child).localname == "solidFill"), None)
         if solid is not None:
             from opendoc_formats.readers.docx_style import document_theme_colors
 
@@ -283,7 +293,7 @@ def _drawing_effects(blip: Any, model: DocumentModel) -> dict[str, Any]:
             if color is not None:
                 properties["stroke_color"] = color.to_dict()
                 properties["stroke_color_source"] = metadata
-    fill = next((child for child in shape_properties[0] if etree.QName(child).localname == "solidFill"), None)
+    fill = next((child for child in cancellable_items(shape_properties[0]) if etree.QName(child).localname == "solidFill"), None)
     if fill is not None:
         from opendoc_formats.readers.docx_style import document_theme_colors
 

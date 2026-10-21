@@ -9,6 +9,8 @@ from typing import Any
 from opendoc_model.document_model import PackageGraph, PackagePart, PackageRelationship
 from opendoc_model.units import EMU_PER_POINT, points_to_emu
 
+from opendoc_formats.support.cancellation import checkpoint
+
 DOCX_ROOT_PART = "/word/document.xml"
 
 OOXML_NAMESPACES = {
@@ -55,6 +57,7 @@ def load_package_graph(
 
     graph = PackageGraph(format=format_name, root=str(root_part.partname))
     for relationship in root_part.rels.values():
+        checkpoint()
         if relationship.reltype not in supported_relationships or relationship.is_external:
             continue
         if include is not None and not include(relationship):
@@ -172,11 +175,13 @@ def _reserve_relationship_id(root_part: Any, relationship_id: str, protected_roo
 
 
 def _load_descendants(part: Any, graph: PackageGraph, visited: set[str]) -> None:
+    checkpoint()
     source_name = str(part.partname)
     if source_name in visited:
         return
     visited.add(source_name)
     for relationship in part.rels.values():
+        checkpoint()
         target = relationship.target_ref
         if not relationship.is_external:
             target_part = relationship.target_part
@@ -195,8 +200,10 @@ def _load_descendants(part: Any, graph: PackageGraph, visited: set[str]) -> None
 
 
 def _add_part(graph: PackageGraph, part: Any) -> str:
+    checkpoint()
     name = str(part.partname)
     graph.add_part(PackagePart(name, part.content_type, part.blob))
+    checkpoint()
     return name
 
 

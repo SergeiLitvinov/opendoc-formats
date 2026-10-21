@@ -19,6 +19,7 @@ python-pptx, чтобы не потерять контейнеры ``mc:Alternat
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional, Union
@@ -53,8 +54,10 @@ from opendoc_model.document_model import (
 )
 from opendoc_model.units import canonical_coordinate_contract, emu_to_points, ooxml_angle_to_degrees
 
+from opendoc_formats.errors import OperationCancelledError
 from opendoc_formats.ooxml.color import resolve_drawingml_color
 from opendoc_formats.readers.pptx_diagnostics import PptxDiagnostics
+from opendoc_formats.support.cancellation import cancellable_items, cancellation_scope, checkpoint
 from opendoc_formats.support.io import check_archive_safety
 from opendoc_formats.types import Block, BlockType, DocFormat, Table, Text
 
@@ -259,6 +262,7 @@ def _walk_layout_placeholder(
 ) -> Optional[tuple[float, float, float, float, float, bool, bool]]:
     """Найти в spTree placeholder с подходящим типом/idx и вернуть его xfrm в EMU."""
     for child in sp_tree:
+        checkpoint()
         tag = _local_name(child)
         if tag == "grpSp":
             result = _walk_layout_placeholder(child, _group_child_transform(child, transform), ph_type, ph_idx)
@@ -282,6 +286,7 @@ def _placeholder_geometry(element: Any, state: _ImporterState) -> Optional[tuple
 
     chain = placeholder_chain(element, state.layout_element, state.master_element)
     for parent, sp_tree in zip(reversed(chain), (state.layout_element, state.master_element)):
+        checkpoint()
         ph = _placeholder_info(parent)
         result = _walk_layout_placeholder(sp_tree, _Transform(), ph[0], ph[1])
         if result is not None:
@@ -297,10 +302,12 @@ def _merge_tx_styles(element: Any, context: dict[str, dict[int, _LevelDefaults]]
     if tx_styles is None:
         return
     for category, tag in (("title", "titleStyle"), ("body", "bodyStyle"), ("other", "otherStyle")):
+        checkpoint()
         style_el = tx_styles.find(_p(tag))
         if style_el is None:
             continue
         for level in range(1, 10):
+            checkpoint()
             lvl_el = style_el.find(_a(f"lvl{level}pPr"))
             if lvl_el is None:
                 continue
@@ -356,7 +363,13 @@ def _level_defaults(
     return ((style_context or {}).get(category) or {}).get(max(1, min(9, level + 1)))
 
 
-def read_pptx(path: Union[str, Path], *, include_tables: bool = True) -> Text:
+def read_pptx(path: Union[str, Path], *, include_tables: bool = True, cancelled: Callable[[], bool] | None = None) -> Text:
+    """Read flat slide text with cooperative cancellation and no partial result."""
+    with cancellation_scope(cancelled, 'PPTX text import'):
+        return _read_pptx(path, include_tables=include_tables)
+
+
+def _read_pptx(path: Union[str, Path], *, include_tables: bool) -> Text:
     """Достать плоский текст презентации: все текстовые кадры всех слайдов.
 
     Возвращает ``Text`` с блоками-параграфами и (опционально) таблицами.
@@ -367,13 +380,17 @@ def read_pptx(path: Union[str, Path], *, include_tables: bool = True) -> Text:
     if not source.is_file():
         raise FileNotFoundError(source)
     check_archive_safety(source)
+    checkpoint()
     presentation = Presentation(str(source))
+    checkpoint()
     blocks: list[Block] = []
     tables: list[Table] = []
     plain: list[str] = []
 
     for slide_index, slide in enumerate(presentation.slides, start=1):
+        checkpoint()
         for shape in slide.shapes:
+            checkpoint()
             if getattr(shape, "has_text_frame", False) and shape.has_text_frame:
                 text = shape.text_frame.text.strip()
                 if text:
@@ -382,7 +399,8 @@ def read_pptx(path: Union[str, Path], *, include_tables: bool = True) -> Text:
             if include_tables and getattr(shape, "has_table", False) and shape.has_table:
                 rows: list[list[str]] = []
                 for row in shape.table.rows:
-                    cells = [cell.text_frame.text for cell in row.cells]
+                    checkpoint()
+                    cells = [cell.text_frame.text for cell in cancellable_items(row.cells)]
                     rows.append(cells)
                     plain.append(" | ".join(cells))
                 tables.append(Table(rows=rows, page=slide_index))
@@ -402,6 +420,15 @@ def read_pptx_model(
     *,
     mode: ConversionMode = ConversionMode.BALANCED,
     limits: DocumentLimits | None = None,
+    cancelled: Callable[[], bool] | None = None,
+) -> DocumentModel:
+    """Import editable PPTX with resources and cooperative cancellation."""
+    with cancellation_scope(cancelled, 'PPTX model import'):
+        return _read_pptx_model(path, mode=mode, limits=limits)
+
+
+def _read_pptx_model(
+    path: Union[str, Path], *, mode: ConversionMode, limits: DocumentLimits | None,
 ) -> DocumentModel:
     """Импортировать PPTX в богатую модель: слайды → секции, фигуры → блоки.
 
@@ -420,7 +447,9 @@ def read_pptx_model(
     if not source.is_file():
         raise FileNotFoundError(source)
     check_archive_safety(source)
+    checkpoint()
     presentation = Presentation(str(source))
+    checkpoint()
     model = DocumentModel(
         mode=mode,
         source_format=DocFormat.PPTX.value,
@@ -449,12 +478,14 @@ def read_pptx_model(
     # archive identities first so provenance still points into the source ZIP.
     original_parts = {
         id(relation.target_part): str(relation.target_part.partname)
-        for relation in presentation.part.rels.values()
+        for relation in cancellable_items(presentation.part.rels.values())
         if not relation.is_external and relation.reltype.endswith("/slide")
     }
     for slide_index, slide in enumerate(presentation.slides, start=1):
+        checkpoint()
         state.source_part = original_parts[id(slide.part)]
         diagnostics.slide(slide, slide_index, state.source_part)
+        checkpoint()
         state.slide_index = slide_index
         state.layout_element = _layout_sp_tree(slide)
         state.master_element = _master_sp_tree(slide)
@@ -464,9 +495,11 @@ def read_pptx_model(
         sp_tree = _slide_sp_tree(slide)
         if sp_tree is not None:
             _collect_sp_tree(sp_tree, slide.part, state, blocks, _Transform(), style_context)
+        checkpoint()
         from opendoc_formats.readers.pptx_theme_fonts import materialize_theme_fonts, slide_theme_fonts
 
         materialize_theme_fonts(blocks, slide_theme_fonts(slide))
+        checkpoint()
         section = Section(blocks=blocks, page=page, provenance=state.origin(object_id=f"slide-{slide_index}"))
         background_color = _background_color(slide, state.theme_colors)
         background = background_color.to_hex() if background_color is not None else None
@@ -523,6 +556,7 @@ def _collect_sp_tree(
     style_context: dict[str, dict[int, _LevelDefaults]] | None,
 ) -> None:
     for child in sp_tree:
+        checkpoint()
         tag = _local_name(child)
         if tag == "AlternateContent":
             _collect_alternate_content(child, slide_part, state, blocks, transform, style_context)
@@ -582,10 +616,12 @@ def _collect_shape_element(
         _handle_graphic_frame(element, slide_part, state, blocks, box)
     if affine is not None:
         for block in blocks[first_block:]:
+            checkpoint()
             _set_pptx_affine(block, affine)
     from opendoc_formats.readers.pptx_geometry import remember_shape_identity
 
     for block in blocks[first_block:]:
+        checkpoint()
         remember_shape_identity(block, element)
 
 
@@ -601,6 +637,7 @@ def _collect_alternate_content(
     if choice is None:
         return
     for child in choice:
+        checkpoint()
         if _local_name(child) in _SHAPE_TAGS:
             _collect_shape_element(child, slide_part, state, blocks, transform, style_context)
 
@@ -612,8 +649,8 @@ def _apply_transform(transform: _Transform, x: float, y: float, cx: float, cy: f
         transform.matrix.point(x, y + cy),
         transform.matrix.point(x + cx, y + cy),
     )
-    xs = [point[0] for point in points]
-    ys = [point[1] for point in points]
+    xs = [point[0] for point in cancellable_items(points)]
+    ys = [point[1] for point in cancellable_items(points)]
     return min(xs), min(ys), max(xs) - min(xs), max(ys) - min(ys)
 
 
@@ -796,6 +833,7 @@ def _handle_text_shape(
     content: list[Any] = []
     paras_meta: list[dict[str, Any]] = []
     for index, p_el in enumerate(paragraphs):
+        checkpoint()
         meta = _paragraph_metadata(p_el)
         defaults = _level_defaults(style_context, category, int(meta.get("level", 0)))
         base_style = defaults.style if defaults else None
@@ -855,6 +893,7 @@ def _shape_paragraph_from_element(element: Any, box: Box, slide_part: Any, theme
     if tx_body is not None:
         paragraphs = tx_body.findall(_a("p"))
         for index, p_el in enumerate(paragraphs):
+            checkpoint()
             _append_paragraph_runs(p_el, content, slide_part)
             if index < len(paragraphs) - 1:
                 content.append(TextRun(text="\n"))
@@ -878,6 +917,7 @@ def _append_paragraph_runs(
     defaults = p_el.find(f"{_a('pPr')}/{_a('defRPr')}")
     inherited = merge_text_styles(inherited, _run_style(defaults, theme_colors))
     for child in p_el:
+        checkpoint()
         tag = _local_name(child)
         if tag == "r":
             run = _parse_run(child, slide_part, inherited, theme_colors)
@@ -890,7 +930,7 @@ def _append_paragraph_runs(
             if formula is not None:
                 content.append(formula)
         elif tag == "fld":
-            text = "".join(t.text or "" for t in child.iter(_a("t")))
+            text = "".join(t.text or "" for t in cancellable_items(child.iter(_a("t"))))
             if text:
                 content.append(TextRun(text=text))
         elif tag == "t":
@@ -903,7 +943,7 @@ def _parse_run(
 ) -> Optional[TextRun]:
     from opendoc_formats.readers.pptx_paragraph import merge_text_styles
 
-    text = "".join(t.text or "" for t in r_el.findall(_a("t")))
+    text = "".join(t.text or "" for t in cancellable_items(r_el.findall(_a("t"))))
     r_pr = r_el.find(_a("rPr"))
     style = merge_text_styles(inherited, _run_style(r_pr, theme_colors))
     link = None
@@ -987,7 +1027,7 @@ def _parse_omml(m_el: Any) -> Optional[Formula]:
         xml = etree.tostring(target, encoding="unicode")
     except Exception:  # noqa: BLE001
         return None
-    fallback = "".join(t.text or "" for t in target.iter(_m("t")))
+    fallback = "".join(t.text or "" for t in cancellable_items(target.iter(_m("t"))))
     return Formula(value=xml, format=FormulaFormat.OMML, fallback_text=fallback, display=False)
 
 
@@ -1055,6 +1095,7 @@ def _shape_fill(sp_pr: Any, theme_colors: dict[str, str] | None = None) -> tuple
 def _gradient_colors(gradient: Any, theme_colors: dict[str, str] | None = None) -> list[dict[str, Any]]:
     result: list[dict[str, Any]] = []
     for stop in gradient.findall(f".//{_a('gs')}"):
+        checkpoint()
         color, metadata = _resolve_color_value(stop, theme_colors)
         if color is None:
             continue
@@ -1165,12 +1206,14 @@ def _read_chart_data(slide_part: Any, r_id: str) -> dict[str, Any]:
             ("depthPercent", "depth_percent", _chart_float),
             ("rAngAx", "right_angle_axes", _chart_bool),
         ):
+            checkpoint()
             element = view3d.find(_c(tag))
             if element is not None and element.get("val") is not None:
                 view[key] = cast(element.get("val"))
         if view:
             data["view3d"] = view
     for tag, key in (("sideWall", "side_wall"), ("backWall", "back_wall")):
+        checkpoint()
         wall = chart.find(_c(tag))
         if wall is not None:
             wall_info = _chart_wall_floor(wall, theme_colors)
@@ -1196,11 +1239,12 @@ def _read_chart_data(slide_part: Any, r_id: str) -> dict[str, Any]:
         chart_nodes: list[Any] = []
         node_value_ids: list[str | None] = []
         for child in plot_area:
+            checkpoint()
             tag = _local_name(child)
             if not tag.endswith("Chart"):
                 continue
             chart_nodes.append(child)
-            ids = [el.get("val") for el in child.findall(_c("axId")) if el.get("val")]
+            ids = [el.get("val") for el in cancellable_items(child.findall(_c("axId"))) if el.get("val")]
             node_value_ids.append(ids[1] if len(ids) > 1 else None)
         if not chart_nodes:
             data["chart_type"] = None
@@ -1210,6 +1254,7 @@ def _read_chart_data(slide_part: Any, r_id: str) -> dict[str, Any]:
         if axes:
             data["axes"] = axes
         for tag, element, ax_id in axis_elements:
+            checkpoint()
             axis_title = _chart_element_title(element)
             if not axis_title:
                 continue
@@ -1220,7 +1265,7 @@ def _read_chart_data(slide_part: Any, r_id: str) -> dict[str, Any]:
             else:
                 data["secondary_value_axis_title"] = axis_title
         if len(chart_nodes) > 1:
-            data["combo_types"] = [_local_name(node) for node in chart_nodes]
+            data["combo_types"] = [_local_name(node) for node in cancellable_items(chart_nodes)]
         primary_tag = _local_name(chart_nodes[0])
         if primary_tag in {"scatterChart", "bubbleChart"} and len(chart_nodes) == 1:
             if "secondary_value" in axes:
@@ -1255,18 +1300,20 @@ def _read_chart_data(slide_part: Any, r_id: str) -> dict[str, Any]:
         series: list[dict[str, Any]] = []
         categories: list[str] = []
         for node_index, node in enumerate(chart_nodes):
+            checkpoint()
             node_tag = _local_name(node)
             series_index = 0
             node_value_id = node_value_ids[node_index] if node_index < len(node_value_ids) else None
             secondary = bool(secondary_value_id) and node_value_id == secondary_value_id
             for ser in node.findall(_c("ser")):
+                checkpoint()
                 from opendoc_formats.readers.pptx_chart_data import cached_values, numeric_series, plot_settings
 
                 tx = ser.find(_c("tx"))
                 name = _pt_values(tx)[0] if tx is not None and _pt_values(tx) else ""
                 cat = ser.find(_c("cat"))
                 if cat is not None:
-                    cats = [value if value is not None else "" for value in cached_values(cat)]
+                    cats = [value if value is not None else "" for value in cancellable_items(cached_values(cat))]
                     if not categories:
                         categories = cats
                 val = ser.find(_c("val"))
@@ -1318,6 +1365,7 @@ def _collect_axes(plot_area: Any) -> list[tuple[str, Any, str | None]]:
     """Собрать все оси диаграммы с их ``axId``: (тип, элемент, axId)."""
     axes: list[tuple[str, Any, str | None]] = []
     for child in plot_area:
+        checkpoint()
         tag = _local_name(child)
         if tag not in {"catAx", "dateAx", "valAx", "serAx"}:
             continue
@@ -1334,6 +1382,7 @@ def _build_axes(axis_elements: list[tuple[str, Any, str | None]], primary_value_
     series_axis: dict[str, Any] | None = None
     value_axes: dict[str, Any] = {}
     for tag, element, ax_id in axis_elements:
+        checkpoint()
         info = _chart_axis_info(element)
         if info is None:
             continue
@@ -1391,6 +1440,7 @@ def _load_theme_colors(slide_part: Any) -> dict[str, str]:
         if scheme is None:
             return colors
         for child in scheme:
+            checkpoint()
             key = _local_name(child)
             srgb = child.find(_a("srgbClr"))
             if srgb is not None:
@@ -1401,6 +1451,8 @@ def _load_theme_colors(slide_part: Any) -> dict[str, str]:
                 last = sys_clr.get("lastClr")
                 if last:
                     colors[key] = last.upper()
+    except OperationCancelledError:
+        raise
     except Exception:  # noqa: BLE001
         pass
     return colors
@@ -1423,6 +1475,7 @@ def _chart_axis_info(axis: Any) -> dict[str, Any] | None:
     scaling = axis.find(_c("scaling"))
     if scaling is not None:
         for child in scaling:
+            checkpoint()
             tag = _local_name(child)
             val = child.get("val")
             if val is None:
@@ -1443,6 +1496,7 @@ def _chart_axis_info(axis: Any) -> dict[str, Any] | None:
         ("majorUnit", "major_unit"),
         ("minorUnit", "minor_unit"),
     ):
+        checkpoint()
         unit = axis.find(_c(tag))
         if unit is not None and unit.get("val"):
             info[key] = _chart_float(unit.get("val"))
@@ -1457,6 +1511,7 @@ def _chart_axis_info(axis: Any) -> dict[str, Any] | None:
     if tick_label is not None and tick_label.get("val"):
         info["tick_label_position"] = tick_label.get("val")
     for tag, key in (("majorTickMark", "major_tick_mark"), ("minorTickMark", "minor_tick_mark")):
+        checkpoint()
         mark = axis.find(_c(tag))
         if mark is not None and mark.get("val"):
             info[key] = mark.get("val")
@@ -1496,6 +1551,7 @@ def _read_data_labels(node: Any) -> dict[str, Any] | None:
         "delete": "hidden",
     }
     for tag, key in show.items():
+        checkpoint()
         element = labels.find(_c(tag))
         if element is None:
             continue
@@ -1520,12 +1576,12 @@ def _chart_element_title(element: Any) -> str | None:
     values = _pt_values(title) if title is not None else []
     if values:
         return values[0]
-    text = "".join(node.text or "" for node in title.iter(_a("t"))) if title is not None else ""
+    text = "".join(node.text or "" for node in cancellable_items(title.iter(_a("t")))) if title is not None else ""
     return text or None
 
 
 def _read_trendline(series: Any, theme_colors: dict[str, str] | None = None) -> dict[str, Any] | list[dict[str, Any]] | None:
-    trends = [_read_one_trendline(trend, theme_colors) for trend in series.findall(_c("trendline"))]
+    trends = [_read_one_trendline(trend, theme_colors) for trend in cancellable_items(series.findall(_c("trendline")))]
     return trends[0] if len(trends) == 1 else trends or None
 
 
@@ -1539,6 +1595,7 @@ def _read_one_trendline(trend: Any, theme_colors: dict[str, str] | None = None) 
     if trend_type is not None and trend_type.get("val"):
         info["type"] = trend_type.get("val")
     for tag, key in (("order", "order"), ("period", "period")):
+        checkpoint()
         element = trend.find(_c(tag))
         if element is not None and element.get("val"):
             try:
@@ -1546,10 +1603,12 @@ def _read_one_trendline(trend: Any, theme_colors: dict[str, str] | None = None) 
             except ValueError:
                 pass
     for tag, key in (("dispRSqr", "show_r_squared"), ("dispEq", "show_equation")):
+        checkpoint()
         element = trend.find(_c(tag))
         if element is not None:
             info[key] = _chart_bool(element.get("val"))
     for key in ("forward", "backward", "intercept"):
+        checkpoint()
         element = trend.find(_c(key))
         if element is not None:
             value = element.get("val")
@@ -1565,7 +1624,7 @@ def _read_one_trendline(trend: Any, theme_colors: dict[str, str] | None = None) 
 
 
 def _read_error_bars(series: Any, theme_colors: dict[str, str] | None = None) -> dict[str, Any] | list[dict[str, Any]] | None:
-    errors = [_read_error_bar(error, theme_colors) for error in series.findall(_c("errBars"))]
+    errors = [_read_error_bar(error, theme_colors) for error in cancellable_items(series.findall(_c("errBars")))]
     return errors[0] if len(errors) == 1 else errors or None
 
 
@@ -1575,6 +1634,7 @@ def _read_error_bar(error: Any, theme_colors: dict[str, str] | None = None) -> d
 
     info: dict[str, Any] = {}
     for tag, key in (("errDir", "direction"), ("errBarType", "bar_type"), ("errValType", "value_type")):
+        checkpoint()
         element = error.find(_c(tag))
         if element is not None and element.get("val"):
             info[key] = element.get("val")
@@ -1582,6 +1642,7 @@ def _read_error_bar(error: Any, theme_colors: dict[str, str] | None = None) -> d
     if fixed is not None and fixed.get("val"):
         info["value"] = _chart_float(fixed.get("val"))
     for tag, key in (("yVal", "y_val"), ("plus", "plus"), ("minus", "minus")):
+        checkpoint()
         node = error.find(_c(tag))
         if node is not None:
             info[key] = indexed_numbers(node) if tag in {"plus", "minus"} else _pt_values(node)
@@ -1599,6 +1660,7 @@ def _read_data_points(series: Any, theme_colors: dict[str, str] | None = None) -
     """Прочитать форматирование отдельных точек данных (цвет, отрыв у сектора)."""
     points: dict[str, Any] = {}
     for point in series.findall(_c("dPt")):
+        checkpoint()
         idx_el = point.find(_c("idx"))
         if idx_el is None or idx_el.get("val") is None:
             continue
@@ -1655,7 +1717,7 @@ def _chart_wall_floor(element: Any, theme_colors: dict[str, str] | None = None) 
 
 
 def _pt_values(node: Any) -> list[str]:
-    return [value.text for value in node.iter(_c("v")) if value.text is not None]
+    return [value.text for value in cancellable_items(node.iter(_c("v"))) if value.text is not None]
 
 
 def _chart_summary(chart_data: dict[str, Any]) -> str:
@@ -1668,11 +1730,13 @@ def _chart_summary(chart_data: dict[str, Any]) -> str:
         lines.append(f"[{chart_data.get('chart_type') or 'chart'}] {title}")
     if not series:
         return "\n".join(lines)
-    header = ["Category"] + [str(s["name"]) for s in series]
+    header = ["Category"] + [str(s["name"]) for s in cancellable_items(series)]
     lines.append("\t".join(header))
     for index, category in enumerate(categories):
+        checkpoint()
         row = [str(category)]
         for s in series:
+            checkpoint()
             values = s.get("values") or []
             row.append(str(values[index]) if index < len(values) else "")
         lines.append("\t".join(row))
@@ -1688,9 +1752,10 @@ def _table_block(table_el: Any, box: Box, slide_part: Any = None, theme_colors: 
 def _cell_text(tc: Any) -> str:
     parts: list[str] = []
     for p_el in tc.findall(f".//{_a('p')}"):
-        text = "".join(t.text or "" for t in p_el.iter(_a("t")))
+        checkpoint()
+        text = "".join(t.text or "" for t in cancellable_items(p_el.iter(_a("t"))))
         parts.append(text)
-    return "\n".join(part for part in parts if part)
+    return "\n".join(part for part in cancellable_items(parts) if part)
 
 
 def _effective_background(slide: Any) -> Any:
@@ -1698,6 +1763,7 @@ def _effective_background(slide: Any) -> Any:
     layout = getattr(slide, "slide_layout", None)
     master = getattr(layout, "slide_master", None)
     for owner in (slide, layout, master):
+        checkpoint()
         if owner is None:
             continue
         c_sld = owner._element.find(_p("cSld"))

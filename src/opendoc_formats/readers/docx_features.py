@@ -5,6 +5,8 @@ from __future__ import annotations
 from collections import Counter
 from typing import Any
 
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
+
 _FEATURE_TAGS = {
     "tracked_insertions": {"ins", "moveTo"},
     "tracked_deletions": {"del", "moveFrom"},
@@ -29,6 +31,7 @@ def inspect_docx_features(document: Any) -> dict[str, Any]:
     counts: Counter[str] = Counter()
     roots = [document.part.element]
     for relationship in document.part.rels.values():
+        checkpoint()
         if relationship.is_external or not hasattr(relationship.target_part, "blob"):
             continue
         media_type = str(getattr(relationship.target_part, "content_type", ""))
@@ -41,7 +44,9 @@ def inspect_docx_features(document: Any) -> dict[str, Any]:
             continue
     protection_xml: str | None = None
     for root in roots:
+        checkpoint()
         for element in root.iter():
+            checkpoint()
             if not isinstance(element.tag, str):
                 continue
             qname = etree.QName(element)
@@ -49,12 +54,14 @@ def inspect_docx_features(document: Any) -> dict[str, Any]:
             if local == "documentProtection" and qname.namespace == _WORD and protection_xml is None:
                 protection_xml = etree.tostring(element, encoding="unicode")
             for feature, tags in _FEATURE_TAGS.items():
+                checkpoint()
                 if local in tags and qname.namespace in _FEATURE_NAMESPACES.get(feature, {_WORD}):
                     counts[feature] += 1
 
     relationship_counts: Counter[str] = Counter()
     part_names: dict[str, list[str]] = {}
     for relationship in document.part.rels.values():
+        checkpoint()
         feature = _relationship_feature(relationship.reltype)
         if feature is None:
             continue
@@ -82,7 +89,7 @@ def inspect_docx_features(document: Any) -> dict[str, Any]:
                 "preservation": "native-ooxml" if feature in native else "diagnostic-only",
                 "package_parts": sorted(part_names.get(feature, [])),
             }
-            for feature, count in sorted(counts.items())
+            for feature, count in cancellable_items(sorted(counts.items()))
             if count
         },
     }

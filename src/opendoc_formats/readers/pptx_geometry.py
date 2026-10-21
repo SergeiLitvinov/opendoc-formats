@@ -7,6 +7,8 @@ from typing import Any
 
 import opendoc_model as od
 
+from opendoc_formats.support.cancellation import checkpoint
+
 A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
 P = "{http://schemas.openxmlformats.org/presentationml/2006/main}"
 
@@ -24,6 +26,7 @@ def shape_geometry(element: Any) -> dict[str, Any]:
     properties = element.find(P + "spPr")
     if properties is not None:
         for tag in ("prstGeom", "custGeom"):
+            checkpoint()
             geometry = properties.find(A + tag)
             if geometry is not None:
                 result["geometry_xml"] = etree.tostring(geometry, encoding="unicode", with_tail=False)
@@ -50,6 +53,7 @@ def remember_shape_identity(block: od.Block, element: Any) -> None:
         props["object_id"] = info.get("id")
     groups = []
     for ancestor in element.iterancestors(P + "grpSp"):
+        checkpoint()
         info = ancestor.find(P + "nvGrpSpPr/" + P + "cNvPr")
         if info is not None:
             groups.append({"id": info.get("id"), "name": info.get("name", "")})
