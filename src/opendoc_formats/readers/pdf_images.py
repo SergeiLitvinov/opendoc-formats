@@ -16,10 +16,19 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from opendoc_model import ArtifactLimitError, ImageCrop
+from opendoc_model import (
+    ArtifactLimitError,
+    DiagnosticIssue,
+    ImageCrop,
+    IssueSeverity,
+    PreservationRecord,
+    PreservationState,
+    Provenance,
+)
 from opendoc_model.color import ColorValue
 
-from opendoc_formats.errors import OperationCancelledError
+from opendoc_formats.errors import OperationCancelledError, ResourceLimitError
+from opendoc_formats.readers.pdf_diagnostics import append_pdf_warning
 from opendoc_formats.readers.pdf_geometry import (
     PdfBox,
     PdfGeometryDocument,
@@ -116,7 +125,8 @@ def _pdf_drawing_color(value: object, *, alpha: float) -> ColorValue | None:
         return None
 
 
-def extract_pdf_images(path: str | Path, *, cancelled: Callable[[], bool] | None = None
+def extract_pdf_images(path: str | Path, *, cancelled: Callable[[], bool] | None = None,
+                       diagnostics: list[PreservationRecord] | None = None,
                        ) -> tuple[list[ExtractedPdfImage], list[str]]:
     """Extract all raster image pixel data from a PDF.
 
@@ -125,6 +135,8 @@ def extract_pdf_images(path: str | Path, *, cancelled: Callable[[], bool] | None
     a flat list of ``ExtractedPdfImage`` sorted by (page, number).
 
     Every painted occurrence is retained, including repeated xrefs and inline images.
+    Optional ``diagnostics`` collects common Model records; ``warning_index``
+    addresses the returned warning list, before rich-import metadata binding.
     """
     check_cancelled(cancelled, 'PDF images')
     import fitz
@@ -156,8 +168,6 @@ def extract_pdf_images(path: str | Path, *, cancelled: Callable[[], bool] | None
             paint_images = [(index, box) for index, (kind, box) in enumerate(page.get_bboxlog()) if kind == 'fill-image']
             for block_index, block in enumerate(image_blocks):
                 check_cancelled(cancelled, 'PDF image occurrence')
-                from opendoc_formats.errors import ResourceLimitError
-
                 width, height = int(block.get("width", 0)), int(block.get("height", 0))
                 if width * height > 128_000_000 or max(width, height) > 32768 or len(images) >= 10000:
                     raise ResourceLimitError("PDF raster exceeds pixel or placement limits")
@@ -175,7 +185,13 @@ def extract_pdf_images(path: str | Path, *, cancelled: Callable[[], bool] | None
                 if len(data) > 32 * 1024 * 1024:
                     raise ResourceLimitError("PDF raster exceeds 32 MiB")
                 if not data:
-                    warnings.append(f"page {page_number} image {block_number}: missing image bytes")
+                    append_pdf_warning(warnings, diagnostics, DiagnosticIssue(
+                        'pdf.image-bytes-missing', IssueSeverity.LOSS,
+                        f'page {page_number} image {block_number}: missing image bytes',
+                        f'{source}#page={page_number}/images[{block_number}]',
+                        {'image_number': block_number, 'xref': xref}, 'pdf-image-bytes-missing',
+                    ), Provenance('pdf', str(source), page=page_number, object_id=f'image-{block_number}'),
+                        PreservationState.LOST)
                     continue
                 extension = str(block.get("ext", "png"))
                 mask_xref = masks.get(xref, 0)
@@ -208,13 +224,15 @@ def extract_pdf_images(path: str | Path, *, cancelled: Callable[[], bool] | None
     return images, warnings
 
 
-def extract_pdf_vector_drawings(path: str | Path, *, cancelled: Callable[[], bool] | None = None
+def extract_pdf_vector_drawings(path: str | Path, *, cancelled: Callable[[], bool] | None = None,
+                                diagnostics: list[PreservationRecord] | None = None,
                                 ) -> tuple[list[PdfVectorDrawing], list[str]]:
     """Extract vector drawing commands from a PDF.
 
     Uses PyMuPDF's ``page.get_drawings()`` to retrieve vector paths,
     fills, strokes, and clipping regions.  Returns a flat list of
     ``PdfVectorDrawing`` sorted by (page, number).
+    Optional ``diagnostics`` collects common Model records with local warning indices.
     """
     from opendoc_formats.readers.pdf_content import content_only_pdf
 
@@ -231,10 +249,14 @@ def extract_pdf_vector_drawings(path: str | Path, *, cancelled: Callable[[], boo
             check_cancelled(cancelled, 'PDF vector page')
             try:
                 raw = page.get_drawings(extended=True)
-            except OperationCancelledError:
+            except (OperationCancelledError, ArtifactLimitError, ResourceLimitError):
                 raise
             except Exception as exc:  # noqa: BLE001
-                warnings.append(f"page {page_number} get_drawings: {type(exc).__name__}: {exc}")
+                append_pdf_warning(warnings, diagnostics, DiagnosticIssue(
+                    'pdf.vector-extraction-failed', IssueSeverity.LOSS,
+                    f'page {page_number} get_drawings: {type(exc).__name__}: {exc}',
+                    f'{source}#page={page_number}/drawings', reason='pdf-vector-backend-failed',
+                ), Provenance('pdf', str(source), page=page_number, object_id='drawing-analysis'))
                 continue
 
             states = []

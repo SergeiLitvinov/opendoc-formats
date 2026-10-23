@@ -96,6 +96,21 @@ Rich PDF переносит warnings всех OCR page results, включая �
 результат анализа, а не доказательство отсутствия или потери таблицы. Лимит и
 отмена прерывают обработку и не превращаются в best-effort предупреждение.
 
+Отсутствие байтов изображения имеет `pdf.image-bytes-missing` и LOST: конкретный
+painted occurrence пропущен. Повторные вхождения одного xref различаются адресом
+страницы и номером изображения. Сбой `get_drawings` имеет
+`pdf.vector-extraction-failed` и OPAQUE: состав графики страницы не подтверждён.
+`pdf.cell-layout-unresolved` сохраняет OPAQUE для компоновки ячейки, исходный
+текст и адрес `.rows[…].cells[…]` вместе с native row/column в measurement.
+Reason и provenance создаются в месте события. Индексы legacy warnings явно
+связываются с общим metadata-списком после объединения геометрии, OCR и ресурсов;
+сообщения не разбираются для угадывания состояния. JSON сохраняет записи и
+публичный отчёт без повторного вывода тех же предупреждений.
+Низкоуровневые `extract_pdf_images`/`extract_pdf_vector_drawings` сохраняют прежний
+tuple результата и принимают необязательный `diagnostics` collector общих Model
+records. В нём `warning_index` относится к возвращённому локальному списку warnings;
+rich reader явно привязывает его к итоговому `metadata.warnings`.
+
 ## Нативный TeX
 
 Собственные bounded lexer/parser и writer работают без TeX engine и Office extras.

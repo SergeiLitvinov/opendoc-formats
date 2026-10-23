@@ -6,22 +6,28 @@ from collections.abc import Callable
 from dataclasses import replace
 from typing import Any
 
-from opendoc_model import Paragraph, TableCell, TableRow, TextRun
+from opendoc_model import DiagnosticIssue, IssueSeverity, Paragraph, PreservationRecord, Provenance, TableCell, TableRow, TextRun
 
+from opendoc_formats.readers.pdf_diagnostics import append_pdf_warning
 from opendoc_formats.readers.pdf_geometry import PdfPageGeometry, PdfTextBlockGeometry
+from opendoc_formats.support.cancellation import check_cancelled
 
 
 def pdf_table_rows(
     page: PdfPageGeometry, meta: dict[str, Any], run_builder: Callable[[Any, str, dict[str, Any]], list[TextRun]],
     warnings: list[str],
+    *, diagnostics: list[PreservationRecord] | None = None, source_path: str = '', location: str = 'pdf.table',
+    cancelled: Callable[[], bool] | None = None,
 ) -> list[TableRow]:
     table = next((table for table in page.tables if table.number == meta.get('source_table')), None)
     result = []
     column_count = max((len(row) for row in meta.get('rows', [])), default=0)
     rectangles = [cell.bbox for cell in table.cells if cell.bbox is not None] if table else []
     for row_index, values in enumerate(meta.get('rows', [])):
+        check_cancelled(cancelled, 'PDF table row reconstruction')
         cells = []
         for column_index, value in enumerate(values):
+            check_cancelled(cancelled, 'PDF table cell reconstruction')
             offset = row_index * column_count + column_index
             geometry = table.cells[offset] if table is not None and offset < len(table.cells) else None
             box = geometry.bbox if geometry is not None else None
@@ -34,6 +40,7 @@ def pdf_table_rows(
             if box is not None:
                 x0, y0, x1, y1 = box
                 for block in page.text_blocks:
+                    check_cancelled(cancelled, 'PDF table text matching')
                     for line in block.lines:
                         spans = tuple(span for span in line.spans if x0 <= (span.bbox[0] + span.bbox[2]) / 2 <= x1
                                       and y0 <= (span.bbox[1] + span.bbox[3]) / 2 <= y1)
@@ -56,7 +63,14 @@ def pdf_table_rows(
                 paragraphs = [Paragraph(content=[TextRun(str(value))])]
                 if str(value).strip():
                     properties['pdf_cell_layout_uncertain'] = True
-                    warnings.append(f'PDF table cell layout unresolved: page {page.number}, row {row_index}, cell {column_index}')
+                    append_pdf_warning(warnings, diagnostics, DiagnosticIssue(
+                        'pdf.cell-layout-unresolved', IssueSeverity.LOSS,
+                        f'PDF table cell layout unresolved: page {page.number}, row {row_index}, cell {column_index}',
+                        f'{location}.rows[{row_index}].cells[{len(cells)}]',
+                        {'source_table': meta.get('source_table'), 'source_row': row_index, 'source_column': column_index},
+                        'pdf-cell-layout-unmeasured',
+                    ), Provenance('pdf', source_path or None, page=page.number,
+                                  object_id=f'table-{meta.get("source_table", "unknown")}-row-{row_index}-cell-{column_index}'))
             row_span = column_span = 1
             if box is not None and table and table.column_edges and table.row_edges:
                 column_span = _edge_index(table.column_edges, box[2]) - _edge_index(table.column_edges, box[0])

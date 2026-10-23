@@ -24,6 +24,32 @@ from opendoc_formats.readers.pdf_ocr_types import OcrPageResult
 from opendoc_formats.support.cancellation import check_cancelled
 
 
+def append_pdf_warning(
+    warnings: list[str], records: list[PreservationRecord] | None, issue: DiagnosticIssue,
+    provenance: Provenance, state: PreservationState = PreservationState.OPAQUE,
+) -> None:
+    """Keep the legacy list and optional typed occurrence linked at creation."""
+    warnings.append(issue.message)
+    if records is not None:
+        records.append(PreservationRecord(replace(
+            issue, measurement={**(issue.measurement or {}), 'warning_index': len(warnings)-1},
+        ), state, provenance=provenance))
+
+
+def bind_warning_records(
+    records: Sequence[PreservationRecord], offset: int = 0, *, cancelled: Callable[[], bool] | None = None,
+) -> list[PreservationRecord]:
+    """Bind local extraction-list indices to the assembled rich metadata list."""
+    result = []
+    for record in records:
+        check_cancelled(cancelled, 'PDF warning binding')
+        measurement = dict(record.issue.measurement or {})
+        index = measurement.pop('warning_index')
+        measurement['legacy_warning_path'] = f'metadata.warnings[{offset+index}]'
+        result.append(replace(record, issue=replace(record.issue, measurement=measurement)))
+    return result
+
+
 def attach_pdf_diagnostics(
     document: DocumentModel, path: str | Path, mode: str, geometry: PdfGeometryDocument,
     pages: Sequence[OcrPageResult] | None, failures: Sequence[tuple[str, str, int]], *,

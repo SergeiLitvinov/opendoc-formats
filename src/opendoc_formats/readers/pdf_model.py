@@ -127,8 +127,9 @@ def read_pdf_model(
             ocr_failures.append(('pdf.ocr-unavailable', 'ocr-provider-unavailable', len(geometry.warnings)-1))
 
     check_cancelled(cancelled, 'PDF OCR')
-    images, img_warnings = extract_pdf_images(path, cancelled=cancelled)
-    vectors, vec_warnings = extract_pdf_vector_drawings(path, cancelled=cancelled)
+    image_diagnostics, vector_diagnostics, cell_diagnostics = [], [], []
+    images, img_warnings = extract_pdf_images(path, cancelled=cancelled, diagnostics=image_diagnostics)
+    vectors, vec_warnings = extract_pdf_vector_drawings(path, cancelled=cancelled, diagnostics=vector_diagnostics)
     geometry = enrich_geometry_with_images(geometry, images, vectors, cancelled=cancelled)
 
     from opendoc_formats.readers.pdf_ocr_merge import merge_pdf_with_ocr
@@ -136,6 +137,12 @@ def read_pdf_model(
     semantic = merge_pdf_with_ocr(geometry, ocr_pages, use_text_layer=(scenario != PDF_SCENARIO_SCAN), cancelled=cancelled)
 
     all_warnings: list[str] = list(semantic.warnings) + img_warnings + vec_warnings
+    from opendoc_formats.readers.pdf_diagnostics import bind_warning_records
+
+    geometry.diagnostics.extend(bind_warning_records(image_diagnostics, len(semantic.warnings), cancelled=cancelled))
+    geometry.diagnostics.extend(bind_warning_records(
+        vector_diagnostics, len(semantic.warnings)+len(img_warnings), cancelled=cancelled,
+    ))
 
     from opendoc_formats.support.pdf_mapping_history import HISTORY_KEY, attach_history_map, load_history
 
@@ -180,7 +187,9 @@ def read_pdf_model(
             if semantic_block.type is BlockType.TABLE:
                 from opendoc_formats.readers.pdf_table_model import pdf_table_rows
 
-                rows = pdf_table_rows(page, semantic_block.meta, _pdf_text_runs, all_warnings)
+                rows = pdf_table_rows(page, semantic_block.meta, _pdf_text_runs, all_warnings,
+                                      diagnostics=cell_diagnostics, source_path=path,
+                                      location=f'sections[{len(sections)}].blocks[{len(blocks)}]', cancelled=cancelled)
                 native_table = next((table for table in page.tables
                                      if table.number == semantic_block.meta.get('source_table')), None)
                 blocks.append(
@@ -334,6 +343,7 @@ def read_pdf_model(
             )
         )
 
+    geometry.diagnostics.extend(bind_warning_records(cell_diagnostics, cancelled=cancelled))
     metadata: dict[str, Any] = {
         "engine": engine,
         "pages": len(sections),
