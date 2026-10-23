@@ -85,6 +85,9 @@ def test_requested_ocr_failure_is_visible_in_both_public_routes(tmp_path, mode, 
     code = ('pdf.ocr-unavailable' if provider in {'absent', 'unavailable', 'late-unavailable'} else
             'pdf.ocr-empty' if provider == 'empty' else 'pdf.ocr-failed')
     record = next(item for item in get_integration(result.document).preservation if item.issue.code == code)
+    text_record = next(item for item in text.diagnostics.preservation if item.issue.code == code)
+    assert text_record == record
+    assert not text.diagnostics.assessment_complete
     assert record.state is PreservationState.OPAQUE and record.issue.reason
     assert record.issue.location == f'{path}#ocr' and record.provenance.page is None
     assert sum(issue.message == expected for issue in result.issues) == 1

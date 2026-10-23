@@ -1,5 +1,21 @@
 # Document quality corpus
 
+## Диагностика legacy Text
+
+`tests/test_text_diagnostics.py` проверяет два Text/Model/JSON цикла, повторяющиеся
+сообщения разных объектов, общий envelope Model 0.18.0, независимые вложенные
+данные, неизвестные record fields, source node locators и выбранный бюджет.
+Положительные semantic claims не переносятся в упрощённый view; отсутствие
+оценки не становится подтверждением lossless. Некорректные metadata warnings
+не отбрасываются молча.
+
+`tests/readers/test_pdf_text_fallback.py` проверяет прекращение цепочки при отмене
+и превышении лимитов, восстановление контекста, table-only результат и сохранение
+source bytes/полного текстового результата при неактивном callback.
+OCR diagnostics сравниваются в богатом и текстовом маршрутах; локальные индексы
+warnings после fallback сохраняют отдельные occurrences. Тесты DjVu различают
+отсутствующий процесс, ненулевой exit, timeout и пустой hidden text.
+
 ## FONT и сохранённый OOXML
 
 `tests/writers/test_docx_opaque_fonts.py` строит собственный smartTag с

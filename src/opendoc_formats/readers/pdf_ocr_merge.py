@@ -155,6 +155,9 @@ def merge_pdf_with_ocr(
     *,
     use_text_layer: bool = True,
     cancelled: Callable[[], bool] | None = None,
+    source_path: str | None = None,
+    mode: str = "direct",
+    ocr_failures: tuple[tuple[str, str, int], ...] = (),
 ) -> Text:
     """Merge PDF geometry text layer with optional OCR results.
 
@@ -263,6 +266,10 @@ def merge_pdf_with_ocr(
                 plain_parts.append(text)
 
     check_cancelled(cancelled, 'PDF OCR merge completion')
+    from opendoc_formats.readers.pdf_diagnostics import collect_pdf_diagnostics
+    from opendoc_formats.support.text_diagnostics import ledger
+
+    records = collect_pdf_diagnostics(source_path, mode, geometry, ocr_pages, ocr_failures, cancelled=cancelled)
     return Text(
         blocks=all_blocks,
         tables=all_tables,
@@ -271,6 +278,7 @@ def merge_pdf_with_ocr(
         engine=geometry.engine + "+ocr" if ocr_pages else geometry.engine,
         pages=len(geometry.pages),
         warnings=list(geometry.warnings) + ([w for p in ocr_pages for w in p.warnings] if ocr_pages else []),
+        diagnostics=ledger(tuple(records)) if records else None,
     )
 
 
@@ -339,33 +347,37 @@ def read_pdf_scenario(
     if mode not in PDF_SCENARIO_MODES:
         raise ValueError(f"unknown PDF scenario mode {mode!r}; expected one of {PDF_SCENARIO_MODES}")
 
-    from opendoc_formats.readers.pdf import extract_pdf_geometry as _extract_geometry
+    from opendoc_formats.readers.pdf_geometry import extract_pdf_geometry as _extract_geometry
 
     check_cancelled(cancelled, 'PDF scenario')
     geometry = _extract_geometry(path, cancelled=cancelled)
 
     if mode == PDF_SCENARIO_FAST:
-        return merge_pdf_with_ocr(geometry, None, cancelled=cancelled)
+        return merge_pdf_with_ocr(geometry, None, cancelled=cancelled, source_path=path, mode=mode)
 
     ocr_pages: list[OcrPageResult] | None = None
+    failures: list[tuple[str, str, int]] = []
     if ocr_engine is not None and ocr_engine.is_available:
         try:
             ocr_pages = ocr_engine.recognize_pdf_geometry(path, scale=scale, handwriting=handwriting)
             if geometry.pages and not ocr_pages:
                 geometry.warnings.append('OCR engine returned no page results')
+                failures.append(('pdf.ocr-empty', 'ocr-no-page-results', len(geometry.warnings)-1))
         except (OperationCancelledError, ArtifactLimitError, ResourceLimitError):
             raise
         except BackendUnavailableError as exc:
             geometry.warnings.append(f'OCR backend unavailable: {exc}')
+            failures.append(('pdf.ocr-unavailable', 'ocr-provider-unavailable', len(geometry.warnings)-1))
         except Exception as exc:  # noqa: BLE001
             geometry.warnings.append(f"OCR failed: {exc}")
+            failures.append(('pdf.ocr-failed', 'ocr-provider-failed', len(geometry.warnings)-1))
     else:
         geometry.warnings.append('OCR engine requested but none available')
+        failures.append(('pdf.ocr-unavailable', 'ocr-provider-unavailable', len(geometry.warnings)-1))
 
     check_cancelled(cancelled, 'PDF scenario OCR')
-    if mode == PDF_SCENARIO_SCAN:
-        return merge_pdf_with_ocr(geometry, ocr_pages, use_text_layer=False, cancelled=cancelled)
-    return merge_pdf_with_ocr(geometry, ocr_pages, cancelled=cancelled)
+    return merge_pdf_with_ocr(geometry, ocr_pages, use_text_layer=mode != PDF_SCENARIO_SCAN,
+                              cancelled=cancelled, source_path=path, mode=mode, ocr_failures=tuple(failures))
 
 
 def read_pdf_with_ocr(

@@ -7,6 +7,7 @@ from pathlib import Path
 import opendoc_model as od
 
 from opendoc_formats.support.document_adapters import document_to_text
+from opendoc_formats.support.text_diagnostics import append_text_warning
 from opendoc_formats.types import DocFormat, Text
 
 
@@ -20,7 +21,10 @@ def read_html(path: str | Path) -> Text:
     try:
         model = read_html_model(path)
     except ImportError:
-        return Text(source_format=DocFormat.HTML, engine="bs4+tinycss2", warnings=["Install opendoc-formats[html]"])
-    result = document_to_text(model)
-    result.warnings.extend(item["message"] for item in model.metadata["html"]["warnings"])
-    return result
+        result = Text(source_format=DocFormat.HTML, engine="bs4+tinycss2")
+        append_text_warning(result, od.DiagnosticIssue(
+            'html.text-backend-unavailable', od.IssueSeverity.LOSS, 'Install opendoc-formats[html]',
+            str(path), reason='html-text-backend-unavailable',
+        ), od.Provenance('html', str(path), object_id='text-extraction'))
+        return result
+    return document_to_text(model)

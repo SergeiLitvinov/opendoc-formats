@@ -10,6 +10,7 @@ from opendoc_formats import ImportOptions, read_document
 from opendoc_formats.errors import ResourceLimitError
 from opendoc_formats.readers.pdf_geometry import extract_pdf_geometry
 from opendoc_formats.readers.pdf_ocr_types import OcrPageResult
+from opendoc_formats.readers.pdf_semantic import analyze_pdf_geometry
 from tests.readers.test_pdf_model_ocr_diagnostics import own_pdf
 
 
@@ -27,6 +28,7 @@ def test_table_strategy_failures_keep_pages_provenance_and_json(tmp_path, monkey
     assert result.success and not result.lossless and not result.assessment_complete
     records = [item for item in get_integration(result.document).preservation if item.issue.code == 'pdf.table-analysis-failed']
     assert len(records) == len(geometry.diagnostics) == 4
+    assert analyze_pdf_geometry(geometry).diagnostics.preservation == tuple(geometry.diagnostics)
     for index, record in enumerate(records):
         page = index//2+1
         assert record.issue.location == f'{source}#page={page}/tables'

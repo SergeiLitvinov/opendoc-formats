@@ -41,6 +41,10 @@ def test_empty_layer_fails_registry(monkeypatch, tmp_path, payload):
     source, _ = backend(monkeypatch, tmp_path, f"import sys; sys.stdout.buffer.write({payload!r})")
     result = read_djvu(source)
     assert not result and result.warnings
+    record = result.diagnostics.preservation[0]
+    assert record.issue.code == 'djvu.text-no-content'
+    assert record.provenance.source_path == str(source)
+    assert record.issue.measurement['legacy_warning_path'] == 'metadata.warnings[0]'
     with pytest.raises(ExtractError, match="hidden text"):
         read_document(source)
 
@@ -63,7 +67,9 @@ def test_bounded_output(monkeypatch, tmp_path, stream):
 
 def test_timeout_and_cancellation_stop_process(monkeypatch, tmp_path):
     source, processes = backend(monkeypatch, tmp_path, "import time; time.sleep(10)")
-    assert "timeout" in read_djvu(source, timeout=0.1).warnings[0]
+    result = read_djvu(source, timeout=0.1)
+    assert "timeout" in result.warnings[0]
+    assert result.diagnostics.preservation[0].issue.reason == 'text-backend-timeout'
     assert processes[-1].poll() is not None
     started = time.monotonic()
     with pytest.raises(OperationCancelledError):
@@ -81,13 +87,17 @@ def test_cancelled_before_start(monkeypatch, tmp_path):
 
 def test_missing_backend_and_bad_exit(monkeypatch, tmp_path):
     source, _ = backend(monkeypatch, tmp_path, "raise SystemExit(7)")
-    assert read_djvu(source).warnings == ["djvutxt rc=7"]
+    result = read_djvu(source)
+    assert result.warnings == ["djvutxt rc=7"]
+    assert result.diagnostics.preservation[0].issue.reason == 'text-backend-failed'
 
     def absent(*args, **kwargs):
         raise FileNotFoundError("djvutxt")
 
     monkeypatch.setattr(subprocess, "Popen", absent)
-    assert "not found" in read_djvu(source).warnings[0]
+    result = read_djvu(source)
+    assert "not found" in result.warnings[0]
+    assert result.diagnostics.preservation[0].issue.reason == 'text-backend-unavailable'
 
 
 @pytest.mark.parametrize("with_text", [True, False])

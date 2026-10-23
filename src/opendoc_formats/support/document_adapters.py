@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from typing import cast
+
+from opendoc_model import DocumentLimits, set_integration
 from opendoc_model.document_model import (
     Block as RichBlock,
 )
@@ -18,24 +21,27 @@ from opendoc_model.document_model import (
 from opendoc_model.document_model import (
     Table as RichTable,
 )
+from opendoc_model.properties import ParagraphProperties, TableProperties
 
 from opendoc_formats.types import Block, BlockType, DocFormat, Table, Text
 
 
-def text_to_document(text: Text) -> DocumentModel:
+def text_to_document(text: Text, *, limits: DocumentLimits | None = None) -> DocumentModel:
     """Поднять извлечённый ``Text`` в богатую модель без выдумывания оформления."""
 
     blocks: list[RichBlock] = []
     for block in text.blocks:
         properties = {"legacy_type": block.type.value, "level": block.level, "page": block.page, **block.meta}
         style_id = f"heading-{block.level}" if block.type is BlockType.HEADING and block.level else None
-        blocks.append(Paragraph(content=[TextRun(block.text)], style_id=style_id, properties=properties))
+        blocks.append(Paragraph(
+            content=[TextRun(block.text)], style_id=style_id, properties=cast(ParagraphProperties, properties),
+        ))
     for table in text.tables:
         rows = [TableRow(cells=[TableCell(blocks=[Paragraph(content=[TextRun(cell)])]) for cell in row]) for row in table.rows]
-        blocks.append(RichTable(rows=rows, properties={"page": table.page}))
+        blocks.append(RichTable(rows=rows, properties=cast(TableProperties, {"page": table.page})))
     if not blocks and text.plain:
         blocks.append(Paragraph(content=[TextRun(text.plain)]))
-    return DocumentModel(
+    document = DocumentModel(
         sections=[Section(blocks=blocks)],
         metadata={
             "language": text.language,
@@ -45,9 +51,12 @@ def text_to_document(text: Text) -> DocumentModel:
         },
         source_format=text.source_format.value,
     )
+    if text.diagnostics is not None:
+        set_integration(document, text.diagnostics, limits=limits)
+    return document
 
 
-def document_to_text(document: DocumentModel) -> Text:
+def document_to_text(document: DocumentModel, *, limits: DocumentLimits | None = None) -> Text:
     """Получить совместимый текстовый вид богатой модели для старого pipeline."""
 
     blocks: list[Block] = []
@@ -106,6 +115,9 @@ def document_to_text(document: DocumentModel) -> Text:
         source_format = DocFormat(raw_format)
     except ValueError:
         source_format = DocFormat.UNKNOWN
+    from opendoc_formats.support.text_diagnostics import source_diagnostics
+
+    warnings, diagnostics = source_diagnostics(document, limits=limits)
     return Text(
         blocks=blocks,
         tables=tables,
@@ -113,8 +125,9 @@ def document_to_text(document: DocumentModel) -> Text:
         language=str(document.metadata.get("language", "und")),
         source_format=source_format,
         engine=str(document.metadata.get("engine", "document-model")),
-        warnings=list(document.metadata.get("warnings", [])),
+        warnings=warnings,
         pages=int(document.metadata.get("pages", 0)),
+        diagnostics=diagnostics,
     )
 
 

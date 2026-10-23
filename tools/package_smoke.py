@@ -12,6 +12,33 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 
+def diagnostics_smoke() -> None:
+    from opendoc_model import (
+        DiagnosticIssue,
+        IssueSeverity,
+        Provenance,
+        document_from_json,
+        document_to_json,
+        integration_from_dict,
+    )
+
+    from opendoc_formats.support.document_adapters import document_to_text, text_to_document
+    from opendoc_formats.support.text_diagnostics import append_text_warning
+    from opendoc_formats.types import DocFormat, Text
+
+    text = Text(plain='Own portable text', source_format=DocFormat.PDF)
+    append_text_warning(text, DiagnosticIssue(
+        'pdf.own-source-warning', IssueSeverity.LOSS, 'Own uncertainty', 'own.pdf#page=2',
+        reason='own-source-unassessed',
+    ), Provenance('pdf', 'own.pdf', page=2))
+    for _ in range(2):
+        restored = document_to_text(document_from_json(document_to_json(text_to_document(text))))
+        assert restored.diagnostics == text.diagnostics
+        assert restored.warnings == text.warnings and not restored.diagnostics.assessment_complete
+        assert integration_from_dict(restored.to_dict()['diagnostics']) == text.diagnostics
+        text = restored
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--all-formats", action="store_true")
@@ -54,13 +81,14 @@ def main() -> None:
     from opendoc_formats.support.inspection import inspect_path
 
     assert opendoc_formats.__version__ == version("opendoc-formats")
-    assert version("opendoc-model") == "0.17.0"
+    assert version("opendoc-model") == "0.18.0"
     assert importlib.util.find_spec("ebooklib") is None, "Removed EPUB engine leaked into the installed profile"
     engines = ("bs4", "fitz", "pymupdf", "lxml", "docx", "pptx", "ebooklib", "fontTools")
     assert all(name not in sys.modules for name in engines)
     installed = Path(opendoc_formats.__file__).resolve().parent
     assert "site-packages" in installed.parts, installed
     assert (installed / "py.typed").is_file()
+    diagnostics_smoke()
     default_registry()
     default_exporter_registry()
     if not args.all_formats:

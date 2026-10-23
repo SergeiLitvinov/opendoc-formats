@@ -10,7 +10,10 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import BinaryIO
 
+from opendoc_model import DiagnosticIssue, IssueSeverity, Provenance
+
 from opendoc_formats.errors import InvalidDocumentError, OperationCancelledError, ResourceLimitError
+from opendoc_formats.support.text_diagnostics import append_text_warning
 from opendoc_formats.types import Block, BlockType, DocFormat, Text
 
 
@@ -32,8 +35,12 @@ def extract_djvu_text(
         if cancelled and cancelled():
             raise OperationCancelledError("DjVu text extraction cancelled")
 
-    def failure(message: str) -> Text:
-        return Text(source_format=DocFormat.DJVU, engine="djvutxt", warnings=[message])
+    def failure(message: str, reason: str) -> Text:
+        result = Text(source_format=DocFormat.DJVU, engine="djvutxt")
+        append_text_warning(result, DiagnosticIssue(
+            f'djvu.{reason}', IssueSeverity.LOSS, message, str(source), reason=reason,
+        ), Provenance('djvu', str(source), object_id='text-extraction'))
+        return result
 
     checkpoint()
     try:
@@ -42,7 +49,7 @@ def extract_djvu_text(
             stderr=subprocess.PIPE, stdin=subprocess.DEVNULL,
         )
     except FileNotFoundError:
-        return failure("djvutxt not found in PATH")
+        return failure("djvutxt not found in PATH", 'text-backend-unavailable')
     output = bytearray()
     overflow = threading.Event()
     lock = threading.Lock()
@@ -73,19 +80,19 @@ def extract_djvu_text(
             if overflow.is_set():
                 raise ResourceLimitError("DjVu stdout/stderr exceed max_output_bytes")
             if time.monotonic() >= deadline:
-                return failure("djvutxt timeout")
+                return failure("djvutxt timeout", 'text-backend-timeout')
             time.sleep(0.02)
         checkpoint()
         if overflow.is_set():
             raise ResourceLimitError("DjVu stdout/stderr exceed max_output_bytes")
         if process.returncode != 0:
-            return failure(f"djvutxt rc={process.returncode}")
+            return failure(f"djvutxt rc={process.returncode}", 'text-backend-failed')
         try:
             text = output.decode("utf-8", errors="strict")
         except UnicodeDecodeError as error:
             raise InvalidDocumentError("djvutxt returned invalid UTF-8") from error
         if not text.strip():
-            return failure("DjVu has no nonempty hidden text layer")
+            return failure("DjVu has no nonempty hidden text layer", 'text-no-content')
         return Text(
             blocks=[Block(type=BlockType.PARAGRAPH, text=text)], plain=text,
             source_format=DocFormat.DJVU, engine="djvutxt",

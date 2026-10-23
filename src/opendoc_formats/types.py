@@ -6,6 +6,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
+from opendoc_model import DocumentLimits, IntegrationModel
+
 
 class DocFormat(str, Enum):
     PDF = "pdf"
@@ -69,12 +71,13 @@ class Text:
     engine: str = ""  # какой движок достал (pdfplumber / pypdf / pymupdf / ...)
     warnings: list[str] = field(default_factory=list)
     pages: int = 0
+    diagnostics: IntegrationModel | None = None
 
     def __bool__(self) -> bool:
         return bool(self.plain or self.blocks or self.tables)
 
-    def to_dict(self) -> dict[str, Any]:
-        return {
+    def to_dict(self, *, limits: DocumentLimits | None = None) -> dict[str, Any]:
+        result = {
             "blocks": [
                 {
                     "type": b.type.value if hasattr(b.type, "value") else str(b.type),
@@ -93,3 +96,8 @@ class Text:
             "warnings": self.warnings,
             "pages": self.pages,
         }
+        if self.diagnostics is not None:
+            from opendoc_model import integration_to_dict
+
+            result['diagnostics'] = integration_to_dict(self.diagnostics, limits=limits)
+        return result

@@ -1,6 +1,6 @@
 # Контракты модели OpenDoc
 
-Адаптер использует официальный `opendoc-model==0.17.0`, импорт `opendoc_model`.
+Адаптер использует официальный `opendoc-model==0.18.0`, импорт `opendoc_model`.
 
 Общий контракт `ObjectMapping` включает отдельные исходные/целевые вхождения,
 заменяющее представление, непрозрачный `NativeObjectLocator`, полноту оценки
@@ -12,6 +12,30 @@
 Модель остаётся самостоятельной MIT-библиотекой без обязательных движков.
 
 ## Доступные контракты
+
+### C-DIAG-CODEC-01: самостоятельный codec IntegrationModel
+
+Статус: закрыт официальным Model 0.18.0; подключён к диагностике legacy `Text`.
+Публичные `integration_to_dict`/`integration_from_dict` сохраняют независимые данные,
+общий envelope и выбранный бюджет. Formats не должен
+копировать закрытый `_integration_codec` или создавать собственную схему
+PreservationRecord. `get_integration`/`set_integration` доступны только через
+DocumentModel; consumer extension API не предназначен для namespace `opendoc.*`.
+
+Нужен публичный `integration_to_dict(value, *, limits=None)` и
+`integration_from_dict(data, *, limits=None)` либо эквивалентные имена, экспортированные
+из `opendoc_model`. Envelope/version и существующая схема принадлежат Model.
+Требования: те же типы/enum/extra, unknown JSON fields и DocumentLimits, что у
+существующего integration codec; независимые вложенные значения после encode/decode,
+отказ на некорректные значения и превышение лимита. Codec не должен импортировать
+форматные движки, разрешать native locators или придумывать внешние ссылки.
+Ссылочная валидация относительно документа остаётся отдельной существующей проверкой.
+
+Приёмка Model: эквивалентный ledger из `get_integration` после двух dict/JSON циклов;
+reason/location/state/provenance и unknown fields сохраняются; изменение результата
+не меняет источник. Проверить пользовательский бюджет, неверные типы и schema version.
+Политика проекции diagnostics в legacy Text, адреса PDF, фильтрация source-only записей
+и диагностика потерь самого текстового view принадлежат Formats.
 
 | Область | Контракт модели | Работа адаптера |
 | --- | --- | --- |

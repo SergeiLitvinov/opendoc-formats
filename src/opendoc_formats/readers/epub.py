@@ -12,6 +12,7 @@ from typing import Union
 import opendoc_model as od
 
 from opendoc_formats.support.cancellation import check_cancelled
+from opendoc_formats.support.text_diagnostics import append_text_warning
 from opendoc_formats.types import Block, BlockType, DocFormat, Text
 
 
@@ -23,11 +24,15 @@ def read_epub(path: Union[str, Path], *, backend: str = "native", cancelled: Cal
     try:
         from bs4 import BeautifulSoup
     except ImportError:
-        return Text(
+        result = Text(
             source_format=DocFormat.EPUB,
             engine="native-epub",
-            warnings=["beautifulsoup4 not installed"],
         )
+        append_text_warning(result, od.DiagnosticIssue(
+            'epub.text-backend-unavailable', od.IssueSeverity.LOSS, 'beautifulsoup4 not installed',
+            str(p), reason='epub-text-backend-unavailable',
+        ), od.Provenance('epub', str(p), object_id='text-extraction'))
+        return result
 
     from opendoc_formats.readers.epub_package import read_epub_package
 
