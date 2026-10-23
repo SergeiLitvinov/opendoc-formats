@@ -20,6 +20,7 @@ from opendoc_model.document_model import (
 )
 from opendoc_model.limits import DocumentLimits
 
+from opendoc_formats.docx_profile import DocxProfile
 from opendoc_formats.errors import OperationCancelledError
 from opendoc_formats.fonts import FontResolver
 from opendoc_formats.fonts.docx_embedding import embed_docx_fonts, verify_docx_font_embedding
@@ -38,14 +39,18 @@ from opendoc_formats.writers.font_preflight import prepare_fonts
 def write_docx_model(
     document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None = None,
     cancelled: Callable[[], bool] | None = None,
+    profile: DocxProfile | None = None,
 ) -> ConversionReport:
     """Write editable DOCX, cancelling before publication without changing the destination."""
     with cancellation_scope(cancelled, 'DOCX export', check_on_exit=False):
-        return _write_docx_model(document, output_path, limits=limits)
+        if profile is not None and not isinstance(profile, DocxProfile):
+            raise ValueError('profile must be DocxProfile or None')
+        return _write_docx_model(document, output_path, limits=limits, profile=profile)
 
 
 def _write_docx_model(
     document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None = None,
+    profile: DocxProfile | None = None,
 ) -> ConversionReport:
     """Записать ``DocumentModel`` в DOCX и вернуть отчёт о потерях."""
 
@@ -65,7 +70,21 @@ def _write_docx_model(
         report.add(IssueSeverity.ERROR, 'model', error)
     if not report.success:
         return report
-    native_pdf = document.source_format == "pdf" and any(
+    flow = profile is not None and profile.layout == 'flow'
+    if flow:
+        from opendoc_formats.writers.docx_flow import FlowProfileError, prepare_flow
+
+        _check_pdf_projection_source(document, report, limits=limits)
+        if not report.success:
+            return report
+        try:
+            document = prepare_flow(document, report, limits=limits)
+        except ArtifactLimitError:
+            raise
+        except FlowProfileError as error:
+            report.add(IssueSeverity.ERROR, 'docx.flow-profile', str(error), error.location)
+            return report
+    native_pdf = not flow and document.source_format == "pdf" and any(
         section.properties.get("pdf", {}).get("coordinate_space") == "pymupdf-unrotated"
         for section in cancellable_items(document.sections)
     )
@@ -127,7 +146,14 @@ def _write_docx_model(
     from opendoc_formats.fonts.resource_fonts import document_font_resolver
 
     with document_font_resolver(document, report, limits=limits) as resolver:
-        return _write_validated_docx(document, output, report, resolver, limits=limits)
+        native_issue_start = len(report.issues)
+        try:
+            return _write_validated_docx(document, output, report, resolver, limits=limits)
+        finally:
+            if flow:
+                from opendoc_formats.writers.docx_flow import remap_flow_issues
+
+                remap_flow_issues(report, native_issue_start)
 
 
 def _write_validated_docx(
@@ -187,10 +213,18 @@ def _write_validated_docx(
             checkpoint()
             workspace.validate_artifact(staged)
             verify_docx_font_embedding(staged, report)
+            if report.metrics.get('docx_flow_profile'):
+                from opendoc_formats.writers.docx_flow import finalize_flow_mapping
+
+                finalize_flow_mapping(report, staged, limits=limits)
             _reject_pdf_losses(report)
             if not report.success:
                 return report
             atomic_copy(staged, output, before_replace=checkpoint)
+            if report.metrics.get('docx_flow_profile'):
+                from opendoc_formats.support.object_mapping import mapping_publication
+
+                mapping_publication(report, 'published')
     except OperationCancelledError:
         raise
     except Exception as error:  # noqa: BLE001 - diagnostic boundary must return a report
@@ -203,6 +237,13 @@ def _write_validated_docx(
 
 
 def _reject_pdf_losses(report: ConversionReport) -> None:
+    if report.metrics.get('docx_flow_profile'):
+        losses = [issue for issue in cancellable_items(report.issues)
+                  if issue.severity is IssueSeverity.LOSS and issue.feature != 'docx.flow-layout']
+        if losses and report.success:
+            report.add(IssueSeverity.ERROR, 'docx.flow-loss-rejected',
+                       'Flow permits declared layout changes, not additional content preservation losses', losses[0].location)
+        return
     if report.metrics.get('pdf_docx_layout_profile') != 'opendoc-v1':
         return
     losses = [issue for issue in cancellable_items(report.issues) if issue.severity is IssueSeverity.LOSS]

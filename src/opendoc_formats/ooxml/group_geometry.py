@@ -7,6 +7,8 @@ from xml.etree import ElementTree as ET
 
 from opendoc_model import AffineTransform, Box, ColorSpace, VectorPath, VectorScene
 
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
+
 SVG = 'http://www.w3.org/2000/svg'
 
 
@@ -50,10 +52,10 @@ def rectangle(path: VectorPath) -> Box:
 def scene_profile(scene: VectorScene) -> dict[str, Box]:
     if scene.scope_version != 1 or scene.occurrences or scene.clips:
         raise ValueError('Native group profile requires a bound vector-only scope without clips/masks')
-    paths = {p.id: p for p in scene.paths}
-    groups = {g.id: g for g in scene.groups}
+    paths = {p.id: p for p in cancellable_items(scene.paths)}
+    groups = {g.id: g for g in cancellable_items(scene.groups)}
     boxes = {}
-    backgrounds = [p for p in scene.paths if p.extra.get('docx_canvas_background')]
+    backgrounds = [p for p in cancellable_items(scene.paths) if p.extra.get('docx_canvas_background')]
     if len(backgrounds) > 1 or (backgrounds and (
         not scene.roots or scene.roots[0] != backgrounds[0].id
         or rectangle(backgrounds[0]) != Box(0, 0, scene.width, scene.height)
@@ -61,6 +63,7 @@ def scene_profile(scene: VectorScene) -> dict[str, Box]:
         raise ValueError('Native canvas background requires its full viewport and first paint position')
 
     def visit(key: str) -> Box:
+        checkpoint()
         if key in boxes:
             return boxes[key]
         if key in paths:
@@ -68,7 +71,7 @@ def scene_profile(scene: VectorScene) -> dict[str, Box]:
             box = rectangle(paths[key])
         else:
             group = groups[key]
-            if any(child in groups for child in group.children):
+            if any(child in groups for child in cancellable_items(group.children)):
                 raise ValueError('Nested native groups require independent Word editing acceptance, not only XML retention')
             value = group.compositing
             if group.clip_id is not None or group.mask_resource_id is not None:
@@ -81,7 +84,7 @@ def scene_profile(scene: VectorScene) -> dict[str, Box]:
                 raise ValueError('Native Word group requires the explicit RGB composition profile')
             if not group.children:
                 raise ValueError('Empty editable native groups are outside the verified profile')
-            children = [visit(child) for child in group.children]
+            children = [visit(child) for child in cancellable_items(group.children)]
             x0, y0 = min(b.x for b in children), min(b.y for b in children)
             x1, y1 = max(b.x+b.width for b in children), max(b.y+b.height for b in children)
             sx, sy, tx, ty = axis_transform(group.transform)
@@ -90,6 +93,7 @@ def scene_profile(scene: VectorScene) -> dict[str, Box]:
         return box
 
     for key in scene.roots:
+        checkpoint()
         box = visit(key)
         if box.x < -.0001 or box.y < -.0001 or box.x+box.width > scene.width+.0001 or box.y+box.height > scene.height+.0001:
             raise ValueError('Native group paint extends outside its explicitly bound viewport')
@@ -97,6 +101,7 @@ def scene_profile(scene: VectorScene) -> dict[str, Box]:
         raise ValueError('An empty scene cannot resurrect its old SVG preview')
     # All emitted coordinates use Word EMUs; reject rounding rather than hiding it.
     for box in boxes.values():
+        checkpoint()
         if any(not math.isfinite(v) or abs(v*12700-round(v*12700)) > .00001
                for v in (box.x, box.y, box.width, box.height)):
             raise ValueError('Native group geometry cannot be represented exactly in Word EMUs')
@@ -106,17 +111,19 @@ def scene_profile(scene: VectorScene) -> dict[str, Box]:
 def preview_svg(scene: VectorScene) -> bytes:
     """Derived preview only: native export always consumes the bound scene."""
     scene_profile(scene)
-    paths = {p.id: p for p in scene.paths}
-    groups = {g.id: g for g in scene.groups}
+    paths = {p.id: p for p in cancellable_items(scene.paths)}
+    groups = {g.id: g for g in cancellable_items(scene.groups)}
     root = ET.Element(f'{{{SVG}}}svg', width=f'{scene.width}pt', height=f'{scene.height}pt',
                       viewBox=f'0 0 {scene.width} {scene.height}')
 
     def emit(key: str, parent: ET.Element) -> None:
+        checkpoint()
         if key in groups:
             group = groups[key]
             a, d, e, f = axis_transform(group.transform)
             target = ET.SubElement(parent, f'{{{SVG}}}g', transform=f'matrix({a} 0 0 {d} {e} {f})')
             for child in group.children:
+                checkpoint()
                 emit(child, target)
         else:
             box = rectangle(paths[key])
@@ -125,5 +132,6 @@ def preview_svg(scene: VectorScene) -> bytes:
                           height=str(box.height), fill='#'+color, **{'fill-opacity': str(alpha)})
 
     for key in scene.roots:
+        checkpoint()
         emit(key, root)
     return ET.tostring(root, encoding='utf-8')

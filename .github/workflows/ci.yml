@@ -94,6 +94,12 @@ jobs:
           uv venv .opendoc-formats/html-profile
           uv pip install --constraint .opendoc-formats/profile-constraints.txt --python .opendoc-formats/html-profile/bin/python 'opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.17.0/opendoc_model-0.17.0-py3-none-any.whl' ".opendoc-formats/from-sdist/opendoc_formats-${version}-py3-none-any.whl[html]"
           .opendoc-formats/html-profile/bin/python -I tools/html_profile_smoke.py
+      - name: Exercise native DOCX flow without PDF engines
+        run: |
+          version=$(python -m tools.release version)
+          uv venv .opendoc-formats/docx-flow-profile
+          uv pip install --constraint .opendoc-formats/profile-constraints.txt --python .opendoc-formats/docx-flow-profile/bin/python 'opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.17.0/opendoc_model-0.17.0-py3-none-any.whl' ".opendoc-formats/from-sdist/opendoc_formats-${version}-py3-none-any.whl[docx,fonts]"
+          .opendoc-formats/docx-flow-profile/bin/python -I tools/docx_flow_smoke.py --minimal
       - name: Exercise each PDF profile in a fresh environment
         run: |
           version=$(python -m tools.release version)

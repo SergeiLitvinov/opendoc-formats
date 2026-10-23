@@ -4,6 +4,11 @@ DOCX использует общий API `opendoc_model`: `TableIndent` прин
 `TabStops` — абзацу. Модель проверяет декларации и JSON, адаптер измеряет исходные
 OOXML-значения и записывает нативные объявления. Codec и схема модели не дублируются.
 
+Для семантической компоновки канонической PDF-модели доступен явный
+`DocxProfile(layout="flow")`: текущий порядок блоков и выбранные ячейки становятся
+редактируемым Word с явной LOSS исходных координат/пагинации.
+[Публичный API, конечный профиль таблиц и приёмка Word](../development/pdf-word-flow-contract.md).
+
 ```python
 from opendoc_model import TableIndent, TabStop, TabStops, set_table_indent, set_tab_stops
 

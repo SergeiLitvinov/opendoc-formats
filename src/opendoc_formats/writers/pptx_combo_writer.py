@@ -37,7 +37,8 @@ def compose_combo(
             series.get("plot_index"),
         )
 
-    groups = [(identity, list(rows)) for identity, rows in cancellable_items(groupby(enumerate(data["series"]), key=key))]
+    groups = [(identity, list(cancellable_items(rows)))
+              for identity, rows in cancellable_items(groupby(enumerate(data["series"]), key=key))]
     if not groups or groups[0][0][1] != "value":
         raise ValueError("primary plot must be first")
     declared = data.get("combo_types")
@@ -57,6 +58,7 @@ def compose_combo(
             raise ValueError("unknown bar direction")
         options = {**data, "chart_type": kind, "grouping": grouping, "bar_direction": direction}
         template = parse_xml(ChartXmlWriter(kind_for(options), chart_data).xml.encode("utf-8"))
+        checkpoint()
         area = template.find(".//" + C + "plotArea")
         plot = area.find(C + kind)
         selected = {index for index, _ in cancellable_items(rows)}

@@ -9,12 +9,14 @@ from opendoc_model import Border, BorderSet, IssueSeverity, TableCell, get_borde
 
 from opendoc_formats.ooxml.borders import export_borders, import_borders
 from opendoc_formats.ooxml.widths import export_width
+from opendoc_formats.support.cancellation import checkpoint
 
 
 def export_merge_borders(target: Any, placements: list, report: Any, location: str) -> None:
     from docx.oxml.ns import qn
 
     for row, column, source in placements:
+        checkpoint()
         if source.properties.get('docx_merge_borders_unsupported'):
             report.add(IssueSeverity.ERROR, 'docx.merge-borders', 'Native border segments require explicit resolution', location)
             continue
@@ -22,9 +24,11 @@ def export_merge_borders(target: Any, placements: list, report: Any, location: s
         if source.row_span < 2 or borders is None:
             continue
         for offset in range(source.row_span):
+            checkpoint()
             cursor = 0
             native = None
             for cell in target._tbl.tr_lst[row + offset].tc_lst:
+                checkpoint()
                 if cursor == column:
                     native = cell
                     break

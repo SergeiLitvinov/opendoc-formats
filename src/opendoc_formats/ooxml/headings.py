@@ -6,6 +6,8 @@ from typing import Any
 
 from opendoc_model import Heading, PackageGraph, Paragraph, get_heading, set_heading
 
+from opendoc_formats.support.cancellation import checkpoint
+
 
 def _builtin_level(style: Any) -> int | None:
     if style is not None and style.builtin:
@@ -27,12 +29,14 @@ def import_heading(native: Any, paragraph: Paragraph) -> None:
     style = native.style
     seen = set()
     while style is not None and style.style_id not in seen:
+        checkpoint()
         seen.add(style.style_id)
         owners.append(style.element)
         style = style.base_style
     defaults = native.part.package.main_document_part.styles.element.xpath("./w:docDefaults/w:pPrDefault")
     owners.extend(defaults)
     for owner in owners:
+        checkpoint()
         properties = owner.find(qn("w:pPr"))
         node = properties.find(qn("w:outlineLvl")) if properties is not None else None
         if node is None:
@@ -74,6 +78,7 @@ def export_heading(paragraph: Paragraph, native: Any) -> None:
             name = f"OpenDoc outline {level} from {base.style_id}"
             candidate, suffix = name, 0
             while candidate in part.styles:
+                checkpoint()
                 suffix += 1
                 candidate = f"{name} {suffix}"
             derived = part.styles.add_style(candidate, WD_STYLE_TYPE.PARAGRAPH)
@@ -82,6 +87,7 @@ def export_heading(paragraph: Paragraph, native: Any) -> None:
         native.style = cache[key]
     properties = native._p.get_or_add_pPr()
     for node in list(properties.findall(qn("w:outlineLvl"))):
+        checkpoint()
         properties.remove(node)
     node = OxmlElement("w:outlineLvl")
     node.set(qn("w:val"), str(level))
@@ -104,6 +110,7 @@ def retain_derived_styles(part: Any, graph: PackageGraph) -> PackageGraph:
         return graph
     styles = parse_xml(source.data)
     for style in created.values():
+        checkpoint()
         styles.append(deepcopy(style.element))
     parts = dict(graph.parts)
     parts[source.name] = replace(source, data=etree.tostring(styles, encoding="UTF-8", xml_declaration=True))

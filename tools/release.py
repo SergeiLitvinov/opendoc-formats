@@ -13,6 +13,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED = {
+    "opendoc_formats/docx_profile.py",
+    "opendoc_formats/writers/docx_flow.py",
     "opendoc_formats/docx.py",
     "opendoc_formats/pdf.py",
     "opendoc_formats/office.py",

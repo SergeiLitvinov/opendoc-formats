@@ -122,7 +122,7 @@ read_document(path: str | Path, *, format_id: str | None=None, options: ImportOp
 
 ### ExportOptions
 
-[Исходник, строка 22](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L22)
+[Исходник, строка 23](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L23)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -131,10 +131,11 @@ read_document(path: str | Path, *, format_id: str | None=None, options: ImportOp
 | `verify_output` | `bool` | `True` |
 | `txt_profile` | `TextProfile &#124; None` | `None` |
 | `quality_gate` | `Callable[[ConversionReport, Path], bool] &#124; None` | `None` |
+| `docx_profile` | `DocxProfile &#124; None` | `None` |
 
 ### ExporterSpec
 
-[Исходник, строка 64](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L64)
+[Исходник, строка 71](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L71)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -146,11 +147,11 @@ read_document(path: str | Path, *, format_id: str | None=None, options: ImportOp
 
 ### ExporterRegistry
 
-[Исходник, строка 87](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L87)
+[Исходник, строка 94](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L94)
 
 ### ExporterRegistry.__init__
 
-[Исходник, строка 88](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L88)
+[Исходник, строка 95](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L95)
 
 ```python
 __init__(self) -> None
@@ -158,7 +159,7 @@ __init__(self) -> None
 
 ### ExporterRegistry.register
 
-[Исходник, строка 92](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L92)
+[Исходник, строка 99](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L99)
 
 ```python
 register(self, exporter: ExporterSpec) -> None
@@ -166,7 +167,7 @@ register(self, exporter: ExporterSpec) -> None
 
 ### ExporterRegistry.exporters
 
-[Исходник, строка 100](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L100)
+[Исходник, строка 107](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L107)
 
 ```python
 exporters(self) -> tuple[ExporterSpec, ...]
@@ -174,7 +175,7 @@ exporters(self) -> tuple[ExporterSpec, ...]
 
 ### ExporterRegistry.write
 
-[Исходник, строка 103](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L103)
+[Исходник, строка 110](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L110)
 
 ```python
 write(self, document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport
@@ -182,7 +183,7 @@ write(self, document: DocumentModel, path: str | Path, *, format_id: str | None=
 
 ### default_exporter_registry
 
-[Исходник, строка 346](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L346)
+[Исходник, строка 354](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L354)
 
 ```python
 default_exporter_registry() -> ExporterRegistry
@@ -190,7 +191,7 @@ default_exporter_registry() -> ExporterRegistry
 
 ### write_document
 
-[Исходник, строка 370](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L370)
+[Исходник, строка 378](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L378)
 
 ```python
 write_document(document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport
@@ -251,6 +252,16 @@ source_profile(text: str, encoding: str, bom: bool) -> dict[str, Any]
 ```python
 encode_text(text: str, profile: TextProfile, original: dict[str, Any]) -> tuple[bytes, dict[str, Any], bool]
 ```
+
+## opendoc_formats.docx_profile
+
+### DocxProfile
+
+[Исходник, строка 7](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx_profile.py#L7)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `layout` | `str` | `'preserve'` |
 
 ## opendoc_formats.docx
 

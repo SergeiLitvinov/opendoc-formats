@@ -61,7 +61,7 @@ def restore_connections(
     identities = defaultdict(list)
     for identity, shapes in (groups or {}).items():
         checkpoint()
-        identities[identity].extend(shapes)
+        identities[identity].extend(cancellable_items(shapes))
     for block, shape, _ in entries:
         checkpoint()
         identity = block.properties.get("pptx", {}).get("object_id")
@@ -99,7 +99,7 @@ def restore_groups(slide: Any, entries: list[tuple[od.Block, Any, str]], report:
         result = []
         for identity, run in groupby(rows, key=lambda row: str(row[1][depth].get("id")) if len(row[1]) > depth else None):
             checkpoint()
-            run = list(run)
+            run = list(cancellable_items(run))
             if identity is None:
                 result.extend(row[0] for row in cancellable_items(run))
                 continue
@@ -108,8 +108,9 @@ def restore_groups(slide: Any, entries: list[tuple[od.Block, Any, str]], report:
                 report.add(IssueSeverity.LOSS, "groups", "Разорванная порядком объектов группа разделена.", run[0][2])
             seen.add(key)
             members = assemble(run, depth + 1, key)
-            position = list(slide.shapes._spTree).index(members[0]._element)
+            position = list(cancellable_items(slide.shapes._spTree)).index(members[0]._element)
             group = slide.shapes.add_group_shape(members)
+            checkpoint()
             group.name = run[0][1][depth].get("name") or "Группа"
             identities[identity].append(group)
             slide.shapes._spTree.remove(group._element)

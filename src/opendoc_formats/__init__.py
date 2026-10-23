@@ -3,6 +3,7 @@
 from importlib.metadata import version
 
 from .api import AdapterRegistry, AdapterSpec, ImportOptions, ImportResult, default_registry, read_document
+from .docx_profile import DocxProfile
 from .text_profile import TextProfile
 
 __version__ = version("opendoc-formats")
@@ -14,6 +15,7 @@ from .support.object_mapping import get_object_mapping
 from .support.pdf_mapping_history import read_pdf_origin_mapping
 
 __all__ += [
+    "DocxProfile",
     "ExporterRegistry", "ExporterSpec", "ExportOptions", "default_exporter_registry", "write_document", "get_object_mapping",
     "read_pdf_origin_mapping", "compose_object_mappings",
 ]

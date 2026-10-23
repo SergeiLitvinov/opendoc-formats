@@ -7,6 +7,12 @@ pdfminer, Pillow или lxml. Лицензия PyMuPDF — AGPL-3.0 либо к�
 для отдельного permissive text-only маршрута остаётся `pdf-text` с BSD-3-Clause pypdf.
 Таблица ниже перечисляет все альтернативные профили, а не обязательную общую установку.
 
+Для [JSON → DOCX flow](../development/pdf-word-flow-contract.md) достаточно `docx`
+(python-docx: MIT, lxml: BSD-3-Clause с дополнительными notices дистрибутива);
+`fonts` добавляет fonttools (MIT) для программ шрифтов. Самому flow-экспорту
+PyMuPDF, pdf2docx, OpenCV и Pillow не нужны. Первоначальный разбор PDF использует
+отдельный PDF-профиль с его лицензией; экспорт JSON не меняет условий этого движка.
+
 Профили `pdf`, `pdf-rich` и `pdf-docx` ограничивают PyMuPDF веткой `>=1.24,<2`.
 В [метаданных PyMuPDF 2.0](https://pypi.org/pypi/PyMuPDF/2.0/json) обязательны
 NumPy, ONNX Runtime, networkx, PyYAML, pymupdf-layout, pymupdf4llm, psutil и tabulate.
