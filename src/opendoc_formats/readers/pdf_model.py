@@ -7,7 +7,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from opendoc_model import DocumentLimits
+from opendoc_model import ArtifactLimitError, DocumentLimits
 from opendoc_model.color import ColorValue
 from opendoc_model.document_model import (
     Block as RichBlock,
@@ -37,7 +37,7 @@ from opendoc_model.document_model import (
 )
 from opendoc_model.units import canonical_coordinate_contract
 
-from opendoc_formats.errors import OperationCancelledError
+from opendoc_formats.errors import BackendUnavailableError, OperationCancelledError, ResourceLimitError
 from opendoc_formats.support.cancellation import check_cancelled
 from opendoc_formats.types import BlockType, DocFormat
 
@@ -95,6 +95,7 @@ def read_pdf_model(
     geometry = extract_pdf_geometry(path, exclude_interactions=True, cancelled=cancelled)
     engine = f"pymupdf+{scenario}+document-model"
     ocr_pages = None
+    ocr_failures: list[tuple[str, str, int]] = []
 
     # OCR-слияние для structure/scan сценариев.
     if scenario in (PDF_SCENARIO_STRUCTURE, PDF_SCENARIO_SCAN):
@@ -112,12 +113,18 @@ def read_pdf_model(
                 ocr_pages = ocr_engine.recognize_pdf_geometry(path, handwriting=handwriting)
                 if geometry.pages and not ocr_pages:
                     geometry.warnings.append('OCR engine returned no page results')
-            except OperationCancelledError:
+                    ocr_failures.append(('pdf.ocr-empty', 'ocr-no-page-results', len(geometry.warnings)-1))
+            except (OperationCancelledError, ArtifactLimitError, ResourceLimitError):
                 raise
+            except BackendUnavailableError as exc:
+                geometry.warnings.append(f'OCR backend unavailable: {exc}')
+                ocr_failures.append(('pdf.ocr-unavailable', 'ocr-provider-unavailable', len(geometry.warnings)-1))
             except Exception as exc:  # noqa: BLE001
                 geometry.warnings.append(f"OCR failed: {exc}")
+                ocr_failures.append(('pdf.ocr-failed', 'ocr-provider-failed', len(geometry.warnings)-1))
         else:
             geometry.warnings.append("OCR engine requested but none available")
+            ocr_failures.append(('pdf.ocr-unavailable', 'ocr-provider-unavailable', len(geometry.warnings)-1))
 
     check_cancelled(cancelled, 'PDF OCR')
     images, img_warnings = extract_pdf_images(path, cancelled=cancelled)
@@ -351,6 +358,10 @@ def read_pdf_model(
 
     attach_pdf_scopes(document, limits=limits, cancelled=cancelled)
     attach_history_map(document, path, matched_history, history_issues, limits=limits)
+    from opendoc_formats.readers.pdf_ocr_diagnostics import attach_ocr_diagnostics
+
+    attach_ocr_diagnostics(document, path, scenario, geometry, ocr_pages, ocr_failures,
+                           limits=limits, cancelled=cancelled)
     check_cancelled(cancelled, 'PDF import completion')
     return document
 

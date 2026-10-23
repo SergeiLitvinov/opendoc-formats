@@ -94,6 +94,35 @@ def test_reader_warnings_are_exposed_without_claiming_losslessness(tmp_path, for
     assert restored.metadata == document.metadata
 
 
+@pytest.mark.parametrize('linked_index', [0, 2])
+def test_only_explicitly_linked_identical_legacy_warning_is_suppressed(tmp_path, linked_index):
+    from opendoc_model import (
+        DiagnosticIssue,
+        IntegrationModel,
+        IssueSeverity,
+        PreservationRecord,
+        PreservationState,
+        set_integration,
+    )
+
+    path = tmp_path / 'own.fixture'
+    path.write_text('Own source', encoding='utf-8')
+    document = DocumentModel(metadata={'warnings': ['Same text', 'Same text', 'Different text']})
+    issue = DiagnosticIssue('own.typed-warning', IssueSeverity.LOSS, 'Same text', 'own-source#ocr',
+                            {'legacy_warning_path': f'metadata.warnings[{linked_index}]'}, 'own-unassessed-warning')
+    set_integration(document, IntegrationModel(preservation=(PreservationRecord(issue, PreservationState.OPAQUE),),
+                                               assessed_features=(issue.code,)))
+    registry = AdapterRegistry()
+    registry.register(AdapterSpec('own', ('.fixture',), lambda path, options: document))
+    for model in (document, document_from_json(document_to_json(document))):
+        document = model
+        result = registry.read(path)
+        assert len(result.issues) == (3 if linked_index == 0 else 4)
+        assert any(item.message == 'Different text' for item in result.issues)
+        assert sum(item.message == 'Same text' for item in result.issues) == (2 if linked_index == 0 else 3)
+        assert document.metadata['warnings'] == ['Same text', 'Same text', 'Different text']
+
+
 @pytest.mark.parametrize("state", ["semantic", "opaque", "visual", "lost", "rejected"])
 def test_json_preservation_ledger_controls_import_result(tmp_path, state):
     from opendoc_model import (

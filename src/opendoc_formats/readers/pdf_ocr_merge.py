@@ -20,7 +20,9 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
-from opendoc_formats.errors import OperationCancelledError
+from opendoc_model import ArtifactLimitError
+
+from opendoc_formats.errors import BackendUnavailableError, OperationCancelledError, ResourceLimitError
 from opendoc_formats.readers.pdf_classify import classify_text_block, repeated_margin_roles
 from opendoc_formats.readers.pdf_geometry import PdfGeometryDocument, PdfTableGeometry, PdfTextBlockGeometry
 from opendoc_formats.readers.pdf_layout import analyze_reading_order
@@ -351,8 +353,10 @@ def read_pdf_scenario(
             ocr_pages = ocr_engine.recognize_pdf_geometry(path, scale=scale, handwriting=handwriting)
             if geometry.pages and not ocr_pages:
                 geometry.warnings.append('OCR engine returned no page results')
-        except OperationCancelledError:
+        except (OperationCancelledError, ArtifactLimitError, ResourceLimitError):
             raise
+        except BackendUnavailableError as exc:
+            geometry.warnings.append(f'OCR backend unavailable: {exc}')
         except Exception as exc:  # noqa: BLE001
             geometry.warnings.append(f"OCR failed: {exc}")
     else:

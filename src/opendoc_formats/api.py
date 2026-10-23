@@ -181,10 +181,14 @@ def _import_issues(
     from opendoc_model import PreservationState
 
     issues: list[DiagnosticIssue] = []
+    linked_warnings: set[tuple[str, str]] = set()
     model = get_integration(document, limits=limits)
     if model is not None:
         for record in model.preservation:
             issue = record.issue
+            warning_path = (issue.measurement or {}).get('legacy_warning_path')
+            if isinstance(warning_path, str):
+                linked_warnings.add((warning_path, issue.message))
             if record.state is not PreservationState.SEMANTIC:
                 severity = IssueSeverity.ERROR if record.state is PreservationState.REJECTED else IssueSeverity.LOSS
                 issue = DiagnosticIssue(
@@ -203,6 +207,8 @@ def _import_issues(
         for index, item in enumerate(warnings):
             fallback = f"{source}#{location}.warnings[{index}]"
             if isinstance(item, str):
+                if (f'{location}.warnings[{index}]', item) in linked_warnings:
+                    continue
                 issue = DiagnosticIssue(f"{identifier}.warning", IssueSeverity.WARNING, item, fallback)
             elif isinstance(item, dict):
                 issue = DiagnosticIssue(
