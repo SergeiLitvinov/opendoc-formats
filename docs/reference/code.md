@@ -105,7 +105,7 @@ Format-specific errors, independent of consumers.
 
 Импорты: отсутствуют
 
-Тесты: [test_docx_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_access.py#L1), [test_office_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_office_access.py#L1), [test_package_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_package_resources.py#L1), [test_pdf_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_access.py#L1), [test_djvu_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_djvu_text.py#L1), [test_docx_heading_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_heading_cancellation.py#L1), [test_docx_layout_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_layout_roundtrip.py#L1), [test_fix_encoding.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_fix_encoding.py#L1), [test_office_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_office_import_cancellation.py#L1), [test_pdf_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_import_cancellation.py#L1), [test_pdf_model_ocr_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_model_ocr_diagnostics.py#L1), [test_tex_model.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_tex_model.py#L1), [test_web_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_web_import_cancellation.py#L1), [test_ooxml_package.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_ooxml_package.py#L1), [test_txt_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_txt_cancellation.py#L1), [test_docx_flow.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_docx_flow.py#L1), [test_latex_lists.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_lists.py#L1), [test_latex_math.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_math.py#L1), [test_office_export_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_office_export_cancellation.py#L1), [test_office_nested_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_office_nested_cancellation.py#L1), [test_pdf_docx_preparation_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_docx_preparation_cancellation.py#L1), [test_web_tex_export_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_web_tex_export_cancellation.py#L1)
+Тесты: [test_docx_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_access.py#L1), [test_office_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_office_access.py#L1), [test_package_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_package_resources.py#L1), [test_pdf_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_access.py#L1), [test_djvu_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_djvu_text.py#L1), [test_docx_heading_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_heading_cancellation.py#L1), [test_docx_layout_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_layout_roundtrip.py#L1), [test_fix_encoding.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_fix_encoding.py#L1), [test_office_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_office_import_cancellation.py#L1), [test_pdf_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_import_cancellation.py#L1), [test_pdf_model_ocr_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_model_ocr_diagnostics.py#L1), [test_pdf_table_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_table_diagnostics.py#L1), [test_tex_model.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_tex_model.py#L1), [test_web_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_web_import_cancellation.py#L1), [test_ooxml_package.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_ooxml_package.py#L1), [test_txt_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_txt_cancellation.py#L1), [test_docx_flow.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_docx_flow.py#L1), [test_latex_lists.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_lists.py#L1), [test_latex_math.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_math.py#L1), [test_office_export_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_office_export_cancellation.py#L1), [test_office_nested_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_office_nested_cancellation.py#L1), [test_pdf_docx_preparation_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_docx_preparation_cancellation.py#L1), [test_web_tex_export_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_web_tex_export_cancellation.py#L1)
 
 ## src/opendoc_formats/export.py
 
@@ -821,6 +821,14 @@ Disposable native content view without interactive appearances or stale caches.
 
 Импорты: `__future__`, `collections.abc`, `contextlib`, `opendoc_formats.support.cancellation`, `opendoc_model`, `pathlib`, `typing`
 
+## src/opendoc_formats/readers/pdf_diagnostics.py
+
+Located PDF import uncertainty, recorded without classifying warning prose.
+
+- `attach_pdf_diagnostics(document: DocumentModel, path: str | Path, mode: str, geometry: PdfGeometryDocument, pages: Sequence[OcrPageResult] | None, failures: Sequence[tuple[str, str, int]], *, limits: DocumentLimits | None=None, cancelled: Callable[[], bool] | None=None) -> None` — [строка 27](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_diagnostics.py#L27)
+
+Импорты: `__future__`, `collections.abc`, `dataclasses`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_ocr_types`, `opendoc_formats.support.cancellation`, `opendoc_model`, `pathlib`
+
 ## src/opendoc_formats/readers/pdf_fields.py
 
 Bounded AcroForm tree audit independent of widget appearance extraction.
@@ -852,24 +860,24 @@ Preserve embedded PDF font programs as bounded public Model resources.
 
 Геометрический слой импорта PDF без семантических эвристик.
 
-- `PdfSpanGeometry` — [строка 19](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L19)
-- `PdfLineGeometry` — [строка 32](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L32)
-- `text(self) -> str` — [строка 40](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L40)
-- `PdfTextBlockGeometry` — [строка 45](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L45)
-- `text(self) -> str` — [строка 51](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L51)
-- `PdfImageGeometry` — [строка 56](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L56)
-- `PdfTableCellGeometry` — [строка 66](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L66)
-- `PdfTableGeometry` — [строка 74](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L74)
-- `text(self) -> str` — [строка 84](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L84)
-- `row_count(self) -> int` — [строка 88](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L88)
-- `column_count(self) -> int` — [строка 92](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L92)
-- `PdfPageGeometry` — [строка 97](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L97)
-- `PdfGeometryDocument` — [строка 110](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L110)
-- `extract_pdf_geometry(path: str | Path, *, exclude_interactions: bool=False, cancelled: Callable[[], bool] | None=None) -> PdfGeometryDocument` — [строка 117](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L117)
+- `PdfSpanGeometry` — [строка 21](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L21)
+- `PdfLineGeometry` — [строка 34](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L34)
+- `text(self) -> str` — [строка 42](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L42)
+- `PdfTextBlockGeometry` — [строка 47](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L47)
+- `text(self) -> str` — [строка 53](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L53)
+- `PdfImageGeometry` — [строка 58](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L58)
+- `PdfTableCellGeometry` — [строка 68](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L68)
+- `PdfTableGeometry` — [строка 76](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L76)
+- `text(self) -> str` — [строка 86](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L86)
+- `row_count(self) -> int` — [строка 90](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L90)
+- `column_count(self) -> int` — [строка 94](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L94)
+- `PdfPageGeometry` — [строка 99](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L99)
+- `PdfGeometryDocument` — [строка 112](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L112)
+- `extract_pdf_geometry(path: str | Path, *, exclude_interactions: bool=False, cancelled: Callable[[], bool] | None=None) -> PdfGeometryDocument` — [строка 120](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L120)
 
-Импорты: `__future__`, `bisect`, `collections.abc`, `dataclasses`, `opendoc_formats.errors`, `opendoc_formats.readers.pdf_content`, `opendoc_formats.support.cancellation`, `pathlib`, `statistics`, `typing`
+Импорты: `__future__`, `bisect`, `collections.abc`, `dataclasses`, `opendoc_formats.errors`, `opendoc_formats.readers.pdf_content`, `opendoc_formats.support.cancellation`, `opendoc_model`, `pathlib`, `statistics`, `typing`
 
-Тесты: [test_pdf_geometry.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_geometry.py#L1), [test_pdf_images.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_images.py#L1), [test_pdf_ocr_merge.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_ocr_merge.py#L1)
+Тесты: [test_pdf_geometry.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_geometry.py#L1), [test_pdf_images.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_images.py#L1), [test_pdf_ocr_merge.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_ocr_merge.py#L1), [test_pdf_table_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_table_diagnostics.py#L1)
 
 ## src/opendoc_formats/readers/pdf_graphics_state.py
 
@@ -941,17 +949,9 @@ PDF → модель OpenDoc: геометрия, семантические б�
 
 - `read_pdf_model(*, path: str | Path, use_ocr: bool=False, ocr_backend: str='', handwriting: bool=False, use_gpu: bool=False, mode: str | None=None, ocr_engine_factory: Callable[..., Any] | None=None, limits: DocumentLimits | None=None, cancelled: Callable[[], bool] | None=None) -> DocumentModel` — [строка 45](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_model.py#L45)
 
-Импорты: `__future__`, `collections.abc`, `opendoc_formats.errors`, `opendoc_formats.readers.pdf_fonts`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_images`, `opendoc_formats.readers.pdf_interactive`, `opendoc_formats.readers.pdf_ocr_diagnostics`, `opendoc_formats.readers.pdf_ocr_merge`, `opendoc_formats.readers.pdf_paint`, `opendoc_formats.readers.pdf_scopes`, `opendoc_formats.readers.pdf_table_model`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.object_mapping`, `opendoc_formats.support.pdf_mapping_history`, `opendoc_formats.types`, `opendoc_model`, `opendoc_model.color`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
+Импорты: `__future__`, `collections.abc`, `opendoc_formats.errors`, `opendoc_formats.readers.pdf_diagnostics`, `opendoc_formats.readers.pdf_fonts`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_images`, `opendoc_formats.readers.pdf_interactive`, `opendoc_formats.readers.pdf_ocr_merge`, `opendoc_formats.readers.pdf_paint`, `opendoc_formats.readers.pdf_scopes`, `opendoc_formats.readers.pdf_table_model`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.object_mapping`, `opendoc_formats.support.pdf_mapping_history`, `opendoc_formats.types`, `opendoc_model`, `opendoc_model.color`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
 
 Тесты: [test_pdf_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_import_cancellation.py#L1), [test_pdf_model_ocr_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_model_ocr_diagnostics.py#L1)
-
-## src/opendoc_formats/readers/pdf_ocr_diagnostics.py
-
-Located OCR uncertainty, recorded at its source without classifying warning prose.
-
-- `attach_ocr_diagnostics(document: DocumentModel, path: str | Path, mode: str, geometry: PdfGeometryDocument, pages: Sequence[OcrPageResult] | None, failures: Sequence[tuple[str, str, int]], *, limits: DocumentLimits | None=None, cancelled: Callable[[], bool] | None=None) -> None` — [строка 27](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_ocr_diagnostics.py#L27)
-
-Импорты: `__future__`, `collections.abc`, `dataclasses`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_ocr_types`, `opendoc_formats.support.cancellation`, `opendoc_model`, `pathlib`
 
 ## src/opendoc_formats/readers/pdf_ocr_merge.py
 
@@ -976,7 +976,7 @@ Located OCR uncertainty, recorded at its source without classifying warning pros
 
 Импорты: `__future__`, `dataclasses`, `typing`
 
-Тесты: [test_pdf_model_ocr_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_model_ocr_diagnostics.py#L1), [test_pdf_ocr_merge.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_ocr_merge.py#L1)
+Тесты: [test_pdf_model_ocr_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_model_ocr_diagnostics.py#L1), [test_pdf_ocr_merge.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_ocr_merge.py#L1), [test_pdf_table_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_table_diagnostics.py#L1)
 
 ## src/opendoc_formats/readers/pdf_paint.py
 

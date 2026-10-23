@@ -358,9 +358,9 @@ def read_pdf_model(
 
     attach_pdf_scopes(document, limits=limits, cancelled=cancelled)
     attach_history_map(document, path, matched_history, history_issues, limits=limits)
-    from opendoc_formats.readers.pdf_ocr_diagnostics import attach_ocr_diagnostics
+    from opendoc_formats.readers.pdf_diagnostics import attach_pdf_diagnostics
 
-    attach_ocr_diagnostics(document, path, scenario, geometry, ocr_pages, ocr_failures,
+    attach_pdf_diagnostics(document, path, scenario, geometry, ocr_pages, ocr_failures,
                            limits=limits, cancelled=cancelled)
     check_cancelled(cancelled, 'PDF import completion')
     return document

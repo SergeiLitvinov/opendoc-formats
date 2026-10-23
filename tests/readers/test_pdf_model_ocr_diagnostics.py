@@ -121,12 +121,12 @@ def test_repeated_warning_text_keeps_distinct_page_occurrences(tmp_path):
 def test_cancel_inside_ocr_diagnostics_discards_partial_model(tmp_path, monkeypatch):
     from threading import Event
 
-    from opendoc_formats.readers import pdf_ocr_diagnostics
+    from opendoc_formats.readers import pdf_diagnostics
 
     path = own_pdf(tmp_path)
     source = path.read_bytes()
     stop, calls = Event(), []
-    native = pdf_ocr_diagnostics.PreservationRecord
+    native = pdf_diagnostics.PreservationRecord
 
     class Engine:
         is_available = True
@@ -142,7 +142,7 @@ def test_cancel_inside_ocr_diagnostics_discards_partial_model(tmp_path, monkeypa
         return result
 
     with monkeypatch.context() as context:
-        context.setattr(pdf_ocr_diagnostics, 'PreservationRecord', first)
+        context.setattr(pdf_diagnostics, 'PreservationRecord', first)
         result = read_document(path, options=ImportOptions(
             pdf_mode='structure', ocr_engine_factory=lambda **kwargs: Engine(), cancelled=stop.is_set,
         ))

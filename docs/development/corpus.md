@@ -440,6 +440,15 @@ ArtifactLimitError в реестре даёт `import.document-limit` с адр�
 
 ## Отмена нативного импорта PDF
 
+`tests/readers/test_pdf_table_diagnostics.py` использует собственный двухстраничный
+PDF и контролируемые отказы нативного поиска таблиц. Обе стратегии имеют отдельные
+записи с адресом страницы, причиной, provenance и связью с исходным warning.
+Геометрический enrichment, rich import и JSON сохраняют эти записи. Проверены
+общий ledger с OCR без смещения индексов, типизированные лимиты без попытки
+следующей стратегии и отмена после backend до обхода найденных таблиц.
+Исходные bytes неизменны, повторное обычное чтение успешно; состояние OPAQUE
+не объявляет наличие или отсутствие исходных таблиц.
+
 `tests/readers/test_pdf_import_cancellation.py` проверяет сигнал через геометрию,
 растр/вектор, enrichment, шрифты, paint, interactions и scopes. Отмена после native
 text extraction не начинает tables/следующую страницу; между table strategies

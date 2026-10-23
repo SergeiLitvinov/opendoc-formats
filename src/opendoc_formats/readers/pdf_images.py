@@ -372,6 +372,7 @@ def enrich_geometry_with_images(
         metadata=geometry.metadata,
         engine=geometry.engine,
         warnings=geometry.warnings,
+        diagnostics=geometry.diagnostics,
     )
 
 

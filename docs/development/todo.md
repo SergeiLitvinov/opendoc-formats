@@ -14,7 +14,8 @@
 
 - Обеспечить feature/location/severity и состояние semantic/opaque/visual/lost/rejected
   для каждого непереносимого объекта во всех читателях, включая EPUB и PDF.
-- Перевести оставшиеся геометрические warnings PDF и warnings текстовых legacy-маршрутов
+- Перевести оставшиеся warnings извлечения изображений/векторов и геометрии ячеек PDF,
+  а также warnings текстовых legacy-маршрутов
   на структурированную оценку сохранности с reason и source provenance.
 - C-MAP-01: автоматически подтверждать связи произвольных intermediate snapshots,
   полный инвентарь объектов и нативные сценарии произвольного split/merge.

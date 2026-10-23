@@ -9,7 +9,9 @@ from pathlib import Path
 from statistics import median
 from typing import Any, TypeAlias
 
-from opendoc_formats.errors import OperationCancelledError
+from opendoc_model import ArtifactLimitError, DiagnosticIssue, IssueSeverity, PreservationRecord, PreservationState, Provenance
+
+from opendoc_formats.errors import OperationCancelledError, ResourceLimitError
 from opendoc_formats.support.cancellation import check_cancelled
 
 PdfBox: TypeAlias = tuple[float, float, float, float]
@@ -112,6 +114,7 @@ class PdfGeometryDocument:
     metadata: dict[str, str] = field(default_factory=dict)
     engine: str = "pymupdf"
     warnings: list[str] = field(default_factory=list)
+    diagnostics: list[PreservationRecord] = field(default_factory=list)
 
 
 def extract_pdf_geometry(path: str | Path, *, exclude_interactions: bool = False,
@@ -130,6 +133,7 @@ def extract_pdf_geometry(path: str | Path, *, exclude_interactions: bool = False
     with (content_only_pdf(source, cancelled=cancelled) if exclude_interactions else fitz.open(str(source))) as document:
         metadata = {str(key): str(value or "") for key, value in (document.metadata or {}).items()}
         warnings: list[str] = []
+        diagnostics: list[PreservationRecord] = []
         for page_index, page in enumerate(document):
             check_cancelled(cancelled, 'PDF geometry page')
             # Table analysis may mutate the backend page's crop/rotation temporarily.
@@ -156,7 +160,8 @@ def extract_pdf_geometry(path: str | Path, *, exclude_interactions: bool = False
                             colorspace=str(block.get("cs-name", "")),
                         )
                     )
-            tables = _find_tables(page, warnings, page_index + 1, cancelled=cancelled)
+            tables = _find_tables(page, warnings, page_index + 1, cancelled=cancelled,
+                                  diagnostics=diagnostics, source_path=str(source))
             check_cancelled(cancelled, 'PDF table analysis')
             pages.append(
                 PdfPageGeometry(
@@ -170,11 +175,12 @@ def extract_pdf_geometry(path: str | Path, *, exclude_interactions: bool = False
                 )
             )
     check_cancelled(cancelled, 'PDF geometry completion')
-    return PdfGeometryDocument(pages=pages, metadata=metadata, warnings=warnings)
+    return PdfGeometryDocument(pages=pages, metadata=metadata, warnings=warnings, diagnostics=diagnostics)
 
 
 def _find_tables(page: Any, warnings: list[str], page_number: int, *,
-                 cancelled: Callable[[], bool] | None = None) -> list[PdfTableGeometry]:
+                 cancelled: Callable[[], bool] | None = None,
+                 diagnostics: list[PreservationRecord] | None = None, source_path: str = '') -> list[PdfTableGeometry]:
     for strategy in ("lines_strict", "text"):
         check_cancelled(cancelled, 'PDF table strategy')
         try:
@@ -182,6 +188,7 @@ def _find_tables(page: Any, warnings: list[str], page_number: int, *,
             if strategy == "text":
                 kwargs.update({"min_words_vertical": 2, "min_words_horizontal": 2})
             finder = page.find_tables(**kwargs)
+            check_cancelled(cancelled, 'PDF native table analysis')
             words = page.get_text('words') if strategy == 'text' else ()
             tables = [
                 _table_geometry(table, index, strategy)
@@ -190,10 +197,20 @@ def _find_tables(page: Any, warnings: list[str], page_number: int, *,
             ]
             if tables:
                 return tables
-        except OperationCancelledError:
+        except (OperationCancelledError, ArtifactLimitError, ResourceLimitError):
             raise
         except Exception as error:  # noqa: BLE001 - layout analysis is best-effort
             warnings.append(f"pymupdf tables page {page_number} ({strategy}): {type(error).__name__}: {error}")
+            if diagnostics is not None:
+                diagnostics.append(PreservationRecord(
+                    DiagnosticIssue('pdf.table-analysis-failed', IssueSeverity.LOSS, warnings[-1],
+                                    f'{source_path}#page={page_number}/tables',
+                                    {'strategy': strategy, 'legacy_warning_path': f'metadata.warnings[{len(warnings)-1}]'},
+                                    'pdf-table-strategy-failed'),
+                    PreservationState.OPAQUE,
+                    provenance=Provenance('pdf', source_path or None, page=page_number,
+                                          object_id=f'table-analysis-{strategy}'),
+                ))
     return []
 
 

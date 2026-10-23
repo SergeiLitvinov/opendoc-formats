@@ -1,4 +1,4 @@
-"""Located OCR uncertainty, recorded at its source without classifying warning prose."""
+"""Located PDF import uncertainty, recorded without classifying warning prose."""
 
 from __future__ import annotations
 
@@ -24,12 +24,15 @@ from opendoc_formats.readers.pdf_ocr_types import OcrPageResult
 from opendoc_formats.support.cancellation import check_cancelled
 
 
-def attach_ocr_diagnostics(
+def attach_pdf_diagnostics(
     document: DocumentModel, path: str | Path, mode: str, geometry: PdfGeometryDocument,
     pages: Sequence[OcrPageResult] | None, failures: Sequence[tuple[str, str, int]], *,
     limits: DocumentLimits | None = None, cancelled: Callable[[], bool] | None = None,
 ) -> None:
     records = []
+    for record in geometry.diagnostics:
+        check_cancelled(cancelled, 'PDF geometry diagnostics')
+        records.append(record)
 
     def add(code: str, reason: str, message: str, warning_index: int, page_index: int | None = None) -> None:
         check_cancelled(cancelled, 'PDF OCR diagnostics')
