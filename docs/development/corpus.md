@@ -75,11 +75,20 @@ snapshots, независимая JSON-копия, `opc_changed`, отмена �
 `tests/test_anatomy_epub.py` собирает независимые ZIP/XML originals с extensionless
 OPF/XHTML в UTF-16, percent-encoded href, binary под именем `.xml` и двумя rootfiles.
 Проверены совместные ресурсы, конфликтующие типы/дубликаты, missing части,
-точное определение mimetype, DTD, `xml:base`, remote/outside ссылки, общий XML-бюджет
+точное определение mimetype, DTD, `xml:base`, remote rootfiles/outside ссылки, общий XML-бюджет
 и отмена после OPF до чтения ресурсов. ZIP open spy подтверждает однократное чтение;
 opaque inspection сохраняет bytes. Базовый установленный wheel проверяет этот
 маршрут без BeautifulSoup/EbookLib/lxml; это проверка контейнера, не EPUBCheck
 и не визуальная/семантическая приёмка всех ресурсов книги.
+
+Инвентарь `EpubAudit` дополнительно проверен на отдельных manifest occurrences
+всех rendition, исходных атрибутах/адресах, неизменяемости и независимом JSON,
+`epub_changed` и отсутствии положительной оценки полноты. HTTP(S), protocol-relative,
+file/data/javascript/mailto адреса остаются `external-unassessed`; тест запрещает
+открытие файлов, создание sockets и URL fetch при inspection bytes. Неверные поля,
+буквальные дубликаты и отвергнутый URL дают адресный отказ. Квота XML ограничивает
+и внешние записи; отмена внутри инвентаризации не читает content parts. Строгий
+EPUB reader продолжает отвергать внешние ресурсы; источник остаётся прежним.
 
 `tests/native/test_binary_compatibility.py` проверяет, что нативная правка меняет
 содержимое только `word/document.xml`, сохраняя PNG, `.rels` и opaque bytes;

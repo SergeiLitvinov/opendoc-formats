@@ -125,7 +125,8 @@ relationship part не является допустимой целью
 
 Если OPC Content Types отсутствует и `mimetype` содержит в точности
 `application/epub+zip`, инспектор читает `META-INF/container.xml` и все объявленные
-OPF rootfiles. Из каждого OPF manifest берутся локальные `href` и `media-type`.
+OPF rootfiles. Из каждого OPF manifest берутся `href` и `media-type`;
+для локальных ресурсов определяется физическая часть ZIP.
 Это использует структуру [EPUB container и package documents](https://www.w3.org/TR/epub-33/);
 полная валидация EPUB и отображение книги этим разбором не подтверждаются.
 
@@ -145,9 +146,31 @@ duplicate rootfile/item, отсутствующий manifest/control part или
 один раз. Действуют `AnatomyLimits`, кооперативная отмена и прежний запрет DTD/entities.
 Новые зависимости не нужны; EPUB href разрешается общей локальной функцией с reader.
 
-Удалённые manifest URLs, `xml:base` и manifest alias на container.xml находятся
-вне конечного профиля и дают `UnsupportedDocumentError`; сеть и файлы вне ZIP
-не читаются. Источник можно сохранить через `parse_xml=False`/`--opaque-xml`,
+`BinarySnapshot.epub` содержит неизменяемый `EpubAudit` со всеми выбранными
+manifest item occurrences. Каждый `EpubManifestReference` сохраняет исходный
+XML-адрес, имя OPF, id, href, media type и все атрибуты. `status=local` указывает
+на найденную часть в `resolved_target`. Ссылка со scheme или network location
+получает `status=external-unassessed`, а `resolved_target=null`: её цель не открывается.
+Разные OPF сохраняют отдельные occurrences даже для одного внешнего адреса.
+
+В `inventory.json` аудит находится в `epub`, `to_dict()` возвращает независимые
+контейнеры. Без распознанного EPUB или при `parse_xml=False` поле равно null.
+`compare_snapshots` сообщает `epub_changed`; `assessment_complete` остаётся false.
+Сырые атрибуты и payload не меняются. XML-бюджет ограничивает также число и размер
+записей, отмена действует внутри их обхода.
+
+Аудит не подтверждает допустимость схемы URL, ресурса или media type в EPUB,
+доступность цели и уникальность после полной URL-нормализации. В частности,
+сохранённые `file:`, `data:` или `javascript:` остаются инертными непроверенными
+строками. Это не разрешение EPUB-читателю использовать их; ограничения внешних
+ресурсов и data URLs описаны в [EPUB 3.3](https://www.w3.org/TR/epub-33/).
+Буквальный дубль внешнего href внутри manifest, отсутствующие обязательные поля
+и URL, отвергнутый разбором, дают адресный `InvalidDocumentError`.
+
+`xml:base`, удалённые rootfiles и manifest alias на container.xml остаются
+вне конечного профиля и дают `UnsupportedDocumentError`. Сеть и файлы вне ZIP
+не читаются; строгий EPUB reader не расширяет свой поддержанный профиль.
+Источник можно сохранить через `parse_xml=False`/`--opaque-xml`,
 отключив также разбор EPUB manifest. Неверный `mimetype` оставляет обычный ZIP-профиль
 с распознаванием XML по расширениям. Проверка ZIP-позиции/сжатия mimetype, spine,
 навигации и всех правил EPUB не заменяется этим инспектором; `snapshot.opc` для EPUB

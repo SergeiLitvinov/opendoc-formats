@@ -11,7 +11,7 @@ from opendoc_formats.errors import InvalidDocumentError, UnsupportedDocumentErro
 from opendoc_formats.support.cancellation import checkpoint
 
 if TYPE_CHECKING:
-    from opendoc_formats.anatomy import XmlNodeInfo
+    from opendoc_formats.anatomy import EpubAudit, XmlNodeInfo
 
 CONTAINER = '{urn:oasis:names:tc:opendocument:xmlns:container}'
 OPF = '{http://www.idpf.org/2007/opf}'
@@ -55,8 +55,10 @@ def _profile(nodes: tuple[XmlNodeInfo, ...], name: str, tag: str) -> None:
 
 def inspection_content_types(
     read_xml: Callable[[str], tuple[XmlNodeInfo, ...]],
-) -> tuple[dict[str, str], tuple[str, ...]]:
-    """Inspect every OPF rendition, preserving shared-resource type agreement."""
+) -> tuple[dict[str, str], tuple[str, ...], EpubAudit]:
+    """Inspect every OPF rendition; retain external references without dereferencing them."""
+    from opendoc_formats.anatomy import EpubAudit, EpubManifestReference
+
     container_name = 'META-INF/container.xml'
     nodes = read_xml(container_name)
     _profile(nodes, container_name, CONTAINER+'container')
@@ -78,6 +80,7 @@ def inspection_content_types(
     if not rootfiles:
         raise InvalidDocumentError(f'zip:/{container_name}: no OPF rootfile')
     types = {name: PACKAGE_TYPE for name in rootfiles}
+    references = []
     for name in rootfiles:
         checkpoint()
         nodes = read_xml(name)
@@ -85,21 +88,35 @@ def inspection_content_types(
         manifest = [node.path for node in nodes if node.tag == OPF+'manifest' and node.path.count('/') == 1]
         if len(manifest) != 1:
             raise InvalidDocumentError(f'zip:/{name}: expected one EPUB manifest')
-        identifiers, names = set(), set()
+        identifiers: set[str] = set()
+        names: set[tuple[str, str]] = set()
         for node in nodes:
             checkpoint()
             if node.tag != OPF+'item' or node.path.rsplit('/', 1)[0] != manifest[0]:
                 continue
             attributes = dict(node.attributes)
             identifier, media_type = attributes.get('id'), attributes.get('media-type')
-            target = _inspection_path(name, attributes.get('href', ''), f'zip:/{name}#xml:{node.path}')
+            location = f'zip:/{name}#xml:{node.path}'
+            href = attributes.get('href', '')
+            if not identifier or not media_type or identifier in identifiers or not href:
+                raise InvalidDocumentError(f'{location}: invalid/duplicate EPUB manifest item')
+            try:
+                parsed = urlsplit(href)
+            except ValueError as error:
+                raise InvalidDocumentError(f'{location}: invalid EPUB resource reference: {error}') from error
+            external = bool(parsed.scheme or parsed.netloc)
+            target = None if external else _inspection_path(name, href, location)
+            key = ('external', href) if external else ('local', str(target))
             if target == container_name:
                 raise UnsupportedDocumentError(f'zip:/{name}: container.xml as a manifest resource is outside the profile')
-            if not identifier or not media_type or identifier in identifiers or target in names:
-                raise InvalidDocumentError(f'zip:/{name}#xml:{node.path}: invalid/duplicate EPUB manifest item')
-            if target in types and types[target] != media_type:
+            if key in names:
+                raise InvalidDocumentError(f'{location}: invalid/duplicate EPUB manifest item')
+            if target is not None and target in types and types[target] != media_type:
                 raise InvalidDocumentError(f'zip:/{name}#xml:{node.path}: conflicting resource media types: {target}')
             identifiers.add(identifier)
-            names.add(target)
-            types[target] = media_type
-    return types, tuple(rootfiles)
+            names.add(key)
+            if target is not None:
+                types[target] = media_type
+            references.append(EpubManifestReference(location, name, identifier, href, media_type, target,
+                                                     'external-unassessed' if external else 'local', node.attributes))
+    return types, tuple(rootfiles), EpubAudit(tuple(references))

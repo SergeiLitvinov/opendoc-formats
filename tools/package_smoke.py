@@ -72,11 +72,17 @@ def anatomy_smoke() -> None:
                          '<rootfile full-path="Book/package" media-type="application/oebps-package+xml"/>'
                          '</rootfiles></container>')
         archive.writestr('Book/package', '<package xmlns="http://www.idpf.org/2007/opf"><manifest>'
-                         '<item id="own" href="chapter" media-type="application/xhtml+xml"/></manifest></package>')
+                         '<item id="own" href="chapter" media-type="application/xhtml+xml"/>'
+                         '<item id="audio" href="https://example.invalid/own.mp3" media-type="audio/mpeg"/>'
+                         '</manifest></package>')
     snapshot = inspect_binary(epub.getvalue())
     assert snapshot.opc is None and dict(snapshot.details)['epub_rootfiles'] == ('Book/package',)
     assert dict(snapshot.items[1].details)['xml_detection'] == 'epub-media-type'
     assert snapshot.items[1].xml_nodes[0].tag == '{http://www.w3.org/1999/xhtml}html'
+    assert snapshot.epub is not None and len(snapshot.epub.references) == 2
+    assert snapshot.epub.references[-1].status == 'external-unassessed'
+    assert snapshot.epub.references[-1].resolved_target is None
+    assert not snapshot.to_dict()['epub']['assessment_complete']
 
 
 def main() -> None:

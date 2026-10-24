@@ -1,11 +1,13 @@
 """Independent EPUB containers identify XML through all OPF renditions, without XHTML backends."""
 
+import json
 import zipfile
+from dataclasses import FrozenInstanceError
 from threading import Event
 
 import pytest
 
-from opendoc_formats.anatomy import AnatomyLimits, inspect_binary
+from opendoc_formats.anatomy import AnatomyLimits, compare_snapshots, inspect_binary
 from opendoc_formats.errors import InvalidDocumentError, OperationCancelledError, ResourceLimitError, UnsupportedDocumentError
 from tests.binary_fixtures import zip_bytes
 
@@ -97,14 +99,155 @@ def test_incomplete_or_conflicting_manifest_bindings_are_explicit_failures(chang
     assert not any(item.xml_nodes for item in inspect(entries, parse_xml=False).items)
 
 
-@pytest.mark.parametrize('href,error', [('https://example.invalid/own', UnsupportedDocumentError),
-                                      ('../../outside', InvalidDocumentError), ('/absolute', InvalidDocumentError),
+@pytest.mark.parametrize('href,error', [('../../outside', InvalidDocumentError), ('/absolute', InvalidDocumentError),
                                       ('../META-INF/container.xml', UnsupportedDocumentError)])
 def test_manifest_addresses_never_access_remote_or_outside_resources(href, error):
     entries = publication()
     entries['Book/package'] = entries['Book/package'].decode('utf-16').replace('Text/own%20chapter', href).encode('utf-16')
     with pytest.raises(error):
         inspect(entries)
+
+
+@pytest.mark.parametrize('href', ['https://example.invalid/audio.mp3?own=1#fragment',
+                                'http://example.invalid/audio.mp3', '//example.invalid/audio.mp3',
+                                'file:///C:/private/audio.mp3', 'data:audio/mpeg;base64,AAAA',
+                                'javascript:own()', 'mailto:own@example.invalid'])
+def test_external_manifest_resources_are_inert_original_observations(href, monkeypatch):
+    import builtins
+    import io
+    import socket
+    import urllib.request
+
+    entries = publication()
+    entries['Book/package'] = entries['Book/package'].decode('utf-16').replace(
+        '</manifest>', f'<item id="audio" href="{href}" media-type="audio/mpeg" '
+        'properties="remote-resources" own="unchanged"/></manifest>').encode('utf-16')
+    source = zip_bytes(list(entries.items()), compression=zipfile.ZIP_STORED)
+
+    def forbidden(*args, **kwargs):
+        pytest.fail('Inspection must not access a manifest target through filesystem or network')
+
+    monkeypatch.setattr(builtins, 'open', forbidden)
+    monkeypatch.setattr(io, 'open', forbidden)
+    monkeypatch.setattr(socket, 'socket', forbidden)
+    monkeypatch.setattr(urllib.request, 'urlopen', forbidden)
+    snapshot = inspect_binary(source, capture=True)
+    assert snapshot.epub is not None and snapshot.opc is None
+    assert len(snapshot.epub.references) == 3
+    local, _, remote = snapshot.epub.references
+    assert local.status == 'local' and local.resolved_target == 'Book/Text/own chapter'
+    assert remote.href == href and remote.status == 'external-unassessed'
+    assert remote.resolved_target is None and remote.package == 'Book/package'
+    assert remote.identifier == 'audio' and remote.media_type == 'audio/mpeg'
+    assert remote.location == 'zip:/Book/package#xml:0/1/2'
+    assert dict(remote.attributes)['own'] == 'unchanged'
+    encoded = json.loads(json.dumps(snapshot.to_dict()))['epub']
+    assert not encoded['assessment_complete'] and encoded['references'][2]['href'] == href
+    encoded['references'][2]['attributes']['own'] = 'edited'
+    assert dict(remote.attributes)['own'] == 'unchanged'
+    with pytest.raises(FrozenInstanceError):
+        remote.href = 'edited'
+    assert all(item.payload == entries[item.locator[5:]] for item in snapshot.items)
+    assert len(snapshot.items) == len(entries)
+    assert compare_snapshots(snapshot, inspect_binary(source))['binary_identical']
+    assert not compare_snapshots(snapshot, inspect_binary(source))['epub_changed']
+    assert inspect_binary(source, parse_xml=False).epub is None
+
+
+def test_external_references_keep_each_rendition_and_detect_literal_change():
+    entries = publication(second=True)
+    for name in ('Book/package', 'Other/package'):
+        entries[name] = entries[name].decode('utf-16').replace(
+            '</manifest>', '<item id="audio" href="https://example.invalid/audio.mp3" '
+            'media-type="audio/mpeg"/></manifest>').encode('utf-16')
+    original = inspect(entries)
+    references = [r for r in original.epub.references if r.status == 'external-unassessed']
+    assert len(references) == 2 and references[0].package != references[1].package
+    entries['Other/package'] = entries['Other/package'].decode('utf-16').replace(
+        'audio.mp3', 'changed.mp3').encode('utf-16')
+    assert compare_snapshots(original, inspect(entries))['epub_changed']
+    assert not compare_snapshots(original, inspect(entries))['assessment_complete']
+
+
+@pytest.mark.parametrize('change', ['missing-id', 'missing-type', 'missing-href', 'duplicate-id', 'duplicate-url', 'malformed'])
+def test_invalid_external_declarations_still_fail_at_the_source(change):
+    entries = publication()
+    item = '<item id="audio" href="https://example.invalid/audio.mp3" media-type="audio/mpeg"/>'
+    if change == 'missing-id':
+        item = item.replace('id="audio" ', '')
+    elif change == 'missing-type':
+        item = item.replace(' media-type="audio/mpeg"', '')
+    elif change == 'missing-href':
+        item = item.replace('href="https://example.invalid/audio.mp3" ', '')
+    elif change == 'duplicate-id':
+        item += item.replace('audio.mp3', 'other.mp3')
+    elif change == 'duplicate-url':
+        item += item.replace('id="audio"', 'id="other"')
+    else:
+        item = item.replace('https://example.invalid/audio.mp3', 'https://[invalid')
+    entries['Book/package'] = entries['Book/package'].decode('utf-16').replace(
+        '</manifest>', item+'</manifest>').encode('utf-16')
+    with pytest.raises(InvalidDocumentError, match=r'zip:/Book/package#xml:0/1/'):
+        inspect(entries)
+
+
+def remote_publication(count=1):
+    entries = publication()
+    remote = ''.join(f'<item id="audio-{index}" href="https://example.invalid/{index}.mp3" '
+                     'media-type="audio/mpeg"/>' for index in range(count))
+    entries['Book/package'] = entries['Book/package'].decode('utf-16').replace(
+        '</manifest>', remote+'</manifest>').encode('utf-16')
+    return entries
+
+
+def test_remote_inventory_remains_bounded_by_the_shared_xml_budget():
+    entries = remote_publication(8)
+    snapshot = inspect(entries)
+    node_count = sum(len(item.xml_nodes) for item in snapshot.items)
+    assert len(inspect(entries, limits=AnatomyLimits(max_xml_nodes=node_count)).epub.references) == 10
+    with pytest.raises(ResourceLimitError, match='XML node/depth limit'):
+        inspect(entries, limits=AnatomyLimits(max_xml_nodes=node_count-1))
+
+
+def test_cancel_inside_remote_reference_inventory_does_not_read_content(monkeypatch):
+    import opendoc_formats.anatomy as anatomy
+
+    stopped, references = Event(), []
+    constructor = anatomy.EpubManifestReference
+
+    def observed(*args):
+        reference = constructor(*args)
+        references.append(reference)
+        if reference.status == 'external-unassessed':
+            stopped.set()
+        return reference
+
+    source = zip_bytes(list(remote_publication(3).items()), compression=zipfile.ZIP_STORED)
+    read_member = zipfile.ZipFile.open
+    reads = []
+
+    def opened(self, info, *args, **kwargs):
+        reads.append(info.filename if isinstance(info, zipfile.ZipInfo) else info)
+        return read_member(self, info, *args, **kwargs)
+
+    monkeypatch.setattr(anatomy, 'EpubManifestReference', observed)
+    monkeypatch.setattr(zipfile.ZipFile, 'open', opened)
+    with pytest.raises(OperationCancelledError):
+        inspect_binary(source, cancelled=stopped.is_set)
+    assert len(references) == 3
+    assert reads == ['mimetype', 'META-INF/container.xml', 'Book/package']
+
+
+def test_remote_inspection_does_not_relax_the_strict_epub_reader(tmp_path):
+    from opendoc_formats.readers.epub_package import read_epub_package
+
+    source = tmp_path/'own.epub'
+    original = zip_bytes(list(remote_publication().items()), compression=zipfile.ZIP_STORED)
+    source.write_bytes(original)
+    assert inspect_binary(source).epub.references[-1].status == 'external-unassessed'
+    with pytest.raises(ValueError, match='Remote EPUB package references are not supported'):
+        read_epub_package(source)
+    assert source.read_bytes() == original
 
 
 def test_xml_base_is_outside_the_finite_inspection_profile():

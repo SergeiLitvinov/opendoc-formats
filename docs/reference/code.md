@@ -20,10 +20,13 @@ Read-only binary inventories: ZIP wire entries/XML and active PDF objects.
 - `OpcFinding` — [строка 80](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L80)
 - `OpcAudit` — [строка 87](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L87)
 - `to_dict(self) -> dict[str, Any]` — [строка 95](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L95)
-- `BinarySnapshot` — [строка 107](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L107)
-- `to_dict(self) -> dict[str, Any]` — [строка 115](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L115)
-- `compare_snapshots(before: BinarySnapshot, after: BinarySnapshot) -> dict[str, Any]` — [строка 133](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L133)
-- `inspect_binary(source: Source, *, container: str | None=None, limits: AnatomyLimits=AnatomyLimits(), parse_xml: bool=True, capture: bool=False, cancelled: Callable[[], bool] | None=None) -> BinarySnapshot` — [строка 372](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L372)
+- `EpubManifestReference` — [строка 107](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L107)
+- `EpubAudit` — [строка 119](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L119)
+- `to_dict(self) -> dict[str, Any]` — [строка 122](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L122)
+- `BinarySnapshot` — [строка 131](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L131)
+- `to_dict(self) -> dict[str, Any]` — [строка 140](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L140)
+- `compare_snapshots(before: BinarySnapshot, after: BinarySnapshot) -> dict[str, Any]` — [строка 159](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L159)
+- `inspect_binary(source: Source, *, container: str | None=None, limits: AnatomyLimits=AnatomyLimits(), parse_xml: bool=True, capture: bool=False, cancelled: Callable[[], bool] | None=None) -> BinarySnapshot` — [строка 400](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L400)
 
 Импорты: `__future__`, `collections.abc`, `dataclasses`, `opendoc_formats.errors`, `opendoc_formats.native.common`, `opendoc_formats.native.epub`, `opendoc_formats.native.opc`, `opendoc_formats.native.opc_audit`, `opendoc_formats.pdf`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.io`, `typing`, `xml.parsers`
 
@@ -274,7 +277,7 @@ Private ZIP/XML implementation of immutable DOCX snapshots and patches.
 Local EPUB paths and manifest inspection, without XHTML or Office backends.
 
 - `local_path(base: str, href: str) -> str` — [строка 21](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/epub.py#L21)
-- `inspection_content_types(read_xml: Callable[[str], tuple[XmlNodeInfo, ...]]) -> tuple[dict[str, str], tuple[str, ...]]` — [строка 56](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/epub.py#L56)
+- `inspection_content_types(read_xml: Callable[[str], tuple[XmlNodeInfo, ...]]) -> tuple[dict[str, str], tuple[str, ...], EpubAudit]` — [строка 56](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/epub.py#L56)
 
 Импорты: `__future__`, `collections.abc`, `opendoc_formats.anatomy`, `opendoc_formats.errors`, `opendoc_formats.support.cancellation`, `typing`, `urllib.parse`
 
@@ -773,7 +776,7 @@ Original, bounded EPUB container reader; no network or XML entity expansion.
 
 Импорты: `__future__`, `collections.abc`, `dataclasses`, `opendoc_formats.epub_metadata`, `opendoc_formats.native.epub`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.io`, `pathlib`, `urllib.parse`
 
-Тесты: [test_epub_package.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_package.py#L1), [test_web_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_web_import_cancellation.py#L1), [test_epub_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_epub_writer.py#L1)
+Тесты: [test_epub_package.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_package.py#L1), [test_web_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_web_import_cancellation.py#L1), [test_anatomy_epub.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_epub.py#L1), [test_epub_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_epub_writer.py#L1)
 
 ## src/opendoc_formats/readers/fix_encoding.py
 

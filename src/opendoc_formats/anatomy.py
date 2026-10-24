@@ -104,6 +104,30 @@ class OpcAudit:
 
 
 @dataclass(frozen=True)
+class EpubManifestReference:
+    location: str
+    package: str
+    identifier: str
+    href: str
+    media_type: str
+    resolved_target: str | None
+    status: str
+    attributes: tuple[tuple[str, str], ...]
+
+
+@dataclass(frozen=True)
+class EpubAudit:
+    references: tuple[EpubManifestReference, ...]
+
+    def to_dict(self) -> dict[str, Any]:
+        """Manifest observations, without asserting URL/spec compliance or remote availability."""
+        return {
+            'references': [{**asdict(reference), 'attributes': dict(reference.attributes)} for reference in self.references],
+            'assessment_complete': False,
+        }
+
+
+@dataclass(frozen=True)
 class BinarySnapshot:
     container: str
     source_sha256: str
@@ -111,6 +135,7 @@ class BinarySnapshot:
     items: tuple[BinaryItem, ...]
     details: tuple[tuple[str, Any], ...] = ()
     opc: OpcAudit | None = None
+    epub: EpubAudit | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """An audit schema owned by Formats; payloads are deliberately separate."""
@@ -119,6 +144,7 @@ class BinarySnapshot:
             'container': self.container, 'source_sha256': self.source_sha256, 'source_size': self.source_size,
             'details': dict(self.details),
             'opc': self.opc.to_dict() if self.opc is not None else None,
+            'epub': self.epub.to_dict() if self.epub is not None else None,
             'items': [{
                 'locator': item.locator, 'kind': item.kind, 'size': item.size, 'sha256': item.sha256,
                 'storage_sha256': item.storage_sha256, 'details': dict(item.details),
@@ -142,6 +168,7 @@ def compare_snapshots(before: BinarySnapshot, after: BinarySnapshot) -> dict[str
         'binary_identical': before.source_sha256 == after.source_sha256,
         'container_metadata_changed': before.details != after.details,
         'opc_changed': before.opc != after.opc,
+        'epub_changed': before.epub != after.epub,
         'added': sorted(new.keys()-old.keys()), 'removed': sorted(old.keys()-new.keys()),
         'content_changed': sorted(key for key in shared if old[key].sha256 != new[key].sha256),
         'storage_changed': sorted(key for key in shared if old[key].storage_sha256 != new[key].storage_sha256
@@ -246,7 +273,7 @@ def _member_payload(archive: zipfile.ZipFile, info: zipfile.ZipInfo, limits: Ana
 
 def _zip_items(
     data: bytes, limits: AnatomyLimits, parse_xml: bool, capture: bool,
-) -> tuple[tuple[BinaryItem, ...], dict[str, Any], OpcAudit | None]:
+) -> tuple[tuple[BinaryItem, ...], dict[str, Any], OpcAudit | None, EpubAudit | None]:
     check_archive_safety(io.BytesIO(data), max_entries=limits.max_items,
                          max_total_size=limits.max_total_bytes, max_ratio=limits.max_ratio)
     items, budget = [], _Budget(limits)
@@ -260,6 +287,7 @@ def _zip_items(
         xml_cache: dict[str, tuple[bytes, tuple[XmlNodeInfo, ...]]] = {}
         epub_types: dict[str, str] = {}
         rootfiles: tuple[str, ...] = ()
+        epub: EpubAudit | None = None
         if parse_xml and '[Content_Types].xml' in archive_names:
             manifest = _member_payload(archive, archive.getinfo('[Content_Types].xml'), limits)
             manifest_nodes = _xml_nodes(manifest, 'zip:/[Content_Types].xml', budget)
@@ -279,7 +307,7 @@ def _zip_items(
                         xml_cache[name] = (payload, _xml_nodes(payload, 'zip:/'+name, budget))
                     return xml_cache[name][1]
 
-                epub_types, rootfiles = inspection_content_types(read_control)
+                epub_types, rootfiles, epub = inspection_content_types(read_control)
                 for name in epub_types:
                     checkpoint()
                     if name not in archive_names or archive.getinfo(name).is_dir():
@@ -336,7 +364,7 @@ def _zip_items(
         if rootfiles:
             details['epub_rootfiles'] = rootfiles
     opc = audit_package(items, overrides) if manifest is not None else None
-    return tuple(items), details, opc
+    return tuple(items), details, opc, epub
 
 
 def _pdf_items(data: bytes, limits: AnatomyLimits, capture: bool) -> tuple[tuple[BinaryItem, ...], dict[str, Any]]:
@@ -388,10 +416,11 @@ def inspect_binary(source: Source, *, container: str | None = None, limits: Anat
             container = 'zip' if is_zip else 'pdf'
         try:
             if container == 'zip':
-                items, details, opc = _zip_items(data, limits, parse_xml, capture)
+                items, details, opc, epub = _zip_items(data, limits, parse_xml, capture)
             else:
                 items, details = _pdf_items(data, limits, capture)
                 opc = None
+                epub = None
         except ResourceLimitError:
             raise
         except (zipfile.BadZipFile, ArchiveSafetyError, EOFError, zlib.error) as error:
@@ -399,8 +428,9 @@ def inspect_binary(source: Source, *, container: str | None = None, limits: Anat
         except NotImplementedError as error:
             raise UnsupportedDocumentError(f'Unsupported container encoding: {error}') from error
         checkpoint()
-        return BinarySnapshot(container, hashlib.sha256(data).hexdigest(), len(data), items, tuple(details.items()), opc)
+        return BinarySnapshot(container, hashlib.sha256(data).hexdigest(), len(data), items, tuple(details.items()), opc, epub)
 
 
 __all__ = ['AnatomyLimits', 'BinaryItem', 'BinarySnapshot', 'XmlNodeInfo', 'OpcAudit', 'OpcFinding', 'OpcRelationship',
+           'EpubAudit', 'EpubManifestReference',
            'compare_snapshots', 'inspect_binary']
