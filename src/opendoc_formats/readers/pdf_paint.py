@@ -7,15 +7,52 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from opendoc_model import DocumentLimits, DocumentModel, FontReference, Formula, Image, TextRun, set_font_reference, walk_model
+from opendoc_model import (
+    ArtifactLimitError,
+    DocumentLimits,
+    DocumentModel,
+    FontReference,
+    Formula,
+    Image,
+    TextRun,
+    set_font_reference,
+    walk_model,
+)
 
-from opendoc_formats.support.cancellation import check_cancelled
+from opendoc_formats.errors import ResourceLimitError
+from opendoc_formats.pdf import PdfLimits, PdfTextSpan
+from opendoc_formats.support.cancellation import cancellation_requested, check_cancelled
+
+PaintIndex = dict[tuple[float, float], list[tuple[PdfTextSpan, int]]]
+ProgramIndex = dict[tuple[tuple[float, float], int], set[str | None]]
+PaintEvidence = dict[str, Any]
+_PAINT_KEYS = {'pdf_paint_seq', 'pdf_paint_type', 'pdf_paint_opacity', 'pdf_paint_unknown', 'pdf_paint_unknown_reason'}
+
+
+def _text_spans(page: Any, limits: DocumentLimits | None, cancelled: Callable[[], bool] | None) -> tuple[PdfTextSpan, ...]:
+    from opendoc_formats.native.pdf_text import text_spans
+
+    budget = limits or DocumentLimits()
+    raw = page.get_texttrace()
+    check_cancelled(cancelled, 'PDF paint native text trace')
+    address = f'$.sections[{page.number}].pdf_text_paint'
+    if isinstance(raw, (list, tuple)) and len(raw) > budget.max_nodes:
+        raise ArtifactLimitError('Too many native PDF text spans', path=address, quota='nodes', maximum=budget.max_nodes)
+    if raw and budget.max_bytes == 0:
+        raise ArtifactLimitError('Native PDF text exceeds byte budget', path=address, quota='bytes', maximum=0)
+    native = PdfLimits(max_text_spans=budget.max_nodes, max_text_chars=max(1, budget.max_bytes),
+                       max_text_metadata_bytes=max(1, budget.max_bytes))
+    try:
+        return text_spans(raw, page.number, native, cancelled)
+    except ResourceLimitError as error:
+        raise ArtifactLimitError(str(error), path=address, quota='bytes', maximum=budget.max_bytes) from error
 
 
 def attach_text_paint(document: DocumentModel, path: str | Path, *, limits: DocumentLimits | None,
                       cancelled: Callable[[], bool] | None = None) -> None:
     from opendoc_formats.readers.pdf_content import content_only_pdf
 
+    cancelled = cancelled or cancellation_requested
     with content_only_pdf(path, cancelled=cancelled) as native:
         indices = []
         for page in native:
@@ -30,11 +67,12 @@ def attach_text_paint(document: DocumentModel, path: str | Path, *, limits: Docu
             clips = sum(draw.get('type') == 'clip' for draw in graphics)
             unknown = (any(draw.get('type') == 'group' and not _neutral_page_group(page, draw) for draw in graphics)
                        or bool(clips and not (clips == 1 and len(image_clip_profiles(page)) == 1)))
-            index: dict[tuple[float, float], list[tuple[dict[str, Any], int]]] = defaultdict(list)
-            for trace in page.get_texttrace():
+            index: PaintIndex = defaultdict(list)
+            for trace in _text_spans(page, limits, cancelled):
                 check_cancelled(cancelled, 'PDF paint text trace')
-                for offset, character in enumerate(trace['chars']):
-                    index[_point_key(character[2])].append((trace, offset))
+                for offset, character in enumerate(trace.glyphs):
+                    check_cancelled(cancelled, 'PDF paint glyph index')
+                    index[_point_key(character.origin)].append((trace, offset))
             from opendoc_formats.readers.pdf_font_bindings import painted_font_programs
 
             programs = painted_font_programs(page, document.resources, set(index))
@@ -51,7 +89,10 @@ def attach_text_paint(document: DocumentModel, path: str | Path, *, limits: Docu
                         from opendoc_formats.pdf_graphics import paint_clips
 
                         try:
-                            paint_clips(graphics, run.properties.get('pdf_paint_seq'), {'fill-path', 'stroke-path'},
+                            sequence = run.properties.get('pdf_paint_seq')
+                            if type(sequence) is not int:
+                                raise ValueError('Missing native PDF paint occurrence')
+                            paint_clips(graphics, sequence, {'fill-path', 'stroke-path'},
                                         compositing=True)
                             resource.properties['pdf_docx_graphics_measured'] = True
                         except ValueError:
@@ -59,30 +100,58 @@ def attach_text_paint(document: DocumentModel, path: str | Path, *, limits: Docu
                 if isinstance(run, Formula):
                     for line in run.properties.get('pdf_native_lines', []):
                         for span in line:
-                            span['paint'] = _evidence(span['text'], span['font'], span['origin'], index, programs)
+                            span['paint'] = _evidence(span['text'], span['font'], span['origin'], index, programs,
+                                                      cancelled=cancelled)
                             span['paint']['pdf_graphics_state_unknown'] = unknown
                 if not isinstance(run, TextRun) or not run.properties.get('pdf_origin'):
                     continue
-                evidence = _evidence(run.text, run.style.font_family, run.properties['pdf_origin'], index, programs)
+                evidence = _evidence(run.text, run.style.font_family, run.properties['pdf_origin'], index, programs,
+                                     cancelled=cancelled)
                 identifier = evidence.pop('pdf_font_resource', None)
                 if identifier is not None:
                     set_font_reference(run.style, FontReference(identifier), limits=limits)
+                for key in _PAINT_KEYS:
+                    run.properties.pop(key, None)
                 run.properties.update(evidence)
                 run.properties['pdf_graphics_state_unknown'] = unknown
 
 
-def _evidence(text: str, font: str, origin: Any, index: dict, programs: dict) -> dict:
+def _evidence(text: str, font: str | None, origin: Any, index: PaintIndex, programs: ProgramIndex,
+              *, cancelled: Callable[[], bool] | None = None) -> PaintEvidence:
+    def unknown(reason: str) -> PaintEvidence:
+        return {'pdf_paint_unknown': True, 'pdf_paint_unknown_reason': reason}
+
+    if not text:
+        return unknown('empty-semantic-text')
     candidates = []
     for trace, offset in index.get(_point_key(origin), []):
-        native_text = ''.join(chr(character[0]) for character in trace['chars'][offset:offset + len(text)])
-        if native_text.startswith(text) and (trace['font'] == font or not trace['font']):
+        check_cancelled(cancelled, 'PDF paint candidate')
+        if (trace.font != font and trace.font) or offset+len(text) > len(trace.glyphs):
+            continue
+        glyphs = trace.glyphs[offset:offset+len(text)]
+        matched = True
+        for character, glyph in zip(text, glyphs, strict=True):
+            check_cancelled(cancelled, 'PDF paint Unicode match')
+            code = glyph.unicode
+            if not 0 <= code <= 0x10ffff or 0xd800 <= code <= 0xdfff or code == 0xfffd:
+                return unknown('unmapped-native-unicode')
+            if ord(character) != code:
+                matched = False
+                break
+        if matched:
             candidates.append((trace, offset))
+            if len(candidates) > 1:
+                return unknown('ambiguous-native-match')
     if len(candidates) != 1:
-        return {'pdf_paint_unknown': True}
+        return unknown('no-exact-native-match')
     trace, offset = candidates[0]
-    evidence = {'pdf_paint_seq': trace['seqno'], 'pdf_paint_type': trace['type'], 'pdf_paint_opacity': trace['opacity']}
-    bindings = [programs.get((_point_key(char[2]), char[0]), set())
-                for char in trace['chars'][offset:offset + len(text)]]
+    evidence: PaintEvidence = {
+        'pdf_paint_seq': trace.seqno, 'pdf_paint_type': trace.paint_type, 'pdf_paint_opacity': trace.opacity,
+    }
+    bindings = []
+    for glyph in trace.glyphs[offset:offset+len(text)]:
+        check_cancelled(cancelled, 'PDF paint font binding')
+        bindings.append(programs.get((_point_key(glyph.origin), glyph.unicode), set()))
     if bindings and all(len(binding) == 1 and None not in binding for binding in bindings):
         identifiers = set.union(*bindings)
         if len(identifiers) == 1:

@@ -17,6 +17,15 @@ unknown Unicode, отсутствие alias на mutable backend arrays, точ�
 shaping, порядка чтения или PDF → DOCX fidelity. Установленный минимальный PDF-профиль
 проверяется в `tools/pdf_profile_smoke.py` без остальных PDF/Office/image backend.
 
+`tests/readers/test_pdf_paint_matching.py` проверяет переход от нативных наблюдений
+к paint-признакам Model: единственное точное совпадение, неоднозначные fill/stroke,
+недопустимые Unicode scalars/U+FFFD, ligature continuation и неоднозначные FONT
+bindings. Отмена проверяется внутри сравнения Unicode; выбранные квоты импорта
+дают адрес и тип ограничения. Прямой wire PDF подтверждает очистку устаревших
+paint-признаков после изменения текста, сохранение причины неопределённости через
+JSON и неизменность исходных bytes. Это конечная проверка привязки, а не полная
+проекция глифов или закрытие C-PDF-01.
+
 ## Независимые бинарные оригиналы
 
 `tests/binary_fixtures.py` собирает воспроизводимый ZIP/XML DOCX с вложенной таблицей,
