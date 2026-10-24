@@ -75,13 +75,16 @@ def _text_tokens(paragraph: Any) -> list[Any]:
     return [
         item
         for item in paragraph.iter()
-        if item.tag in {W + "t", W + "tab", W + "br", W + "cr"} and next(item.iterancestors(W + "p"), None) is paragraph
+        if item.tag in {W + "t", W + "tab", W + "br", W + "cr", W + "noBreakHyphen"}
+        and item.getparent().tag == W + "r" and next(item.iterancestors(W + "p"), None) is paragraph
     ]
 
 
 def _token_text(token: Any) -> str:
     if token.tag == W + "t":
         return str(token.text or "")
+    if token.tag == W + "noBreakHyphen":
+        return "-"
     return "\t" if token.tag == W + "tab" else "\n"
 
 
@@ -89,8 +92,8 @@ def _text(paragraph: Any) -> str:
     return "".join(_token_text(item) for item in _text_tokens(paragraph))
 
 
-def _all_text(node: Any) -> str:
-    return "".join(_text(p) for p in node.iter(W + "p"))
+def _all_text(node: Any, separator: str = "") -> str:
+    return separator.join(_text(p) for p in node.iter(W + "p"))
 
 
 def _val(node: Any, tag: str) -> str | None:
@@ -426,7 +429,7 @@ class NativePackage:
                         CellSnapshot(
                             cell_ids[cell],
                             cell_index,
-                            _all_text(cell),
+                            _all_text(cell, "\n"),
                             tuple(paragraph_ids[p] for p in cell.iter(W + "p")),
                             span,
                             _contains(cell, {W + "vMerge"}),
@@ -749,7 +752,15 @@ def _replace_span(paragraph: Any, start: int, end: int, text: str, engine: Any) 
         if start == end:
             if not inserted and (offset <= start < right or index == len(tokens) - 1 and start == right):
                 local = start - offset
-                _set_token(token, value[:local] + text + value[local:], engine)
+                if token.tag == W + "noBreakHyphen":
+                    # A boundary insertion must keep the untouched no-break token native.
+                    parent = token.getparent()
+                    position = parent.index(token) + local
+                    for child in _text_children(text, engine):
+                        parent.insert(position, child)
+                        position += 1
+                else:
+                    _set_token(token, value[:local] + text + value[local:], engine)
                 inserted = True
         elif right > start and offset < end:
             prefix = value[: max(0, start - offset)]

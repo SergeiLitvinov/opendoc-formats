@@ -86,7 +86,7 @@ def package_part_for_relationship(graph: PackageGraph | None, relationship_type:
 def restore_package_graph(
     root_part: Any, graph: PackageGraph, *, protected_roots: Collection[Any] = (),
     source_parts: Mapping[str, Any] | None = None,
-) -> None:
+) -> dict[str, Any]:
     """Restore graph parts and relationships into a python-opc root part."""
 
     pack_uri_type, part_type = _opc_types(root_part)
@@ -154,6 +154,8 @@ def restore_package_graph(
                 relationship.id,
                 is_external=relationship.external,
             )
+
+    return parts
 
 
 def _reserve_relationship_id(root_part: Any, relationship_id: str, protected_roots: Collection[Any] = ()) -> None:

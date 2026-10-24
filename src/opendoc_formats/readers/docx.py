@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import io
 from collections.abc import Callable, Iterator
 from pathlib import Path
 from typing import Any, Union
@@ -108,10 +109,21 @@ def _read_docx_model(
     source = Path(path)
     if not source.is_file():
         raise FileNotFoundError(source)
-    check_archive_safety(source)
+    from opendoc_model import ArtifactLimitError
+
+    from opendoc_formats.native.common import read_source
+
+    budget = limits or DocumentLimits()
+    if source.stat().st_size > budget.max_bytes:
+        raise ArtifactLimitError('DOCX input exceeds byte budget', path=str(source),
+                                 quota='bytes', maximum=budget.max_bytes)
+    data = read_source(source, budget.max_bytes, None)
+    check_archive_safety(io.BytesIO(data))
     checkpoint()
-    document = OpenDocument(str(source))
+    document = OpenDocument(io.BytesIO(data))
     checkpoint()
+    # Lazy styles/settings/core-properties access can create parts that were never in the source graph.
+    native_loaded_parts = tuple(str(part.partname) for part in cancellable_items(document.part.package.iter_parts()))
     model = DocumentModel(
         mode=mode,
         source_format=DocFormat.DOCX.value,
@@ -169,13 +181,16 @@ def _read_docx_model(
     checkpoint()
     attach_font_references(model, limits=limits)
     checkpoint()
-    _attach_docx_provenance(model, source)
+    _attach_docx_provenance(model, source, root_part=str(document.part.partname))
+    from opendoc_formats.ooxml.orphans import capture_orphans
+
+    capture_orphans(document, model, data, source, loaded_parts=native_loaded_parts, limits=limits)
     checkpoint()
     attach_docx_diagnostics(document, model, source, limits=limits)
     return model
 
 
-def _attach_docx_provenance(model: DocumentModel, source: Path) -> None:
+def _attach_docx_provenance(model: DocumentModel, source: Path, *, root_part: str = '/word/document.xml') -> None:
     """Annotate semantic nodes after parsing without leaking OOXML fields into their contracts."""
 
     def origin(object_id: str, package_part: str, detail: str) -> Provenance:
@@ -220,7 +235,7 @@ def _attach_docx_provenance(model: DocumentModel, source: Path) -> None:
                         annotate(child, f"{object_id}-r{row_index}-c{cell_index}-b{child_index}", package_part)
 
     collections = (
-        ("blocks", "/word/document.xml"),
+        ("blocks", root_part),
         ("headers", "/word/header.xml"),
         ("footers", "/word/footer.xml"),
         ("first_page_headers", "/word/header.xml"),
@@ -231,7 +246,7 @@ def _attach_docx_provenance(model: DocumentModel, source: Path) -> None:
     for section_index, section in enumerate(model.sections):
         checkpoint()
         if section.provenance is None:
-            section.provenance = origin(f"section-{section_index}", "/word/document.xml", "parsed section properties")
+            section.provenance = origin(f"section-{section_index}", root_part, "parsed section properties")
         for collection_name, package_part in collections:
             checkpoint()
             for block_index, block in enumerate(getattr(section, collection_name)):

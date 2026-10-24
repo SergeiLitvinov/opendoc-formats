@@ -10,12 +10,12 @@ W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
 PR = 'http://schemas.openxmlformats.org/package/2006/relationships'
 
 
-def own_png():
+def own_png(rgb=RGB):
     def chunk(kind, value):
         return struct.pack('>I', len(value))+kind+value+struct.pack('>I', zlib.crc32(kind+value))
 
     return (b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR', struct.pack('>2I5B', 2, 2, 8, 2, 0, 0, 0))
-            +chunk(b'IDAT', zlib.compress(b'\x00'+RGB[:6]+b'\x00'+RGB[6:]))+chunk(b'IEND', b''))
+            +chunk(b'IDAT', zlib.compress(b'\x00'+rgb[:6]+b'\x00'+rgb[6:]))+chunk(b'IEND', b''))
 
 
 def zip_bytes(entries, *, compression=zipfile.ZIP_DEFLATED):

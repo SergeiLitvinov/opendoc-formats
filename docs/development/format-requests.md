@@ -20,6 +20,35 @@
 Это собственные синтетические примеры; пользовательские документы не входят
 в библиотечные fixtures. План реализации находится в [TODO](todo.md).
 
+### C-DOCX-NATIVE-TEXT-01
+
+Владелец — Formats; общий Model не меняется. `DocxPackage` различает `w:pPr/w:tabs`
+и табуляцию в содержимом `w:r`: настройки позиции не добавляют символы к тексту.
+`w:noBreakHyphen` представлен знаком `-` в текстовом снимке; исходный native token
+сохраняет запрет переноса. Paragraph text, run text и исходные offsets согласованы.
+Вставка на границе токена сохраняет его; явная замена самого дефиса меняет его
+согласно patch. Это соответствует описаниям
+[Tabs](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.wordprocessing.tabs?view=openxml-3.0.1)
+и [NoBreakHyphen](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.wordprocessing.nobreakhyphen?view=openxml-3.0.1).
+
+`CellSnapshot.text` разделяет исходные абзацы символом `\n`, включая пустые.
+`paragraph_ids` сохраняют их последовательность, flags/span — физическую структуру
+merge; логические дубликаты ячеек не создаются. Row/body table text остаётся
+агрегатом, не заменяющим структурные snapshots.
+
+Фикстуры `tests/native/test_docx_consumer_contract.py` задают OPC/XML напрямую.
+Проверяются текст, runs/offsets, правка диапазонов, native token, пустой абзац и
+merge. Потребительская gate из десяти независимых случаев проходит на рабочем коде
+и на установленном локальном wheel с Model 0.18.0 и lxml 6.1.3 без python-docx;
+опасные ZIP paths, DTD, corrupt ZIP, лимит и отмена остаются отказами.
+
+`.rels` без физического владельца `DocxPackage` отвергает с `InvalidDocumentError`
+и причиной `missing source part`. Это явный отказ, не пустой успешный документ.
+Он отличается от недостижимого компонента с существующим владельцем, сохраняемого
+rich reader. Безопасное чтение повреждённого пакета с полной диагностикой,
+повторная приёмка частного корпуса по прежним SHA и принятие версионированного
+официального wheel остаются открытыми; минимальная gate не подтверждает весь реальный корпус.
+
 ### C-FONT-OPAQUE-01
 
 Владелец — Formats. Сохранённый native OOXML не должен приводить к удалению

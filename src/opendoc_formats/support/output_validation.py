@@ -53,21 +53,20 @@ def validate_output(path: Path, format_id: str) -> None:
             if item.media_type in {"application/xhtml+xml", "image/svg+xml"}:
                 ET.fromstring(item.content)
     elif format_id in {"docx", "pptx"}:
-        part = "word/document.xml" if format_id == "docx" else "ppt/presentation.xml"
         with ZipFile(path) as archive:
             bad = archive.testzip()
             if bad:
                 raise ValueError(f"ZIP checksum failed: {bad}")
             ET.fromstring(archive.read("[Content_Types].xml"))
+            if format_id == "docx":
+                from docx import Document
+
+                part = str(Document(str(path)).part.partname).lstrip('/')
+            else:
+                from pptx import Presentation
+
+                part = str(Presentation(str(path)).part.partname).lstrip('/')
             ET.fromstring(archive.read(part))
-        if format_id == "docx":
-            from docx import Document
-
-            Document(str(path))
-        else:
-            from pptx import Presentation
-
-            Presentation(str(path))
     elif format_id == "pdf":
         import fitz
 

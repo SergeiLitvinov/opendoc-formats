@@ -26,6 +26,7 @@ from opendoc_model import (
 
 from opendoc_formats.ooxml.borders import native_only
 from opendoc_formats.ooxml.layout import native_layout_supported
+from opendoc_formats.ooxml.orphans import retained_original
 from opendoc_formats.ooxml.paragraph_flow import native_flow_supported
 from opendoc_formats.ooxml.paragraph_indent import native_indents_supported
 from opendoc_formats.ooxml.spacing import native_spacing_supported
@@ -134,7 +135,7 @@ def attach_docx_diagnostics(document: Any, model: DocumentModel, source: Path, *
         checkpoint()
         name = str(part.partname)
         stored = graph.parts.get(name) if graph is not None else None
-        complete_part = stored is not None and stored.data == part.blob
+        complete_part = stored is not None and (stored.data == part.blob or retained_original(model, name, stored.data))
         if "xml" in str(part.content_type):
             try:
                 root = _parse(part.blob)

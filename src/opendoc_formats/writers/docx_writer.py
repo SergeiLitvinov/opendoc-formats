@@ -197,7 +197,7 @@ def _write_validated_docx(
 
     embed_docx_fonts(target, document, report)
     checkpoint()
-    _restore_package_graph(target, document, report, limits=limits)
+    native_parts = _restore_package_graph(target, document, report, limits=limits)
     checkpoint()
     _reject_pdf_losses(report)
     if not report.success:
@@ -211,6 +211,11 @@ def _write_validated_docx(
             checkpoint()
             target.save(staged)
             checkpoint()
+            if native_parts is not None:
+                from opendoc_formats.ooxml.orphans import restore_detached_parts
+
+                restore_detached_parts(staged, document, native_parts, limits=limits)
+                checkpoint()
             workspace.validate_artifact(staged)
             verify_docx_font_embedding(staged, report)
             if report.metrics.get('docx_flow_profile'):
@@ -225,7 +230,7 @@ def _write_validated_docx(
                 from opendoc_formats.support.object_mapping import mapping_publication
 
                 mapping_publication(report, 'published')
-    except OperationCancelledError:
+    except (OperationCancelledError, ArtifactLimitError):
         raise
     except Exception as error:  # noqa: BLE001 - diagnostic boundary must return a report
         report.add(IssueSeverity.ERROR, "docx-write", str(error))
@@ -285,7 +290,15 @@ def _write_metadata(target: Any, metadata: dict[str, Any]) -> None:
 
 def _restore_package_graph(
     target: Any, document: DocumentModel, report: ConversionReport, *, limits: DocumentLimits | None = None,
-) -> None:
+) -> dict[str, Any] | None:
+    from opendoc_formats.errors import InvalidDocumentError
+    from opendoc_formats.ooxml.orphans import orphan_names
+
+    try:
+        opaque = orphan_names(document, limits=limits)
+    except InvalidDocumentError as error:
+        report.add(IssueSeverity.ERROR, 'package-graph', str(error))
+        return None
     graph = document.package
     source_parts = {
         part._opendoc_source_part: part for part in cancellable_items(target.part.package.iter_parts())
@@ -302,7 +315,7 @@ def _restore_package_graph(
         )
         if part is not target.part and has_references and not getattr(part, "_opendoc_source_part", None):
             report.add(IssueSeverity.ERROR, "package-graph", "Opaque running content has no source part binding")
-            return
+            return None
     if graph is None or graph.format != "ooxml":
         if any(
             key.startswith(relationship_namespace)
@@ -311,21 +324,27 @@ def _restore_package_graph(
             for node in cancellable_items(root.iter()) for key in cancellable_items(node.attrib)
         ):
             report.add(IssueSeverity.ERROR, "package-graph", "Opaque OOXML relationships require their source package graph")
-        return
+        return None
     try:
         from opendoc_formats.ooxml.layout import retain_layout_styles
+        from opendoc_formats.ooxml.orphans import relocate_root, reserve_orphan_names
 
-        restore_package_graph(
+        if opaque:
+            relocate_root(target.part, graph.root)
+        native_parts = restore_package_graph(
             target.part, retain_layout_styles(retain_derived_styles(target.part, graph), document.styles, report, limits=limits),
             protected_roots=getattr(target.part, "_opendoc_opaque_roots", ()),
             source_parts=source_parts,
         )
+        reserve_orphan_names(target.part, graph, opaque)
+        return native_parts
     except ArtifactLimitError:
         raise
     except OperationCancelledError:
         raise
     except Exception as error:  # noqa: BLE001 - foreign package parts are a diagnostic boundary
         report.add(IssueSeverity.ERROR, "package-graph", f"OOXML package graph could not be restored: {error}")
+        return None
 
 
 def _restore_document_protection(target: Any, metadata: dict[str, Any], report: ConversionReport) -> None:
