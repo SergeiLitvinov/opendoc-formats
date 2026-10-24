@@ -49,11 +49,19 @@ def anatomy_smoke() -> None:
         archive.writestr('word/unknown.bin', b'Own opaque bytes\x00\xff')
         archive.writestr('[Content_Types].xml',
                          '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+                         '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+                         '<Default Extension="bin" ContentType="application/octet-stream"/>'
                          '<Override PartName="/word/own" ContentType="application/vnd.own+xml"/></Types>')
+        archive.writestr('_rels/.rels',
+                         '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+                         '<Relationship Id="own" Type="urn:own" Target="word/own"/></Relationships>')
     snapshot = inspect_binary(source.getvalue(), capture=True)
     assert snapshot.items[1].payload == b'Own opaque bytes\x00\xff'
     assert snapshot.items[0].xml_nodes[1].tag == '{urn:own}child'
     assert dict(snapshot.items[0].details)['xml_detection'] == 'opc-content-type'
+    assert snapshot.opc is not None and snapshot.opc.reachability_complete
+    assert snapshot.opc.reachable_parts == ('/word/own',)
+    assert snapshot.opc.unreachable_parts == ('/word/unknown.bin',)
     assert compare_snapshots(snapshot, inspect_binary(source.getvalue()))['binary_identical']
 
 

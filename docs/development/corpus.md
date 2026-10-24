@@ -21,6 +21,15 @@ extension defaults, declared binary с именем `.xml`, прежний exten
 разбора деклараций. Базовый установленный wheel проверяет extensionless OPC XML
 без дополнительных зависимостей.
 
+`tests/test_anatomy_opc.py` проверяет корневые/частичные связи, внешние Target,
+фрагменты, несколько путей, недостижимые циклы и подключение компонента к root.
+Missing owner/target, инфраструктурные targets, unsafe URI, duplicate Id,
+неизвестные mode/markup, missing Content Type/Override и неразобранные `.rels`
+имеют located findings и не дают ложного полного обхода. Обычный binary с именем
+`.rels` вне relationship directory остаётся data part. Проверены неизменяемые
+snapshots, независимая JSON-копия, `opc_changed`, отмена внутри resolver
+и отсутствие OPC claims при opaque inspection.
+
 `tests/native/test_binary_compatibility.py` проверяет, что нативная правка меняет
 содержимое только `word/document.xml`, сохраняя PNG, `.rels` и opaque bytes;
 сопоставляет таблицы/пиксели/диагностику с фактическим оригиналом.

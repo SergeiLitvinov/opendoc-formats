@@ -42,6 +42,12 @@ def test_overrides_win_over_case_insensitive_extension_defaults():
     assert not binary.xml_nodes
 
 
+def test_default_extension_does_not_treat_a_dotless_basename_as_an_extension():
+    source = package('<Default Extension="opaque" ContentType="application/xml"/>', [('opaque', b'Own bytes')])
+    item = inspect_binary(source).items[0]
+    assert dict(item.details)['content_type'] is None and not item.xml_nodes
+
+
 def test_declared_binary_payload_with_an_xml_name_is_not_silently_reinterpreted():
     payload = b'Own binary\x00\xff'
     source = package('<Default Extension="xml" ContentType="application/xml"/>'

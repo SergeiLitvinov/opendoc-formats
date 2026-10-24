@@ -1,9 +1,11 @@
-"""OPC content-type declarations over bounded XML inventories; no Office backend."""
+"""Finite OPC declarations and URI handling over bounded inventories; no Office backend."""
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
+from pathlib import PurePosixPath
 from typing import TYPE_CHECKING
+from urllib.parse import unquote, urlsplit
 
 from opendoc_formats.errors import InvalidDocumentError
 from opendoc_formats.package_resources import _part_name
@@ -13,6 +15,47 @@ if TYPE_CHECKING:
     from opendoc_formats.anatomy import XmlNodeInfo
 
 CONTENT_TYPES = '{http://schemas.openxmlformats.org/package/2006/content-types}'
+RELATIONSHIPS = '{http://schemas.openxmlformats.org/package/2006/relationships}'
+RELATIONSHIPS_TYPE = 'application/vnd.openxmlformats-package.relationships+xml'
+
+
+def relationship_owner(name: str) -> str | None:
+    if name == '/_rels/.rels':
+        return '/'
+    path = PurePosixPath(name)
+    if path.parent.name != '_rels' or not name.endswith('.rels') or path.name == '.rels':
+        return None
+    return str(path.parent.parent/path.name[:-5])
+
+
+def resolve_target(owner: str, value: str) -> str:
+    """Resolve the finite native internal-URI profile; never fetch an address."""
+    if not value or any(ord(char) < 32 or ord(char) == 127 for char in value):
+        raise InvalidDocumentError(f'{owner}: invalid internal OPC target {value!r}')
+    try:
+        parsed = urlsplit(value)
+    except ValueError as error:
+        raise InvalidDocumentError(f'{owner}: invalid internal OPC target {value!r}') from error
+    if parsed.scheme or parsed.netloc or parsed.query:
+        raise InvalidDocumentError(f'{owner}: invalid internal OPC target {value!r}')
+    path = parsed.path
+    if not path:
+        return owner
+    segments = [] if path.startswith('/') else owner.split('/')[1:-1]
+    for segment in path.split('/'):
+        checkpoint()
+        if segment in ('', '.'):
+            continue
+        if segment == '..':
+            if not segments:
+                raise InvalidDocumentError(f'{owner}: OPC target escapes package root')
+            segments.pop()
+        else:
+            decoded = unquote(segment)
+            if decoded in ('.', '..') or '/' in decoded or '\\' in decoded:
+                raise InvalidDocumentError(f'{owner}: ambiguous encoded OPC target')
+            segments.append(segment)
+    return part_name('/'+'/'.join(segments))
 
 
 def part_name(value: str) -> str:
@@ -54,3 +97,9 @@ def content_types(nodes: Iterable[XmlNodeInfo]) -> tuple[dict[str, str], dict[st
 def xml_content_type(value: str) -> bool:
     media_type = value.partition(';')[0].strip().lower()
     return media_type in {'application/xml', 'text/xml'} or media_type.endswith('+xml')
+
+
+def declared_content_type(name: str, defaults: Mapping[str, str], overrides: Mapping[str, str]) -> str | None:
+    # OPC's root relationship name is '.rels'; pathlib deliberately treats it as extensionless.
+    _, dot, extension = PurePosixPath(name).name.rpartition('.')
+    return overrides.get(name) or (defaults.get(extension.lower()) if dot else None)

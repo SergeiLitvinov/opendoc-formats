@@ -58,8 +58,8 @@ uv run python -m tools.document_anatomy original.docx --output .opendoc-formats/
 
 Manifest учитывается в общем XML-бюджете ровно один раз, независимо от его позиции
 в ZIP. Конфликтующие declarations отвергаются. Это конечный разбор Content Types,
-а не полная проверка OPC: связи, неподтверждённые поля деклараций и соответствие
-всего manifest физическому инвентарю ещё требуют общей приёмки.
+а не полная проверка OPC: неподтверждённые поля деклараций и URI-грамматика
+ещё требуют общей приёмки.
 EPUB OPF manifest не используется этим профилем для определения XML-типа.
 
 DTD/entities выбранных XML-частей отвергаются до раскрытия; `--opaque-xml`
@@ -71,6 +71,55 @@ DTD/entities выбранных XML-частей отвергаются до р�
 включая UTF-16. Второе поле — позиция события закрытия Expat: для обычного узла
 это начало закрывающего тега, для self-closing — позиция после тега.
 Они не объявляются готовым полным lexical span или картой соответствия Model.
+
+## Физические связи OPC
+
+При распознанном OPC manifest `BinarySnapshot.opc` содержит неизменяемый `OpcAudit`.
+Для обычного ZIP, PDF или `parse_xml=False` это поле равно null. В `inventory.json`
+оно сериализуется под ключом `opc`; отдельный `to_dict()` возвращает независимую копию.
+
+```python
+snapshot = inspect_binary("original.docx")
+if snapshot.opc is not None:
+    for finding in snapshot.opc.findings:
+        print(finding.code, finding.location, finding.message)
+```
+
+Инспектор проверяет все физические relationship parts, включая недостижимые
+компоненты и циклы. В записи остаются исходные атрибуты, адрес `.rels`/XML-узла,
+владелец (`/` для пакета), разрешённая внутренняя цель и статус
+`internal`/`external`/`rejected`. Внешняя цель сохраняется буквально и не загружается.
+Fragment остаётся в исходном Target; проверяется существование части, а не объекта
+внутри неё. Общий resolver также используется переносом DOCX-компонентов.
+
+Findings показывают отсутствующего владельца или target, несовпадение Content Type,
+дубликат Id, отсутствующие обязательные атрибуты, неизвестный TargetMode и markup,
+неразобранный `.rels`, отсутствующую часть из Override. Тип корневого `_rels/.rels`
+разрешается по default `rels`. Источник определения владельца и внутренних/внешних
+связей — [описание OPC](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/opc/open-packaging-conventions-overview);
+relationship part не является допустимой целью
+[связи на часть](https://learn.microsoft.com/en-us/dotnet/api/system.io.packaging.packagepart.createrelationship?view=netframework-4.8.1).
+
+| Поле аудита | Значение |
+| --- | --- |
+| `reachable_parts` | Части, достигнутые из корневого `.rels` по распознанным внутренним рёбрам |
+| `unreached_parts` | Физические data parts, не достигнутые в этом обходе |
+| `reachability_complete` | Обход конечного профиля не обнаружил пробелов; это не проверка всей OPC/OOXML спецификации |
+| `unreachable_parts` | `unreached_parts` только при полном обходе профиля; иначе пустой список |
+
+При отсутствии корневых связей, повреждённой связи или неизвестном расширении
+`reachability_complete=false`: недостигнутые части не объявляются доказанно
+недостижимыми. Relationship parts и Content Types не считаются обычными data parts.
+Циклы обходятся без рекурсии и не являются сами по себе потерей.
+
+Семантически неверная связь даёт finding, сохраняя физический инвентарь и payload.
+Это режим препарирования, а не успешный импорт документа: строгие читатели не
+смягчают проверку пакета. Unsafe ZIP names, CRC, запрещённые DTD, повреждённый XML,
+квоты и отмена по-прежнему завершают inspection отказом. Бюджеты частей/XML также
+ограничивают число обрабатываемых связей; контроль отмены действует и внутри обхода.
+`compare_snapshots` показывает `opc_changed`, но `assessment_complete` остаётся false.
+Нормализация URI за пределами конечного resolver, грамматика Id/Type и все правила
+валидности деклараций не заявлены полной OPC-валидацией.
 
 `AnatomyLimits` ограничивает вход, число частей, размер части и сумму payload,
 коэффициент ZIP-сжатия, XML nodes/depth/names/characters. Одноимённые CLI-параметры

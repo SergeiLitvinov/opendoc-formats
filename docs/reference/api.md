@@ -1,7 +1,8 @@
 # Публичный API
 
 Создан автоматически из AST публичных модулей библиотеки.
-Модель и отчёты определены в обязательном пакете OpenDoc.
+Модель и отчёты преобразования определены в обязательном пакете OpenDoc.
+Нативные снимки и результаты препарирования принадлежат Formats.
 
 ## opendoc_formats.api
 
@@ -738,9 +739,53 @@ render_page(self, index: int, *, dpi: float | None=None, scale: float | None=Non
 | `xml_nodes` | `tuple[XmlNodeInfo, ...]` | `()` |
 | `payload` | `bytes &#124; None` | `field(default=None, repr=False, compare=False)` |
 
-### BinarySnapshot
+### OpcRelationship
 
 [Исходник, строка 69](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L69)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `location` | `str` | `обязательное` |
+| `relationship_part` | `str` | `обязательное` |
+| `owner` | `str &#124; None` | `обязательное` |
+| `attributes` | `tuple[tuple[str, str], ...]` | `обязательное` |
+| `resolved_target` | `str &#124; None` | `обязательное` |
+| `status` | `str` | `обязательное` |
+
+### OpcFinding
+
+[Исходник, строка 79](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L79)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `code` | `str` | `обязательное` |
+| `location` | `str` | `обязательное` |
+| `message` | `str` | `обязательное` |
+
+### OpcAudit
+
+[Исходник, строка 86](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L86)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `relationships` | `tuple[OpcRelationship, ...]` | `обязательное` |
+| `findings` | `tuple[OpcFinding, ...]` | `обязательное` |
+| `reachable_parts` | `tuple[str, ...]` | `обязательное` |
+| `unreached_parts` | `tuple[str, ...]` | `обязательное` |
+| `unreachable_parts` | `tuple[str, ...]` | `обязательное` |
+| `reachability_complete` | `bool` | `обязательное` |
+
+### OpcAudit.to_dict
+
+[Исходник, строка 94](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L94)
+
+```python
+to_dict(self) -> dict[str, Any]
+```
+
+### BinarySnapshot
+
+[Исходник, строка 106](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L106)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -749,10 +794,11 @@ render_page(self, index: int, *, dpi: float | None=None, scale: float | None=Non
 | `source_size` | `int` | `обязательное` |
 | `items` | `tuple[BinaryItem, ...]` | `обязательное` |
 | `details` | `tuple[tuple[str, Any], ...]` | `()` |
+| `opc` | `OpcAudit &#124; None` | `None` |
 
 ### BinarySnapshot.to_dict
 
-[Исходник, строка 76](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L76)
+[Исходник, строка 114](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L114)
 
 ```python
 to_dict(self) -> dict[str, Any]
@@ -760,7 +806,7 @@ to_dict(self) -> dict[str, Any]
 
 ### compare_snapshots
 
-[Исходник, строка 93](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L93)
+[Исходник, строка 132](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L132)
 
 ```python
 compare_snapshots(before: BinarySnapshot, after: BinarySnapshot) -> dict[str, Any]
@@ -768,7 +814,7 @@ compare_snapshots(before: BinarySnapshot, after: BinarySnapshot) -> dict[str, An
 
 ### inspect_binary
 
-[Исходник, строка 292](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L292)
+[Исходник, строка 333](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L333)
 
 ```python
 inspect_binary(source: Source, *, container: str | None=None, limits: AnatomyLimits=AnatomyLimits(), parse_xml: bool=True, capture: bool=False, cancelled: Callable[[], bool] | None=None) -> BinarySnapshot

@@ -8,8 +8,7 @@ import struct
 import zipfile
 import zlib
 from collections.abc import Callable
-from dataclasses import dataclass, field, fields, replace
-from pathlib import PurePosixPath
+from dataclasses import asdict, dataclass, field, fields, replace
 from typing import Any, NoReturn
 from xml.parsers import expat
 
@@ -20,7 +19,8 @@ from opendoc_formats.errors import (
     UnsupportedDocumentError,
 )
 from opendoc_formats.native.common import Source, positive_int, read_source
-from opendoc_formats.native.opc import content_types, xml_content_type
+from opendoc_formats.native.opc import content_types, declared_content_type, xml_content_type
+from opendoc_formats.native.opc_audit import audit_package
 from opendoc_formats.support.cancellation import cancellation_scope, checkpoint
 from opendoc_formats.support.io import ArchiveSafetyError, check_archive_safety
 
@@ -66,12 +66,50 @@ class BinaryItem:
 
 
 @dataclass(frozen=True)
+class OpcRelationship:
+    location: str
+    relationship_part: str
+    owner: str | None
+    attributes: tuple[tuple[str, str], ...]
+    resolved_target: str | None
+    status: str
+
+
+@dataclass(frozen=True)
+class OpcFinding:
+    code: str
+    location: str
+    message: str
+
+
+@dataclass(frozen=True)
+class OpcAudit:
+    relationships: tuple[OpcRelationship, ...]
+    findings: tuple[OpcFinding, ...]
+    reachable_parts: tuple[str, ...]
+    unreached_parts: tuple[str, ...]
+    unreachable_parts: tuple[str, ...]
+    reachability_complete: bool
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a detached JSON representation; the audit itself remains immutable."""
+        return {
+            'relationships': [{**asdict(edge), 'attributes': dict(edge.attributes)} for edge in self.relationships],
+            'findings': [asdict(finding) for finding in self.findings],
+            'reachable_parts': list(self.reachable_parts), 'unreached_parts': list(self.unreached_parts),
+            'unreachable_parts': list(self.unreachable_parts), 'reachability_complete': self.reachability_complete,
+            'assessment_complete': False,
+        }
+
+
+@dataclass(frozen=True)
 class BinarySnapshot:
     container: str
     source_sha256: str
     source_size: int
     items: tuple[BinaryItem, ...]
     details: tuple[tuple[str, Any], ...] = ()
+    opc: OpcAudit | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """An audit schema owned by Formats; payloads are deliberately separate."""
@@ -79,6 +117,7 @@ class BinarySnapshot:
             'format': 'opendoc-formats.binary-inventory', 'version': 1,
             'container': self.container, 'source_sha256': self.source_sha256, 'source_size': self.source_size,
             'details': dict(self.details),
+            'opc': self.opc.to_dict() if self.opc is not None else None,
             'items': [{
                 'locator': item.locator, 'kind': item.kind, 'size': item.size, 'sha256': item.sha256,
                 'storage_sha256': item.storage_sha256, 'details': dict(item.details),
@@ -101,6 +140,7 @@ def compare_snapshots(before: BinarySnapshot, after: BinarySnapshot) -> dict[str
     return {
         'binary_identical': before.source_sha256 == after.source_sha256,
         'container_metadata_changed': before.details != after.details,
+        'opc_changed': before.opc != after.opc,
         'added': sorted(new.keys()-old.keys()), 'removed': sorted(old.keys()-new.keys()),
         'content_changed': sorted(key for key in shared if old[key].sha256 != new[key].sha256),
         'storage_changed': sorted(key for key in shared if old[key].storage_sha256 != new[key].storage_sha256
@@ -205,7 +245,7 @@ def _member_payload(archive: zipfile.ZipFile, info: zipfile.ZipInfo, limits: Ana
 
 def _zip_items(
     data: bytes, limits: AnatomyLimits, parse_xml: bool, capture: bool,
-) -> tuple[tuple[BinaryItem, ...], dict[str, Any]]:
+) -> tuple[tuple[BinaryItem, ...], dict[str, Any], OpcAudit | None]:
     check_archive_safety(io.BytesIO(data), max_entries=limits.max_items,
                          max_total_size=limits.max_total_bytes, max_ratio=limits.max_ratio)
     items, budget = [], _Budget(limits)
@@ -231,7 +271,7 @@ def _zip_items(
             stop = start+info.compress_size
             if header[0] != b'PK\x03\x04' or stop > len(data):
                 raise InvalidDocumentError(f'{location}: invalid ZIP wire entry')
-            declared_type = overrides.get('/'+info.filename) or defaults.get(PurePosixPath(info.filename).suffix[1:].lower())
+            declared_type = declared_content_type('/'+info.filename, defaults, overrides)
             detection = None
             nodes: tuple[XmlNodeInfo, ...] = ()
             if parse_xml and not info.is_dir():
@@ -256,7 +296,8 @@ def _zip_items(
                                      'content_type': declared_type}.items()), nodes, payload if capture else None)
             items.append(item)
         details = {'comment_size': len(archive.comment), 'comment_sha256': hashlib.sha256(archive.comment).hexdigest()}
-    return tuple(items), details
+    opc = audit_package(items, overrides) if manifest is not None else None
+    return tuple(items), details, opc
 
 
 def _pdf_items(data: bytes, limits: AnatomyLimits, capture: bool) -> tuple[tuple[BinaryItem, ...], dict[str, Any]]:
@@ -307,8 +348,11 @@ def inspect_binary(source: Source, *, container: str | None = None, limits: Anat
                 raise UnsupportedDocumentError('Choose zip/pdf explicitly for an ambiguous or unsupported container')
             container = 'zip' if is_zip else 'pdf'
         try:
-            items, details = (_zip_items(data, limits, parse_xml, capture) if container == 'zip'
-                              else _pdf_items(data, limits, capture))
+            if container == 'zip':
+                items, details, opc = _zip_items(data, limits, parse_xml, capture)
+            else:
+                items, details = _pdf_items(data, limits, capture)
+                opc = None
         except ResourceLimitError:
             raise
         except (zipfile.BadZipFile, ArchiveSafetyError, EOFError, zlib.error) as error:
@@ -316,7 +360,8 @@ def inspect_binary(source: Source, *, container: str | None = None, limits: Anat
         except NotImplementedError as error:
             raise UnsupportedDocumentError(f'Unsupported container encoding: {error}') from error
         checkpoint()
-        return BinarySnapshot(container, hashlib.sha256(data).hexdigest(), len(data), items, tuple(details.items()))
+        return BinarySnapshot(container, hashlib.sha256(data).hexdigest(), len(data), items, tuple(details.items()), opc)
 
 
-__all__ = ['AnatomyLimits', 'BinaryItem', 'BinarySnapshot', 'XmlNodeInfo', 'compare_snapshots', 'inspect_binary']
+__all__ = ['AnatomyLimits', 'BinaryItem', 'BinarySnapshot', 'XmlNodeInfo', 'OpcAudit', 'OpcFinding', 'OpcRelationship',
+           'compare_snapshots', 'inspect_binary']

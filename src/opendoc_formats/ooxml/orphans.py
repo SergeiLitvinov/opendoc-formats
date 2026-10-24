@@ -10,7 +10,6 @@ from collections.abc import Collection
 from dataclasses import replace
 from pathlib import Path, PurePosixPath
 from typing import Any
-from urllib.parse import unquote, urlsplit
 
 from opendoc_model import (
     ArtifactLimitError,
@@ -31,7 +30,7 @@ from opendoc_model import (
 from opendoc_formats.anatomy import AnatomyLimits, XmlNodeInfo, _Budget, _xml_nodes
 from opendoc_formats.errors import InvalidDocumentError
 from opendoc_formats.native.docx_package import parse_xml
-from opendoc_formats.native.opc import content_types, part_name
+from opendoc_formats.native.opc import content_types, declared_content_type, part_name, relationship_owner, resolve_target
 from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 from opendoc_formats.support.io import check_archive_safety
 
@@ -47,33 +46,11 @@ def _rels_name(owner: str) -> str:
 
 
 def _owner(name: str) -> str | None:
-    path = PurePosixPath(name)
-    if path.parent.name != '_rels' or not name.endswith('.rels'):
-        return None
-    return str(path.parent.parent/path.name[:-5])
+    return relationship_owner(name)
 
 
 def _target(owner: str, value: str) -> str:
-    parsed = urlsplit(value)
-    if not value or parsed.scheme or parsed.netloc or parsed.query:
-        raise InvalidDocumentError(f'{owner}: invalid internal OPC target {value!r}')
-    path = parsed.path
-    if not path:
-        return owner
-    segments = [] if path.startswith('/') else owner.split('/')[1:-1]
-    for segment in path.split('/'):
-        if segment in ('', '.'):
-            continue
-        if segment == '..':
-            if not segments:
-                raise InvalidDocumentError(f'{owner}: OPC target escapes package root')
-            segments.pop()
-        else:
-            decoded = unquote(segment)
-            if decoded in ('.', '..') or '/' in decoded or '\\' in decoded:
-                raise InvalidDocumentError(f'{owner}: ambiguous encoded OPC target')
-            segments.append(segment)
-    return _name('/'+'/'.join(segments))
+    return resolve_target(owner, value)
 
 
 def _name(value: str) -> str:
@@ -150,7 +127,7 @@ def capture_orphans(document: Any, model: DocumentModel, source: bytes, path: Pa
             if info.file_size > remaining:
                 raise ArtifactLimitError('Opaque OPC parts exceed embedded-byte budget', path=f'package.parts[{name!r}]',
                                          quota='embedded bytes', maximum=budget.max_embedded_bytes)
-            content_type = overrides.get(name) or defaults.get(PurePosixPath(name).suffix[1:].lower())
+            content_type = declared_content_type(name, defaults, overrides)
             if not content_type:
                 raise InvalidDocumentError(f'{name}: no declared OPC content type')
             with archive.open(info) as stream:
@@ -165,6 +142,8 @@ def capture_orphans(document: Any, model: DocumentModel, source: bytes, path: Pa
                 raise ArtifactLimitError('Too many opaque OPC parts', path='package.parts',
                                          quota='nodes', maximum=budget.max_nodes)
             owner = _owner(name)
+            if owner is None and content_type == RELS_TYPE:
+                raise InvalidDocumentError(f'{name}: relationship part has no owner address')
             if owner is not None:
                 if owner != root and owner not in infos:
                     raise InvalidDocumentError(f'{name}: relationship owner is missing')
@@ -209,6 +188,8 @@ def orphan_names(model: DocumentModel, *, limits: DocumentLimits | None = None) 
     # Revalidate edited native relationships; never fetch external targets or invent missing data.
     for name in cancellable_items(sorted(selected)):
         owner = _owner(name)
+        if owner is None and graph.parts[name].media_type == RELS_TYPE:
+            raise InvalidDocumentError(f'{name}: relationship part has no owner address')
         if owner is not None:
             if owner != graph.root and owner not in selected:
                 raise InvalidDocumentError(f'{name}: native relationship owner binding is missing')
@@ -294,7 +275,7 @@ def restore_detached_parts(
             content_types = parse_xml(original.read('[Content_Types].xml'), etree)
             defaults, overrides = _types(original.read('[Content_Types].xml'), limits=limits)
             for name, part in cancellable_items(missing.items()):
-                actual = overrides.get(name) or defaults.get(PurePosixPath(name).suffix[1:].lower())
+                actual = declared_content_type(name, defaults, overrides)
                 if actual != part.media_type:
                     node = next((entry for entry in content_types if entry.tag == CT+'Override'
                                  and entry.get('PartName') == name), None)
