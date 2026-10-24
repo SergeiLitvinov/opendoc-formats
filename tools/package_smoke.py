@@ -419,6 +419,7 @@ def main() -> None:
             if args.all_formats and format_id == "pdf":
                 with PdfDocument(path) as pdf:
                     assert pdf.page_count > 0 and pdf.page_info(0).width > 0
+                    assert isinstance(pdf.page_text_spans(0), tuple)
                     rendered = pdf.render_page(0, max_dimension=512)
                     assert rendered.png.startswith(b"\x89PNG") and rendered.effective_scale > 0
     print(f"Installed wheel smoke passed: epub writer, {', '.join(formats)}")

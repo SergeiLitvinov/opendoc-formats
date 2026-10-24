@@ -5,8 +5,9 @@ from __future__ import annotations
 import math
 from collections import OrderedDict
 from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, fields
-from typing import Any
+from typing import Any, TypeAlias
 
 from opendoc_formats.errors import (
     DocumentClosedError,
@@ -32,6 +33,8 @@ class PdfLimits:
     max_objects: int = 100_000
     max_object_bytes: int = 32 * 1024 * 1024
     max_inspection_bytes: int = 256 * 1024 * 1024
+    max_text_spans: int = 100_000
+    max_text_metadata_bytes: int = 8 * 1024 * 1024
 
     def __post_init__(self) -> None:
         for item in fields(self):
@@ -54,6 +57,40 @@ class RenderedPage:
     width: int
     height: int
     effective_scale: float
+
+
+@dataclass(frozen=True)
+class PdfGlyphInfo:
+    unicode: int
+    glyph_id: int
+    origin: tuple[float, float]
+    bbox: tuple[float, float, float, float]
+
+
+PdfTextScalar: TypeAlias = str | int | float | bool | None
+PdfTextValue: TypeAlias = PdfTextScalar | tuple[PdfTextScalar, ...]
+
+
+@dataclass(frozen=True)
+class PdfTextSpan:
+    page_index: int
+    span_index: int
+    seqno: int
+    paint_type: int
+    font: str
+    font_size: float
+    bbox: tuple[float, float, float, float]
+    direction: tuple[float, float]
+    opacity: float
+    glyphs: tuple[PdfGlyphInfo, ...]
+    metadata: tuple[tuple[str, PdfTextValue], ...] = ()
+
+    @property
+    def text(self) -> str | None:
+        """Backend Unicode sequence only; an invalid scalar leaves the sequence unknown."""
+        if any(not 0 <= glyph.unicode <= 0x10ffff or 0xd800 <= glyph.unicode <= 0xdfff for glyph in self.glyphs):
+            return None
+        return ''.join(chr(glyph.unicode) for glyph in self.glyphs)
 
 
 @dataclass(frozen=True)
@@ -194,14 +231,49 @@ class PdfDocument:
     def page_info(self, index: int) -> PdfPageInfo:
         page = self._page(index)
         try:
-            text = page.get_text("text")
-            result = PdfPageInfo(index, float(page.rect.width), float(page.rect.height), int(page.rotation), text)
+            with self._preserve_rotation(page):
+                text = page.get_text("text")
+                result = PdfPageInfo(index, float(page.rect.width), float(page.rect.height), int(page.rotation), text)
+        except NativeAccessError:
+            raise
         except (RuntimeError, ValueError) as error:
             raise InvalidDocumentError(f"Cannot read PDF page {index}: {error}") from error
         if len(text) > self._limits.max_text_chars:
             raise ResourceLimitError("PDF page text exceeds character limit")
         check_cancel(self._cancelled)
         return result
+
+    def page_text_spans(self, index: int) -> tuple[PdfTextSpan, ...]:
+        """Observe bounded native glyph/paint spans; never infer reading order or clipping visibility."""
+        page = self._page(index)
+        try:
+            with self._preserve_rotation(page):
+                raw = page.get_texttrace()
+        except NativeAccessError:
+            raise
+        except (RuntimeError, ValueError) as error:
+            raise InvalidDocumentError(f'Cannot inspect PDF page {index} text: {error}') from error
+        check_cancel(self._cancelled)
+        from opendoc_formats.native.pdf_text import text_spans
+
+        result = text_spans(raw, index, self._limits, self._cancelled)
+        check_cancel(self._cancelled)
+        return result
+
+    @contextmanager
+    def _preserve_rotation(self, page: Any) -> Iterator[None]:
+        # Text backends temporarily change rotation and may flatten its inheritance.
+        rotation = self._document.xref_get_key(page.xref, 'Rotate')
+        original = self._document.xref_object(page.xref, compressed=False, ascii=True)
+        if len(original.encode('utf-8')) > self._limits.max_object_bytes:
+            raise ResourceLimitError(f'PDF xref={page.xref} dictionary exceeds max_object_bytes')
+        try:
+            yield
+        finally:
+            if self._document is not None and self._document.xref_get_key(page.xref, 'Rotate') != rotation:
+                # Setting "null" does not remove the key on every supported backend.
+                self._document.update_object(page.xref, original)
+                self._document.reload_page(page)
 
     def render_page(
         self,
@@ -270,4 +342,5 @@ class PdfDocument:
         return result
 
 
-__all__ = ["PdfDocument", "PdfLimits", "PdfObjectInfo", "PdfPageInfo", "RenderedPage"]
+__all__ = ["PdfDocument", "PdfLimits", "PdfObjectInfo", "PdfPageInfo", "RenderedPage",
+           "PdfGlyphInfo", "PdfTextSpan", "PdfTextScalar", "PdfTextValue"]

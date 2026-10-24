@@ -114,6 +114,13 @@ Public native PDF inspection возвращает подтверждённый �
 выдаётся за полный model object inventory, чтобы не разблокировать посторонние
 object/formula gates. Общая часть этого контракта согласуется с OpenDoc Model.
 
+Нативный glyph profile Formats доступен отдельно через `PdfDocument.page_text_spans`:
+он сохраняет glyph positions/ids/Unicode, paint type/opacity/sequence и metadata
+без backend objects. Неповёрнутые координаты, hidden/zero-alpha, двойной fill/stroke
+и полный текст частично clipped span проверяются по независимому source PDF.
+Это источник наблюдений для C-PDF-01, не подтверждение reading order, конечной
+видимости или полного object mapping; семантическая проекция остаётся открытой.
+
 ### C-MAP-01
 
 Первый профиль — существующий vector→PNG fallback. Публичная карта содержит

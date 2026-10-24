@@ -62,6 +62,9 @@ def main() -> None:
             with PdfDocument(source) as pdf:
                 assert pdf.page_count == 2
                 assert pdf.page_info(0).width > 0
+                spans = pdf.page_text_spans(0)
+                assert spans and any('Native PDF' in (span.text or '') for span in spans)
+                assert all(span.glyphs and span.page_index == 0 for span in spans)
                 assert pdf.render_page(0, max_dimension=256).png.startswith(b"\x89PNG")
             result = read_document(source)
             assert result.success, result.issues

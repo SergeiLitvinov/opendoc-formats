@@ -70,8 +70,9 @@ def own_docx():
     ])
 
 
-def own_pdf():
-    commands = (b'BT /F1 12 Tf 30 350 Td (Before) Tj ET\n'
+def own_pdf(*, commands=None, page_extra=b'', resource_extra=b'', parent_extra=b''):
+    if commands is None:
+        commands = (b'BT /F1 12 Tf 30 350 Td (Before) Tj ET\n'
                 b'1 w 30 180 m 270 180 l S 30 220 m 270 220 l S 30 260 m 270 260 l S\n'
                 b'30 180 m 30 260 l S 150 180 m 150 260 l S 270 180 m 270 260 l S\n'
                 b'BT /F1 10 Tf 40 240 Td (R1C1) Tj ET BT /F1 10 Tf 160 240 Td (R1C2) Tj ET\n'
@@ -83,9 +84,9 @@ def own_pdf():
 
     objects = [
         b'<< /Type /Catalog /Pages 2 0 R >>',
-        b'<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
-        b'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 400] /Contents 5 0 R '
-        b'/Resources << /Font << /F1 4 0 R >> /XObject << /Im1 6 0 R >> >> >>',
+        b'<< /Type /Pages /Kids [3 0 R] /Count 1 '+parent_extra+b'>>',
+        b'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 400] /Contents 5 0 R '+page_extra+
+        b'/Resources << /Font << /F1 4 0 R >> '+resource_extra+b'/XObject << /Im1 6 0 R >> >> >>',
         b'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
         stream(b'<< /Filter /FlateDecode', zlib.compress(commands)),
         stream(b'<< /Type /XObject /Subtype /Image /Width 2 /Height 2 /ColorSpace /DeviceRGB '

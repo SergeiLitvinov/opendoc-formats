@@ -1,5 +1,22 @@
 # Document quality corpus
 
+## Нативные PDF glyph observations
+
+`tests/native/test_pdf_text_spans.py` использует прямые PDF objects/commands,
+без writer Formats: обычный текст, `2 Tr`, `3 Tr`, zero alpha и частичный clip.
+Проверены исходные Unicode/origin, дубли fill/stroke, raw ligature continuation,
+unknown Unicode, отсутствие alias на mutable backend arrays, точные metadata budgets,
+отмена внутри glyph copy и после native call. Неверные native shapes имеют явный
+отказ; источник и контекст сохраняются. Default bytes прежнего wire fixture не меняются.
+
+Свежий native raster при отключённом кэше совпадает до/после инспекции на 0/90°.
+Для inherited Rotate после успеха/ошибки совпадают активные словари объектов и
+повторный рендер. Независимый Poppler при 108 dpi показывает `Visible`, synthetic-bold
+`Both` и только `Pa` от `Partial`; hidden/zero-alpha текст не виден, хотя span inventory
+его сохраняет. Это конечная read-only приёмка, не доказательство полной видимости,
+shaping, порядка чтения или PDF → DOCX fidelity. Установленный минимальный PDF-профиль
+проверяется в `tools/pdf_profile_smoke.py` без остальных PDF/Office/image backend.
+
 ## Независимые бинарные оригиналы
 
 `tests/binary_fixtures.py` собирает воспроизводимый ZIP/XML DOCX с вложенной таблицей,

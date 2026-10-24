@@ -67,6 +67,37 @@ with PdfDocument("source.pdf") as pdf:
 Extra `pdf-text` устанавливает только pypdf для текстового маршрута `readers.pdf.read_pdf`.
 Для геометрии, `PdfDocument` и рендера нужен `pdf` или эквивалентный `pdf-rich` с одним PyMuPDF.
 
+### Исходные глифы и paint spans
+
+`pdf.page_text_spans(index)` возвращает неизменяемый `tuple[PdfTextSpan, ...]`.
+Каждый span содержит номер страницы/наблюдения, native `seqno`, тип отрисовки,
+font name/size, bbox, direction, opacity и `PdfGlyphInfo` с Unicode codepoint,
+font-dependent glyph id, origin и bbox. Координаты наблюдаются на неповёрнутой
+странице; поворот не применяется к ним повторно. Остальные scalar/flat-sequence
+метаданные backend, включая color, flags, wmode, bidi, layer и linewidth,
+сохраняются в неизменяемом `metadata`; вложенные объекты вне профиля дают отказ.
+
+`span.text` — только последовательность Unicode backend. Недопустимый scalar
+даёт null; U+FFFD сохраняется, а отсутствующий Unicode не угадывается.
+Ligature continuation с glyph id `-1` и нулевым bbox не удаляется. Наблюдения
+filled/stroked одного текста не объединяются. Порядок span/глифов не объявляется
+порядком чтения, а bbox/opacity не доказывают окончательную видимость с учётом
+clipping, layers, compositing или последующих paint operations. Метод наблюдает
+страницу в scope backend, не объявляя её исключительно основным текстом без appearances.
+
+`PdfLimits.max_text_spans` ограничивает число span, `max_text_chars` — сумму
+glyph records страницы. `max_text_metadata_bytes` ограничивает сумму UTF-8 bytes
+compact JSON metadata объектов без `chars`, включая основные поля span;
+`max_object_bytes` — снимок словаря страницы для восстановления rotation.
+Проверки отмены действуют между span/глифами и до/после native call.
+Backend сначала материализует trace: эти квоты не являются жёстким ограничением
+его памяти, времени или возможностью прервать native call посередине.
+
+Оба текстовых API восстанавливают исходный ключ `Rotate`, включая отсутствие
+и наследование, даже после ошибки backend. Снимки принадлежат Formats;
+автоматическая семантическая проекция глифов в Model и полный C-PDF-01 остаются
+в [TODO](../development/todo.md).
+
 ## Офис → PDF
 
 ```python

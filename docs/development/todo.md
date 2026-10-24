@@ -138,12 +138,13 @@
 - Расширить перенос flow-изображений на ячейки таблиц и разбиение одного
   смешанного абзаца с несколькими изображениями, не помещающимися на странице;
   подтвердить подписи и геометрию относительно независимого исходного рендера.
-- C-PDF-01: подтвердить полный reading order/OCR и инвентарь объектов;
-  реализовать полный text/layout profile с glyph positions, Unicode/shaping,
-  шрифтами, видимостью и clip state.
+- C-PDF-01: связать нативные glyph observations с канонической моделью и полным
+  инвентарём объектов; подтвердить reading order/OCR, Unicode/shaping, font-program
+  bindings и полный visibility/clip state без эвристического восстановления неизвестного.
 - Реконструировать полное дерево полей: orphan/inherited/default values,
   дополнительные actions, XFA/signatures/radio groups и полный annotation appearance.
-  Расширить самостоятельный inspection text scope и приёмку бюджетов/лимитов.
+  Расширить самостоятельный inspection text scope на appearances/clips/groups/layers
+  и подтвердить ограничения работы/памяти внутри стороннего декодера.
 - Добавить semantic structure tree, marked content/tagged PDF и optional content/layers.
 - Реализовать полный clipping/masks/blend/transform, ICC/output intents,
   graphics state текста/изображений и source-object → fallback mapping.

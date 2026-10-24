@@ -10,6 +10,13 @@
   контекстный менеджер; движок импортируется при открытии. `close()` идемпотентен.
 - `page_count: int`; `page_info(index: int) -> PdfPageInfo`:
   `index`, `width`, `height`, `rotation`, `text`.
+- `page_text_spans(index) -> tuple[PdfTextSpan, ...]`: native glyph/paint observations
+  с `PdfGlyphInfo`, полями отрисовки и неизменяемыми scalar metadata.
+  Reading order, восстановление неизвестного Unicode и полный visibility/clip scope
+  не подразумеваются. Квоты span/glyph/metadata и неделимая граница native call
+  описаны в [руководстве](../guide/native-access.md#исходные-глифы-и-paint-spans).
+  `page_info` и `page_text_spans` восстанавливают исходный Rotate без создания
+  отсутствовавшего ключа; снимок словаря страницы ограничен `max_object_bytes`.
 - `render_page(index, *, dpi=None, scale=None, max_dimension=None, rotation=0)
   -> RenderedPage`: `png: bytes`, `width: int`, `height: int`, `index: int`,
   `effective_scale: float` — фактические пиксели на PDF-point после ограничения размера.
