@@ -138,8 +138,11 @@
 - Расширить перенос flow-изображений на ячейки таблиц и разбиение одного
   смешанного абзаца с несколькими изображениями, не помещающимися на странице;
   подтвердить подписи и геометрию относительно независимого исходного рендера.
-- C-PDF-01: связать нативные glyph observations с канонической моделью и полным
-  инвентарём объектов; подтвердить reading order/OCR, Unicode/shaping, font-program
+- C-PDF-01: связать нативные glyph observations с канонической моделью через
+  [контракт C-TEXT-LAYOUT-01](text-layout-contract.md), сохраняя общие данные
+  и validation в Model, а парсинг и paint evidence в Formats. Подключить принятый
+  публичный API и проверить актуальность layout после правок. Завершить
+  инвентаризацию исходных объектов; подтвердить reading order/OCR, Unicode/shaping, font-program
   bindings и полный visibility/clip state без эвристического восстановления неизвестного.
 - Реконструировать полное дерево полей: orphan/inherited/default values,
   дополнительные actions, XFA/signatures/radio groups и полный annotation appearance.

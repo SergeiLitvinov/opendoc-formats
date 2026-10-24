@@ -70,6 +70,34 @@ def test_text_dict_uses_public_model_envelope_and_detaches_nested_values():
     assert replace(text, diagnostics=integration_from_dict(encoded)).to_dict() == text.to_dict()
 
 
+@pytest.mark.parametrize('carrier', ['extra', 'measurement'])
+@pytest.mark.parametrize('export', ['dict', 'model'])
+def test_consumer_rejects_non_json_diagnostics_before_copy_hooks(carrier, export):
+    class CopyAsJSON:
+        calls = 0
+
+        def __deepcopy__(self, memo):
+            self.calls += 1
+            return {'silently_coerced': True}
+
+    foreign = CopyAsJSON()
+    text = own_text()
+    if carrier == 'extra':
+        text.diagnostics.extra['own_foreign'] = foreign
+    else:
+        text.diagnostics.preservation[0].issue.measurement['own_foreign'] = foreign
+    original = text.diagnostics
+    with pytest.raises(ValueError, match='JSON value'):
+        if export == 'dict':
+            text.to_dict()
+        else:
+            text_to_document(text)
+    assert foreign.calls == 0
+    assert text.diagnostics is original and text.plain == 'Own text'
+    values = original.extra if carrier == 'extra' else original.preservation[0].issue.measurement
+    assert values['own_foreign'] is foreign
+
+
 def test_legacy_dict_without_diagnostics_keeps_existing_shape():
     assert set(Text().to_dict()) == {
         'blocks', 'tables', 'plain', 'language', 'source_format', 'engine', 'warnings', 'pages',

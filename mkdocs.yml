@@ -47,6 +47,7 @@ nav:
       - Нативный контракт: development/native-access-contract.md
       - Запросы к библиотеке: development/format-requests.md
       - Контракт потокового Word: development/pdf-word-flow-contract.md
+      - Контракт текстового layout: development/text-layout-contract.md
       - Открытые задачи: development/todo.md
       - Исследования: development/research.md
       - Предложения к OpenDoc: development/opendoc-proposals.md
