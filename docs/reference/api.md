@@ -696,7 +696,7 @@ render_page(self, index: int, *, dpi: float | None=None, scale: float | None=Non
 
 ### AnatomyLimits
 
-[Исходник, строка 29](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L29)
+[Исходник, строка 30](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L30)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -712,7 +712,7 @@ render_page(self, index: int, *, dpi: float | None=None, scale: float | None=Non
 
 ### XmlNodeInfo
 
-[Исходник, строка 46](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L46)
+[Исходник, строка 47](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L47)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -726,7 +726,7 @@ render_page(self, index: int, *, dpi: float | None=None, scale: float | None=Non
 
 ### BinaryItem
 
-[Исходник, строка 57](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L57)
+[Исходник, строка 58](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L58)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -741,7 +741,7 @@ render_page(self, index: int, *, dpi: float | None=None, scale: float | None=Non
 
 ### OpcRelationship
 
-[Исходник, строка 69](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L69)
+[Исходник, строка 70](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L70)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -754,7 +754,7 @@ render_page(self, index: int, *, dpi: float | None=None, scale: float | None=Non
 
 ### OpcFinding
 
-[Исходник, строка 79](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L79)
+[Исходник, строка 80](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L80)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -764,7 +764,7 @@ render_page(self, index: int, *, dpi: float | None=None, scale: float | None=Non
 
 ### OpcAudit
 
-[Исходник, строка 86](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L86)
+[Исходник, строка 87](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L87)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -777,7 +777,7 @@ render_page(self, index: int, *, dpi: float | None=None, scale: float | None=Non
 
 ### OpcAudit.to_dict
 
-[Исходник, строка 94](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L94)
+[Исходник, строка 95](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L95)
 
 ```python
 to_dict(self) -> dict[str, Any]
@@ -785,7 +785,7 @@ to_dict(self) -> dict[str, Any]
 
 ### BinarySnapshot
 
-[Исходник, строка 106](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L106)
+[Исходник, строка 107](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L107)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -798,7 +798,7 @@ to_dict(self) -> dict[str, Any]
 
 ### BinarySnapshot.to_dict
 
-[Исходник, строка 114](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L114)
+[Исходник, строка 115](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L115)
 
 ```python
 to_dict(self) -> dict[str, Any]
@@ -806,7 +806,7 @@ to_dict(self) -> dict[str, Any]
 
 ### compare_snapshots
 
-[Исходник, строка 132](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L132)
+[Исходник, строка 133](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L133)
 
 ```python
 compare_snapshots(before: BinarySnapshot, after: BinarySnapshot) -> dict[str, Any]
@@ -814,7 +814,7 @@ compare_snapshots(before: BinarySnapshot, after: BinarySnapshot) -> dict[str, An
 
 ### inspect_binary
 
-[Исходник, строка 333](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L333)
+[Исходник, строка 372](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L372)
 
 ```python
 inspect_binary(source: Source, *, container: str | None=None, limits: AnatomyLimits=AnatomyLimits(), parse_xml: bool=True, capture: bool=False, cancelled: Callable[[], bool] | None=None) -> BinarySnapshot

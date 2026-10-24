@@ -9,9 +9,10 @@ import zipfile
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from urllib.parse import unquote, urlsplit
+from urllib.parse import urlsplit
 
 from opendoc_formats.epub_metadata import read_dc_values
+from opendoc_formats.native.epub import local_path
 from opendoc_formats.support.cancellation import check_cancelled
 from opendoc_formats.support.io import check_archive_safety
 
@@ -64,16 +65,7 @@ def _source_snapshot(archive: zipfile.ZipFile, opf_name: str, *, cancelled: Call
 
 
 def _local_path(base: str, href: str) -> str:
-    parsed = urlsplit(href)
-    if parsed.scheme or parsed.netloc:
-        raise ValueError("Remote EPUB package references are not supported")
-    decoded = unquote(parsed.path)
-    if not decoded or decoded.startswith("/") or "\\" in decoded or "\x00" in decoded:
-        raise ValueError("Invalid EPUB package path")
-    name = posixpath.normpath(posixpath.join(posixpath.dirname(base), decoded))
-    if name in {".", ".."} or name.startswith("../") or ":" in name.split("/")[0]:
-        raise ValueError("EPUB package reference escapes the archive")
-    return name
+    return local_path(base, href)
 
 
 def _xml(data: bytes, *, cancelled: Callable[[], bool] | None = None) -> ET.Element:

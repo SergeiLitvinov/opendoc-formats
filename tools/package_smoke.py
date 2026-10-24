@@ -63,6 +63,20 @@ def anatomy_smoke() -> None:
     assert snapshot.opc.reachable_parts == ('/word/own',)
     assert snapshot.opc.unreachable_parts == ('/word/unknown.bin',)
     assert compare_snapshots(snapshot, inspect_binary(source.getvalue()))['binary_identical']
+    epub = io.BytesIO()
+    with zipfile.ZipFile(epub, 'w') as archive:
+        archive.writestr('mimetype', b'application/epub+zip')
+        archive.writestr('Book/chapter', '<html xmlns="http://www.w3.org/1999/xhtml"><body><p>Own</p></body></html>')
+        archive.writestr('META-INF/container.xml',
+                         '<container xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles>'
+                         '<rootfile full-path="Book/package" media-type="application/oebps-package+xml"/>'
+                         '</rootfiles></container>')
+        archive.writestr('Book/package', '<package xmlns="http://www.idpf.org/2007/opf"><manifest>'
+                         '<item id="own" href="chapter" media-type="application/xhtml+xml"/></manifest></package>')
+    snapshot = inspect_binary(epub.getvalue())
+    assert snapshot.opc is None and dict(snapshot.details)['epub_rootfiles'] == ('Book/package',)
+    assert dict(snapshot.items[1].details)['xml_detection'] == 'epub-media-type'
+    assert snapshot.items[1].xml_nodes[0].tag == '{http://www.w3.org/1999/xhtml}html'
 
 
 def main() -> None:

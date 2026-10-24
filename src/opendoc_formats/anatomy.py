@@ -19,6 +19,7 @@ from opendoc_formats.errors import (
     UnsupportedDocumentError,
 )
 from opendoc_formats.native.common import Source, positive_int, read_source
+from opendoc_formats.native.epub import inspection_content_types
 from opendoc_formats.native.opc import content_types, declared_content_type, xml_content_type
 from opendoc_formats.native.opc_audit import audit_package
 from opendoc_formats.support.cancellation import cancellation_scope, checkpoint
@@ -250,19 +251,50 @@ def _zip_items(
                          max_total_size=limits.max_total_bytes, max_ratio=limits.max_ratio)
     items, budget = [], _Budget(limits)
     with zipfile.ZipFile(io.BytesIO(data)) as archive:
+        archive_names = set(archive.namelist())
         manifest: bytes | None = None
+        mime: bytes | None = None
         manifest_nodes: tuple[XmlNodeInfo, ...] = ()
         defaults: dict[str, str] = {}
         overrides: dict[str, str] = {}
-        if parse_xml and '[Content_Types].xml' in archive.namelist():
+        xml_cache: dict[str, tuple[bytes, tuple[XmlNodeInfo, ...]]] = {}
+        epub_types: dict[str, str] = {}
+        rootfiles: tuple[str, ...] = ()
+        if parse_xml and '[Content_Types].xml' in archive_names:
             manifest = _member_payload(archive, archive.getinfo('[Content_Types].xml'), limits)
             manifest_nodes = _xml_nodes(manifest, 'zip:/[Content_Types].xml', budget)
             defaults, overrides = content_types(manifest_nodes)
+        elif parse_xml and 'mimetype' in archive_names:
+            mime = _member_payload(archive, archive.getinfo('mimetype'), limits)
+            if mime == b'application/epub+zip':
+
+                def read_control(name: str) -> tuple[XmlNodeInfo, ...]:
+                    checkpoint()
+                    if name not in xml_cache:
+                        try:
+                            info = archive.getinfo(name)
+                        except KeyError as error:
+                            raise InvalidDocumentError(f'zip:/{name}: missing EPUB control part') from error
+                        payload = _member_payload(archive, info, limits)
+                        xml_cache[name] = (payload, _xml_nodes(payload, 'zip:/'+name, budget))
+                    return xml_cache[name][1]
+
+                epub_types, rootfiles = inspection_content_types(read_control)
+                for name in epub_types:
+                    checkpoint()
+                    if name not in archive_names or archive.getinfo(name).is_dir():
+                        raise InvalidDocumentError(f'zip:/{name}: missing EPUB manifest resource')
         for info in archive.infolist():
             checkpoint()
             location = 'zip:/'+info.filename
-            payload = (manifest if info.filename == '[Content_Types].xml' and manifest is not None
-                       else _member_payload(archive, info, limits))
+            if info.filename == '[Content_Types].xml' and manifest is not None:
+                payload = manifest
+            elif info.filename == 'mimetype' and mime is not None:
+                payload = mime
+            elif info.filename in xml_cache:
+                payload = xml_cache[info.filename][0]
+            else:
+                payload = _member_payload(archive, info, limits)
             offset = info.header_offset
             if offset < 0 or offset+30 > len(data):
                 raise InvalidDocumentError(f'{location}: invalid local ZIP header offset')
@@ -271,15 +303,20 @@ def _zip_items(
             stop = start+info.compress_size
             if header[0] != b'PK\x03\x04' or stop > len(data):
                 raise InvalidDocumentError(f'{location}: invalid ZIP wire entry')
-            declared_type = declared_content_type('/'+info.filename, defaults, overrides)
+            declared_type = (epub_types.get(info.filename) if rootfiles
+                             else declared_content_type('/'+info.filename, defaults, overrides))
             detection = None
             nodes: tuple[XmlNodeInfo, ...] = ()
             if parse_xml and not info.is_dir():
                 if info.filename == '[Content_Types].xml' and manifest is not None:
                     nodes, detection = manifest_nodes, 'opc-manifest'
+                elif info.filename in xml_cache:
+                    nodes = xml_cache[info.filename][1]
+                    detection = 'epub-container' if info.filename == 'META-INF/container.xml' else 'epub-package'
                 elif declared_type is not None:
                     if xml_content_type(declared_type):
-                        nodes, detection = _xml_nodes(payload, location, budget), 'opc-content-type'
+                        nodes = _xml_nodes(payload, location, budget)
+                        detection = 'epub-media-type' if rootfiles else 'opc-content-type'
                 elif info.filename.lower().endswith(('.xml', '.rels', '.xhtml', '.svg')):
                     nodes, detection = _xml_nodes(payload, location, budget), 'extension'
             item = BinaryItem(location, 'zip-directory' if info.is_dir() else 'zip-member', len(payload),
@@ -296,6 +333,8 @@ def _zip_items(
                                      'content_type': declared_type}.items()), nodes, payload if capture else None)
             items.append(item)
         details = {'comment_size': len(archive.comment), 'comment_sha256': hashlib.sha256(archive.comment).hexdigest()}
+        if rootfiles:
+            details['epub_rootfiles'] = rootfiles
     opc = audit_package(items, overrides) if manifest is not None else None
     return tuple(items), details, opc
 

@@ -89,6 +89,7 @@ files = [
     "src/opendoc_formats/ooxml/orphans.py",
     "src/opendoc_formats/native/opc.py",
     "src/opendoc_formats/native/opc_audit.py",
+    "src/opendoc_formats/native/epub.py",
     "src/opendoc_formats/readers/pdf.py", "src/opendoc_formats/readers/pdf_diagnostics.py",
     "src/opendoc_formats/readers/pdf_semantic.py", "src/opendoc_formats/readers/pdf_ocr_merge.py",
     "src/opendoc_formats/readers/html_text.py", "src/opendoc_formats/readers/epub.py",

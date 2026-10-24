@@ -60,7 +60,7 @@ Manifest учитывается в общем XML-бюджете ровно од
 в ZIP. Конфликтующие declarations отвергаются. Это конечный разбор Content Types,
 а не полная проверка OPC: неподтверждённые поля деклараций и URI-грамматика
 ещё требуют общей приёмки.
-EPUB OPF manifest не используется этим профилем для определения XML-типа.
+Для EPUB действует отдельный локальный профиль OPF, описанный ниже.
 
 DTD/entities выбранных XML-частей отвергаются до раскрытия; `--opaque-xml`
 отключает также разбор manifest и определение Content Type. Повреждённые XML
@@ -120,6 +120,38 @@ relationship part не является допустимой целью
 `compare_snapshots` показывает `opc_changed`, но `assessment_complete` остаётся false.
 Нормализация URI за пределами конечного resolver, грамматика Id/Type и все правила
 валидности деклараций не заявлены полной OPC-валидацией.
+
+## XML-ресурсы EPUB по manifest
+
+Если OPC Content Types отсутствует и `mimetype` содержит в точности
+`application/epub+zip`, инспектор читает `META-INF/container.xml` и все объявленные
+OPF rootfiles. Из каждого OPF manifest берутся локальные `href` и `media-type`.
+Это использует структуру [EPUB container и package documents](https://www.w3.org/TR/epub-33/);
+полная валидация EPUB и отображение книги этим разбором не подтверждаются.
+
+XML определяется по media type, включая XHTML/SVG/NCX, нестандартные расширения
+и файлы без расширения. Объявленный binary сохраняется opaque при имени `.xml`.
+UTF-16 и XML byte offsets остаются исходными. В details доступны:
+
+| Поле | Значение |
+| --- | --- |
+| `snapshot.details.epub_rootfiles` | Физические имена всех выбранных OPF в исходном порядке |
+| `item.details.content_type` | Тип ресурса из OPF либо тип OPF из container.xml |
+| `item.details.xml_detection` | `epub-container`, `epub-package` или `epub-media-type` |
+
+Несколько OPF могут ссылаться на общий ресурс с одинаковым типом. Конфликт типов,
+duplicate rootfile/item, отсутствующий manifest/control part или локальный ресурс
+дают явный отказ. Управляющие XML и общий ресурс читаются и учитываются в XML-бюджете
+один раз. Действуют `AnatomyLimits`, кооперативная отмена и прежний запрет DTD/entities.
+Новые зависимости не нужны; EPUB href разрешается общей локальной функцией с reader.
+
+Удалённые manifest URLs, `xml:base` и manifest alias на container.xml находятся
+вне конечного профиля и дают `UnsupportedDocumentError`; сеть и файлы вне ZIP
+не читаются. Источник можно сохранить через `parse_xml=False`/`--opaque-xml`,
+отключив также разбор EPUB manifest. Неверный `mimetype` оставляет обычный ZIP-профиль
+с распознаванием XML по расширениям. Проверка ZIP-позиции/сжатия mimetype, spine,
+навигации и всех правил EPUB не заменяется этим инспектором; `snapshot.opc` для EPUB
+остаётся null, а `assessment_complete` сравнения — false.
 
 `AnatomyLimits` ограничивает вход, число частей, размер части и сумму payload,
 коэффициент ZIP-сжатия, XML nodes/depth/names/characters. Одноимённые CLI-параметры

@@ -30,6 +30,15 @@ Missing owner/target, инфраструктурные targets, unsafe URI, dupl
 snapshots, независимая JSON-копия, `opc_changed`, отмена внутри resolver
 и отсутствие OPC claims при opaque inspection.
 
+`tests/test_anatomy_epub.py` собирает независимые ZIP/XML originals с extensionless
+OPF/XHTML в UTF-16, percent-encoded href, binary под именем `.xml` и двумя rootfiles.
+Проверены совместные ресурсы, конфликтующие типы/дубликаты, missing части,
+точное определение mimetype, DTD, `xml:base`, remote/outside ссылки, общий XML-бюджет
+и отмена после OPF до чтения ресурсов. ZIP open spy подтверждает однократное чтение;
+opaque inspection сохраняет bytes. Базовый установленный wheel проверяет этот
+маршрут без BeautifulSoup/EbookLib/lxml; это проверка контейнера, не EPUBCheck
+и не визуальная/семантическая приёмка всех ресурсов книги.
+
 `tests/native/test_binary_compatibility.py` проверяет, что нативная правка меняет
 содержимое только `word/document.xml`, сохраняя PNG, `.rels` и opaque bytes;
 сопоставляет таблицы/пиксели/диагностику с фактическим оригиналом.
