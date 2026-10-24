@@ -22,11 +22,12 @@ changes = compare_snapshots(original, result)
 | Связи OOXML | Исходные XML-узлы `.rels`, в том числе Id, Type, Target, TargetMode; внешние адреса не загружаются |
 | Неизвестная бинарная часть | Исходные распакованные bytes, размер и SHA-256; вложения и макросы не запускаются |
 | PDF | Активные xref slots, нормализованное представление словаря, закодированный поток без декодирования, trailer, число страниц и признак ремонта backend |
+| CFBF/OLE container | Исходные секторы, FAT/DIFAT/miniFAT, directory objects, логические потоки и их byte ranges; содержимое OLE не активируется |
 
 `capture=True` возвращает payload в памяти; обычный снимок хранит инвентарь.
 `BinarySnapshot.to_dict()` — диагностический формат Formats, отдельный от JSON
 документа OpenDoc. Пакет общей модели и её codec не меняются.
-ZIP/XML-инспекция использует стандартную библиотеку Python. PDF-инспекция использует
+ZIP/XML и CFBF-инспекция используют стандартную библиотеку Python. PDF-инспекция использует
 существующий профиль `pdf` и его [лицензионные условия](dependencies.md).
 
 ## Выгрузка частей и сравнение
@@ -46,6 +47,62 @@ uv run python -m tools.document_anatomy original.docx --output .opendoc-formats/
 Для PDF одинаковый xref номер **не доказывает** соответствие объектов двух файлов:
 они могут перенумеровываться. Снимки не подтверждают C-MAP-01 или lossless;
 `assessment_complete` сравнения остаётся false.
+
+## Потоки CFBF/OLE
+
+`inspect_binary("object.bin")` распознаёт CFBF по начальной сигнатуре; API и CLI
+принимают явный `container="cfbf"` / `--container cfbf`. Поддержанный физический
+профиль — little-endian версии 3 с секторами 512 байт и версии 4 с секторами
+4096 байт, mini sectors 64 байта и cutoff 4096. Основа —
+[MS-CFB header](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-cfb/05060311-bfce-4b12-874d-71fd4ce63aea)
+и [mini FAT](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-cfb/c5d235f7-b73c-4ec5-bf8d-5c08306cd023).
+Это инспекция контейнера, а не импорт семантики DOC/XLS/PPT или вложенной программы.
+
+| Локатор | Содержимое |
+| --- | --- |
+| `cfbf:sector=-1` | Весь header sector, включая padding v4; `-1` — обозначение инспектора |
+| `cfbf:sector=N` | Исходный физический сектор, offset, raw FAT allocation value и наблюдённая роль |
+| `cfbf:directory=N` | Активная directory entry: имя, type, raw metadata/entry hex, логический payload и SHA-256 |
+
+Имена не используются как файловые пути. Обычные и mini-потоки имеют
+`details.allocation`, `chain` и `data_ranges`: исходные `(offset, length)` каждого
+фрагмента в логическом порядке. Последний фрагмент ограничен объявленным размером;
+padding остаётся в физическом секторе. Root entry описывает общий mini stream,
+storage object имеет пустой payload. Неиспользуемые directory slots и неизвестные
+байты остаются в физических секторах. Сектор без известного владельца получает
+роль `free` при FREESECT или `unclaimed` в остальных случаях; последнее не означает
+доказанную недостижимость в полностью проверенной storage hierarchy.
+
+При `capture=True` конкатенация всех `cfbf-physical-sector` payload в исходном
+порядке восстанавливает bytes входа, включая свободные области. Payload логических
+потоков хранится дополнительно. Старый v3 high DWORD размера сохраняется в
+`stream_size_raw`, но при чтении используется low DWORD: это совместимость,
+предписанная [MS-CFB directory entries](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-cfb/b37413bb-f3ef-4adc-b18e-29bddd62c26e).
+
+FAT/DIFAT/miniFAT, directory stream и data chains проверяются на границы,
+циклы, пересечения владения, контрольные markers и согласованность размера/числа
+секторов. Ошибка не возвращает частичный снимок. Неподдержанный header profile
+даёт `UnsupportedDocumentError`; повреждённая цепочка или имя — `InvalidDocumentError`.
+`directory_tree_assessed=false` и `assessment_complete=false`: red-black storage
+tree, правила сравнения имён, все reserved fields, семантика OLE и соответствие
+всей спецификации этой проверкой не подтверждаются. CLSID и времена — исходные
+значения; обработчик по CLSID не создаётся. Ремонт исходника не выполняется.
+
+`max_items` ограничивает отдельно число сканируемых directory slots и общую сумму
+физических секторов с активными directory objects. Числа доступны в details.
+`max_part_bytes` ограничивает сектор и каждый логический поток. `max_total_bytes`
+учитывает весь физический вход и логические потоки дополнительно, включая root
+mini stream: одни bytes могут учитываться несколько раз. Это ограничивает объём
+инвентаря и копирования. Сигнал отмены проверяется внутри allocation/directory/data
+обходов; отдельное чтение или хеширование остаётся неделимым.
+
+CFBF-байты из `BinaryItem.payload` внешнего ZIP можно передать в отдельный
+`inspect_binary`. Автоматического обхода вложений и общего бюджета глубины между
+вызовами пока нет; XML-флаг `parse_xml` не отключает разбор allocation tables CFBF.
+Внешний файл и вложение не исполняются. Полная приёмка OLE-объекта в Word или
+другом приложении остаётся отдельной задачей.
+
+## XML по OPC Content Types
 
 При наличии `[Content_Types].xml` инспектор сначала читает ограниченный OPC manifest.
 `Override` имеет приоритет над `Default`; расширения defaults сопоставляются без

@@ -103,3 +103,72 @@ def own_pdf(*, commands=None, page_extra=b'', resource_extra=b'', parent_extra=b
         output.extend(f'{offset:010} 00000 n \n'.encode())
     output.extend(f'trailer\n<< /Size {len(objects)+1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n'.encode())
     return bytes(output), commands
+
+
+def own_cfbf(*, version=3, difat=False, high_size_bits=0):
+    """Independent sector bytes: interleaved FAT/mini chains and opaque unclaimed data."""
+    assert version in (3, 4) and (not difat or version == 3)
+    size = 512 if version == 3 else 4096
+    fat_count = 110 if difat else 1
+    directory, mini_fat, pool = fat_count, fat_count+1, fat_count+2
+    first = fat_count+3
+    big_chain = ([first, first+2, first+1, first+3, first+5, first+4, first+6, first+7]
+                 if version == 3 else [first])
+    difat_sector = first+len(big_chain)
+    count = 14000 if difat else difat_sector+1
+    header, body = bytearray(size), bytearray(count*size)
+    header[:8] = b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1'
+    struct.pack_into('<5H', header, 24, 0x3e, version, 0xfffe, 9 if version == 3 else 12, 6)
+    struct.pack_into('<9I', header, 40, 0 if version == 3 else 1, fat_count, directory, 0, 4096,
+                     mini_fat, 1, difat_sector if difat else 0xfffffffe, 1 if difat else 0)
+    header[76:512] = b'\xff'*436
+    for index in range(min(fat_count, 109)):
+        struct.pack_into('<I', header, 76+index*4, index)
+    for sector in range(fat_count):
+        body[sector*size:(sector+1)*size] = b'\xff'*size
+
+    def fat(index, value):
+        block, slot = divmod(index, size//4)
+        struct.pack_into('<I', body, block*size+slot*4, value)
+
+    for sector in range(fat_count):
+        fat(sector, 0xfffffffd)
+    for sector in (directory, mini_fat, pool):
+        fat(sector, 0xfffffffe)
+    for index, sector in enumerate(big_chain):
+        fat(sector, big_chain[index+1] if index+1 < len(big_chain) else 0xfffffffe)
+    if difat:
+        fat(difat_sector, 0xfffffffc)
+        body[difat_sector*size:(difat_sector+1)*size] = b'\xff'*size
+        struct.pack_into('<I', body, difat_sector*size, 109)
+        struct.pack_into('<I', body, (difat_sector+1)*size-4, 0xfffffffe)
+    fat(count-1, 0xfffffffe)
+    opaque = b'Own unclaimed allocated bytes\x00\xff'
+    body[(count-1)*size:(count-1)*size+len(opaque)] = opaque
+    body[mini_fat*size:(mini_fat+1)*size] = b'\xff'*size
+    for index, value in enumerate((2, 0xfffffffe, 1)):
+        struct.pack_into('<I', body, mini_fat*size+index*4, value)
+    small, big = (b'Own small\x00\xff'*14)[:145], bytes(range(256))*16
+    body[pool*size:(pool+1)*size] = b'\xa7'*size
+    for index, sector in enumerate((0, 2, 1)):
+        chunk = small[index*64:(index+1)*64]
+        body[pool*size+sector*64:pool*size+sector*64+len(chunk)] = chunk
+    for index, sector in enumerate(big_chain):
+        body[sector*size:(sector+1)*size] = big[index*size:(index+1)*size]
+
+    def entry(index, name, kind, start=0xfffffffe, length=0, *, left=0xffffffff, right=0xffffffff,
+              child=0xffffffff, color=1):
+        record = bytearray(128)
+        encoded = name.encode('utf-16-le')+b'\x00\x00' if kind else b''
+        record[:len(encoded)] = encoded
+        struct.pack_into('<HBBIII', record, 64, len(encoded), kind, color, left, right, child)
+        struct.pack_into('<IQ', record, 116, start if kind else 0, length | ((high_size_bits << 32) if kind == 2 else 0))
+        body[directory*size+index*128:directory*size+(index+1)*128] = record
+
+    for index in range(size//128):
+        entry(index, '', 0, color=0)
+    entry(0, 'Root Entry', 5, pool, 192, child=1)
+    entry(1, 'Small', 2, 0, len(small), left=2, right=3)
+    entry(2, 'Large', 2, big_chain[0], len(big), color=0)
+    entry(3, 'Folder', 1, color=0)
+    return bytes(header+body), small, big

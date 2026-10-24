@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import importlib.util
 import io
+import struct
 import sys
 import zipfile
 from importlib.metadata import version
@@ -83,6 +84,37 @@ def anatomy_smoke() -> None:
     assert snapshot.epub.references[-1].status == 'external-unassessed'
     assert snapshot.epub.references[-1].resolved_target is None
     assert not snapshot.to_dict()['epub']['assessment_complete']
+    compound_smoke()
+
+
+def compound_smoke() -> None:
+    from opendoc_formats.anatomy import inspect_binary
+
+    header, fat, directory, mini, pool = [bytearray(512) for _ in range(5)]
+    header[:8] = b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1'
+    struct.pack_into('<5H', header, 24, 0x3e, 3, 0xfffe, 9, 6)
+    struct.pack_into('<9I', header, 40, 0, 1, 1, 0, 4096, 2, 1, 0xfffffffe, 0)
+    header[76:] = b'\xff'*436
+    struct.pack_into('<I', header, 76, 0)
+    fat[:] = mini[:] = b'\xff'*512
+    struct.pack_into('<4I', fat, 0, 0xfffffffd, 0xfffffffe, 0xfffffffe, 0xfffffffe)
+    struct.pack_into('<I', mini, 0, 0xfffffffe)
+    payload = b'Own portable compound stream\x00\xff'
+    pool[:len(payload)] = payload
+    for index in range(4):
+        struct.pack_into('<3I', directory, index*128+68, 0xffffffff, 0xffffffff, 0xffffffff)
+    for index, name, kind, start, size in ((0, 'Root Entry', 5, 3, 64), (1, 'Small', 2, 0, len(payload))):
+        encoded = (name+'\0').encode('utf-16-le')
+        directory[index*128:index*128+len(encoded)] = encoded
+        struct.pack_into('<HBB', directory, index*128+64, len(encoded), kind, 1)
+        struct.pack_into('<IQ', directory, index*128+116, start, size)
+    struct.pack_into('<I', directory, 76, 1)
+    original = bytes(header+fat+directory+mini+pool)
+    snapshot = inspect_binary(original, capture=True)
+    assert snapshot.container == 'cfbf'
+    assert next(item for item in snapshot.items if item.locator == 'cfbf:directory=1').payload == payload
+    assert b''.join(item.payload for item in snapshot.items if item.kind == 'cfbf-physical-sector') == original
+    assert not dict(snapshot.details)['assessment_complete']
 
 
 def main() -> None:

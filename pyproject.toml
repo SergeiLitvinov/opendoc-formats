@@ -80,6 +80,7 @@ strict = true
 follow_imports = "silent"
 ignore_missing_imports = true
 files = [
+    "src/opendoc_formats/native/cfbf.py",
     "src/opendoc_formats/api.py", "src/opendoc_formats/export.py", "src/opendoc_formats/text_profile.py",
     "src/opendoc_formats/types.py", "src/opendoc_formats/docx.py", "src/opendoc_formats/pdf.py",
     "src/opendoc_formats/office.py", "src/opendoc_formats/package_resources.py", "src/opendoc_formats/errors.py",

@@ -1,4 +1,4 @@
-"""Dissect a ZIP/OOXML/EPUB or PDF into an inventory and optionally captured native payloads."""
+"""Dissect ZIP/OOXML/EPUB, PDF or CFBF into an inventory and optionally captured native payloads."""
 
 from __future__ import annotations
 
@@ -50,7 +50,7 @@ def main() -> None:
     parser.add_argument('source', type=Path)
     parser.add_argument('--output', type=Path, required=True, help='New directory; existing directories are never replaced')
     parser.add_argument('--compare', type=Path, help='Optional result file, compared by literal native addresses')
-    parser.add_argument('--container', choices=('zip', 'pdf'))
+    parser.add_argument('--container', choices=('zip', 'pdf', 'cfbf'))
     parser.add_argument('--opaque-xml', action='store_true', help='Keep XML bytes without parsing DTDs or other markup')
     parser.add_argument('--no-payloads', action='store_true', help='Write only the inventory and PDF dictionaries')
     defaults = AnatomyLimits()

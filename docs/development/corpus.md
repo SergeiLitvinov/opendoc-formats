@@ -44,6 +44,22 @@ JSON и неизменность исходных bytes. Это конечная
 
 ## Независимые бинарные оригиналы
 
+`own_cfbf` собирает CFBF v3/v4 непосредственно из header, FAT/DIFAT/miniFAT,
+directory entries и заданных bytes. Оригиналы содержат разрывные обычные и mini
+цепочки, padding и unclaimed сектор. `tests/test_anatomy_cfbf.py` подтверждает
+payload, диапазоны, raw metadata, полное восстановление физических bytes, старый
+v3 high DWORD, extended DIFAT, неверные цепочки/имена, квоты, отмену и CLI.
+Контролируемые изменения wire bytes дают явный отказ либо неизменённый физический
+инвентарь, без положительной оценки полноты.
+
+`tests/native/test_cfbf_windows.py` отдельно открывает только эти собственные
+оригиналы read-only через Windows IStorage и сравнивает Small/Large bytes для
+v3, v4 и старого v3. COM storage API не активирует вложенный объект; source bytes
+после закрытия прежние. На других платформах эти три проверки пропускаются.
+Это конечная приёмка чтения потоков, не storage tree validation и не проверка
+семантических правок OLE. Базовый установленный wheel проверяет CFBF/miniFAT
+без olefile, Office, PDF и XML backend.
+
 `tests/binary_fixtures.py` собирает воспроизводимый ZIP/XML DOCX с вложенной таблицей,
 PNG, внешней гиперссылкой и неизвестной бинарной частью. PDF собирается напрямую
 из объектов, xref offsets, команд и Flate-потоков; 2×2 RGB изображение имеет

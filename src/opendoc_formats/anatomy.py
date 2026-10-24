@@ -1,4 +1,4 @@
-"""Read-only binary inventories: ZIP wire entries/XML and active PDF objects."""
+"""Read-only binary inventories: ZIP/XML, active PDF objects and compound CFBF sectors/streams."""
 
 from __future__ import annotations
 
@@ -18,6 +18,7 @@ from opendoc_formats.errors import (
     ResourceLimitError,
     UnsupportedDocumentError,
 )
+from opendoc_formats.native.cfbf import SIGNATURE as CFBF_SIGNATURE
 from opendoc_formats.native.common import Source, positive_int, read_source
 from opendoc_formats.native.epub import inspection_content_types
 from opendoc_formats.native.opc import content_types, declared_content_type, xml_content_type
@@ -400,23 +401,30 @@ def _pdf_items(data: bytes, limits: AnatomyLimits, capture: bool) -> tuple[tuple
 def inspect_binary(source: Source, *, container: str | None = None, limits: AnatomyLimits = AnatomyLimits(),
                    parse_xml: bool = True, capture: bool = False,
                    cancelled: Callable[[], bool] | None = None) -> BinarySnapshot:
-    """Inspect container content without executing macros, following links or decoding PDF streams."""
+    """Inspect content without executing macros, following external links or decoding PDF streams."""
     if not isinstance(limits, AnatomyLimits) or type(parse_xml) is not bool or type(capture) is not bool:
         raise TypeError('Expected AnatomyLimits and boolean inspection flags')
-    if container not in (None, 'zip', 'pdf'):
-        raise ValueError('Binary inspection supports container=zip or pdf')
+    if container not in (None, 'zip', 'pdf', 'cfbf'):
+        raise ValueError('Binary inspection supports container=zip, pdf or cfbf')
     with cancellation_scope(cancelled, 'Binary inspection', inherit=True):
         data = read_source(source, limits.max_input_bytes, None)
         checkpoint()
         if container is None:
             is_zip = zipfile.is_zipfile(io.BytesIO(data))
-            is_pdf = b'%PDF-' in data[:1024] and not data.startswith((b'PK\x03\x04', b'PK\x05\x06'))
-            if is_zip == is_pdf:
-                raise UnsupportedDocumentError('Choose zip/pdf explicitly for an ambiguous or unsupported container')
-            container = 'zip' if is_zip else 'pdf'
+            is_pdf = b'%PDF-' in data[:1024] and not data.startswith((b'PK\x03\x04', b'PK\x05\x06', CFBF_SIGNATURE))
+            profiles = [name for name, present in (('zip', is_zip), ('pdf', is_pdf),
+                                                   ('cfbf', data.startswith(CFBF_SIGNATURE))) if present]
+            if len(profiles) != 1:
+                raise UnsupportedDocumentError('Choose zip/pdf/cfbf explicitly for an ambiguous or unsupported container')
+            container = profiles[0]
         try:
             if container == 'zip':
                 items, details, opc, epub = _zip_items(data, limits, parse_xml, capture)
+            elif container == 'cfbf':
+                from opendoc_formats.native.cfbf import inspect_cfbf
+
+                items, details = inspect_cfbf(data, limits, capture)
+                opc, epub = None, None
             else:
                 items, details = _pdf_items(data, limits, capture)
                 opc = None
