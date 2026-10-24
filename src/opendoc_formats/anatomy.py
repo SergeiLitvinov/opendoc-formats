@@ -9,6 +9,7 @@ import zipfile
 import zlib
 from collections.abc import Callable
 from dataclasses import dataclass, field, fields, replace
+from pathlib import PurePosixPath
 from typing import Any, NoReturn
 from xml.parsers import expat
 
@@ -19,6 +20,7 @@ from opendoc_formats.errors import (
     UnsupportedDocumentError,
 )
 from opendoc_formats.native.common import Source, positive_int, read_source
+from opendoc_formats.native.opc import content_types, xml_content_type
 from opendoc_formats.support.cancellation import cancellation_scope, checkpoint
 from opendoc_formats.support.io import ArchiveSafetyError, check_archive_safety
 
@@ -187,6 +189,20 @@ def _xml_nodes(data: bytes, location: str, budget: _Budget) -> tuple[XmlNodeInfo
     return tuple(nodes)
 
 
+def _member_payload(archive: zipfile.ZipFile, info: zipfile.ZipInfo, limits: AnatomyLimits) -> bytes:
+    location = 'zip:/'+info.filename
+    if info.flag_bits & 1:
+        raise EncryptedDocumentError(f'{location}: encrypted ZIP member')
+    if info.file_size > limits.max_part_bytes:
+        raise ResourceLimitError(f'{location}: max_part_bytes exceeded')
+    with archive.open(info) as member:
+        payload = member.read(limits.max_part_bytes+1)
+    checkpoint()
+    if len(payload) != info.file_size or len(payload) > limits.max_part_bytes:
+        raise InvalidDocumentError(f'{location}: inconsistent ZIP member size')
+    return payload
+
+
 def _zip_items(
     data: bytes, limits: AnatomyLimits, parse_xml: bool, capture: bool,
 ) -> tuple[tuple[BinaryItem, ...], dict[str, Any]]:
@@ -194,17 +210,19 @@ def _zip_items(
                          max_total_size=limits.max_total_bytes, max_ratio=limits.max_ratio)
     items, budget = [], _Budget(limits)
     with zipfile.ZipFile(io.BytesIO(data)) as archive:
+        manifest: bytes | None = None
+        manifest_nodes: tuple[XmlNodeInfo, ...] = ()
+        defaults: dict[str, str] = {}
+        overrides: dict[str, str] = {}
+        if parse_xml and '[Content_Types].xml' in archive.namelist():
+            manifest = _member_payload(archive, archive.getinfo('[Content_Types].xml'), limits)
+            manifest_nodes = _xml_nodes(manifest, 'zip:/[Content_Types].xml', budget)
+            defaults, overrides = content_types(manifest_nodes)
         for info in archive.infolist():
             checkpoint()
             location = 'zip:/'+info.filename
-            if info.flag_bits & 1:
-                raise EncryptedDocumentError(f'{location}: encrypted ZIP member')
-            if info.file_size > limits.max_part_bytes:
-                raise ResourceLimitError(f'{location}: max_part_bytes exceeded')
-            with archive.open(info) as member:
-                payload = member.read(limits.max_part_bytes+1)
-            if len(payload) != info.file_size or len(payload) > limits.max_part_bytes:
-                raise InvalidDocumentError(f'{location}: inconsistent ZIP member size')
+            payload = (manifest if info.filename == '[Content_Types].xml' and manifest is not None
+                       else _member_payload(archive, info, limits))
             offset = info.header_offset
             if offset < 0 or offset+30 > len(data):
                 raise InvalidDocumentError(f'{location}: invalid local ZIP header offset')
@@ -213,8 +231,17 @@ def _zip_items(
             stop = start+info.compress_size
             if header[0] != b'PK\x03\x04' or stop > len(data):
                 raise InvalidDocumentError(f'{location}: invalid ZIP wire entry')
-            nodes = (_xml_nodes(payload, location, budget) if parse_xml and
-                     info.filename.lower().endswith(('.xml', '.rels', '.xhtml', '.svg')) else ())
+            declared_type = overrides.get('/'+info.filename) or defaults.get(PurePosixPath(info.filename).suffix[1:].lower())
+            detection = None
+            nodes: tuple[XmlNodeInfo, ...] = ()
+            if parse_xml and not info.is_dir():
+                if info.filename == '[Content_Types].xml' and manifest is not None:
+                    nodes, detection = manifest_nodes, 'opc-manifest'
+                elif declared_type is not None:
+                    if xml_content_type(declared_type):
+                        nodes, detection = _xml_nodes(payload, location, budget), 'opc-content-type'
+                elif info.filename.lower().endswith(('.xml', '.rels', '.xhtml', '.svg')):
+                    nodes, detection = _xml_nodes(payload, location, budget), 'extension'
             item = BinaryItem(location, 'zip-directory' if info.is_dir() else 'zip-member', len(payload),
                               hashlib.sha256(payload).hexdigest(), hashlib.sha256(memoryview(data)[offset:stop]).hexdigest(),
                               tuple({'compression': info.compress_type, 'flags': info.flag_bits, 'crc32': info.CRC,
@@ -225,7 +252,8 @@ def _zip_items(
                                      'extract_version': info.extract_version,
                                      'extra_sha256': hashlib.sha256(info.extra).hexdigest(),
                                      'comment_sha256': hashlib.sha256(info.comment).hexdigest(),
-                                     'xml_parsed': bool(nodes)}.items()), nodes, payload if capture else None)
+                                     'xml_parsed': bool(nodes), 'xml_detection': detection,
+                                     'content_type': declared_type}.items()), nodes, payload if capture else None)
             items.append(item)
         details = {'comment_size': len(archive.comment), 'comment_sha256': hashlib.sha256(archive.comment).hexdigest()}
     return tuple(items), details

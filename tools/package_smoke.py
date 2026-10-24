@@ -45,11 +45,15 @@ def anatomy_smoke() -> None:
 
     source = io.BytesIO()
     with zipfile.ZipFile(source, 'w') as archive:
-        archive.writestr('word/own.xml', '<own xmlns="urn:own"><child>Own text</child></own>')
+        archive.writestr('word/own', '<own xmlns="urn:own"><child>Own text</child></own>')
         archive.writestr('word/unknown.bin', b'Own opaque bytes\x00\xff')
+        archive.writestr('[Content_Types].xml',
+                         '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+                         '<Override PartName="/word/own" ContentType="application/vnd.own+xml"/></Types>')
     snapshot = inspect_binary(source.getvalue(), capture=True)
     assert snapshot.items[1].payload == b'Own opaque bytes\x00\xff'
     assert snapshot.items[0].xml_nodes[1].tag == '{urn:own}child'
+    assert dict(snapshot.items[0].details)['xml_detection'] == 'opc-content-type'
     assert compare_snapshots(snapshot, inspect_binary(source.getvalue()))['binary_identical']
 
 

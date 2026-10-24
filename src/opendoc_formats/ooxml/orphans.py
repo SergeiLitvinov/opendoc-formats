@@ -31,7 +31,7 @@ from opendoc_model import (
 from opendoc_formats.anatomy import AnatomyLimits, XmlNodeInfo, _Budget, _xml_nodes
 from opendoc_formats.errors import InvalidDocumentError
 from opendoc_formats.native.docx_package import parse_xml
-from opendoc_formats.package_resources import _part_name
+from opendoc_formats.native.opc import content_types, part_name
 from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 from opendoc_formats.support.io import check_archive_safety
 
@@ -77,10 +77,7 @@ def _target(owner: str, value: str) -> str:
 
 
 def _name(value: str) -> str:
-    value = _part_name(value)
-    if any(segment in ('', '.', '..') for segment in value[1:].split('/')):
-        raise InvalidDocumentError(f'Unnormalized OPC part name: {value!r}')
-    return value
+    return part_name(value)
 
 
 def _nodes(data: bytes, location: str, limits: DocumentLimits | None) -> tuple[XmlNodeInfo, ...]:
@@ -119,29 +116,7 @@ def _targets(data: bytes, rels: str, *, limits: DocumentLimits | None = None) ->
 
 
 def _types(data: bytes, *, limits: DocumentLimits | None = None) -> tuple[dict[str, str], dict[str, str]]:
-    nodes = _nodes(data, '/[Content_Types].xml', limits)
-    if not nodes or nodes[0].tag != CT+'Types':
-        raise InvalidDocumentError('Invalid OPC content-types root')
-    defaults: dict[str, str] = {}
-    overrides: dict[str, str] = {}
-    for node in cancellable_items(nodes):
-        if node.path.count('/') != 1:
-            continue
-        attributes = dict(node.attributes)
-        if node.tag == CT+'Default':
-            key, value = attributes.get('Extension'), attributes.get('ContentType')
-            mapping = defaults
-            key = key.lower() if key else key
-        elif node.tag == CT+'Override':
-            key, value = attributes.get('PartName'), attributes.get('ContentType')
-            mapping = overrides
-            key = _name(key) if key else key
-        else:
-            continue
-        if not key or not value or (key in mapping and mapping[key] != value):
-            raise InvalidDocumentError('Invalid/conflicting OPC content-type declaration')
-        mapping[key] = value
-    return defaults, overrides
+    return content_types(_nodes(data, '/[Content_Types].xml', limits))
 
 
 def capture_orphans(document: Any, model: DocumentModel, source: bytes, path: Path,

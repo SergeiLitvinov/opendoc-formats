@@ -47,9 +47,24 @@ uv run python -m tools.document_anatomy original.docx --output .opendoc-formats/
 они могут перенумеровываться. Снимки не подтверждают C-MAP-01 или lossless;
 `assessment_complete` сравнения остаётся false.
 
-XML автоматически разбирается для `.xml`, `.rels`, `.xhtml`, `.svg`.
-Иные части сохраняются как непрозрачные bytes. DTD/entities отвергаются до
-раскрытия; `--opaque-xml` сохраняет XML-часть без разбора. Повреждённые XML и CRC распакованной части,
+При наличии `[Content_Types].xml` инспектор сначала читает ограниченный OPC manifest.
+`Override` имеет приоритет над `Default`; расширения defaults сопоставляются без
+учёта регистра. Объявленные `application/xml`, `text/xml` и типы с суффиксом `+xml`
+разбираются как XML, включая части без расширения и UTF-16. Объявленный binary
+остаётся opaque, даже если имя заканчивается на `.xml`.
+В `item.details` доступны `content_type` и `xml_detection`: `opc-content-type`,
+`opc-manifest`, `extension` либо null. Для необъявленных частей сохраняется
+распознавание по `.xml`, `.rels`, `.xhtml`, `.svg`; остальные остаются bytes.
+
+Manifest учитывается в общем XML-бюджете ровно один раз, независимо от его позиции
+в ZIP. Конфликтующие declarations отвергаются. Это конечный разбор Content Types,
+а не полная проверка OPC: связи, неподтверждённые поля деклараций и соответствие
+всего manifest физическому инвентарю ещё требуют общей приёмки.
+EPUB OPF manifest не используется этим профилем для определения XML-типа.
+
+DTD/entities выбранных XML-частей отвергаются до раскрытия; `--opaque-xml`
+отключает также разбор manifest и определение Content Type. Повреждённые XML
+в выбранном профиле и CRC распакованной части,
 дубликаты и небезопасные имена отвергаются. `--no-payloads` оставляет инвентарь
 и PDF-словари. XML comments/PI остаются в payload; список узлов представляет элементы.
 `start_byte` и `end_event_byte` относятся к распакованным исходным XML bytes,

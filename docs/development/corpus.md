@@ -12,6 +12,15 @@ PNG, внешней гиперссылкой и неизвестной бина�
 квоты/отмену, отсутствие обязательных Office/PDF декодеров для ZIP и признак ремонта
 PDF. CLI выгружает части под собственными именами и не заменяет существующий каталог.
 
+`tests/test_anatomy_content_types.py` задаёт OPC manifest после payload в ZIP.
+Проверяются extensionless UTF-16 XML, `+xml`, приоритет overrides, case-insensitive
+extension defaults, declared binary с именем `.xml`, прежний extension fallback,
+ошибочные bindings, DTD, единый бюджет и его однократный учёт manifest.
+Отмена после manifest не допускает чтения следующих частей; oversized manifest
+отвергается до открытия payload. `--opaque-xml` сохраняет прежние bytes без
+разбора деклараций. Базовый установленный wheel проверяет extensionless OPC XML
+без дополнительных зависимостей.
+
 `tests/native/test_binary_compatibility.py` проверяет, что нативная правка меняет
 содержимое только `word/document.xml`, сохраняя PNG, `.rels` и opaque bytes;
 сопоставляет таблицы/пиксели/диагностику с фактическим оригиналом.
