@@ -558,7 +558,7 @@ write(self, output: str | Path, patches: Sequence[DocxPatch]=()) -> DocxEditResu
 
 ### PdfLimits
 
-[Исходник, строка 24](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L24)
+[Исходник, строка 25](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L25)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -578,7 +578,7 @@ write(self, output: str | Path, patches: Sequence[DocxPatch]=()) -> DocxEditResu
 
 ### PdfPageInfo
 
-[Исходник, строка 45](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L45)
+[Исходник, строка 46](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L46)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -590,7 +590,7 @@ write(self, output: str | Path, patches: Sequence[DocxPatch]=()) -> DocxEditResu
 
 ### RenderedPage
 
-[Исходник, строка 54](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L54)
+[Исходник, строка 55](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L55)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -602,7 +602,7 @@ write(self, output: str | Path, patches: Sequence[DocxPatch]=()) -> DocxEditResu
 
 ### PdfGlyphInfo
 
-[Исходник, строка 63](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L63)
+[Исходник, строка 64](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L64)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -613,7 +613,7 @@ write(self, output: str | Path, patches: Sequence[DocxPatch]=()) -> DocxEditResu
 
 ### PdfTextSpan
 
-[Исходник, строка 75](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L75)
+[Исходник, строка 76](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L76)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -631,15 +631,40 @@ write(self, output: str | Path, patches: Sequence[DocxPatch]=()) -> DocxEditResu
 
 ### PdfTextSpan.text
 
-[Исходник, строка 89](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L89)
+[Исходник, строка 90](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L90)
 
 ```python
 text(self) -> str | None
 ```
 
+### PdfPlacedGlyph
+
+[Исходник, строка 98](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L98)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `unicode` | `int` | `обязательное` |
+| `glyph_id` | `int` | `обязательное` |
+| `transform` | `tuple[float, float, float, float, float, float]` | `обязательное` |
+| `glyph_bbox` | `tuple[float, float, float, float] &#124; None` | `обязательное` |
+
+### PdfTextPlacement
+
+[Исходник, строка 106](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L106)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `page_index` | `int` | `обязательное` |
+| `occurrence_index` | `int` | `обязательное` |
+| `operation` | `str` | `обязательное` |
+| `font` | `str` | `обязательное` |
+| `font_program_sha256` | `str &#124; None` | `обязательное` |
+| `opacity` | `float &#124; None` | `обязательное` |
+| `glyphs` | `tuple[PdfPlacedGlyph, ...]` | `обязательное` |
+
 ### PdfObjectInfo
 
-[Исходник, строка 97](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L97)
+[Исходник, строка 117](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L117)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -649,11 +674,11 @@ text(self) -> str | None
 
 ### PdfDocument
 
-[Исходник, строка 105](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L105)
+[Исходник, строка 125](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L125)
 
 ### PdfDocument.__init__
 
-[Исходник, строка 108](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L108)
+[Исходник, строка 128](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L128)
 
 ```python
 __init__(self, source: Source, *, limits: PdfLimits=PdfLimits(), cancelled: Cancellation | None=None) -> None
@@ -661,7 +686,7 @@ __init__(self, source: Source, *, limits: PdfLimits=PdfLimits(), cancelled: Canc
 
 ### PdfDocument.close
 
-[Исходник, строка 148](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L148)
+[Исходник, строка 168](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L168)
 
 ```python
 close(self) -> None
@@ -669,7 +694,7 @@ close(self) -> None
 
 ### PdfDocument.closed
 
-[Исходник, строка 156](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L156)
+[Исходник, строка 176](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L176)
 
 ```python
 closed(self) -> bool
@@ -677,7 +702,7 @@ closed(self) -> bool
 
 ### PdfDocument.page_count
 
-[Исходник, строка 165](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L165)
+[Исходник, строка 185](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L185)
 
 ```python
 page_count(self) -> int
@@ -685,7 +710,7 @@ page_count(self) -> int
 
 ### PdfDocument.object_count
 
-[Исходник, строка 170](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L170)
+[Исходник, строка 190](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L190)
 
 ```python
 object_count(self) -> int
@@ -693,7 +718,7 @@ object_count(self) -> int
 
 ### PdfDocument.trailer
 
-[Исходник, строка 179](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L179)
+[Исходник, строка 199](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L199)
 
 ```python
 trailer(self) -> str
@@ -701,7 +726,7 @@ trailer(self) -> str
 
 ### PdfDocument.repaired
 
-[Исходник, строка 188](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L188)
+[Исходник, строка 208](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L208)
 
 ```python
 repaired(self) -> bool
@@ -709,7 +734,7 @@ repaired(self) -> bool
 
 ### PdfDocument.iter_objects
 
-[Исходник, строка 192](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L192)
+[Исходник, строка 212](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L212)
 
 ```python
 iter_objects(self) -> Iterator[PdfObjectInfo]
@@ -717,7 +742,7 @@ iter_objects(self) -> Iterator[PdfObjectInfo]
 
 ### PdfDocument.page_info
 
-[Исходник, строка 231](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L231)
+[Исходник, строка 251](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L251)
 
 ```python
 page_info(self, index: int) -> PdfPageInfo
@@ -725,15 +750,23 @@ page_info(self, index: int) -> PdfPageInfo
 
 ### PdfDocument.page_text_spans
 
-[Исходник, строка 246](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L246)
+[Исходник, строка 266](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L266)
 
 ```python
 page_text_spans(self, index: int) -> tuple[PdfTextSpan, ...]
 ```
 
+### PdfDocument.page_text_placements
+
+[Исходник, строка 283](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L283)
+
+```python
+page_text_placements(self, index: int) -> tuple[PdfTextPlacement, ...]
+```
+
 ### PdfDocument.render_page
 
-[Исходник, строка 278](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L278)
+[Исходник, строка 316](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L316)
 
 ```python
 render_page(self, index: int, *, dpi: float | None=None, scale: float | None=None, max_dimension: int | None=None, rotation: float=0) -> RenderedPage

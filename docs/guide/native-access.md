@@ -93,12 +93,58 @@ compact JSON metadata объектов без `chars`, включая основ
 Backend сначала материализует trace: эти квоты не являются жёстким ограничением
 его памяти, времени или возможностью прервать native call посередине.
 
-Оба текстовых API восстанавливают исходный ключ `Rotate`, включая отсутствие
+Текстовые API восстанавливают исходный ключ `Rotate`, включая отсутствие
 и наследование, даже после ошибки backend. Снимки принадлежат Formats;
 автоматическая семантическая проекция глифов в Model и полный C-PDF-01 остаются
 в [TODO](../development/todo.md).
 
-Импорт PDF использует такие же неизменяемые наблюдения для привязки текстовых
+### Исходные матрицы размещения
+
+`pdf.page_text_placements(index)` возвращает неизменяемый `tuple[PdfTextPlacement, ...]`
+из native text device. Каждый occurrence сохраняет `operation` (`fill`, `stroke`,
+`ignore`, `clip`, `clip-stroke`), font name, SHA-256 использованных движком font
+program bytes либо null, локальную opacity callback и `PdfPlacedGlyph`.
+`occurrence_index` нумерует только выбранные text span observations; это не общий
+PDF paint seqno. Раздельные fill/stroke и Unicode continuations не объединяются.
+
+Глиф содержит исходные `unicode`, `glyph_id`, точную affine-матрицу `transform`
+и `glyph_bbox`. Матрица переводит native glyph-local координаты в неповёрнутые
+координаты страницы MuPDF в пунктах: `x'=a*x+c*y+e`, `y'=b*x+d*y+f`.
+Она уже включает text matrix, CTM и Form XObject matrix; восстановление по bbox
+или font size не выполняется. Нормализацию glyph-local пространства при переносе
+в другой движок должен подтвердить потребитель для соответствующей программы шрифта.
+
+`glyph_bbox` — граница формы, вычисленная движком с этой матрицей; stroke extents,
+clipping, группы и итоговая видимость не входят в неё. Native glyph id `<0`
+сохраняется как sentinel и имеет `glyph_bbox=null`; он не становится вторым
+физическим глифом или предположенным ID предыдущего символа. Определение кластеров
+и семантических диапазонов — отдельная работа адаптера. SHA-256 относится к
+программе, реально использованной MuPDF, включая возможную встроенную/замещённую;
+он не доказывает наличие этих bytes во входном PDF или известный face index.
+Автоматической привязки по имени семейства нет.
+
+Метод наблюдает `page contents`, без annotation appearances. Callback opacity не
+является суммарной прозрачностью групп; порядок callback не объявляется порядком
+чтения. Цвет, stroke state, clip/group/layer и полная семантика PDF остаются
+отдельными наблюдениями/задачами. Метод не добавляет зависимости к extra `pdf`.
+
+`max_text_spans` ограничивает число occurrences, `max_text_chars` — число native
+glyph records, включая continuations. `max_text_metadata_bytes` ограничивает сумму
+UTF-8 compact JSON записей: `[page, occurrence, operation, font, digest, opacity]`
+и `[unicode, glyph_id, transform, glyph_bbox]` для каждого glyph. Проверка glyph/
+metadata budget выполняется до копирования программы шрифта. `max_object_bytes`
+ограничивает одну font buffer copy и снимок page dictionary; `max_inspection_bytes`
+ограничивает сумму разных font program copies за вызов. Повторная программа
+хешируется один раз; native FONT wrapper удерживается только до завершения вызова.
+
+Отмена проверяется в callback между span/глифами и до/после native call. Ошибки
+переносятся за C callback boundary без сохранения заимствованных span/item ссылок;
+частичный результат не возвращается, Rotate восстанавливается. Квоты ограничивают
+собственную обработку/копирование; native интерпретатор может продолжать работу
+после отказа callback, поэтому это не жёсткий лимит его времени или памяти.
+
+Проекция `PdfTextPlacement` в общие Model layouts и использование их writer
+остаются в C-PDF-01. Импорт PDF использует `PdfTextSpan` для привязки текстовых
 фрагментов к операциям рисования. Требуется единственное точное совпадение текста,
 исходной позиции и подходящего шрифта. Два совпадения, например отдельные fill/stroke
 одного текста, не объединяются в одно доказательство. Отсутствующий или неверный

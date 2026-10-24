@@ -1,0 +1,37 @@
+{
+  "contract": "C-TEXT-LAYOUT-01",
+  "scope": "Finite native PDF consumer acceptance; not production reader/writer integration",
+  "production_model": "opendoc-model==0.18.1",
+  "production_dependency_changed": false,
+  "model_version": "0.19.0.dev20261024+consumer2",
+  "model_wheel_sha256": "784387ec083c192b3ec2225d57b3755f82225237e60b54bcfd70d43f4262eb9d",
+  "model_license_hashes": {
+    "opendoc_model-0.19.0.dev20261024+consumer2.dist-info/licenses/docs/LICENSE": "3ed05eb4b11d122a12b6d37eb1f695bfbd303b542f067658a1dc43d8f81dcf59"
+  },
+  "formats_preview_version": "0.42.0+layoutpreview.784387ec.93926991",
+  "formats_preview_wheel_sha256": "0452a0ce1c3fd9b8a64fdcc50b2b839111f0ff450e59676d6e307a59ce9999eb",
+  "metadata_overrides": [
+    "Formats version",
+    "Model dependency and dev wheel source"
+  ],
+  "source_files_sha256": {
+    "src/opendoc_formats/pdf.py": "2952c623e9cb5e95ca7581be4a38a881fb2ce2e6892505ce6361e2be8b227eb4",
+    "src/opendoc_formats/native/pdf_placements.py": "57cc2a3b3eb3f0d0a0c9beb0e1651f6f688a01371a513efc8ead69e977afef44",
+    "tests/native/test_pdf_placements.py": "666462fdc94c616d5b8df34f3dacd16d9715131188eb0994abb4522d1cda020a",
+    "tests/native/test_text_layout_consumer.py": "ef76a6688bee429505362ce57083e68c056a11a7f952b4c9f5c1531d2dfb5be8",
+    "tests/binary_fixtures.py": "7f734915f77fcbb8171ab10bf891e33d12cc9f97a824e01f6608c1549dd02e67"
+  },
+  "consumer_tests_passed": 8,
+  "native_affected_tests_passed": 153,
+  "isolated_artifacts": true,
+  "dependency_compatibility_checked": true,
+  "published": false,
+  "reproduce": "python -m tools.text_layout_preview --model-wheel <dev-wheel> --sha256 <expected-sha256>",
+  "remaining": [
+    "Production PDF reader/writer projection",
+    "Full glyph/semantic correspondence and native render acceptance",
+    "Visibility, group/clip/layer coverage and arbitrary fonts/face binding"
+  ],
+  "production_gate_skipped": 1,
+  "production_gate_skip_reason": "Official Model 0.18.1 has no text_layout API; separate dev artifact acceptance passed"
+}

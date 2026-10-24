@@ -70,7 +70,8 @@ def own_docx():
     ])
 
 
-def own_pdf(*, commands=None, page_extra=b'', resource_extra=b'', parent_extra=b''):
+def own_pdf(*, commands=None, page_extra=b'', resource_extra=b'', parent_extra=b'', font_program=None,
+            form_commands=None, form_matrix=b'1 0 0 1 0 0'):
     if commands is None:
         commands = (b'BT /F1 12 Tf 30 350 Td (Before) Tj ET\n'
                 b'1 w 30 180 m 270 180 l S 30 220 m 270 220 l S 30 260 m 270 260 l S\n'
@@ -92,6 +93,27 @@ def own_pdf(*, commands=None, page_extra=b'', resource_extra=b'', parent_extra=b
         stream(b'<< /Type /XObject /Subtype /Image /Width 2 /Height 2 /ColorSpace /DeviceRGB '
                b'/BitsPerComponent 8 /Filter /FlateDecode', zlib.compress(RGB)),
     ]
+    if font_program is not None:
+        objects[3] = (
+            b'<< /Type /Font /Subtype /TrueType /BaseFont /OwnPlacement-Regular '
+            b'/Encoding << /Type /Encoding /BaseEncoding /WinAnsiEncoding /Differences [67 /fi] >> '
+            b'/FirstChar 65 /LastChar 67 /Widths [600 600 700] /FontDescriptor 7 0 R /ToUnicode 9 0 R >>')
+        objects.extend([
+            b'<< /Type /FontDescriptor /FontName /OwnPlacement-Regular /Flags 32 '
+            b'/FontBBox [0 -200 700 800] /Ascent 800 /Descent -200 /CapHeight 700 /StemV 80 /FontFile2 8 0 R >>',
+            stream(b'<< /Length1 '+str(len(font_program)).encode(), font_program),
+            stream(b'<<', b'/CIDInit /ProcSet findresource begin 12 dict begin begincmap '
+                   b'/CIDSystemInfo << /Registry (Own) /Ordering (UCS) /Supplement 0 >> def '
+                   b'/CMapName /OwnPlacement-UCS def /CMapType 2 def '
+                   b'1 begincodespacerange <00> <FF> endcodespacerange '
+                   b'3 beginbfchar <41> <0041> <42> <0042> <43> <00660069> endbfchar '
+                   b'endcmap CMapName currentdict /CMap defineresource pop end end'),
+        ])
+    if form_commands is not None:
+        form = len(objects)+1
+        objects[2] = objects[2].replace(b'/Im1 6 0 R', b'/Im1 6 0 R /Fm1 '+str(form).encode()+b' 0 R')
+        objects.append(stream(b'<< /Type /XObject /Subtype /Form /FormType 1 /BBox [0 0 200 200] '
+                              b'/Matrix ['+form_matrix+b'] /Resources << /Font << /F1 4 0 R >> >>', form_commands))
     output = bytearray(b'%PDF-1.7\n%\xe2\xe3\xcf\xd3\n')
     offsets = [0]
     for index, value in enumerate(objects, 1):
@@ -103,6 +125,39 @@ def own_pdf(*, commands=None, page_extra=b'', resource_extra=b'', parent_extra=b
         output.extend(f'{offset:010} 00000 n \n'.encode())
     output.extend(f'trailer\n<< /Size {len(objects)+1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n'.encode())
     return bytes(output), commands
+
+
+def own_placement_font():
+    """Own simple outlines; fontTools is a fixture builder, never the native reader's dependency."""
+    from fontTools.fontBuilder import FontBuilder
+    from fontTools.pens.ttGlyphPen import TTGlyphPen
+
+    builder = FontBuilder(1000, isTTF=True)
+    names = ['.notdef', 'A', 'B', 'fi']
+    builder.setupGlyphOrder(names)
+    glyphs = {}
+    for index, name in enumerate(names):
+        pen = TTGlyphPen(None)
+        pen.moveTo((50, 0))
+        pen.lineTo((450+index*50, 0))
+        pen.lineTo((450+index*50, 700))
+        pen.lineTo((50, 700))
+        pen.closePath()
+        glyphs[name] = pen.glyph()
+    builder.setupGlyf(glyphs)
+    builder.setupHorizontalMetrics({name: (700 if name == 'fi' else 600, 50) for name in names})
+    builder.setupHorizontalHeader(ascent=800, descent=-200)
+    builder.setupCharacterMap({65: 'A', 66: 'B', 0xfb01: 'fi'})
+    builder.setupNameTable({'familyName': 'OwnPlacement', 'styleName': 'Regular',
+                            'psName': 'OwnPlacement-Regular', 'fullName': 'OwnPlacement Regular',
+                            'uniqueFontIdentifier': 'OwnPlacement-Regular-1', 'version': 'Version 1.0'})
+    builder.setupOS2(sTypoAscender=800, sTypoDescender=-200, usWinAscent=800, usWinDescent=200)
+    builder.setupPost()
+    builder.font.recalcTimestamp = False
+    builder.font['head'].created = builder.font['head'].modified = 2082844800
+    buffer = io.BytesIO()
+    builder.save(buffer)
+    return buffer.getvalue()
 
 
 def own_cfbf(*, version=3, difat=False, high_size_bits=0):

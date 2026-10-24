@@ -2,6 +2,12 @@
 
 ## Накопленные улучшения относительно 0.42.0
 
+- `PdfDocument.page_text_placements` сохраняет точные native glyph matrices,
+  форму глифа, Unicode/ID continuations и отдельные fill/stroke/ignore/clip
+  occurrences. Учтены Form/CTM, font program digests, квоты и отмена. Заимствованные
+  native wrappers освобождаются до восстановления страницы; отказ не оставляет
+  частичный снимок или изменённый Rotate. Общая Model-проекция и writer остаются
+  C-PDF-01; новые движки не нужны.
 - Бинарный инспектор читает CFBF v3/v4: физические секторы, FAT/DIFAT/miniFAT,
   directory objects и обычные/малые потоки с исходными диапазонами и SHA-256.
   Неиспользуемые bytes сохраняются; циклы/пересечения/неверные размеры дают отказ.

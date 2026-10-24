@@ -18,6 +18,31 @@ wheel из sdist совпадает со сборкой из checkout; ZIP times
 
 ## Нативные PDF glyph observations
 
+Потребительский `tests/native/test_text_layout_consumer.py` принят отдельно на
+Model `0.19.0.dev20261024+consumer2`, без изменения основной зависимости.
+Восемь проверок покрывают реальные placement matrices и FONT, `fi` 2:1,
+ActualText 1:N, два JSON-цикла, range-aware edit и batch-инвалидацию fill/stroke,
+unknown, атомарные отказы и 12 000 физических глифов с явным node budget.
+Оба пакета установлены из отдельных preview wheels; runtime files Formats
+проверены по hash, объявленные зависимости совместимы. Сборку/проверку воспроизводит
+`tools.text_layout_preview`; артефакты отмечены dev, не являются публикацией и
+не закрывают рабочий reader/writer C-PDF-01.
+
+`tests/native/test_pdf_placements.py` проверяет точные матрицы через native text
+device: исходные text/CTM/Form operators, отдельные fill/stroke/ignore/clip,
+shear, наследуемый Rotate, реальные границы собственных прямоугольных глифов и
+`fi` continuation. `own_placement_font` создаёт собственную single-face TTF с
+детерминированными bytes; fontTools нужен только генератору fixture. PDF собирается
+из wire objects/commands, без Formats writer. Program digest совпадает с исходным
+TTF, raw sentinel не превращается во второй физический glyph.
+
+Проверены точная compact metadata quota, glyph/span budget до font copy,
+однократное хеширование программы и суммарный font bytes budget, отмена внутри
+callback, неизвестный native профиль и нечисловая матрица до native glyph bound.
+После ошибки/отмены повторное чтение, исходные object dictionaries и свежие
+растры прежние. Ошибки переносятся за C boundary без заимствованных wrappers.
+Native memory/time, полная видимость и общий semantic projection этим не приняты.
+
 `tests/native/test_pdf_text_spans.py` использует прямые PDF objects/commands,
 без writer Formats: обычный текст, `2 Tr`, `3 Tr`, zero alpha и частичный clip.
 Проверены исходные Unicode/origin, дубли fill/stroke, raw ligature continuation,

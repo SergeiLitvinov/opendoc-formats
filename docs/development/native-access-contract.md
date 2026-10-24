@@ -15,8 +15,12 @@
   Reading order, восстановление неизвестного Unicode и полный visibility/clip scope
   не подразумеваются. Квоты span/glyph/metadata и неделимая граница native call
   описаны в [руководстве](../guide/native-access.md#исходные-глифы-и-paint-spans).
-  `page_info` и `page_text_spans` восстанавливают исходный Rotate без создания
+  `page_info`, `page_text_spans` и `page_text_placements` восстанавливают исходный Rotate без создания
   отсутствовавшего ключа; снимок словаря страницы ограничен `max_object_bytes`.
+- `page_text_placements(index) -> tuple[PdfTextPlacement, ...]`: точные native
+  матрицы и `PdfPlacedGlyph` из content text device, отдельные fill/stroke/ignore/
+  clip occurrences и program digests. [Границы и квоты](../guide/native-access.md#исходные-матрицы-размещения)
+  включают FONT buffer copies и обработку ошибок за C callback boundary.
 - `render_page(index, *, dpi=None, scale=None, max_dimension=None, rotation=0)
   -> RenderedPage`: `png: bytes`, `width: int`, `height: int`, `index: int`,
   `effective_scale: float` — фактические пиксели на PDF-point после ограничения размера.

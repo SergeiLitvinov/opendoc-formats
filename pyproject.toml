@@ -92,6 +92,7 @@ files = [
     "src/opendoc_formats/native/opc_audit.py",
     "src/opendoc_formats/native/epub.py",
     "src/opendoc_formats/native/pdf_text.py",
+    "src/opendoc_formats/native/pdf_placements.py",
     "src/opendoc_formats/readers/pdf_paint.py",
     "src/opendoc_formats/readers/pdf.py", "src/opendoc_formats/readers/pdf_diagnostics.py",
     "src/opendoc_formats/readers/pdf_semantic.py", "src/opendoc_formats/readers/pdf_ocr_merge.py",

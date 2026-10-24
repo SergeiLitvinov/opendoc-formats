@@ -65,6 +65,9 @@ def main() -> None:
                 spans = pdf.page_text_spans(0)
                 assert spans and any('Native PDF' in (span.text or '') for span in spans)
                 assert all(span.glyphs and span.page_index == 0 for span in spans)
+                placements = pdf.page_text_placements(0)
+                assert placements and all(value.page_index == 0 for value in placements)
+                assert all(len(glyph.transform) == 6 for value in placements for glyph in value.glyphs)
                 assert pdf.render_page(0, max_dimension=256).png.startswith(b"\x89PNG")
             result = read_document(source)
             assert result.success, result.issues

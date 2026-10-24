@@ -143,8 +143,9 @@
   подтвердить подписи и геометрию относительно независимого исходного рендера.
 - C-PDF-01: связать нативные glyph observations с канонической моделью через
   [контракт C-TEXT-LAYOUT-01](text-layout-contract.md), сохраняя общие данные
-  и validation в Model, а парсинг и paint evidence в Formats. Подключить принятый
-  публичный API и проверить актуальность layout после правок. Завершить
+  и validation в Model, а парсинг и paint evidence в Formats. Подключить
+  версионированный Model API к рабочим PDF reader/writer и проверить актуальность
+  layout после правок. Завершить
   инвентаризацию исходных объектов; подтвердить reading order/OCR, Unicode/shaping, font-program
   bindings и полный visibility/clip state без эвристического восстановления неизвестного.
 - Реконструировать полное дерево полей: orphan/inherited/default values,

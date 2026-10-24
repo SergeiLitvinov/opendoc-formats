@@ -16,6 +16,7 @@ from opendoc_formats.errors import (
     NativeAccessError,
     PageIndexError,
     ResourceLimitError,
+    UnsupportedDocumentError,
 )
 from opendoc_formats.native.common import Cancellation, Source, backend, check_cancel, positive_int, positive_number, read_source
 
@@ -91,6 +92,25 @@ class PdfTextSpan:
         if any(not 0 <= glyph.unicode <= 0x10ffff or 0xd800 <= glyph.unicode <= 0xdfff for glyph in self.glyphs):
             return None
         return ''.join(chr(glyph.unicode) for glyph in self.glyphs)
+
+
+@dataclass(frozen=True)
+class PdfPlacedGlyph:
+    unicode: int
+    glyph_id: int
+    transform: tuple[float, float, float, float, float, float]
+    glyph_bbox: tuple[float, float, float, float] | None
+
+
+@dataclass(frozen=True)
+class PdfTextPlacement:
+    page_index: int
+    occurrence_index: int
+    operation: str
+    font: str
+    font_program_sha256: str | None
+    opacity: float | None
+    glyphs: tuple[PdfPlacedGlyph, ...]
 
 
 @dataclass(frozen=True)
@@ -260,6 +280,24 @@ class PdfDocument:
         check_cancel(self._cancelled)
         return result
 
+    def page_text_placements(self, index: int) -> tuple[PdfTextPlacement, ...]:
+        """Observe exact native text matrices in unrotated content coordinates, without interpreting visibility."""
+        from opendoc_formats.native.pdf_placements import text_placements
+
+        page = self._page(index)
+        try:
+            with self._preserve_rotation(page):
+                page.set_rotation(0)
+                result = text_placements(page, index, self._limits, self._cancelled)
+        except NativeAccessError:
+            raise
+        except (AttributeError, TypeError) as error:
+            raise UnsupportedDocumentError(f'Native PDF placement profile unavailable: {error}') from error
+        except (RuntimeError, ValueError) as error:
+            raise InvalidDocumentError(f'Cannot inspect PDF page {index} placements: {error}') from error
+        check_cancel(self._cancelled)
+        return result
+
     @contextmanager
     def _preserve_rotation(self, page: Any) -> Iterator[None]:
         # Text backends temporarily change rotation and may flatten its inheritance.
@@ -343,4 +381,4 @@ class PdfDocument:
 
 
 __all__ = ["PdfDocument", "PdfLimits", "PdfObjectInfo", "PdfPageInfo", "RenderedPage",
-           "PdfGlyphInfo", "PdfTextSpan", "PdfTextScalar", "PdfTextValue"]
+           "PdfGlyphInfo", "PdfTextSpan", "PdfTextScalar", "PdfTextValue", "PdfPlacedGlyph", "PdfTextPlacement"]
