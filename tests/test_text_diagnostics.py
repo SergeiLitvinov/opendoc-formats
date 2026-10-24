@@ -97,9 +97,9 @@ def test_rich_projection_drops_positive_claims_and_detaches_source_node_refs():
                                                assessment_complete=True,
                                                extra={'unknown_integration': [2]}))
     text = document_to_text(document)
-    assert text.warnings == ['Own repeated warning']*2
-    assert len(text.diagnostics.preservation) == 2
-    source, unassessed = text.diagnostics.preservation
+    assert text.warnings[:2] == ['Own repeated warning']*2
+    source = next(record for record in text.diagnostics.preservation if record.issue.code == 'html.own')
+    unassessed = next(record for record in text.diagnostics.preservation if record.issue.reason == 'legacy-warning-unassessed')
     assert source.state is PreservationState.LOST and source.node_id is None
     assert source.extra['opendoc_formats.legacy_source_node_id'] == 'source-node'
     assert source.issue.measurement['legacy_warning_path'] == 'metadata.warnings[1]'

@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import importlib.util
+import io
 import sys
 import zipfile
 from importlib.metadata import version
@@ -37,6 +38,19 @@ def diagnostics_smoke() -> None:
         assert restored.warnings == text.warnings and not restored.diagnostics.assessment_complete
         assert integration_from_dict(restored.to_dict()['diagnostics']) == text.diagnostics
         text = restored
+
+
+def anatomy_smoke() -> None:
+    from opendoc_formats.anatomy import compare_snapshots, inspect_binary
+
+    source = io.BytesIO()
+    with zipfile.ZipFile(source, 'w') as archive:
+        archive.writestr('word/own.xml', '<own xmlns="urn:own"><child>Own text</child></own>')
+        archive.writestr('word/unknown.bin', b'Own opaque bytes\x00\xff')
+    snapshot = inspect_binary(source.getvalue(), capture=True)
+    assert snapshot.items[1].payload == b'Own opaque bytes\x00\xff'
+    assert snapshot.items[0].xml_nodes[1].tag == '{urn:own}child'
+    assert compare_snapshots(snapshot, inspect_binary(source.getvalue()))['binary_identical']
 
 
 def main() -> None:
@@ -89,6 +103,7 @@ def main() -> None:
     assert "site-packages" in installed.parts, installed
     assert (installed / "py.typed").is_file()
     diagnostics_smoke()
+    anatomy_smoke()
     default_registry()
     default_exporter_registry()
     if not args.all_formats:

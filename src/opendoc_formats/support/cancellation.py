@@ -21,7 +21,7 @@ def check_cancelled(cancelled: Callable[[], bool] | None, operation: str) -> Non
 
 @contextmanager
 def cancellation_scope(
-    cancelled: Callable[[], bool] | None, operation: str, *, check_on_exit: bool = True,
+    cancelled: Callable[[], bool] | None, operation: str, *, check_on_exit: bool = True, inherit: bool = False,
 ) -> Iterator[None]:
     """Bind a callback to synchronous native work, restoring nested/concurrent state.
 
@@ -29,6 +29,8 @@ def cancellation_scope(
     objects. Writers check at the publication boundary instead of on scope exit:
     observing cancellation after a successful replace must not claim rollback.
     """
+    if cancelled is None and inherit:
+        cancelled = _scope.get()[0]
     check_cancelled(cancelled, operation)
     token = _scope.set((cancelled, operation))
     try:

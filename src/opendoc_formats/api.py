@@ -306,4 +306,4 @@ def _djvu(path: Path, options: ImportOptions) -> DocumentModel:
     if not text:
         raise ExtractError("; ".join(text.warnings) or "DjVu text extraction returned no content")
     converter = cast(Callable[..., DocumentModel], import_module("opendoc_formats.support.document_adapters").text_to_document)
-    return converter(text, limits=options.document_limits)
+    return converter(text, limits=options.document_limits, cancelled=options.cancelled)

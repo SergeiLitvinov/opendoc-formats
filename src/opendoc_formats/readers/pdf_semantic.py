@@ -45,6 +45,7 @@ def analyze_pdf_geometry(document: PdfGeometryDocument, *, cancelled: Callable[[
                 meta.update(
                     {
                         "rows": rows,
+                        "table_index": len(tables),
                         "source_table": source.number,
                         "row_count": source.row_count,
                         "column_count_table": source.column_count,

@@ -1,5 +1,36 @@
 # Document quality corpus
 
+## Независимые бинарные оригиналы
+
+`tests/binary_fixtures.py` собирает воспроизводимый ZIP/XML DOCX с вложенной таблицей,
+PNG, внешней гиперссылкой и неизвестной бинарной частью. PDF собирается напрямую
+из объектов, xref offsets, команд и Flate-потоков; 2×2 RGB изображение имеет
+независимо заданные pixels. Ни один оригинал не создаётся нашим writer.
+
+`tests/test_anatomy.py` проверяет wire/content fingerprints, реальные XML-узлы и
+атрибуты связей, opaque payload, CRC, unsafe/duplicate names, XML DTD в UTF-8/16,
+квоты/отмену, отсутствие обязательных Office/PDF декодеров для ZIP и признак ремонта
+PDF. CLI выгружает части под собственными именами и не заменяет существующий каталог.
+
+`tests/native/test_binary_compatibility.py` проверяет, что нативная правка меняет
+содержимое только `word/document.xml`, сохраняя PNG, `.rels` и opaque bytes;
+сопоставляет таблицы/пиксели/диагностику с фактическим оригиналом.
+`tools/document_anatomy_word_acceptance.ps1` принят в Microsoft Word 16.0,
+build 16.0.17932: одна страница, корневая таблица шириной 120 pt, одна картинка и
+одна гиперссылка сохранены; файлы read-only не изменились. Независимые Poppler
+PNG при 108 dpi совпали вне области единственной правки `Before` → `Edited`.
+Повторяемая проверка — `tools/document_anatomy_visual_check.py`.
+Это конечный native-edit fixture, а не полная семантическая приёмка Word.
+Обработка default/preserve `xml:space` и отсутствующего `pgSz` rich reader
+остаётся открытой задачей. У sparse DOCX оригинала Word показывает `AfterLink`
+и страницу 612×792 pt; текущая модель содержит `After Link` и 595.28×841.89 pt.
+Эти расхождения не скрываются стабильностью собственного JSON/экспорта.
+
+`tests/test_text_projection.py` проверяет инвентарь потерь Model → Text, исходные
+адреса/provenance, таблицы и повторные occurrences, вложенное содержимое ячеек,
+два JSON-цикла, конфликтующие ссылки, выбранные бюджеты и отмену.
+Графовые поля оцениваются агрегатно; assessment_complete не повышается.
+
 ## Диагностика legacy Text
 
 `tests/test_text_diagnostics.py` проверяет два Text/Model/JSON цикла, повторяющиеся

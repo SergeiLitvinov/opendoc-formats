@@ -32,6 +32,7 @@ nav:
       - Свои обработчики: guide/extensions.md
       - Архитектура и зависимость: guide/architecture.md
       - Нативный доступ: guide/native-access.md
+      - Препарирование документа: guide/document-anatomy.md
       - Компоновка DOCX: guide/docx-layout.md
       - Карты объектов: guide/object-mapping.md
       - Проверенные возможности: guide/format-audit.md

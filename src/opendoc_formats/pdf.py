@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 from collections import OrderedDict
+from collections.abc import Iterator
 from dataclasses import dataclass, fields
 from typing import Any
 
@@ -28,6 +29,9 @@ class PdfLimits:
     max_text_chars: int = 4_000_000
     cache_bytes: int = 32 * 1024 * 1024
     cache_pages: int = 8
+    max_objects: int = 100_000
+    max_object_bytes: int = 32 * 1024 * 1024
+    max_inspection_bytes: int = 256 * 1024 * 1024
 
     def __post_init__(self) -> None:
         for item in fields(self):
@@ -50,6 +54,15 @@ class RenderedPage:
     width: int
     height: int
     effective_scale: float
+
+
+@dataclass(frozen=True)
+class PdfObjectInfo:
+    """Active xref slot: normalized dictionary and encoded stream, without decoding."""
+
+    xref: int
+    dictionary: str
+    raw_stream: bytes | None
 
 
 class PdfDocument:
@@ -115,6 +128,57 @@ class PdfDocument:
     def page_count(self) -> int:
         self._check_open()
         return int(self._document.page_count)
+
+    @property
+    def object_count(self) -> int:
+        self._check_open()
+        count = int(self._document.xref_length()) - 1
+        if count > self._limits.max_objects:
+            raise ResourceLimitError('PDF xref slots exceed max_objects')
+        check_cancel(self._cancelled)
+        return count
+
+    @property
+    def trailer(self) -> str:
+        self._check_open()
+        value = str(self._document.pdf_trailer())
+        if len(value.encode('utf-8')) > self._limits.max_object_bytes:
+            raise ResourceLimitError('PDF trailer exceeds max_object_bytes')
+        check_cancel(self._cancelled)
+        return value
+
+    @property
+    def repaired(self) -> bool:
+        self._check_open()
+        return bool(self._document.is_repaired)
+
+    def iter_objects(self) -> Iterator[PdfObjectInfo]:
+        """Inspect the active object table. Historical revisions/free-slot identity are not inferred."""
+        total = 0
+        for xref in range(1, self.object_count + 1):
+            self._check_open()
+            try:
+                dictionary = str(self._document.xref_object(xref, compressed=False, ascii=True))
+                dictionary_size = len(dictionary.encode('utf-8'))
+                if dictionary_size > self._limits.max_object_bytes:
+                    raise ResourceLimitError(f'PDF xref={xref} dictionary exceeds max_object_bytes')
+                check_cancel(self._cancelled)
+                is_stream = bool(self._document.xref_is_stream(xref))
+                stream = self._document.xref_stream_raw(xref) if is_stream else None
+                if is_stream and not isinstance(stream, bytes):
+                    raise InvalidDocumentError(f'PDF xref={xref} returned an invalid encoded stream')
+                size = dictionary_size + (len(stream) if stream is not None else 0)
+                if size > self._limits.max_object_bytes:
+                    raise ResourceLimitError(f'PDF xref={xref} exceeds max_object_bytes')
+                total += size
+                if total > self._limits.max_inspection_bytes:
+                    raise ResourceLimitError(f'PDF xref={xref} exceeds max_inspection_bytes')
+            except ResourceLimitError:
+                raise
+            except (RuntimeError, ValueError) as error:
+                raise InvalidDocumentError(f'Cannot inspect PDF xref={xref}: {error}') from error
+            check_cancel(self._cancelled)
+            yield PdfObjectInfo(xref, dictionary, stream)
 
     def _page(self, index: int) -> Any:
         self._check_open()
@@ -206,4 +270,4 @@ class PdfDocument:
         return result
 
 
-__all__ = ["PdfDocument", "PdfLimits", "PdfPageInfo", "RenderedPage"]
+__all__ = ["PdfDocument", "PdfLimits", "PdfObjectInfo", "PdfPageInfo", "RenderedPage"]

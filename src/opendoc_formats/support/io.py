@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import logging
 import os
 import re
@@ -13,6 +14,8 @@ from collections import defaultdict
 from collections.abc import Callable
 from pathlib import Path
 from typing import Iterable, Optional, Union
+
+from opendoc_formats.errors import ResourceLimitError
 
 PathLike = Union[str, Path]
 
@@ -25,8 +28,12 @@ class ArchiveSafetyError(ValueError):
     """Архив нарушает лимиты безопасности (zip-бомба, path traversal и т.п.)."""
 
 
+class ArchiveLimitError(ArchiveSafetyError, ResourceLimitError):
+    """An archive quota, distinguishable from malformed ZIP contents."""
+
+
 def check_archive_safety(
-    path: PathLike,
+    path: PathLike | io.BytesIO,
     *,
     max_entries: int = DEFAULT_MAX_ARCHIVE_ENTRIES,
     max_total_size: int = DEFAULT_MAX_ARCHIVE_SIZE,
@@ -40,12 +47,12 @@ def check_archive_safety(
       * имена записей безопасны для извлечения: без ``..``, абсолютных путей
         и дубликатов (защита от path traversal / zip-slip).
     """
-    p = Path(path)
+    p = path if isinstance(path, io.BytesIO) else Path(path)
     try:
         with zipfile.ZipFile(p) as zf:
             infos = zf.infolist()
             if len(infos) > max_entries:
-                raise ArchiveSafetyError(f"Слишком много записей в архиве: {len(infos)} > {max_entries}")
+                raise ArchiveLimitError(f"Слишком много записей в архиве: {len(infos)} > {max_entries}")
             total_size = 0
             total_compressed = 0
             seen: set[str] = set()
@@ -62,18 +69,18 @@ def check_archive_safety(
                 if any(part == ".." for part in normalized.split("/")):
                     raise ArchiveSafetyError(f"Path traversal в архиве: {name}")
                 if info.file_size > max_total_size:
-                    raise ArchiveSafetyError(f"Запись слишком большая: {name} {info.file_size} байт")
+                    raise ArchiveLimitError(f"Запись слишком большая: {name} {info.file_size} байт")
                 total_size += info.file_size
                 total_compressed += info.compress_size
                 if info.compress_size == 0:
                     if info.file_size > 0:
                         raise ArchiveSafetyError(f"Запись имеет нулевой сжатый размер: {name}")
                 elif info.file_size > info.compress_size * max_ratio:
-                    raise ArchiveSafetyError(f"Подозрительный коэффициент сжатия записи: {name}")
+                    raise ArchiveLimitError(f"Подозрительный коэффициент сжатия записи: {name}")
             if total_size > max_total_size:
-                raise ArchiveSafetyError(f"Суммарный размер архива превышает лимит: {total_size} байт")
+                raise ArchiveLimitError(f"Суммарный размер архива превышает лимит: {total_size} байт")
             if total_compressed > 0 and total_size > total_compressed * max_ratio:
-                raise ArchiveSafetyError(f"Подозрительный коэффициент сжатия: {total_size} / {total_compressed}")
+                raise ArchiveLimitError(f"Подозрительный коэффициент сжатия: {total_size} / {total_compressed}")
     except (zipfile.BadZipFile, OSError) as e:
         raise ArchiveSafetyError(f"Некорректный zip-архив: {e}") from e
 

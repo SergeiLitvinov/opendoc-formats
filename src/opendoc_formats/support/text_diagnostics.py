@@ -117,7 +117,7 @@ def source_diagnostics(
             PreservationState.OPAQUE, provenance=Provenance(document.source_format or 'unknown', object_id=path),
             extra={'source_warning': value},
         ))
-    if not records:
+    if not records and (integration is None or not integration.extra):
         return warnings, None
     from opendoc_model import integration_from_dict, integration_to_dict
 

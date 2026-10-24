@@ -239,6 +239,7 @@ def merge_pdf_with_ocr(
                         "cell_bboxes": [list(cell.bbox) if cell.bbox is not None else None for cell in source.cells],
                     }
                 )
+                meta['table_index'] = len(all_tables)
                 all_blocks.append(Block(type=BlockType.TABLE, text=text, page=page_number, meta=meta))
                 all_tables.append(Table(rows=rows, page=page_number))
             else:

@@ -557,7 +557,7 @@ write(self, output: str | Path, patches: Sequence[DocxPatch]=()) -> DocxEditResu
 
 ### PdfLimits
 
-[Исходник, строка 22](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L22)
+[Исходник, строка 23](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L23)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -569,10 +569,13 @@ write(self, output: str | Path, patches: Sequence[DocxPatch]=()) -> DocxEditResu
 | `max_text_chars` | `int` | `4000000` |
 | `cache_bytes` | `int` | `32 * 1024 * 1024` |
 | `cache_pages` | `int` | `8` |
+| `max_objects` | `int` | `100000` |
+| `max_object_bytes` | `int` | `32 * 1024 * 1024` |
+| `max_inspection_bytes` | `int` | `256 * 1024 * 1024` |
 
 ### PdfPageInfo
 
-[Исходник, строка 38](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L38)
+[Исходник, строка 42](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L42)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -584,7 +587,7 @@ write(self, output: str | Path, patches: Sequence[DocxPatch]=()) -> DocxEditResu
 
 ### RenderedPage
 
-[Исходник, строка 47](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L47)
+[Исходник, строка 51](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L51)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -594,13 +597,23 @@ write(self, output: str | Path, patches: Sequence[DocxPatch]=()) -> DocxEditResu
 | `height` | `int` | `обязательное` |
 | `effective_scale` | `float` | `обязательное` |
 
+### PdfObjectInfo
+
+[Исходник, строка 60](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L60)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `xref` | `int` | `обязательное` |
+| `dictionary` | `str` | `обязательное` |
+| `raw_stream` | `bytes &#124; None` | `обязательное` |
+
 ### PdfDocument
 
-[Исходник, строка 55](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L55)
+[Исходник, строка 68](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L68)
 
 ### PdfDocument.__init__
 
-[Исходник, строка 58](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L58)
+[Исходник, строка 71](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L71)
 
 ```python
 __init__(self, source: Source, *, limits: PdfLimits=PdfLimits(), cancelled: Cancellation | None=None) -> None
@@ -608,7 +621,7 @@ __init__(self, source: Source, *, limits: PdfLimits=PdfLimits(), cancelled: Canc
 
 ### PdfDocument.close
 
-[Исходник, строка 98](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L98)
+[Исходник, строка 111](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L111)
 
 ```python
 close(self) -> None
@@ -616,7 +629,7 @@ close(self) -> None
 
 ### PdfDocument.closed
 
-[Исходник, строка 106](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L106)
+[Исходник, строка 119](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L119)
 
 ```python
 closed(self) -> bool
@@ -624,15 +637,47 @@ closed(self) -> bool
 
 ### PdfDocument.page_count
 
-[Исходник, строка 115](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L115)
+[Исходник, строка 128](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L128)
 
 ```python
 page_count(self) -> int
 ```
 
+### PdfDocument.object_count
+
+[Исходник, строка 133](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L133)
+
+```python
+object_count(self) -> int
+```
+
+### PdfDocument.trailer
+
+[Исходник, строка 142](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L142)
+
+```python
+trailer(self) -> str
+```
+
+### PdfDocument.repaired
+
+[Исходник, строка 151](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L151)
+
+```python
+repaired(self) -> bool
+```
+
+### PdfDocument.iter_objects
+
+[Исходник, строка 155](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L155)
+
+```python
+iter_objects(self) -> Iterator[PdfObjectInfo]
+```
+
 ### PdfDocument.page_info
 
-[Исходник, строка 130](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L130)
+[Исходник, строка 194](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L194)
 
 ```python
 page_info(self, index: int) -> PdfPageInfo
@@ -640,10 +685,93 @@ page_info(self, index: int) -> PdfPageInfo
 
 ### PdfDocument.render_page
 
-[Исходник, строка 142](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L142)
+[Исходник, строка 206](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L206)
 
 ```python
 render_page(self, index: int, *, dpi: float | None=None, scale: float | None=None, max_dimension: int | None=None, rotation: float=0) -> RenderedPage
+```
+
+## opendoc_formats.anatomy
+
+### AnatomyLimits
+
+[Исходник, строка 27](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L27)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `max_input_bytes` | `int` | `128 * 1024 * 1024` |
+| `max_items` | `int` | `100000` |
+| `max_part_bytes` | `int` | `32 * 1024 * 1024` |
+| `max_total_bytes` | `int` | `256 * 1024 * 1024` |
+| `max_ratio` | `int` | `200` |
+| `max_xml_nodes` | `int` | `100000` |
+| `max_xml_depth` | `int` | `128` |
+| `max_xml_name_chars` | `int` | `2048` |
+| `max_xml_characters` | `int` | `32 * 1024 * 1024` |
+
+### XmlNodeInfo
+
+[Исходник, строка 44](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L44)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `path` | `str` | `обязательное` |
+| `tag` | `str` | `обязательное` |
+| `attributes` | `tuple[tuple[str, str], ...]` | `обязательное` |
+| `text_sha256` | `str` | `обязательное` |
+| `text_characters` | `int` | `0` |
+| `start_byte` | `int` | `0` |
+| `end_event_byte` | `int` | `0` |
+
+### BinaryItem
+
+[Исходник, строка 55](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L55)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `locator` | `str` | `обязательное` |
+| `kind` | `str` | `обязательное` |
+| `size` | `int` | `обязательное` |
+| `sha256` | `str` | `обязательное` |
+| `storage_sha256` | `str &#124; None` | `None` |
+| `details` | `tuple[tuple[str, Any], ...]` | `()` |
+| `xml_nodes` | `tuple[XmlNodeInfo, ...]` | `()` |
+| `payload` | `bytes &#124; None` | `field(default=None, repr=False, compare=False)` |
+
+### BinarySnapshot
+
+[Исходник, строка 67](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L67)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `container` | `str` | `обязательное` |
+| `source_sha256` | `str` | `обязательное` |
+| `source_size` | `int` | `обязательное` |
+| `items` | `tuple[BinaryItem, ...]` | `обязательное` |
+| `details` | `tuple[tuple[str, Any], ...]` | `()` |
+
+### BinarySnapshot.to_dict
+
+[Исходник, строка 74](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L74)
+
+```python
+to_dict(self) -> dict[str, Any]
+```
+
+### compare_snapshots
+
+[Исходник, строка 91](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L91)
+
+```python
+compare_snapshots(before: BinarySnapshot, after: BinarySnapshot) -> dict[str, Any]
+```
+
+### inspect_binary
+
+[Исходник, строка 264](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L264)
+
+```python
+inspect_binary(source: Source, *, container: str | None=None, limits: AnatomyLimits=AnatomyLimits(), parse_xml: bool=True, capture: bool=False, cancelled: Callable[[], bool] | None=None) -> BinarySnapshot
 ```
 
 ## opendoc_formats.office

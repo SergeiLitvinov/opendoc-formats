@@ -84,6 +84,8 @@ files = [
     "src/opendoc_formats/types.py", "src/opendoc_formats/docx.py", "src/opendoc_formats/pdf.py",
     "src/opendoc_formats/office.py", "src/opendoc_formats/package_resources.py", "src/opendoc_formats/errors.py",
     "src/opendoc_formats/support/text_diagnostics.py", "src/opendoc_formats/support/document_adapters.py",
+    "src/opendoc_formats/support/text_projection.py",
+    "src/opendoc_formats/anatomy.py",
     "src/opendoc_formats/readers/pdf.py", "src/opendoc_formats/readers/pdf_diagnostics.py",
     "src/opendoc_formats/readers/pdf_semantic.py", "src/opendoc_formats/readers/pdf_ocr_merge.py",
     "src/opendoc_formats/readers/html_text.py", "src/opendoc_formats/readers/epub.py",

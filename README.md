@@ -33,6 +33,8 @@
 прямой PDF → DOCX и PPTX → HTML-просмотрщик с локальными CSS/JS и браузерным MathML.
 [Нативные правки DOCX, страницы PDF и офисный preview](docs/guide/native-access.md),
 с типизированными снимками и сохранением исходного пакета. OCR и шаблоны принадлежат потребителю.
+[Препарирование документа](docs/guide/document-anatomy.md) раскрывает части ZIP/XML,
+активные PDF-объекты и бинарные payload для проверки исходной совместимости.
 Подробные [границы форматов](docs/guide/formats.md) включают потери, непрозрачные объекты и доступ к ресурсам.
 [Полнота исходного импорта](docs/guide/format-audit.md) и [открытые задачи](docs/development/todo.md)
 описывают непокрытые части спецификаций; [LaTeX source profile](docs/guide/latex-source.md)
