@@ -162,7 +162,7 @@ class NativePackage:
         self.cancelled = cancelled
         self.closed = False
         self._data = read_source(source, limits.max_input_bytes, cancelled)
-        self._engine = backend("lxml.etree", "docx")
+        self._engine = backend("lxml.etree", "docx-native")
         self._roots: dict[str, Any] = {}
         self._entries: list[tuple[zipfile.ZipInfo, bytes]] = []
         self._comment = b""

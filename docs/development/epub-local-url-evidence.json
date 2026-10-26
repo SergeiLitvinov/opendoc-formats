@@ -1,0 +1,54 @@
+{
+  "scope": "Finite local EPUB path resolution, not full WHATWG URL or EPUB conformance",
+  "model": "opendoc-model==0.19.0",
+  "published": false,
+  "dependencies_changed": false,
+  "profile_tests_passed": 334,
+  "new_inspection_cases": 30,
+  "new_reader_cases": 10,
+  "test_selection": [
+    "tests/test_anatomy.py",
+    "tests/test_anatomy_cfbf.py",
+    "tests/test_anatomy_content_types.py",
+    "tests/test_anatomy_epub.py",
+    "tests/test_anatomy_opc.py",
+    "tests/test_anatomy_sfnt.py",
+    "tests/test_sfnt_inspection.py",
+    "tests/test_sfnt_checksums.py",
+    "tests/readers/test_epub_package.py",
+    "tests/readers/test_epub_model.py",
+    "tests/readers/test_epub_structure.py",
+    "tests/readers/test_epub_diagnostics.py",
+    "tests/writers/test_epub_writer.py"
+  ],
+  "source_files_sha256": {
+    "src/opendoc_formats/native/epub.py": "5f80b6ca7c0b88d00f1c94b6bcf5c8e6227f66c3030f27a0aed05e3995ef7e29",
+    "tests/test_anatomy_epub.py": "8e7e6cd77ecd85355f24f13913f3323d5f8ab6688aa312bcd99a2fc4c64263f1",
+    "tests/readers/test_epub_package.py": "893d95a2dd14e9d2a6aa5bbef61b309d9c93af904338660d8a594d5211a63c1a",
+    "tools/package_smoke.py": "7330098dca4270e4577fc1b665aa2098837549bf3b699ea7a1fb48481e1da03e"
+  },
+  "verified": [
+    "Strict UTF-8 and percent escapes; decode exactly once",
+    "Valid Unicode/escaped spaces, fragment-separated path and bounded dot segments preserve original targets",
+    "Malformed escapes/UTF-8, controls and raw surrounding spaces rejected before resource read",
+    "Query including empty query and encoded separators remain explicit unsupported local profiles",
+    "Existing repaired/stripped-name aliases never selected by direct/public reader",
+    "Source ZIP bytes unchanged, original inspection href/attributes retained",
+    "No relaxation of remote-reference or XML policy"
+  ],
+  "installed_base_wheel": {
+    "sha256": "a0e14be40bd77aea057efeacdef877abbce7343b5c7157b29eab02813aa4cb6d",
+    "python_files": 211,
+    "all_source_wheel_installed_files_match": true,
+    "epub_font_pdf_pillow_optional_engines_absent": true,
+    "package_smoke_passed": true,
+    "pip_check_passed": true
+  },
+  "remaining": [
+    "XML base profiles",
+    "Full WHATWG URL normalization",
+    "Remote URL conformance and resource eligibility",
+    "Complete per-object import diagnostics"
+  ],
+  "full_regression_note": "2595-pass full regression predates this EPUB-only change; current change accepted separately on the stated 334-test profile"
+}

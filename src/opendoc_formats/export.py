@@ -10,7 +10,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any, cast
 
-from opendoc_model import ArtifactLimitError, ConversionReport, DocumentLimits, DocumentModel, IssueSeverity
+from opendoc_model import ArtifactLimitError, ConversionReport, DocumentLimits, DocumentModel, IssueSeverity, get_integration
 
 from opendoc_formats.docx_profile import DocxProfile
 from opendoc_formats.errors import OperationCancelledError
@@ -74,6 +74,7 @@ class ExporterSpec:
     writer: Writer
     requirements: tuple[str, ...] = ()
     validator: OutputValidator | None = None
+    supports_text_layouts: bool = False
 
     def __post_init__(self) -> None:
         if not isinstance(self.id, str) or not self.id or not callable(self.writer) or not self.extensions:
@@ -89,6 +90,8 @@ class ExporterSpec:
             raise ValueError("requirements must be nonempty module names")
         if self.validator is not None and not callable(self.validator):
             raise ValueError("validator must be callable")
+        if type(self.supports_text_layouts) is not bool:
+            raise ValueError('supports_text_layouts must be bool')
 
 
 class ExporterRegistry:
@@ -142,10 +145,21 @@ class ExporterRegistry:
             return limit_failure(error)
         if errors:
             return fail("export.invalid-model", "; ".join(errors))
-        if identifier not in {'docx', 'json'}:
-            from opendoc_model import get_integration, get_vector_scene
-
+        try:
             integration = get_integration(document, limits=options.document_limits)
+        except ArtifactLimitError as error:
+            return limit_failure(error)
+        if integration is not None and not exporter.supports_text_layouts:
+            # Older Model releases retain the future registry as an opaque extra field.
+            # Inspect its presence only; Formats must not decode another Model schema.
+            opaque_layouts = integration.extra.get('text_layouts', [])
+            if (getattr(integration, 'text_layouts', ())
+                    or not (isinstance(opaque_layouts, list) and not opaque_layouts)):
+                return fail('export.text-layout', 'Target does not project the stored glyph placements and text bindings',
+                            'metadata[opendoc.integration].data.text_layouts')
+        if identifier not in {'docx', 'json'}:
+            from opendoc_model import get_vector_scene
+
             if integration and any(s.scope_version == 1 and s.node_id is not None for s in integration.scenes):
                 return fail('export.graphics-scopes', 'Target does not project the bound editable vector group')
 
@@ -371,7 +385,7 @@ def default_exporter_registry() -> ExporterRegistry:
                 _validator(identifier),
             )
         )
-    registry.register(ExporterSpec("json", (".json",), _json, validator=_validator("json")))
+    registry.register(ExporterSpec("json", (".json",), _json, validator=_validator("json"), supports_text_layouts=True))
     return registry
 
 

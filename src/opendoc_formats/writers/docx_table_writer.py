@@ -108,6 +108,9 @@ def write_table(
     from opendoc_formats.ooxml.merged_cell_borders import export_merge_borders
 
     export_merge_borders(target, placements, report, location)
+    from opendoc_formats.ooxml.source_grid import export_source_grid
+
+    export_source_grid(source, target, report, location)
 
 
 def _clear_container(container: Any) -> None:

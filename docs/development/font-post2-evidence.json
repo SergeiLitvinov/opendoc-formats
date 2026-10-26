@@ -1,0 +1,67 @@
+{
+  "scope": "Static standalone TrueType post-2/3 numeric GSUB ligature identity, not shaping or full font validity",
+  "model": "opendoc-model==0.19.0",
+  "published": false,
+  "dependencies_changed": false,
+  "native_GSUB_tests_passed": 122,
+  "GSUB_unicode_public_PDF_resource_native_face_tests_passed": 211,
+  "source_files_sha256": {
+    "src/opendoc_formats/fonts/sfnt_ligatures.py": "3e1606ce8d891b28b6bbfcacfdfe50118776dcc6ac4c285df3e3e81f118118e5",
+    "tests/test_native_font_ligatures.py": "f0386b0206b7de33d7701124daef6abcb12bf7a6b985ae1f24f2acc53dec9f14",
+    "tools/pdf_ligature_smoke.py": "80d859d0d22f42ef9406f528e8987e3d3a473715409da0507a1046764f8fe8b9"
+  },
+  "native_profile": {
+    "post_versions": [
+      2,
+      3
+    ],
+    "GSUB_versions": [
+      "1.0",
+      "1.1 with null FeatureVariations offset"
+    ],
+    "lookups": [
+      4,
+      "7 to 4"
+    ],
+    "coverage": [
+      1,
+      2
+    ],
+    "lookup_flags": 0,
+    "post2_bounds": "Reuse native face reader numGlyphs/maxp, name indices and Pascal storage bounds",
+    "glyph_names_constructed": false,
+    "numeric_identity_matches_engine_after_name_alias_recovery": true,
+    "unknown_or_truncated_post_profiles_keep_engine_fallback": true,
+    "real_Story_PDF_post2_post3_text_reload_and_pixel_parity": true,
+    "native_quota_and_cancellation_tests_retained": true
+  },
+  "owned_fixture": {
+    "path": "tests/native/data/ligature-post2.ttf",
+    "bytes": 1340,
+    "sha256": "fe20d45d0138c607e22dac6526ad414fb37d30b5b10a1185f790003100c85e1e",
+    "generator": "tests.test_native_font_ligatures.program(post3=False)",
+    "license": "MIT",
+    "copyright_name_record": "Copyright 2026 Sergei Litvinov",
+    "canonical_head_timestamp": 3400000000,
+    "third_party_glyph_data": false
+  },
+  "installed_acceptance": {
+    "packages": [
+      "opendoc-formats==0.42.0",
+      "opendoc-model==0.19.0",
+      "pymupdf==1.28.2"
+    ],
+    "fonttools_Pillow_Office_HTML_other_PDF_engines_absent": true,
+    "command": "python -I tools/pdf_ligature_smoke.py",
+    "public_post2_post3_OTF_two_JSON_cycles_full_programs_text_pixels_passed": true,
+    "runtime_source_wheel_installed_files_identical": 213,
+    "tested_wheel_sha256": "8b8906d1128b11e4cf4c9cb6fe996a3e8270d335ff8ebf172a84fdb1bcf943a0",
+    "existing_CI_gate_extended_not_dispatched": true
+  },
+  "specification": "https://learn.microsoft.com/en-us/typography/opentype/spec/post#version-20",
+  "remaining": [
+    "Other post profiles, GSUB flags/context, CFF/variations retain fontTools fallback",
+    "No full shaping or independent multi-renderer conformance claim",
+    "Actual subsetting and uncovered operations still need optional fonts extra"
+  ]
+}

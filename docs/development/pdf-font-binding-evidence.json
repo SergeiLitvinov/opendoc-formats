@@ -1,0 +1,50 @@
+{
+  "scope": "Production PDF font-program binding reuses bounded native glyph placements; not automatic Model TextLayout projection",
+  "model": "opendoc-model==0.19.0",
+  "published": false,
+  "dependencies_changed": false,
+  "font_binding_tests_passed": 43,
+  "focused_native_Model_font_tests_passed": 120,
+  "affected_PDF_Model_DOCX_tests_before_optional_bounds_optimization_passed": 243,
+  "source_files_sha256": {
+    "src/opendoc_formats/readers/pdf_font_bindings.py": "68c32b86f00e3b03fd3387f0c183c4a4b6b9eca061385fe229df339e71a07ee2",
+    "src/opendoc_formats/readers/pdf_paint.py": "f7ae57a9399f5dc2d0f0765f12a07b7e382751d77432cfe9b23a7082feda057d",
+    "src/opendoc_formats/native/pdf_placements.py": "3f721494d4d2a1464718a36309c3b5c14af74997428e3ffe2a5284752db5e79f",
+    "tests/readers/test_pdf_font_bindings.py": "9992c8bc23a18c811c449d99257a23be45de8216585aa200ea0fdf384a4e5205",
+    "tools/pdf_ligature_smoke.py": "d5f96648c9df1805aa51fe4c74979e7dc96fbdca7159e597bc93cdaf089d844f"
+  },
+  "acceptance": {
+    "single_shared_native_placement_reader": true,
+    "font_binding_skips_unneeded_outline_calls_public_full_bounds_unchanged": true,
+    "fill_only_origin_unicode_and_actual_program_identity_policy_retained": true,
+    "all_8_text_modes_and_0_90_rotation_tested": true,
+    "source_duplicate_program_resources_not_guessed": true,
+    "pixmaps_before_after_binding_identical": true,
+    "native_font_copy_cancellation_propagates_and_rotation_restored": true,
+    "zero_small_byte_node_and_embedded_byte_budget_errors_located": true,
+    "OTF_inner_CFF_buffer_matches_exact_table_bytes": true,
+    "CFF_profile": "Static standalone OTTO, CFF1 version 1.0, bounded header and one Name INDEX entry",
+    "CFF2_variation_or_multiple_matching_wrappers_remain_unbound": true,
+    "OTF_inspection_uses_own_sfnt_reader_without_fontTools": true
+  },
+  "installed_acceptance": {
+    "packages": [
+      "opendoc-formats==0.42.0",
+      "opendoc-model==0.19.0",
+      "pymupdf==1.28.2"
+    ],
+    "fonttools_Pillow_Office_HTML_other_PDF_engines_absent": true,
+    "command": "python -I tools/pdf_ligature_smoke.py",
+    "TTF_post2_post3_OTF_export_and_reimport_FontReference_full_program_bytes_JSON_passed": true,
+    "runtime_source_wheel_installed_files_identical": 213,
+    "tested_wheel_sha256": "413d4263c5268c51c7d11ef19adefcecd75d720425007a7bb20a30b056506c9b",
+    "pip_check_passed": true,
+    "existing_CI_gate_extended_not_dispatched": true
+  },
+  "remaining": [
+    "Automatic TextLayout/range/cluster production reader/writer integration remains C-PDF-01",
+    "Full clipping, visibility, reading order and shaping acceptance",
+    "Internal MuPDF allocations before callbacks and arbitrary native-call interruption",
+    "General CFF/font validity, variable/font-set and ambiguous source mappings"
+  ]
+}

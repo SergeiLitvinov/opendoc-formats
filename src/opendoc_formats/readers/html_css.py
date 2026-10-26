@@ -9,6 +9,7 @@ from typing import Any
 import opendoc_model as od
 from opendoc_model import Length, TextStyle
 
+from opendoc_formats.readers.html_fonts import FontFaces
 from opendoc_formats.support.cancellation import check_cancelled
 
 SELECTOR = re.compile(r"(?:[a-zA-Z][\w-]*|\*)?(?:[.#][\w-]+)*$")
@@ -26,11 +27,13 @@ ENUMS = {
 
 
 class Cascade:
-    def __init__(self, soup: Any, warn: Callable[..., None], *, cancelled: Callable[[], bool] | None = None) -> None:
+    def __init__(self, soup: Any, warn: Callable[..., None], *, fonts: FontFaces,
+                 cancelled: Callable[[], bool] | None = None) -> None:
         import tinycss2
 
         self.warn, self.rules, self.cache = warn, [], {}
         self.cancelled = cancelled
+        self.fonts = fonts
         check_cancelled(cancelled, 'HTML CSS')
         for sheet in soup.find_all("style"):
             if sheet.get("media", "all") not in {"all", "screen", ""}:
@@ -38,6 +41,9 @@ class Cascade:
                 continue
             for rule in tinycss2.parse_stylesheet(sheet.get_text(), skip_comments=True, skip_whitespace=True):
                 check_cancelled(cancelled, 'HTML CSS rule')
+                if rule.type == 'at-rule' and rule.lower_at_keyword == 'font-face':
+                    fonts.read(rule, sheet)
+                    continue
                 if rule.type != "qualified-rule":
                     warn("html-css", "Правило CSS вне первого среза: " + getattr(rule, "at_keyword", rule.type))
                     continue
@@ -166,7 +172,7 @@ class Cascade:
 
             return ColorValue(space="srgb", components=(parsed.red, parsed.green, parsed.blue), alpha=parsed.alpha)
 
-        return TextStyle(
+        style = TextStyle(
             font_family=css.get("font-family", "").split(",")[0].strip(" '\"") or None,
             font_size=Length(float(css["font-size"][:-2])),
             bold=css.get("font-weight") in {"bold", "600", "700", "800", "900"},
@@ -177,3 +183,5 @@ class Cascade:
             color=color("color"),
             background=color("background-color"),
         )
+        self.fonts.bind(style, node)
+        return style

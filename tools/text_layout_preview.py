@@ -86,9 +86,10 @@ def prepare(model_wheel: Path, expected_sha256: str, uv: str) -> Path:
     run([str(python), '-I', '-c', (
         'from pathlib import Path; import opendoc_formats as f, opendoc_model as m; '
         'assert "site-packages" in Path(f.__file__).parts and "site-packages" in Path(m.__file__).parts; '
-        'assert hasattr(m,"invalidate_text_layouts"); print(f.__version__,m.__version__)')], 'isolation.log')
+        'assert all(hasattr(m,n) for n in ("invalidate_text_layouts","set_text_layouts")); '
+        'print(f.__version__,m.__version__)')], 'isolation.log')
     report = {
-        'purpose': 'Unpublished C-TEXT-LAYOUT-01 consumer acceptance only',
+        'purpose': 'Unpublished C-TEXT-LAYOUT-01/02 consumer acceptance only',
         'production_model_dependency': dependencies[0], 'model_version': model_version, 'model_sha256': digest,
         'model_license_hashes': license_hashes, 'formats_preview_version': version,
         'formats_wheel_sha256': hashlib.sha256(wheel.read_bytes()).hexdigest(), 'formats_source_sha256': hashes,
@@ -96,7 +97,8 @@ def prepare(model_wheel: Path, expected_sha256: str, uv: str) -> Path:
     }
     manifest = output/'provenance.json'
     manifest.write_text(json.dumps(report, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
-    run([str(python), '-m', 'pytest', '-q', 'tests/native/test_text_layout_consumer.py'], 'consumer.log')
+    run([str(python), '-m', 'pytest', '-q', 'tests/native/test_text_layout_consumer.py',
+         'tests/test_text_layout_export.py'], 'consumer.log')
     report['result'] = 'passed'
     manifest.write_text(json.dumps(report, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
     return output

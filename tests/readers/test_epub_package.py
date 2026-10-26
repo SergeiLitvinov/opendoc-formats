@@ -110,6 +110,37 @@ def test_native_rejects_duplicate_manifest_id(tmp_path):
         read_epub_package(source)
 
 
+@pytest.mark.parametrize('public', [False, True])
+@pytest.mark.parametrize('href,alias,message', [
+    ('text/chapter%FF.xhtml', 'OPS/text/chapter�.xhtml', 'utf-8'),
+    ('text/chapter%.xhtml', 'OPS/text/chapter%.xhtml', 'Malformed percent escape'),
+    ('text%2Fchapter%20one.xhtml', None, 'Encoded path separator'),
+    ('text/chapter%20one.xhtml?draft=1', None, 'Query'),
+    (' text/chapter%20one.xhtml', None, 'Whitespace/control'),
+])
+def test_ambiguous_manifest_never_selects_repaired_or_stripped_resource(tmp_path, monkeypatch, public, href, alias, message):
+    source = tmp_path/'ambiguous.epub'
+    _package(source, href=href)
+    if alias:
+        with zipfile.ZipFile(source, 'a') as archive:
+            archive.writestr(alias, '<html><body><p>Wrong resource</p></body></html>')
+    original, reads = source.read_bytes(), []
+    opened = zipfile.ZipFile.open
+
+    def tracked(self, info, *args, **kwargs):
+        reads.append(info.filename if isinstance(info, zipfile.ZipInfo) else info)
+        return opened(self, info, *args, **kwargs)
+
+    monkeypatch.setattr(zipfile.ZipFile, 'open', tracked)
+    with pytest.raises(ValueError, match=message):
+        if public:
+            read_document(source)
+        else:
+            read_epub_package(source)
+    assert (alias or 'OPS/text/chapter one.xhtml') not in reads
+    assert source.read_bytes() == original
+
+
 @pytest.mark.parametrize("encoding", ["utf-8", "utf-16", "utf-32"])
 def test_native_rejects_entity_declarations_in_all_xml_encodings(tmp_path, encoding):
     source = tmp_path / "entity.epub"

@@ -1,0 +1,34 @@
+{
+  "scope": "Word baseline metric cache keyed by immutable font bytes; no changes to baseline arithmetic, layout policy, Model or dependency composition",
+  "published": false,
+  "dependencies_changed": false,
+  "cache": {
+    "max_entries": 64,
+    "max_entry_input_bytes": 1048576,
+    "max_retained_source_bytes": 67108864
+  },
+  "checks": {
+    "replacement": "Same path with restored timestamps, including equal-size TTF replacement, returns current metrics; WOFF changes also observed",
+    "source_access": "Deleted/corrupt source never returns previous successful result; identical programs at distinct paths reuse decode",
+    "cancellation": "Warm entry, after-hit return boundary and after-native-decode cancellation propagate; cancelled decode does not create a cache entry",
+    "budgets": "65 distinct source byte strings evict the oldest of 64 entries; per-entry threshold bypasses cache without changing metrics",
+    "failures": "Transient fontTools fallback failure is not cached; retry on identical source bytes succeeds",
+    "focused_metric_tests_passed": 20,
+    "font_regression_passed": 894,
+    "font_regression_skipped": 1,
+    "skip_reason": "Real POSIX fork unavailable on Windows",
+    "word_flow_consumer_tests_passed": 53,
+    "regression_scope": "Font/sfnt/fvar/ligature tests plus test_docx_flow.py and test_text_flow.py; not a new full-project regression",
+    "installed_docx_smoke": "Passed isolated tools/docx_flow_smoke.py --minimal: public/direct API, cropped cells, grid mapping, immutable sources, full font program and two JSON/DOCX cycles without fontTools or PDF engines",
+    "strict_mypy_files": 41,
+    "ruff": "passed",
+    "documentation": "strict build passed",
+    "license_inventory": "passed",
+    "boundary_audit_modules": 217
+  },
+  "boundary": "Only Formats; required opendoc-model==0.19.0 and opendoc_model imports unchanged. Cache retention bound excludes transient reads/decoder memory. Fonts above snapshot limit retain uncached lazy file fallback and its unbounded engine internals.",
+  "source_sha256": {
+    "src/opendoc_formats/fonts/word_metrics.py": "e57622f1dc28c0ec3df478d44f9fa78c1392b22a04534a4bb9b1abee3959efde",
+    "tests/test_word_font_metrics.py": "2cc25d4977a64194da500cce1ff6bdf82dd368d6e1aa419dee0ac6e17111768b"
+  }
+}

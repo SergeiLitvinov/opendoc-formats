@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import math
 from dataclasses import replace
 from pathlib import Path
@@ -13,6 +14,8 @@ from opendoc_model.document_model import Block, DocumentModel, Formula, FormulaF
 
 from opendoc_formats.errors import OperationCancelledError
 from opendoc_formats.fonts.html_embedding import archived_font_stylesheet
+from opendoc_formats.fonts.resource_fonts import ResourceFontResolver, check_resource_font_usages, document_font_resolver
+from opendoc_formats.support.cancellation import cancellation_scope, checkpoint
 from opendoc_formats.writers.color_preflight import preflight_colors
 from opendoc_formats.writers.font_preflight import prepare_fonts
 from opendoc_formats.writers.html_writer import _HtmlRenderer
@@ -25,11 +28,20 @@ def write_pdf_model(
     limits: DocumentLimits | None = None,
 ) -> ConversionReport:
     """Записать модель в PDF, сохранив размеры секций и многостраничный поток."""
-
-    import fitz
-
     output = Path(output_path)
     report = ConversionReport(output)
+    if cancelled is not None and cancelled():
+        report.add(IssueSeverity.ERROR, 'cancelled', 'PDF export cancelled before preparation')
+        return report
+    with cancellation_scope(cancelled, 'PDF export', check_on_exit=False, inherit=True):
+        with document_font_resolver(document, report, limits=limits, target='pdf') as resolver:
+            return _write_pdf_model(document, output, report, resolver, limits=limits, cancelled=cancelled)
+
+
+def _write_pdf_model(document: DocumentModel, output: Path, report: ConversionReport, resolver: ResourceFontResolver, *,
+                     cancelled: Callable[[], bool] | None, limits: DocumentLimits | None) -> ConversionReport:
+
+    import fitz
     from opendoc_model import PreservationState, get_integration, get_page_geometry
 
     from opendoc_formats.support.object_mapping import PdfFallbackMapping, mapping_publication
@@ -75,7 +87,9 @@ def write_pdf_model(
         report.add(IssueSeverity.ERROR, 'pdf.svg-preparation', str(error))
         mapping_publication(report, 'rejected', code='pdf.write-rejected', reason='preparation-failed')
         return report
-    document = prepare_fonts(document, report, limits=limits)
+    document = prepare_fonts(document, report, limits=limits, resolver=resolver)
+    full_program_paths = frozenset(str(face.path) for face in resolver.resource_faces.values())
+    check_resource_font_usages(document, full_program_paths, report, target='pdf', limits=limits)
     if not report.success:
         mapping_publication(report, 'rejected', code='pdf.font-preparation-rejected', reason='preparation-failed')
         return report
@@ -110,7 +124,8 @@ def write_pdf_model(
             anchor_positions: dict[str, tuple[int, tuple[float, float]]] = {}
             flow_ids = {r.location: r.flow_id for r in rasters[section_index] if r.flow_id is not None}
             section_pdf, renderer = _render_section(document, section, section_index, report, flow_positions, flow_ids,
-                                                    anchor_positions, mapping, limits=limits, cancelled=check_cancelled)
+                                                    anchor_positions, mapping, limits=limits, cancelled=check_cancelled,
+                                                    full_program_paths=full_program_paths)
             from opendoc_formats.writers.pdf_text_verify import verify_section_text
 
             try:
@@ -181,12 +196,21 @@ def write_pdf_model(
                             frame = flow_positions.get((raster.flow_id + "-frame", page_number))
                             if frame is None:
                                 raise ValueError(f"Missing inline raster container at {raster.location}")
+                            if (x0 < frame[0]-.01 or x1 > frame[2]+.01
+                                    or y0 < frame[1]-.01 or y1 > frame[3]+.01):
+                                raise ValueError(f"Inline raster exceeds its measured container at {raster.location}")
                             if raster.flow_alignment == "center":
                                 x0 = (frame[0] + frame[2] - expected_width) / 2
                                 x1 = x0 + expected_width
                             elif raster.flow_alignment == "right":
                                 x1 = frame[2]
                                 x0 = x1 - expected_width
+                            if ('.headers[' not in raster.location and '.footers[' not in raster.location
+                                    and (x0 < section.page.margin_left.pt-.01
+                                         or x1 > section.page.width.pt-section.page.margin_right.pt+.01
+                                         or y0 < section.page.margin_top.pt-.01
+                                         or y1 > section.page.height.pt-section.page.margin_bottom.pt+.01)):
+                                raise ValueError(f"Inline raster exceeds its declared content area at {raster.location}")
                             placed_box = replace(box, x=(x0 + x1 - box.width) / 2, y=(y0 + y1 - box.height) / 2)
                             placed_rasters.append(replace(raster, image=replace(raster.image, box=placed_box)))
                     draw_rasters(page, placed_rasters, check_cancelled, mapping=mapping,
@@ -245,7 +269,7 @@ def write_pdf_model(
             with fitz.open(staged) as check:
                 if check.page_count != totals['pages'] or check.page_count == 0:
                     raise ValueError('Written PDF has an invalid page count')
-                _verify_pdf_font_embedding(check, document, report)
+                _verify_pdf_font_embedding(check, document, report, full_program_paths=full_program_paths)
             if not report.success:
                 mapping_publication(report, 'rejected', code='pdf.validation-rejected', reason='validation-failed')
                 return report
@@ -281,6 +305,7 @@ def _render_section(
     anchor_positions: dict[str, tuple[int, tuple[float, float]]],
     mapping: Any = None,
     *, limits: DocumentLimits | None = None, cancelled: Callable[[], bool] | None = None,
+    full_program_paths: frozenset[str] = frozenset(),
 ) -> tuple[Any, _HtmlRenderer]:
     import fitz
 
@@ -319,7 +344,7 @@ def _render_section(
     from opendoc_formats.support.artifacts import ArtifactWorkspace
 
     with ArtifactWorkspace(prefix="opendoc_formats_pdf_fonts_") as font_workspace:
-        font_styles = archived_font_stylesheet(document, font_workspace, report)
+        font_styles = archived_font_stylesheet(document, font_workspace, report, full_program_paths=full_program_paths)
         css = (
             font_styles
             + "\n"
@@ -389,17 +414,34 @@ def _render_section(
     return section_pdf, renderer
 
 
-def _verify_pdf_font_embedding(pdf: Any, document: DocumentModel, report: ConversionReport) -> None:
+def _verify_pdf_font_embedding(pdf: Any, document: DocumentModel, report: ConversionReport, *,
+                               full_program_paths: frozenset[str] = frozenset()) -> None:
     from opendoc_formats.fonts.embedding import collect_font_usages
 
-    expected = [usage for usage in collect_font_usages(document) if usage.embeddable]
+    expected = [usage for usage in collect_font_usages(document)
+                if usage.embeddable and any(not char.isspace() for char in usage.characters)]
     observed: set[str] = set()
+    programs: set[str] = set()
     for page in pdf:
         for font in page.get_fonts(full=True):
             if font and int(font[0]) > 0:
                 observed.update(_font_token(str(value)) for value in font[3:5] if value)
+                if full_program_paths:
+                    checkpoint()
+                    programs.add(hashlib.sha256(pdf.extract_font(int(font[0]))[3]).hexdigest())
     verified = 0
+    verified_programs = []
     for usage in expected:
+        checkpoint()
+        if str(usage.path) in full_program_paths:
+            digest = hashlib.sha256(usage.path.read_bytes()).hexdigest()
+            if digest in programs:
+                verified += 1
+                verified_programs.append(digest)
+            else:
+                report.add(IssueSeverity.ERROR, 'pdf.font-program',
+                           f'PDF did not retain the selected font program {usage.family!r}')
+            continue
         requested = _font_token(usage.family)
         if any(requested in name or name in requested for name in observed if name):
             verified += 1
@@ -412,6 +454,8 @@ def _verify_pdf_font_embedding(pdf: Any, document: DocumentModel, report: Conver
     metrics = report.metrics.setdefault("font_embedding", {"target": "pdf"})
     metrics["verified_faces"] = verified
     metrics["pdf_fonts"] = sorted(observed)
+    if full_program_paths:
+        metrics['verified_program_sha256'] = sorted(set(verified_programs))
 
 
 def _font_token(value: str) -> str:

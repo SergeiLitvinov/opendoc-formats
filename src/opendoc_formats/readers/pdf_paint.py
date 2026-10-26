@@ -75,7 +75,7 @@ def attach_text_paint(document: DocumentModel, path: str | Path, *, limits: Docu
                     index[_point_key(character.origin)].append((trace, offset))
             from opendoc_formats.readers.pdf_font_bindings import painted_font_programs
 
-            programs = painted_font_programs(page, document.resources, set(index))
+            programs = painted_font_programs(page, document.resources, set(index), limits=limits, cancelled=cancelled)
             indices.append((index, unknown, programs, evidence))
         for section, (index, unknown, programs, graphics) in zip(document.sections, indices, strict=True):
             check_cancelled(cancelled, 'PDF paint model section')

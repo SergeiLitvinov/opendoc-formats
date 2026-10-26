@@ -71,8 +71,9 @@ jobs:
       - name: Install base wheel outside the checkout
         run: |
           uv venv .opendoc-formats/installed
-          uv pip install --python .opendoc-formats/installed/bin/python 'opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.18.1/opendoc_model-0.18.1-py3-none-any.whl' .opendoc-formats/from-sdist/*.whl
+          uv pip install --python .opendoc-formats/installed/bin/python 'opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.19.0/opendoc_model-0.19.0-py3-none-any.whl' .opendoc-formats/from-sdist/*.whl
           .opendoc-formats/installed/bin/python -I tools/package_smoke.py
+            .opendoc-formats/installed/bin/python -I tools/html_font_smoke.py
       - name: Exercise minimal PDF text extra
         run: |
           version=$(python -m tools.release version)
@@ -88,25 +89,47 @@ jobs:
           version=$(python -m tools.release version)
           uv pip install --python .opendoc-formats/installed/bin/python ".opendoc-formats/from-sdist/opendoc_formats-${version}-py3-none-any.whl[docx,html,pdf,pptx]"
           .opendoc-formats/installed/bin/python -I tools/package_smoke.py --all-formats
+      - name: Exercise bounded font subset reuse without document engines
+        run: |
+          version=$(python -m tools.release version)
+          uv venv .opendoc-formats/fonts-profile
+          uv pip install --constraint .opendoc-formats/profile-constraints.txt --python .opendoc-formats/fonts-profile/bin/python 'opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.19.0/opendoc_model-0.19.0-py3-none-any.whl' ".opendoc-formats/from-sdist/opendoc_formats-${version}-py3-none-any.whl[fonts]"
+          .opendoc-formats/fonts-profile/bin/python -I tools/package_smoke.py --fonts
       - name: Exercise minimal HTML profile in a fresh environment
         run: |
           version=$(python -m tools.release version)
           uv venv .opendoc-formats/html-profile
-          uv pip install --constraint .opendoc-formats/profile-constraints.txt --python .opendoc-formats/html-profile/bin/python 'opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.18.1/opendoc_model-0.18.1-py3-none-any.whl' ".opendoc-formats/from-sdist/opendoc_formats-${version}-py3-none-any.whl[html]"
+          uv pip install --constraint .opendoc-formats/profile-constraints.txt --python .opendoc-formats/html-profile/bin/python 'opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.19.0/opendoc_model-0.19.0-py3-none-any.whl' ".opendoc-formats/from-sdist/opendoc_formats-${version}-py3-none-any.whl[html]"
           .opendoc-formats/html-profile/bin/python -I tools/html_profile_smoke.py
-      - name: Exercise native DOCX flow without PDF engines
+      - name: Exercise native DOCX flow and owned fonts without fontTools or PDF engines
         run: |
           version=$(python -m tools.release version)
           uv venv .opendoc-formats/docx-flow-profile
-          uv pip install --constraint .opendoc-formats/profile-constraints.txt --python .opendoc-formats/docx-flow-profile/bin/python 'opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.18.1/opendoc_model-0.18.1-py3-none-any.whl' ".opendoc-formats/from-sdist/opendoc_formats-${version}-py3-none-any.whl[docx,fonts]"
+          uv pip install --constraint .opendoc-formats/profile-constraints.txt --python .opendoc-formats/docx-flow-profile/bin/python 'opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.19.0/opendoc_model-0.19.0-py3-none-any.whl' ".opendoc-formats/from-sdist/opendoc_formats-${version}-py3-none-any.whl[docx]"
           .opendoc-formats/docx-flow-profile/bin/python -I tools/docx_flow_smoke.py --minimal
-      - name: Exercise each PDF profile in a fresh environment
+          .opendoc-formats/docx-flow-profile/bin/python -I tools/docx_flow_smoke.py --minimal --fragmented
+          .opendoc-formats/docx-flow-profile/bin/python -I tools/docx_flow_smoke.py --minimal --cell-borders
+          .opendoc-formats/docx-flow-profile/bin/python -I tools/docx_flow_merge_smoke.py
+          for crop in top bottom plain; do
+            .opendoc-formats/docx-flow-profile/bin/python -I tools/docx_flow_merge_smoke.py --crop "$crop"
+          done
+      - name: Exercise native DOCX package editing without python-docx
+        run: |
+          version=$(python -m tools.release version)
+          uv venv .opendoc-formats/docx-native-profile
+          uv pip install --constraint .opendoc-formats/profile-constraints.txt --python .opendoc-formats/docx-native-profile/bin/python 'opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.19.0/opendoc_model-0.19.0-py3-none-any.whl' ".opendoc-formats/from-sdist/opendoc_formats-${version}-py3-none-any.whl[docx-native]"
+          .opendoc-formats/docx-native-profile/bin/python -I tools/docx_native_smoke.py
+      - name: Exercise PDF profiles and owned TTF/OTF resources without fontTools
         run: |
           version=$(python -m tools.release version)
           for profile in pdf pdf-rich pdf-layout pdf-docx; do
             uv venv ".opendoc-formats/${profile}"
-            uv pip install --constraint .opendoc-formats/profile-constraints.txt --python ".opendoc-formats/${profile}/bin/python" 'opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.18.1/opendoc_model-0.18.1-py3-none-any.whl' ".opendoc-formats/from-sdist/opendoc_formats-${version}-py3-none-any.whl[${profile}]"
+            uv pip install --constraint .opendoc-formats/profile-constraints.txt --python ".opendoc-formats/${profile}/bin/python" 'opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.19.0/opendoc_model-0.19.0-py3-none-any.whl' ".opendoc-formats/from-sdist/opendoc_formats-${version}-py3-none-any.whl[${profile}]"
             ".opendoc-formats/${profile}/bin/python" -I tools/pdf_profile_smoke.py "${profile}"
+            if [ "${profile}" = pdf ]; then
+              ".opendoc-formats/${profile}/bin/python" -I tools/pdf_ligature_smoke.py
+              ".opendoc-formats/${profile}/bin/python" -I tools/pdf_cell_image_smoke.py
+            fi
           done
       - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:

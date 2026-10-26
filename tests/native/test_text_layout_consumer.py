@@ -1,16 +1,15 @@
-"""Unpublished Model layout gate: real Formats placements, no format parser in Model."""
+"""Official Model layout gate: real Formats placements, no format parser in Model."""
 
 import hashlib
 import json
 from dataclasses import replace
+from pathlib import Path
 
 import opendoc_model as od
 import pytest
 
 from opendoc_formats.pdf import PdfDocument
 from tests.binary_fixtures import own_pdf, own_placement_font
-
-pytest.importorskip('opendoc_model.text_layout', reason='C-TEXT-LAYOUT-01 requires the separate local Model dev artifact')
 
 
 def native_document(tmp_path):
@@ -33,6 +32,7 @@ def native_document(tmp_path):
         ranges=tuple(od.TextRange(name, od.TextPosition('own-text', start), od.TextPosition('own-text', end))
                      for name, start, end in [('A', 0, 1), ('B', 1, 2), ('fi', 2, 4)]),
     ))
+    layouts = []
     for occurrence in placements:
         assert occurrence.font_program_sha256 == hashlib.sha256(font).hexdigest()
         assert [(g.unicode, g.glyph_id) for g in occurrence.glyphs] == [(65, 1), (66, 2), (102, 3), (105, -1)]
@@ -46,7 +46,8 @@ def native_document(tmp_path):
             extra={'opendoc_formats.pdf_text_operation': occurrence.operation,
                    'opendoc_formats.glyph_space': 'font-at-1pt', 'own': {'values': [1]}},
         )
-        od.set_text_layout(document, layout, verify=True)
+        layouts.append(layout)
+    od.set_text_layouts(document, layouts, verify=True)
     return document, placements, path, source
 
 
@@ -187,3 +188,96 @@ def test_batch_of_native_occurrences_does_not_promote_unmapped_observation(tmp_p
     assert od.get_text_layout(restored, 'fill').state == od.get_text_layout(restored, 'stroke').state == 'stale'
     value = od.get_text_layout(restored, 'unmapped')
     assert value.state == 'unknown' and value.glyphs == unknown.glyphs and value.extra == unknown.extra
+
+
+def test_native_batch_update_preserves_other_occurrences_extra_and_rejects_invalid_batches_atomically(tmp_path):
+    document, _, _, _ = native_document(tmp_path)
+    original_stroke = od.get_text_layout(document, 'stroke')
+    fill = od.get_text_layout(document, 'fill')
+    od.set_text_layouts(document, (replace(fill, extra={'new': [2]}),), verify=True)
+    updated = od.get_text_layout(document, 'fill')
+    assert updated.binding_version == 2 and updated.state == 'verified'
+    assert updated.extra['own'] == {'values': [1]} and updated.extra['new'] == [2]
+    assert od.get_text_layout(document, 'stroke') == original_stroke
+    before = od.document_to_json(document)
+    invalid = replace(fill, id='invalid', clusters=(od.TextCluster((0,), ('missing-range',)),))
+    for batch in ((fill, fill), (fill, invalid)):
+        with pytest.raises(ValueError):
+            od.set_text_layouts(document, batch, verify=True)
+        assert od.document_to_json(document) == before
+    with pytest.raises(od.ArtifactLimitError):
+        od.set_text_layouts(document, (fill,), verify=True, limits=od.DocumentLimits(max_nodes=10))
+    assert od.document_to_json(document) == before
+    updated.extra['new'].append(3)
+    assert od.document_to_json(document) == before
+
+
+def test_thousand_exact_native_clusters_and_many_occurrences_survive_batch_binding_and_json():
+    font = own_placement_font()
+    # Real independent PDF commands: 16 paint occurrences, including one long run.
+    strings = [b'ABC'*400]+[b'ABC']*15
+    commands = b''.join(b'BT /F1 12 Tf 60 '+str(300-index*12).encode()+b' Td ('+value+b') Tj ET\n'
+                        for index, value in enumerate(strings))
+    source, _ = own_pdf(font_program=font, commands=commands)
+    with PdfDocument(source) as pdf:
+        occurrences = pdf.page_text_placements(0)
+    assert len(occurrences) == 16
+    document = od.DocumentModel(resources={'font': od.Resource('font', od.ResourceKind.FONT, 'font/ttf', font)})
+    ranges, layouts = [], []
+    for number, occurrence in enumerate(occurrences):
+        run = od.TextRun('ABfi'*(400 if number == 0 else 1))
+        anchor = f'run-{number}'
+        od.set_anchor(run, od.Anchor(anchor))
+        document.sections.append(od.Section(blocks=[od.Paragraph([run])]))
+        physical, clusters = [], []
+        offset = 0
+        for glyph in occurrence.glyphs:
+            if glyph.glyph_id < 0:
+                continue
+            range_id = f'range-{number}-{len(physical)}'
+            length = 2 if glyph.unicode == ord('f') else 1  # Source ToUnicode explicitly defines fi.
+            ranges.append(od.TextRange(range_id, od.TextPosition(anchor, offset), od.TextPosition(anchor, offset+length)))
+            clusters.append(od.TextCluster((len(physical),), (range_id,)))
+            physical.append((0, glyph.glyph_id, *glyph.transform))
+            offset += length
+        assert offset == len(run.text)
+        layouts.append(od.TextLayout(f'layout-{number}', glyphs=tuple(physical), fonts=(od.FontReference('font', 0),),
+                                     clusters=tuple(clusters)))
+    assert len(layouts[0].clusters) == 1200 and len(ranges) == 1245
+    budget = od.DocumentLimits(max_nodes=1000000)
+    od.set_integration(document, od.IntegrationModel(ranges=tuple(ranges)), limits=budget)
+    od.set_text_layouts(document, layouts, verify=True, limits=budget)
+    expected = json.loads(od.document_to_json(document, limits=budget))
+    for _ in range(2):
+        document = od.document_from_json(od.document_to_json(document, limits=budget), limits=budget)
+        assert json.loads(od.document_to_json(document, limits=budget)) == expected
+        for layout in layouts:
+            actual = od.get_text_layout(document, layout.id, limits=budget)
+            assert actual.state == 'verified' and actual.binding_version == 2
+            assert actual.glyphs == layout.glyphs and actual.clusters == layout.clusters
+    document.sections[0].blocks[0].content[0].text = 'ABfI'+'ABfi'*399
+    assert od.get_text_layout(document, 'layout-0', limits=budget).state == 'stale'
+    assert od.get_text_layout(document, 'layout-1', limits=budget).state == 'verified'
+
+
+def test_previous_model_snapshot_stays_verified_until_explicit_upgrade():
+    # Produced by the SHA-verified installed consumer2 wheel, not this codec.
+    payload = (Path(__file__).parent/'data'/'text-layout-v1.json').read_bytes()
+    assert hashlib.sha256(payload).hexdigest() == '04c7254f88c20bfa0ddd67d7b018b82e2754282ea4b155b0bf8a329ec17c7a16'
+    expected = json.loads(payload)
+    document = od.document_from_json(payload.decode('utf-8'))
+    for _ in range(2):
+        value = od.get_text_layout(document, 'legacy')
+        assert value.state == 'verified' and value.binding_version == 1
+        assert value.binding_sha256 == 'c527983c8341785626da3647f112355efea57410f7a70ff155d0308e5d8e5a8b'
+        wire = od.document_to_json(document)
+        assert json.loads(wire) == expected and 'binding_version' not in wire
+        document = od.document_from_json(wire)
+    od.set_text_layouts(document, (value,), verify=True)
+    upgraded = od.get_text_layout(document, 'legacy')
+    assert upgraded.state == 'verified' and upgraded.binding_version == 2
+    assert upgraded.binding_sha256 != value.binding_sha256
+    assert upgraded.glyphs == value.glyphs and upgraded.clusters == value.clusters
+    for _ in range(2):
+        document = od.document_from_json(od.document_to_json(document))
+        assert od.get_text_layout(document, 'legacy') == upgraded

@@ -1,0 +1,53 @@
+{
+  "version": "0.19.0",
+  "official_wheel_sha256": "0ec3aa5c409d9ae05aa4e979d7a15e81b251318ca782a5b0395039f80c3232fd",
+  "license_files_sha256": {
+    "opendoc_model-0.19.0.dist-info/licenses/docs/LICENSE": "3ed05eb4b11d122a12b6d37eb1f695bfbd303b542f067658a1dc43d8f81dcf59"
+  },
+  "accepted_consumer5_source_parity_normalized_line_endings_except_version": true,
+  "model_python_files": 50,
+  "semantic_source_difference": [
+    "opendoc_model/__init__.py"
+  ],
+  "formats_published": false,
+  "formats_version": "0.42.0",
+  "other_lock_dependencies_unchanged": true,
+  "formats_python_files": 211,
+  "all_source_wheel_installed_python_files_match": true,
+  "sdist_rebuilt_wheel_payload_matches_checkout_wheel": true,
+  "formats_wheel_sha256": "6d9ce0e8b2d7b5f98750ce98a66af7255c7e4c2bd56a5d1f3574fe8a58265dd1",
+  "formats_sdist_sha256": "92c6da59f1702bc1b97ed2d727a1b2a31482eb5e429fc57c76a0535fdf5866dc",
+  "formats_from_sdist_wheel_sha256": "598e081e10ba8fe3ad33742a0b9a17ba756c682eb5368cabd4b192ff334c8cd8",
+  "base_installed_smoke": true,
+  "minimal_docx_without_fonttools_pdf_pillow_smoke": true,
+  "dependency_checks_passed": true,
+  "official_contract_tests_passed": 32,
+  "official_contract_tests_not_skipped": true,
+  "full_regression": {
+    "passed": 2595,
+    "skipped": 2,
+    "failed": 0,
+    "errors": 0,
+    "seconds": 1354.66,
+    "warning": "Intentional duplicate ZIP member fixture",
+    "skips": [
+      {
+        "test": "tests.readers.test_djvu_text.test_real_djvulibre[True]",
+        "reason": "optional external DjVuLibre tools unavailable"
+      },
+      {
+        "test": "tests.readers.test_djvu_text.test_real_djvulibre[False]",
+        "reason": "optional external DjVuLibre tools unavailable"
+      }
+    ],
+    "python": "3.12.13",
+    "platform": "Windows",
+    "command": "python -m pytest -q",
+    "junit_sha256": "f5ac3bfa761d8d3d2169a0ff56158e2e810a5e6b3b4f833f0e9053b94dd620a5",
+    "all_11_official_text_layout_contract_tests_executed": true,
+    "tested_runtime_still_matches_verified_wheel": true,
+    "runtime_tree_sha256": "f822f6168040d1278da72716ab1259599ac8b8cfeea2e7b15b46b5ae4ae43f0c"
+  },
+  "installed_official_contract_gate_passed": 32,
+  "other_python_and_platform_ci_not_run": true
+}

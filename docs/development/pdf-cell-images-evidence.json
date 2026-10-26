@@ -1,0 +1,145 @@
+{
+  "scope": "Bounded native PDF placement of inline PNGs in ordinary, horizontally merged and nested table cells; measured source column proportions",
+  "model": "opendoc-model==0.19.0; import opendoc_model",
+  "published": false,
+  "dependencies_changed": false,
+  "checks": {
+    "targeted_tests_passed": 139,
+    "new_cell_tests_passed": 16,
+    "scope": "Cell images, body pagination, affine rasters, PDF mapping/history/geometry/table diagnostics and HTML writer/table semantics; not full-project regression",
+    "pre_fix_reproducer": "Single 260pt-high cell image with no text exported successfully at y=24.75..284.75 although declared body ends at y=280; text guard cannot detect this",
+    "layout_fix": "Actual raster span/frame checked; body content-area guard; retry marker before whole outer table, never inside cell; repeated overflow refuses atomically",
+    "column_fix": "Measured grid-width ratios projected through actual row/column spans for PDF only; avoids collapsed nested column and neighbor overlap; default HTML cell styling unchanged",
+    "image_fidelity": "Own 120x180 RGBA program decoded pixels preserved exactly, crop/3-degree rotation visible frame retained, no overlap with words, caption and following text once, two JSON/PDF cycles with identical page pixels",
+    "negative": "Ordinary/horizontal-merged/nested table with oversized raster and no text refuses, preserves source Model and previous output; nested structure retained in negative test",
+    "diagnostic": "Explicit LOSS pdf-table-flow-layout: exact native row splitting/page pagination is not reproduced",
+    "installed_pdf": "Fresh Formats + Model 0.19.0 + PyMuPDF 1.28.2 only; nested table, crop/rotation, original RGBA pixels, complete text, two JSON/PDF cycles; Office/fontTools/Pillow/NumPy/other PDF engines absent",
+    "ruff": "passed",
+    "strict_mypy_files": 41,
+    "license_inventory": "passed",
+    "boundary_audit_modules": 219,
+    "visual_review": "Independent Word source and generated nested-table image pages inspected; previous collapsed column/neighbor overlap removed; source pagination differs and is explicitly disclosed"
+  },
+  "independent_word_source": {
+    "build": "16.0.17932",
+    "version": "16.0",
+    "success": true,
+    "observations": [
+      {
+        "form": "plain",
+        "source_sha256": "68070B6C06143DEFFB4A5B854AC1B8409D52D09FF864E53050B442D07C4637FE",
+        "inline_shapes": 1,
+        "pages": 2
+      },
+      {
+        "form": "merged",
+        "source_sha256": "67A6236B645EDB8A844CC801CA9ABEAA8CF6427393D292FB2D9FB45DF3FD0DE3",
+        "inline_shapes": 1,
+        "pages": 2
+      },
+      {
+        "form": "nested",
+        "source_sha256": "89DC88CD041D725DBE0F5C0FE76F3B44286878F7120C5B80C75D28096A3C648A",
+        "inline_shapes": 1,
+        "pages": 2
+      }
+    ],
+    "plain": {
+      "word-source": {
+        "images": [
+          {
+            "page": 0,
+            "width": 72.0,
+            "height": 72.0,
+            "program_width": 120,
+            "program_height": 180
+          }
+        ],
+        "pages": 2
+      },
+      "target": {
+        "images": [
+          {
+            "page": 0,
+            "width": 72.0,
+            "height": 72.0,
+            "program_width": 120,
+            "program_height": 180
+          }
+        ],
+        "pages": 2
+      }
+    },
+    "merged": {
+      "word-source": {
+        "images": [
+          {
+            "page": 0,
+            "width": 72.0,
+            "height": 72.0,
+            "program_width": 120,
+            "program_height": 180
+          }
+        ],
+        "pages": 2
+      },
+      "target": {
+        "images": [
+          {
+            "page": 0,
+            "width": 72.0,
+            "height": 72.0,
+            "program_width": 120,
+            "program_height": 180
+          }
+        ],
+        "pages": 2
+      }
+    },
+    "nested": {
+      "word-source": {
+        "images": [
+          {
+            "page": 0,
+            "width": 72.00000190734863,
+            "height": 72.0,
+            "program_width": 120,
+            "program_height": 180
+          }
+        ],
+        "pages": 2
+      },
+      "target": {
+        "images": [
+          {
+            "page": 1,
+            "width": 72.0,
+            "height": 72.0,
+            "program_width": 120,
+            "program_height": 180
+          }
+        ],
+        "pages": 2
+      }
+    }
+  },
+  "owned_fixture": {
+    "file": "tests/native/data/table-image.png",
+    "bytes": 561,
+    "pixels": [
+      120,
+      180
+    ],
+    "license": "MIT; own geometric RGBA image, no third-party image content",
+    "reproduce": "tests.writers.test_pdf_docx_rasters.own_pixels"
+  },
+  "boundary": "Formats owns page/cell placement and Story projection; Model DTOs/codecs unchanged. Source width ratios are not exact native cell dimensions or margins. Source Word may split nested table rows across pages differently. Whole-table retry does not implement arbitrary row splitting or split a mixed text/multi-image paragraph. Unknown/unmeasured column grids retain existing automatic layout; universal Word-to-PDF fidelity is not claimed.",
+  "source_sha256": {
+    "src/opendoc_formats/writers/pdf_flow.py": "d09111dbc44e835989b20a54fc98b5a0ffc459ae39c4f136d4c31233fde534cd",
+    "src/opendoc_formats/writers/pdf_writer.py": "05b1a83b6f7cf77439ee2cf768a952618115baa3e1c9271f353ef6f24d7e2716",
+    "src/opendoc_formats/writers/html_writer.py": "7bffad86e55dbf448018f52328436d248317702b6269a62d3b33dd44e5b9ea7b",
+    "tests/writers/test_pdf_cell_images.py": "5f7c29e94a8c79f25317d726cea070f2a2bd1373c47ef6613304a5fc2f6f2143",
+    "tools/pdf_cell_image_smoke.py": "d05cb0c56f72660ecec627375cf2878dadd66f050cd1574a4b96dc10d8d44b8a",
+    "tests/native/data/table-image.png": "5f229f090b197209fe7703d18f3ce7a47ebb0eb2f1549e400e0748c1979372fe"
+  }
+}

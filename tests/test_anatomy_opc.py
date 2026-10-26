@@ -5,6 +5,7 @@ import json
 import zipfile
 from dataclasses import FrozenInstanceError
 from threading import Event
+from xml.sax.saxutils import quoteattr
 
 import pytest
 
@@ -26,6 +27,96 @@ def links(*targets):
 
 def snapshot(values):
     return inspect_binary(zip_bytes(list(values.items())), capture=True)
+
+
+def literal_link(identifier, kind='urn:own', *, mode='Internal'):
+    return (f'<Relationships xmlns="{PR}"><Relationship Id={quoteattr(identifier)} Type={quoteattr(kind)} '
+            f'Target="media/own.png" TargetMode={quoteattr(mode)}/></Relationships>').encode()
+
+
+@pytest.mark.parametrize('identifier', ['rId1', '_own', 'Связь1', '日本語', 'e\u0301', 'a·0',
+                                      '\u0370', '\u200c', '\uf900', '\U00010000', '\U000effff'])
+def test_unicode_ncname_ids_keep_literal_graph_evidence(identifier):
+    values = parts()
+    values['word/_rels/document.xml.rels'] = literal_link(identifier)
+    result = snapshot(values)
+    assert result.opc.reachability_complete and not result.opc.findings
+    edge = next(edge for edge in result.opc.relationships if edge.owner == '/word/document.xml')
+    assert dict(edge.attributes)['Id'] == identifier and edge.status == 'internal'
+
+
+@pytest.mark.parametrize('identifier', ['1own', 'own name', 'own:name', ' own', 'own ', '-own', '.own',
+                                      '\u0301own', '\u037e', '\U000f0000'])
+@pytest.mark.parametrize('mode', ['Internal', 'External'])
+def test_unproved_ids_do_not_resolve_targets_or_claim_definite_orphans(identifier, mode):
+    values = parts()
+    source = literal_link(identifier, mode=mode)
+    values['word/_rels/document.xml.rels'] = source
+    result = snapshot(values)
+    assert not result.opc.reachability_complete and not result.opc.unreachable_parts
+    edge = next(edge for edge in result.opc.relationships if edge.owner == '/word/document.xml')
+    assert edge.status == 'rejected' and edge.resolved_target is None
+    assert dict(edge.attributes)['Id'] == identifier
+    finding = next(f for f in result.opc.findings if f.code == 'opc.relationship-id')
+    assert finding.location == 'zip:/word/_rels/document.xml.rels#xml:0/0'
+    assert next(i.payload for i in result.items if i.locator == 'zip:/word/_rels/document.xml.rels') == source
+
+
+@pytest.mark.parametrize('kind', ['urn:own', 'https://example.invalid/role%20name?q=1#kind',
+                                'a+b.c:opaque@role', 'file:///role', 'urn://user:pass@example.invalid:42/role'])
+def test_literal_type_uris_are_identifiers_not_network_requests(kind, monkeypatch):
+    import socket
+
+    def forbidden(*args, **kwargs):
+        pytest.fail('Relationship Type must never be fetched')
+
+    monkeypatch.setattr(socket, 'create_connection', forbidden)
+    values = parts()
+    values['word/_rels/document.xml.rels'] = literal_link('own', kind)
+    assert snapshot(values).opc.reachability_complete
+
+
+@pytest.mark.parametrize('kind', [' ', 'urn:own name', 'relative-role', 'urn:bad%', 'urn:bad%1Z',
+                                'https://example.invalid/role\\other', 'urn:role#one#two',
+                                'https://example.invalid:port/role', 'urn:роль', 'http://[::1]/role'])
+def test_types_outside_literal_profile_remain_captured_but_unassessed(kind):
+    values = parts()
+    source = literal_link('own', kind)
+    values['word/_rels/document.xml.rels'] = source
+    result = snapshot(values)
+    assert not result.opc.reachability_complete and not result.opc.unreachable_parts
+    assert any(f.code == 'opc.relationship-type' for f in result.opc.findings)
+    edge = next(edge for edge in result.opc.relationships if edge.owner == '/word/document.xml')
+    assert edge.status == 'rejected' and dict(edge.attributes)['Type'] == kind
+    assert next(i.payload for i in result.items if i.locator == 'zip:/word/_rels/document.xml.rels') == source
+
+
+def test_unicode_normalization_is_not_used_to_merge_ids():
+    values = parts()
+    values['word/_rels/document.xml.rels'] = literal_link('é').replace(
+        b'</Relationships>', '<Relationship Id="é" Type="urn:own" Target="media/own.png"/></Relationships>'.encode())
+    assert snapshot(values).opc.reachability_complete
+
+
+@pytest.mark.parametrize('pattern_name', ['_NCNAME', '_URI_CHARACTERS'])
+def test_cancel_during_lexical_validation_precedes_any_target_resolution(monkeypatch, pattern_name):
+    import opendoc_formats.native.opc_audit as audit
+
+    stop, pattern = Event(), getattr(audit, pattern_name)
+
+    class CancelAfterMatch:
+        def fullmatch(self, value):
+            result = pattern.fullmatch(value)
+            stop.set()
+            return result
+
+    def forbidden(*args):
+        pytest.fail('Target resolution started after lexical validation cancellation')
+
+    monkeypatch.setattr(audit, pattern_name, CancelAfterMatch())
+    monkeypatch.setattr(audit, 'resolve_target', forbidden)
+    with pytest.raises(OperationCancelledError):
+        inspect_binary(own_docx(), cancelled=stop.is_set)
 
 
 def test_original_ownership_root_default_content_type_and_unreachable_binary():

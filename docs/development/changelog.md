@@ -2,6 +2,74 @@
 
 ## Накопленные улучшения относительно 0.42.0
 
+- PDF-layout учитывает измеренные пропорции колонок DOCX и не схлопывает
+  вложенную таблицу вокруг изображения. Проверяются контейнер и область страницы;
+  переполнение без текста тоже отклоняется атомарно. Приняты обычные/merged/nested
+  ячейки, crop/rotation и исходные RGBA pixels; native Word row splitting
+  и точная source pagination остаются явно отмеченной потерей flow-профиля.
+- Однострочный PDF→DOCX flow сохраняет явный snapshot исходной сетки и привязку
+  к таблице. После нормализации Word 3→2 столбца импорт восстанавливает исходный
+  grid/span без догадок по тексту. При структурной правке или повреждении metadata
+  остаётся фактическая сетка Word с диагностикой. Проверены нативная замена текста,
+  два JSON/DOCX-цикла после неё и отсутствие дубликатов OPC-частей.
+- PDF → Model → DOCX flow сохраняет разные цвета/толщины границ отдельных ячеек,
+  включая горизонтальные/вертикальные объединения и crops. План сверяется с
+  фактическими `tcBorders`, `gridSpan` и `vMerge` до публикации. Два JSON/DOCX-цикла,
+  открытие и правка в Word подтверждены; внутри merged cells нет лишних линий.
+- GSUB contextual types 5/6 format 2 и ClassDef formats 1/2 читаются собственным
+  кодом без fontTools в принятом профиле. Проверяются диапазоны глифов, class 0,
+  правила, offsets и ссылки; class labels не подменяются glyph IDs.
+  Сохранены Unicode policy, PDF shaping, лимит работы и отмена.
+- GSUB contextual types 5/6 format 1 читаются собственным кодом, включая NULL
+  RuleSet, общие наборы и повторные ссылки на правила. Проверяются IDs глифов,
+  offsets и вложенные lookup references без их выполнения; Unicode policy
+  сохраняется. Повторный обход расходует бюджет, отмена не вызывает fontTools.
+- GSUB contextual types 5/6 format 3 и 7→5/6 проверяются собственным reader:
+  coverage, границы и ссылки на вложенные lookups не требуют fontTools
+  в принятом профиле. Вложенные операции не выполняются, Unicode policy сохраняется;
+  formats 1/2 и sequenceIndex после расширения input sequence сохраняют fallback.
+- Соседние GSUB ReverseChainSingleSubst type 8/7→8 больше не включают fontTools
+  в принятом статическом TrueType-профиле. Собственный reader проверяет coverage,
+  контексты, offsets и выходные glyph IDs, сохраняя Unicode policy и PDF shaping.
+  Проверены повреждения, лимит работы, отмена и неизменность пикселей PDF.
+- Повторное subsetting идентичных программ и символов использует ограниченный
+  LRU, сохраняя байтовый результат и license/copyright records. Проверены смена
+  bytes/настроек, права no-subsetting, вытеснение, параллельный доступ и отмена;
+  первичное построение шрифта остаётся у fontTools.
+- Добавлен собственный структурный аудит sfnt: порядок tags, search fields,
+  padding и пересечения таблиц с исходными offsets. Доступен через прямой API,
+  `sfnt_structure=True` и CLI `--sfnt-structure`, включая выбранный TTC face;
+  findings расходуют общий бюджет Anatomy. Исправление исходников не выполняется.
+- Anatomy и CLI поддерживают явно выбранный TTC face: `sfnt_face_index` /
+  `--sfnt-face-index`. Исходная коллекция сохраняется целиком, locators включают
+  номер face, все payload и абсолютные offsets доступны без fontTools.
+  Проверены общие квоты, отмена, сравнение и отказ от standalone checksum-аудита TTC.
+- Явно выбранные faces TTC 1.0/2.0 читаются собственным sfnt-инспектором по
+  исходным абсолютным адресам; shared tables сохраняют payload. Метаданные face 0
+  в resolver не требуют fontTools для принятого профиля. Проверены TrueType/CFF,
+  системные коллекции и установленный base wheel; embedding TTC не заявлен.
+- Покрытие символов из выбранной Unicode `cmap` 2 читается собственным кодом:
+  single-/double-byte ranges, общие массивы, нулевые IDs и delta modulo 65536
+  совпадают с прежним reader. Сохранены Unicode priority, квоты, отмена и fallback;
+  legacy-кодировки не превращаются в Unicode. Минимальный base wheel не требует
+  fontTools для этого профиля.
+- Поддержанные SingleSubst рядом с ligature lookups больше не требуют fontTools
+  для чтения GSUB/ToUnicode. Собственный reader проверяет оба формата, coverage,
+  extension wrappers, размеры и glyph IDs; прежняя политика Unicode и PDF shaping
+  сохраняется. Проверен установленный минимальный PDF-профиль с собственным шрифтом.
+- Опциональный PDF TextLayout связывает точные glyph observations с диапазонами
+  текста через публичный Model API: `fi` сохраняет связь 2:1 и snapshot версии 2.
+  Изменённые текст/стиль дают stale; повторный захват не подтверждает прежнюю
+  геометрию, сохраняет сторонние layouts/extra и атомарность отмены.
+  Полный paint state, reading order и native writer projection остаются открытыми.
+- Собственный GSUB/ToUnicode reader поддерживает статический TrueType с `post` 1.0
+  в дополнение к 2/3: этот профиль обходится без fontTools. Проверены совпадение
+  mappings с прежним reader, восстановление текста и неизменность пикселей PDF;
+  остальные ограничения shaping и настоящий subsetting сохраняются.
+- Закреплён официальный OpenDoc Model 0.19.0 с контрактами C-TEXT-LAYOUT-01/02:
+  типизированные глифы, кластеры и атомарные пакетные операции доступны в обычной
+  среде адаптера. MIT не изменён, остальные закреплённые зависимости прежние.
+  Расширение конечного PDF reader профиля и проекция в writer остаются C-PDF-01.
 - `PdfDocument.page_text_placements` сохраняет точные native glyph matrices,
   форму глифа, Unicode/ID continuations и отдельные fill/stroke/ignore/clip
   occurrences. Учтены Form/CTM, font program digests, квоты и отмена. Заимствованные
@@ -20,7 +88,7 @@
   к сети/файлам и без заявления об их валидности. Неизменяемый инвентарь сохраняет
   атрибуты и source locations, поддерживает JSON и буквальное сравнение. Квоты,
   отмена и строгий reader сохранены; новых зависимостей и изменений Model нет.
-- Подключён официальный OpenDoc Model 0.18.1: общий codec проверяет JSON до
+- Общий codec OpenDoc Model проверяет JSON до
   копирования и не вызывает пользовательский `__deepcopy__` для JSON-контейнеров.
   API и схема модели прежние. Полный wheel и MIT license проверены по SHA-256;
   остальные закреплённые зависимости не изменены. Парсинг и политика переноса

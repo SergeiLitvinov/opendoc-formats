@@ -69,6 +69,70 @@ def _same(left: tuple, right: tuple) -> bool:
     return len(left) == len(right) and all(abs(a-b) <= .0001 for a, b in zip(left, right))
 
 
+def _fragment(line: tuple, expected: tuple) -> bool:
+    vertical = expected[0] == expected[2]
+    axis, fixed = (1, 0) if vertical else (0, 1)
+    return (line[fixed] == line[fixed+2] and abs(line[fixed]-expected[fixed]) <= .0001
+            and line[axis+2] > line[axis] and line[axis] >= expected[axis]-.0001
+            and line[axis+2] <= expected[axis+2]+.0001)
+
+
+def _complete_strokes(matches: list, segments: set) -> bool:
+    grouped: dict[tuple, list[tuple]] = {}
+    for line, _image, _location, _style, expected in matches:
+        checkpoint()
+        grouped.setdefault(expected, []).append(line)
+    if grouped.keys() != segments:
+        return False
+    for expected, fragments in grouped.items():
+        checkpoint()
+        axis = 1 if expected[0] == expected[2] else 0
+        cursor = expected[axis]
+        discrepancy = 0.0
+        for fragment in sorted(fragments, key=lambda item: item[axis]):
+            checkpoint()
+            discrepancy += abs(fragment[axis]-cursor)
+            if discrepancy > .0001:
+                return False  # Neither gaps nor overlapping paint may be merged away.
+            cursor = fragment[axis+2]
+        if discrepancy+abs(cursor-expected[axis+2]) > .0001:
+            return False
+    return True
+
+
+def _visible_fragment(segment: tuple, bounds: tuple) -> bool:
+    axis, fixed = (1, 0) if segment[0] == segment[2] else (0, 1)
+    return (bounds[fixed]-.0001 <= segment[fixed] <= bounds[fixed+2]+.0001
+            and max(segment[axis], bounds[axis]) < min(segment[axis+2], bounds[axis+2]))
+
+
+def _border_styles(matches: list, bounds: tuple) -> dict:
+    sides = ('top', 'left', 'bottom', 'right', 'insideH', 'insideV')
+    common = {item[3] for item in matches}
+    if len(common) == 1:
+        width, color = next(iter(common))
+        return {side: {'width': width, 'color': color} for side in sides}
+    grouped: dict[str, set] = {}
+    for segment, _image, _location, style, _expected in matches:
+        checkpoint()
+        if not _visible_fragment(segment, bounds):
+            continue
+        vertical = segment[0] == segment[2]
+        fixed, lower, upper = ((segment[0], bounds[0], bounds[2]) if vertical else
+                               (segment[1], bounds[1], bounds[3]))
+        if abs(fixed-lower) <= .0001:
+            side = 'left' if vertical else 'top'
+        elif abs(fixed-upper) <= .0001:
+            side = 'right' if vertical else 'bottom'
+        else:
+            side = 'insideV' if vertical else 'insideH'
+        grouped.setdefault(side, set()).add(style)
+    if set(grouped) != set(sides) or any(len(values) != 1 for values in grouped.values()):
+        return {}  # These measured differences require explicit cell borders.
+    return {side: {'width': next(iter(values))[0], 'color': next(iter(values))[1]}
+            for side, values in grouped.items()}
+
+
 def _line(image: Image, document: DocumentModel) -> tuple | None:
     resource = document.resources.get(image.resource_id)
     if resource is None or resource.media_type != 'application/pdf+vector':
@@ -130,8 +194,31 @@ def prepare_flow(document: DocumentModel, report: ConversionReport, *, limits: D
                         raise FlowProfileError(str(error), location) from error
                     segments = {(edge, y[0], edge, y[-1]) for edge in x}
                     segments.update((x[0], edge, x[-1], edge) for edge in y)
+                    original_cells = block.properties.get('pdf_source_cell_bounds')
+                    if original_cells is not None:
+                        try:
+                            segments, source_bounds = _source_segments(original_cells, x, y, limits)
+                            _bounds, _widths, placements = _selected_grid(block, x, y, limits)
+                            for _row, _column, cell in placements:
+                                checkpoint()
+                                if tuple(cell.properties['pdf_cell_bbox']) not in source_bounds:
+                                    raise ValueError('Retained cell is not one complete measured source cell')
+                        except ArtifactLimitError:
+                            raise
+                        except ValueError as error:
+                            raise FlowProfileError(str(error), location) from error
+                    elif any(cell.column_span > 1 or cell.row_span > 1 for row in block.rows for cell in row.cells):
+                        try:
+                            bounds, _widths, placements = _selected_grid(block, x, y, limits)
+                            if bounds != (x[0], y[0], x[-1], y[-1]):
+                                raise ValueError('Cropped merged grids need explicit original topology reconciliation')
+                            segments = _merged_segments(placements)
+                        except ArtifactLimitError:
+                            raise
+                        except ValueError as error:
+                            raise FlowProfileError(str(error), location) from error
                     specs.append({'table': block, 'location': location, 'number': table_number,
-                                  'segments': segments, 'matches': [], 'x': x, 'y': y})
+                                  'segments': segments, 'matches': [], 'seen': set(), 'x': x, 'y': y})
                 table_number += 1
             if isinstance(block, Paragraph):
                 for offset, inline in enumerate(block.content):
@@ -153,7 +240,7 @@ def prepare_flow(document: DocumentModel, report: ConversionReport, *, limits: D
                         if comparisons > 1_000_000:
                             raise ArtifactLimitError('Flow grid matching work exceeded', path=location,
                                                      quota='flow grid comparisons', maximum=1_000_000)
-                        if line is not None and _same(line, expected):
+                        if line is not None and _fragment(line, expected):
                             owners.append((spec, expected))
                 if len(owners) > 1:
                     raise ValueError('Grid occurrence belongs to more than one table')
@@ -161,9 +248,10 @@ def prepare_flow(document: DocumentModel, report: ConversionReport, *, limits: D
                     if inline_count != 1:
                         raise ValueError('Grid occurrence in a mixed paragraph cannot be consumed')
                     spec, expected = owners[0]
-                    if any(item[0] == expected for item in spec['matches']):
+                    if line in spec['seen']:
                         raise ValueError('Duplicate grid strokes require an explicit compositing profile')
-                    spec['matches'].append((expected, image, location, _style(image, result)))
+                    spec['seen'].add(line)
+                    spec['matches'].append((line, image, location, _style(image, result), expected))
                     consumed.add(index)
                 else:
                     raise ValueError('PDF vector has no verified editable table-grid replacement')
@@ -178,13 +266,22 @@ def prepare_flow(document: DocumentModel, report: ConversionReport, *, limits: D
                 continue
             table, location = spec['table'], spec['location']
             try:
-                if len(matches) != len(spec['segments']) or len({item[3] for item in matches}) != 1:
-                    raise ValueError('Table grid must be complete with a uniform native stroke')
-                bounds, widths = _selected_grid(table, spec['x'], spec['y'], limits)
+                if not _complete_strokes(matches, spec['segments']):
+                    raise ValueError('Table grid stroke coverage must be complete')
+                bounds, widths, placements = _selected_grid(table, spec['x'], spec['y'], limits)
                 width, color = matches[0][3]
-                expected_borders = BorderSet({side: Border(kind='line', style='solid',
-                            color=ColorValue.from_hex(color), width_pt=width)
-                            for side in ('top', 'left', 'bottom', 'right', 'inside-horizontal', 'inside-vertical')})
+                border_styles = _border_styles(matches, bounds)
+                names = {'insideH': 'inside-horizontal', 'insideV': 'inside-vertical'}
+                cell_borders = None
+                if not border_styles:
+                    from opendoc_formats.writers.docx_flow_borders import plan_cell_borders
+
+                    cell_borders = plan_cell_borders(matches, placements, limits=limits)
+                expected_borders = (BorderSet({side: Border(kind='none') for side in
+                    ('top', 'left', 'bottom', 'right', 'inside-horizontal', 'inside-vertical')}) if cell_borders else
+                    BorderSet({names.get(side, side): Border(kind='line', style='solid',
+                            color=ColorValue.from_hex(style['color']), width_pt=style['width'])
+                            for side, style in border_styles.items()}))
                 declared_borders = get_borders(table, limits=limits)
                 if declared_borders is not None and declared_borders != expected_borders:
                     raise ValueError('Edited border declarations need explicit source-grid reconciliation')
@@ -196,16 +293,28 @@ def prepare_flow(document: DocumentModel, report: ConversionReport, *, limits: D
                 if not declared_widths:
                     set_preferred_width(table, WidthMeasure('absolute', sum(widths), 'pt'), limits=limits)
                     table.properties['grid_widths_twips'] = [round(value*20) for value in widths]
-                    for row in table.rows:
-                        for column, cell in enumerate(row.cells):
-                            checkpoint()
-                            set_preferred_width(cell, WidthMeasure('absolute', widths[column], 'pt'), limits=limits)
+                    for _row, column, cell in placements:
+                        checkpoint()
+                        set_preferred_width(cell, WidthMeasure('absolute', sum(widths[column:column+cell.column_span]), 'pt'),
+                                            limits=limits)
+                from opendoc_formats.ooxml.source_grid import capture_source_grid
+
+                capture_source_grid(table)
                 target_id = f'flow-table-{spec["number"]}'
-                targets.append(ObjectOccurrence(target_id, extra={'body_table': spec['number'], 'width': width, 'color': color}))
-                for segment, image, source_location, _ in matches:
+                target_extra = {'body_table': spec['number'], 'width': width, 'color': color,
+                                'border_styles': border_styles}
+                if table.properties.get('docx_source_grid_identity') is not None:
+                    target_extra['source_grid'] = table.properties['docx_source_grid_identity']
+                if cell_borders is not None:
+                    target_extra['cell_borders'] = cell_borders
+                if cell_borders is not None or any(cell.row_span > 1 or cell.column_span > 1
+                                                   for _row, _column, cell in placements):
+                    target_extra['cell_topology'] = [[row, column, cell.row_span, cell.column_span]
+                                                     for row, column, cell in placements]
+                targets.append(ObjectOccurrence(target_id, extra=target_extra))
+                for segment, image, source_location, _, _expected in matches:
                     checkpoint()
-                    visible = (bounds[0] <= segment[0] <= bounds[2] if segment[0] == segment[2]
-                               else bounds[1] <= segment[1] <= bounds[3])
+                    visible = _visible_fragment(segment, bounds)
                     source_id = f'flow-source-{len(sources)}'
                     sources.append(ObjectOccurrence(source_id, resource_id=image.resource_id,
                                                     provenance=deepcopy(image.provenance)))
@@ -292,7 +401,9 @@ def _selected_grid(table: Table, x: list[float], y: list[float], limits: Documen
     widths = [None] * columns
     boxes = []
     occupied = set()
-    for _row, column, cell in placements:
+    origins = set()
+    merged = False
+    for native_row, column, cell in placements:
         checkpoint()
         raw = cell.properties.get('pdf_cell_bbox')
         if not isinstance(raw, list) or len(raw) != 4:
@@ -300,24 +411,117 @@ def _selected_grid(table: Table, x: list[float], y: list[float], limits: Documen
         a, b, c, d = map(_number, raw)
         if a not in x or c not in x or b not in y or d not in y or a >= c or b >= d:
             raise ValueError('Retained cell is not aligned to the original PDF grid')
-        if (cell.column_span != 1 or cell.row_span != 1 or x.index(c)-x.index(a) != 1 or y.index(d)-y.index(b) != 1):
-            raise ValueError('Merged source grid replacement requires a separate measured profile')
+        start, end, top, bottom = x.index(a), x.index(c), y.index(b), y.index(d)
+        if cell.column_span != end-start or cell.row_span != bottom-top:
+            raise ValueError('Cell spans disagree with measured PDF source bounds')
+        origins.add((start-column, top-native_row))
+        merged = merged or cell.column_span > 1 or cell.row_span > 1
         for row in range(y.index(b), y.index(d)):
             for col in range(x.index(a), x.index(c)):
                 checkpoint()
                 if (row, col) in occupied:
                     raise ValueError('Retained source cells overlap')
                 occupied.add((row, col))
-        if widths[column] not in (None, c-a):
-            raise ValueError('Retained cell widths disagree within a column')
-        widths[column] = c-a
+        for offset in range(cell.column_span):
+            checkpoint()
+            width = x[start+offset+1]-x[start+offset]
+            if widths[column+offset] not in (None, width):
+                raise ValueError('Retained cell widths disagree within a column')
+            widths[column+offset] = width
         boxes.append((a, b, c, d))
+    if merged and len(origins) != 1:
+        raise ValueError('Merged cell placement disagrees with measured source topology')
     if not boxes or any(value is None for value in widths):
         raise ValueError('Selected grid is empty or incomplete')
     bounds = (min(b[0] for b in boxes), min(b[1] for b in boxes), max(b[2] for b in boxes), max(b[3] for b in boxes))
     if sum((b[2]-b[0])*(b[3]-b[1]) for b in boxes) != (bounds[2]-bounds[0])*(bounds[3]-bounds[1]):
         raise ValueError('Selected cells do not form one contiguous rectangle')
-    return bounds, widths
+    return bounds, widths, placements
+
+
+def _merged_segments(placements: list) -> set:
+    return _cell_segments([cell.properties['pdf_cell_bbox'] for _row, _column, cell in placements])
+
+
+def _source_segments(raw: object, x: list[float], y: list[float], limits: DocumentLimits | None) -> tuple:
+    maximum = (len(x)-1)*(len(y)-1)
+    budget = limits or DocumentLimits()
+    if maximum > budget.max_nodes:
+        raise ArtifactLimitError('Source table grid exceeds selected node budget', path='table.pdf_source_cell_bounds',
+                                 quota='flow source grid', maximum=budget.max_nodes)
+    if not isinstance(raw, list) or not raw or len(raw) > maximum:
+        raise ValueError('Invalid measured source cell inventory')
+    xs, ys = {value: index for index, value in enumerate(x)}, {value: index for index, value in enumerate(y)}
+    boxes, occupied = set(), set()
+    for value in raw:
+        checkpoint()
+        if not isinstance(value, list) or len(value) != 4:
+            raise ValueError('Invalid measured source cell bounds')
+        a, b, c, d = map(_number, value)
+        if a not in xs or c not in xs or b not in ys or d not in ys or a >= c or b >= d:
+            raise ValueError('Source cell is not aligned to measured grid edges')
+        for row in range(ys[b], ys[d]):
+            for column in range(xs[a], xs[c]):
+                checkpoint()
+                if (row, column) in occupied:
+                    raise ValueError('Measured source cells overlap')
+                occupied.add((row, column))
+        boxes.add((a, b, c, d))
+    if len(occupied) != maximum:
+        raise ValueError('Measured source grid is incomplete')
+    return _cell_segments(boxes), boxes
+
+
+def _cell_segments(boxes: list | set) -> set:
+    groups: dict[tuple, set] = {}
+    for a, b, c, d in boxes:
+        checkpoint()
+        for key, interval in (((0, a), (b, d)), ((0, c), (b, d)), ((1, b), (a, c)), ((1, d), (a, c))):
+            groups.setdefault(key, set()).add(interval)
+    segments = set()
+    for (axis, fixed), intervals in groups.items():
+        start = end = None
+        for left, right in sorted(intervals):
+            checkpoint()
+            if end is not None and left > end:
+                segments.add((fixed, start, fixed, end) if axis == 0 else (start, fixed, end, fixed))
+                start = None
+            start = left if start is None else start
+            end = right if end is None else max(end, right)
+        segments.add((fixed, start, fixed, end) if axis == 0 else (start, fixed, end, fixed))
+    return segments
+
+
+def _native_cell_topology(table: ET.Element) -> list:
+    w = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
+    anchors: list[list[int]] = []
+    active: dict[tuple[int, int], list[int]] = {}
+    for row, native_row in enumerate(table.findall(w+'tr')):
+        checkpoint()
+        column = 0
+        following = {}
+        for cell in native_row.findall(w+'tc'):
+            checkpoint()
+            props = cell.find(w+'tcPr')
+            span = props.find(w+'gridSpan') if props is not None else None
+            width = int(span.get(w+'val')) if span is not None else 1
+            merge = props.find(w+'vMerge') if props is not None else None
+            if merge is not None and merge.get(w+'val', 'continue') == 'continue':
+                if (column, width) not in active:
+                    raise ValueError('Native Word merge continuation has no matching origin')
+                anchor = active[column, width]
+                anchor[2] += 1
+                following[column, width] = anchor
+            else:
+                anchor = [row, column, 1, width]
+                anchors.append(anchor)
+                if merge is not None:
+                    if merge.get(w+'val') != 'restart':
+                        raise ValueError('Unknown native Word merge declaration')
+                    following[column, width] = anchor
+            column += width
+        active = following
+    return anchors
 
 
 def finalize_flow_mapping(report: ConversionReport, path: Path, *, limits: DocumentLimits | None = None) -> None:
@@ -328,21 +532,45 @@ def finalize_flow_mapping(report: ConversionReport, path: Path, *, limits: Docum
     w = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
     with ZipFile(path) as package:
         root = ET.fromstring(package.read('word/document.xml'))
+        for plan in report.metrics['docx_flow_grid_plan']:
+            if 'source_grid' in plan:
+                from opendoc_formats.ooxml.source_grid import verify_source_grid
+
+                verify_source_grid(package, root, plan['body_table'], plan['source_grid'])
     tables = root.find(w+'body').findall(w+'tbl')
     targets = []
     for plan in report.metrics['docx_flow_grid_plan']:
         checkpoint()
         target = ObjectOccurrence(plan['id'], extra={key: value for key, value in plan.items() if key != 'id'})
         number = target.extra['body_table']
+        if 'cell_topology' in target.extra and _native_cell_topology(tables[number]) != target.extra['cell_topology']:
+            raise ValueError('Native Word merged-cell topology changed')
         borders = tables[number].find(w+'tblPr/'+w+'tblBorders')
         if borders is None or len(borders) != 6:
             raise ValueError('Native Word table border replacement was not written')
+        if 'cell_borders' in target.extra:
+            from opendoc_formats.writers.docx_flow_borders import verify_cell_borders
+
+            if ({border.tag.removeprefix(w) for border in borders}
+                    != {'top', 'left', 'bottom', 'right', 'insideH', 'insideV'}
+                    or any(border.attrib != {w+'val': 'none'} for border in borders)):
+                raise ValueError('Native Word cell-border table baseline changed')
+            verify_cell_borders(tables[number], target.extra['cell_borders'])
+            targets.append(replace(target, native_locator=NativeObjectLocator(
+                'docx', f'word/document.xml#/w:document/w:body/w:tbl[{number+1}]')))
+            continue
+        styles = target.extra.get('border_styles') or {side: {'width': target.extra['width'], 'color': target.extra['color']}
+                    for side in ('top', 'left', 'bottom', 'right', 'insideH', 'insideV')}
+        if {border.tag.removeprefix(w) for border in borders} != set(styles):
+            raise ValueError('Native Word border roles changed')
         for border in borders:
-            if (border.get(w+'val') != 'single' or border.get(w+'color') != target.extra['color']
-                    or int(border.get(w+'sz', '-1')) != round(target.extra['width']*8)):
+            style = styles[border.tag.removeprefix(w)]
+            if (border.get(w+'val') != 'single' or border.get(w+'color') != style['color']
+                    or int(border.get(w+'sz', '-1')) != round(style['width']*8)):
                 raise ValueError('Native Word table border replacement changed stroke')
         targets.append(replace(target, native_locator=NativeObjectLocator(
-            'docx', f'word/document.xml#/w:document/w:body/w:tbl[{number+1}]/w:tblPr/w:tblBorders',
+            'docx', f'word/document.xml#/w:document/w:body/w:tbl[{number+1}]'
+                    +('' if 'cell_topology' in target.extra else '/w:tblPr/w:tblBorders'),
         )))
     grouped: dict[tuple[str, bool], list[ObjectMappingEntry]] = {}
     for entry in mapping.entries:

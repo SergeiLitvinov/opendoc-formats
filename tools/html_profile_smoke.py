@@ -4,14 +4,42 @@ import importlib.util
 import tempfile
 from pathlib import Path
 
+import opendoc_model as od
 from bs4 import BeautifulSoup
 from opendoc_model.document_codec import document_from_json, document_to_json
 
 from opendoc_formats import ExportOptions, read_document, write_document
 
 
+def font_roundtrip(root):
+    fixtures = Path(__file__).resolve().parents[1]/'tests/native/data'
+    for name, media, text in [('ligature-post3.ttf', 'font/ttf', 'fi ti fi'), ('own-cff.otf', 'font/otf', 'AB')]:
+        data = (fixtures/name).read_bytes()
+        style = od.TextStyle(font_family='Unrelated declared family', font_size=od.Length(20))
+        od.set_font_reference(style, od.FontReference('own', 0))
+        model = od.DocumentModel(sections=[od.Section(blocks=[od.Paragraph([od.TextRun(text, style)])])], resources={
+            'own': od.Resource('own', od.ResourceKind.FONT, media, data=data),
+        })
+        for cycle in range(2):
+            target = root/f'{name}-{cycle}.html'
+            before = od.document_to_json(model)
+            report = write_document(model, target)
+            assert report.success, report.issues
+            assert od.document_to_json(model) == before
+            result = read_document(target)
+            assert result.success, result.issues
+            model = od.document_from_json(od.document_to_json(result.document))
+            fonts = [r for r in model.resources.values() if r.kind is od.ResourceKind.FONT]
+            assert len(fonts) == 1 and fonts[0].data == data
+            runs = model.sections[0].blocks[0].content
+            assert ''.join(run.text for run in runs) == text
+            for run in runs:
+                ref = od.get_font_reference(run.style)
+                assert ref is not None and ref.face_index == 0 and model.resources[ref.resource_id].data == data
+
+
 def main():
-    for engine in ("lxml", "docx", "pptx", "pymupdf", "pypdf", "PIL", "ebooklib"):
+    for engine in ("lxml", "docx", "pptx", "pymupdf", "pypdf", "PIL", "ebooklib", "fontTools"):
         assert importlib.util.find_spec(engine) is None, f"Unexpected engine: {engine}"
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
@@ -55,7 +83,9 @@ def main():
             assert target.read_bytes() == previous
             source = target
         assert (root / "source.html").read_bytes() == original
+        font_roundtrip(root)
     print("Installed minimal HTML profile passed: two JSON cycles, languages and table semantics")
+    print('HTML TTF/OTF import/export: full programs and FontReference retained without fontTools')
 
 
 if __name__ == "__main__":

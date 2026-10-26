@@ -7,6 +7,23 @@ from typing import Any
 
 from opendoc_model import ConversionReport, IssueSeverity
 
+from opendoc_formats.errors import InvalidDocumentError, OperationCancelledError, ResourceLimitError, UnsupportedDocumentError
+from opendoc_formats.fonts.sfnt_ligatures import read_ligature_mapping
+from opendoc_formats.support.cancellation import checkpoint
+
+
+def _program_ligature_map(data: bytes) -> dict[int, str]:
+    try:
+        return read_ligature_mapping(data)
+    except (InvalidDocumentError, ResourceLimitError, UnsupportedDocumentError):
+        checkpoint()
+        from fontTools.ttLib import TTFont
+
+        with TTFont(BytesIO(data), lazy=False) as font:
+            result = _ligature_map(font)
+        checkpoint()
+        return result
+
 
 def restore_ligature_unicode(pdf: Any, report: ConversionReport, location: str) -> None:
     """Keep glyphs and shaping; amend only generated Identity-H Unicode maps.
@@ -16,10 +33,6 @@ def restore_ligature_unicode(pdf: Any, report: ConversionReport, location: str) 
     evidence of the missing text. Other fonts and ambiguous substitutions retain
     the subsequent text verifier's refusal behavior.
     """
-    try:
-        from fontTools.ttLib import TTFont
-    except ImportError:
-        return
     fonts = {int(font[0]) for page in pdf for font in page.get_fonts(full=True) if int(font[0]) > 0}
     if len(fonts) > 200:
         report.add(IssueSeverity.ERROR, 'pdf-unicode-limit', 'Generated font inventory exceeds the Unicode profile', location)
@@ -27,6 +40,7 @@ def restore_ligature_unicode(pdf: Any, report: ConversionReport, location: str) 
     repaired = 0
     work = 0
     for xref in sorted(fonts):
+        checkpoint()
         if pdf.xref_get_key(xref, 'Encoding') != ('name', '/Identity-H'):
             continue
         kind, reference = pdf.xref_get_key(xref, 'ToUnicode')
@@ -46,8 +60,9 @@ def restore_ligature_unicode(pdf: Any, report: ConversionReport, location: str) 
             report.add(IssueSeverity.ERROR, 'pdf-unicode-limit', 'Embedded fonts exceed the Unicode profile', location)
             return
         try:
-            with TTFont(BytesIO(data), lazy=False) as font:
-                mapping = _ligature_map(font)
+            mapping = _program_ligature_map(data)
+        except OperationCancelledError:
+            raise
         except Exception:  # noqa: BLE001 - unknown font data is not evidence for a repair
             continue
         if not mapping:

@@ -1,0 +1,46 @@
+{
+  "scope": "GSUB ContextSubst/ChainContextSubst types 5/6 format 1 and extensions 7->5/6; static standalone TrueType post 1/2/3/4; structural validation only",
+  "model": "opendoc-model==0.19.0; import opendoc_model",
+  "published": false,
+  "dependencies_changed": false,
+  "specification": "https://learn.microsoft.com/en-us/typography/opentype/spec/chapter2#sequence-context-format-1-simple-glyph-contexts",
+  "checks": {
+    "new_rule_tests_passed": 94,
+    "context_formats_1_3_tests_passed": 160,
+    "font_regression_passed": 1198,
+    "font_regression_skipped": 1,
+    "skip_reason": "Real POSIX fork unavailable on Windows",
+    "regression_scope": "All tests/**/*.py filenames containing font/sfnt/fvar/ligature; not a full-project regression",
+    "equivalence": "Owned raw format-1 rules with coverage 1/2, direct/extension, before/after ligatures, NULL/shared RuleSet and repeated rules equal previous fontTools mapping; imports forbidden on native path",
+    "references": "Rule arrays and glyph IDs checked, ordered SequenceLookupRecords bounded without recursion/execution; changed-input sequenceIndex preserves previous engine fallback",
+    "damage": "Mismatched coverage/RuleSet counts, offsets into parent headers, empty input, out-of-maxp glyph IDs, out-of-range lookup reference and every truncation reject partial native evidence",
+    "work_budget": "Shared RuleSet and repeated rules charged for every access under existing 262144 word/coverage budget",
+    "cancellation": "Cancellation inside rule glyph-array validation propagates without engine fallback",
+    "pdf": "Real Story PDF GSUB 1.0/1.1 and post 1/2/3/4: restored text after save/reload, unchanged MuPDF pixels, fontTools imports forbidden",
+    "installed_pdf_smoke": "Fresh isolated wheel with Model 0.19.0 and PyMuPDF 1.28.2 only: ten owned TTF/OTF programs, exact embedded bytes, text, stable pixels, two JSON cycles, re-import and opt-in TextLayout; fontTools/Pillow/Office/HTML engines absent",
+    "strict_mypy_files": 41,
+    "ruff": "passed",
+    "license_inventory": "passed",
+    "boundary_audit_modules": 217
+  },
+  "fixtures": [
+    {
+      "file": "tests/native/data/ligature-rules5.ttf",
+      "bytes": 1376
+    },
+    {
+      "file": "tests/native/data/ligature-rules6.ttf",
+      "bytes": 1392
+    }
+  ],
+  "fixture_license": "MIT; Copyright 2026 Sergei Litvinov; own outlines and raw GSUB with fixed timestamps and license records, reproducibility asserted",
+  "boundary": "Formats owns binary parsing and ToUnicode evidence; Model unchanged. No nested lookup execution or shaping. Format 2, nonzero flags, changed-input sequence interpretation, CFF/variations and real subsetting retain established fontTools path; engine resources outside native budgets.",
+  "source_sha256": {
+    "src/opendoc_formats/fonts/sfnt_ligatures.py": "b78b7efdf4cfb631486e64d4476627138e0a9b21fb4a6d43d3ad9da798165cf4",
+    "tests/test_native_font_context_rules.py": "a8e3ac211a1a97f8c45740984bfbb18374932580ee5cf601e25b79113a07c160",
+    "tests/test_native_font_ligatures.py": "f3d8505fbd34e1e0270a59556f890ec15c1d9eabeb0943c5926e854edf35afb2",
+    "tools/pdf_ligature_smoke.py": "dabeaae7f5541fc094d7d69013a63b695121f4f417ac57780c29013529050b57",
+    "tests/native/data/ligature-rules5.ttf": "f69af538874e85d675055da4c6a50542cef1b5a88094891b980255ced0f2bb1c",
+    "tests/native/data/ligature-rules6.ttf": "affc8cf56a6385f1fd1afec496415012921a90fd0abc05a7394a9e648a31340a"
+  }
+}

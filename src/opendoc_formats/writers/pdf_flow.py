@@ -6,7 +6,7 @@ import math
 from dataclasses import replace
 from typing import Any
 
-from opendoc_model import ConversionReport, DocumentModel, Image, IssueSeverity, Paragraph, get_anchor
+from opendoc_model import ConversionReport, DocumentModel, Image, IssueSeverity, Paragraph, Table, get_anchor
 from opendoc_model.limits import DocumentLimits
 
 from opendoc_formats.writers.html_writer import _HtmlRenderer
@@ -20,10 +20,37 @@ class PdfFlowRenderer(_HtmlRenderer):
         super().__init__(document, report, limits=limits)
         self.flow_ids = flow_ids
         self.mapping = mapping
+        self.limits = limits
+        self.table_grids: dict[int, dict[int, float]] = {}
         self.flow_paragraphs: dict[str, list[str]] = {}
+        self.flow_tables: dict[str, list[str]] = {}
         for location, token in flow_ids.items():
-            if '.content[' in location and '.rows[' not in location:
+            if '.rows[' in location:
+                self.flow_tables.setdefault(location.split('.rows[', 1)[0], []).append(token)
+            elif '.content[' in location:
                 self.flow_paragraphs.setdefault(location.rsplit('.content[', 1)[0], []).append(token)
+
+    def _table(self, table: Table, location: str, *, caption: str | None = None) -> str:
+        rendered = super()._table(table, location, caption=caption)
+        if location in self.flow_tables:
+            self.report.add(IssueSeverity.LOSS, 'pdf-table-flow-layout',
+                            'Raster sizes and source column proportions guide flow; native table row splitting '
+                            'and exact source pagination are not reproduced', location)
+        # A cell cannot be moved independently of its row/span topology. Retry
+        # only at the containing outer table, including nested table images.
+        return ''.join(f'<!--{token}-break-->' for token in self.flow_tables.get(location, ())) + rendered
+
+    def _table_cell_styles(self, table: Table, row: int, cell: int) -> list[str]:
+        if id(table) not in self.table_grids:
+            from opendoc_formats.ooxml.table_grid import native_grid
+
+            widths = list(table.properties.grid_widths_twips)
+            columns, placements = native_grid(table, limits=self.limits)
+            valid = len(widths) == columns and all(type(width) is int and width > 0 for width in widths)
+            self.table_grids[id(table)] = ({id(value): 100*sum(widths[column:column+value.column_span])/sum(widths)
+                                            for _row, column, value in placements} if valid else {})
+        width = self.table_grids[id(table)].get(id(table.rows[row].cells[cell]))
+        return [f'width:{width:.10f}%'] if width is not None else []
 
     def _paragraph(self, paragraph: Paragraph, location: str) -> str:
         if paragraph.box is not None and paragraph.provenance is not None and paragraph.provenance.source_format == 'pdf':
@@ -79,11 +106,11 @@ def next_flow_break(
     html: str, positions: dict[tuple[str, int], tuple[float, ...]], bottom: float,
     forced: set[str],
 ) -> tuple[str, str] | None:
-    """Move the first overflowing body raster paragraph, never resize its frame.
+    """Move the first overflowing raster's body paragraph/table, never resize its frame.
 
     Story can report completion with an inline-block below its placement rectangle.
-    Only private markers before complete body paragraphs permit a bounded retry;
-    table cells and running content retain their separate rejection policies.
+    Only private markers before complete body paragraphs/tables permit a bounded
+    retry. A cell is never detached; running content retains its rejection policy.
     """
     candidates = []
     for (token, _page), rectangle in positions.items():
@@ -97,5 +124,5 @@ def next_flow_break(
         return None
     _, token, marker = min(candidates)
     if token in forced:
-        raise ValueError('Inline raster paragraph still overflows after a page break')
+        raise ValueError('Inline raster paragraph/table still overflows after a page break')
     return html.replace(marker, marker + '<div style="page-break-before:always"></div>', 1), token

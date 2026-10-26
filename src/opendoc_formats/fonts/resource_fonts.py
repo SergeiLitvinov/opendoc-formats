@@ -1,4 +1,4 @@
-"""Use document-owned font programs during Word export without shared installs."""
+"""Use document-owned font programs during export without shared installs."""
 
 from __future__ import annotations
 
@@ -9,11 +9,20 @@ from dataclasses import replace
 from io import BytesIO
 from typing import Any, Iterator
 
-from opendoc_model import DocumentLimits, DocumentModel, IssueSeverity, ResourceKind, TextStyle, get_font_reference
+from opendoc_model import (
+    ArtifactLimitError,
+    DocumentLimits,
+    DocumentModel,
+    IssueSeverity,
+    ResourceKind,
+    TextStyle,
+    get_font_reference,
+)
 
-from opendoc_formats.errors import OperationCancelledError
+from opendoc_formats.errors import InvalidDocumentError, OperationCancelledError, ResourceLimitError, UnsupportedDocumentError
 from opendoc_formats.fonts.resolver import FontFace, FontResolution, FontResolver, _read_face
-from opendoc_formats.support.artifacts import ArtifactWorkspace
+from opendoc_formats.fonts.sfnt_names import read_program_names
+from opendoc_formats.support.artifacts import DEFAULT_ARTIFACT_QUOTA, ArtifactWorkspace
 from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 
 
@@ -22,6 +31,22 @@ def _plain_name(name: str) -> str:
 
 
 def font_program_names(data: bytes) -> tuple[str, tuple[str, ...]]:
+    try:
+        names = read_program_names(data)
+    except (InvalidDocumentError, ResourceLimitError, UnsupportedDocumentError):
+        checkpoint()
+        result = _fonttools_program_names(data)
+        checkpoint()
+        return result
+    family = names.get(16) or names.get(1)
+    if not family:
+        raise ValueError('Font program has no family name')
+    if not names.get(4):
+        raise ValueError('Word font program requires a full font name')
+    return family, tuple(name for identifier in (1, 4, 6, 16) if (name := names.get(identifier)))
+
+
+def _fonttools_program_names(data: bytes) -> tuple[str, tuple[str, ...]]:
     from fontTools.ttLib import TTFont
 
     with TTFont(BytesIO(data), lazy=True) as native:
@@ -83,33 +108,48 @@ class ResourceFontResolver(FontResolver):
 
 @contextmanager
 def document_font_resolver(document: DocumentModel, report: Any, *,
-                           limits: DocumentLimits | None = None) -> Iterator[FontResolver]:
+                           limits: DocumentLimits | None = None, target: str = 'docx') -> Iterator[ResourceFontResolver]:
+    if target not in {'docx', 'pdf', 'html'}:
+        raise ValueError('Font resource target must be docx, pdf or html')
     fonts = [
         resource
         for resource in cancellable_items(document.resources.values())
         if resource.kind is ResourceKind.FONT and resource.data
     ]
+    if target in {'pdf', 'html'}:
+        maximum = (limits or DocumentLimits()).max_embedded_bytes
+        total = 0
+        for resource in fonts:
+            checkpoint()
+            total += len(resource.data)
+            if total > maximum:
+                raise ArtifactLimitError(f'{target.upper()} font programs exceed embedded-byte budget',
+                                         path=f'$.resources[{resource.id!r}].data', quota='embedded bytes', maximum=maximum)
     system = FontResolver.system()
-    with ArtifactWorkspace(prefix='opendoc_formats_font_resources_') as workspace:
+    workspace_budget = (max(1, (limits or DocumentLimits()).max_embedded_bytes)
+                        if target in {'pdf', 'html'} else DEFAULT_ARTIFACT_QUOTA)
+    with ArtifactWorkspace(prefix='opendoc_formats_font_resources_', max_bytes=workspace_budget) as workspace:
         faces = []
         aliases = {}
         native_names = {}
         bindings = {}
         variants = {}
         resource_faces = {}
-        pdf = document.metadata.get('pdf_docx_layout') is not None
+        pdf = target in {'pdf', 'html'} or document.metadata.get('pdf_docx_layout') is not None
         for index, resource in enumerate(fonts):
             checkpoint()
             location = f'resources[{resource.id!r}]'
             if resource.media_type not in {'font/ttf', 'font/otf'}:
-                report.add(IssueSeverity.LOSS, 'font-resource', 'Word cannot embed this font program profile', location)
+                report.add(IssueSeverity.LOSS, 'font-resource',
+                           f'{target.upper()} cannot use this font program profile', location)
                 continue
             try:
+                suffix = '.otf' if resource.media_type == 'font/otf' else '.ttf'
+                path = workspace.write_bytes(f'font-{index}{suffix}', resource.data)
                 family, names = font_program_names(resource.data)
                 for name in names:
                     checkpoint()
                     aliases[_plain_name(name)] = family
-                path = workspace.write_bytes(f'font-{index}.ttf', resource.data)
                 face = _read_face(path)
                 if face is None:
                     raise ValueError('Font program cannot be inspected')
@@ -131,7 +171,7 @@ def document_font_resolver(document: DocumentModel, report: Any, *,
                     italic = variant in {'embedItalic', 'embedBoldItalic'} if variant else face.italic
                     bindings[(_plain_name(native), bold, italic)] = face
                 faces.append(face)
-            except OperationCancelledError:
+            except (OperationCancelledError, ArtifactLimitError):
                 raise
             except Exception as error:  # noqa: BLE001 - untrusted font programs need located diagnostics
                 report.add(IssueSeverity.LOSS, 'font-resource', f'Embedded font could not be used: {error}', location)
@@ -139,3 +179,27 @@ def document_font_resolver(document: DocumentModel, report: Any, *,
                      if pdf and len(variants[(face.normalized_family, face.weight, face.italic)]) > 1}
         yield ResourceFontResolver(FontResolver(faces), aliases, system, native_names, bindings, strict=pdf,
                                    resource_faces=resource_faces, ambiguous=ambiguous, report=report, limits=limits)
+
+
+def check_resource_font_usages(document: DocumentModel, paths: frozenset[str], report: Any, *,
+                               target: str, limits: DocumentLimits | None) -> None:
+    """Reject resource substitutions that would discard an explicit source program."""
+    from opendoc_model import TextRun, walk_model
+
+    for location in walk_model(document, limits=limits):
+        checkpoint()
+        if not isinstance(location.node, TextRun) or not location.node.text:
+            continue
+        style = location.node.style
+        reference = get_font_reference(style, limits=limits)
+        resolution = style.properties.get('font_resolution', {})
+        path = resolution.get('path') if isinstance(resolution, dict) else None
+        reason = None
+        if reference is not None and path not in paths:
+            reason = f'Cannot use FONT resource {reference.resource_id!r}, face {reference.face_index!r} in {target.upper()}'
+        elif path in paths and (not resolution.get('embeddable') or resolution.get('missing_glyphs')):
+            reason = 'Referenced font has restricted embedding or does not cover the requested text'
+        if reason:
+            report.add(IssueSeverity.ERROR, f'{target}.font-reference', reason, location.path+'.style')
+    if any(issue.feature == 'font-resource-binding' for issue in report.issues):
+        report.add(IssueSeverity.ERROR, f'{target}.font-reference', 'Ambiguous embedded font requires an explicit FontReference')

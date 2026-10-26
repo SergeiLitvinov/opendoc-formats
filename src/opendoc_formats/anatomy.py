@@ -1,4 +1,4 @@
-"""Read-only binary inventories: ZIP/XML, active PDF objects and compound CFBF sectors/streams."""
+"""Read-only inventories: ZIP/XML, active PDF objects, CFBF sectors/streams and sfnt programs."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ from opendoc_formats.native.common import Source, positive_int, read_source
 from opendoc_formats.native.epub import inspection_content_types
 from opendoc_formats.native.opc import content_types, declared_content_type, xml_content_type
 from opendoc_formats.native.opc_audit import audit_package
-from opendoc_formats.support.cancellation import cancellation_scope, checkpoint
+from opendoc_formats.support.cancellation import cancellation_requested, cancellation_scope, checkpoint
 from opendoc_formats.support.io import ArchiveSafetyError, check_archive_safety
 
 
@@ -398,25 +398,77 @@ def _pdf_items(data: bytes, limits: AnatomyLimits, capture: bool) -> tuple[tuple
     return tuple(items), details
 
 
+def _sfnt_items(data: bytes, limits: AnatomyLimits, capture: bool,
+                checksums: bool, face_index: int | None, structure: bool) -> tuple[tuple[BinaryItem, ...], dict[str, Any]]:
+    from opendoc_formats.native.sfnt import SfntLimits, inspect_sfnt, inspect_sfnt_checksums, inspect_sfnt_structure
+
+    if len(data) > limits.max_part_bytes or len(data) > limits.max_total_bytes:
+        raise ResourceLimitError('sfnt:source: max_part_bytes/max_total_bytes exceeded by original program')
+    font_limits = SfntLimits(
+        max_input_bytes=limits.max_input_bytes, max_tables=limits.max_items-1,
+        max_table_bytes=limits.max_part_bytes, max_total_table_bytes=limits.max_total_bytes-len(data),
+        max_faces=limits.max_items-1,
+    )
+    if checksums and data.startswith(b'ttcf'):
+        raise UnsupportedDocumentError('Checksum audit requires standalone sfnt, not a collection face')
+    inventory = inspect_sfnt(data, capture=capture, cancelled=cancellation_requested, limits=font_limits,
+                             face_index=face_index)
+    items = [BinaryItem('sfnt:source', 'sfnt-source', len(data), inventory.source_sha256,
+                        payload=data if capture else None)]
+    for table in inventory.tables:
+        checkpoint()
+        record = memoryview(data)[table.directory_offset:table.directory_offset+16]
+        prefix = 'sfnt:' if inventory.face_index is None else f'sfnt:face={inventory.face_index}:'
+        items.append(BinaryItem(prefix+'table='+table.tag, 'sfnt-table', table.length, table.sha256,
+                                storage_sha256=hashlib.sha256(record).hexdigest(),
+                                details=(('tag', table.tag), ('offset', table.offset),
+                                         ('directory_offset', table.directory_offset),
+                                         ('declared_checksum', table.declared_checksum)), payload=table.payload))
+    details: dict[str, Any] = {'sfnt_version': inventory.sfnt_version, 'header_hex': inventory.header_hex,
+                               'variation_tables': inventory.variation_tables, 'assessment_complete': False}
+    if inventory.face_index is not None:
+        details.update(face_index=inventory.face_index, directory_offset=inventory.directory_offset)
+    if checksums:
+        details['checksums'] = asdict(inspect_sfnt_checksums(data, limits=font_limits, cancelled=cancellation_requested))
+    if structure:
+        report_limits = replace(font_limits, max_findings=limits.max_items-len(items))
+        details['structure'] = asdict(inspect_sfnt_structure(data, limits=report_limits, face_index=face_index,
+                                                            cancelled=cancellation_requested))
+    return tuple(items), details
+
+
 def inspect_binary(source: Source, *, container: str | None = None, limits: AnatomyLimits = AnatomyLimits(),
-                   parse_xml: bool = True, capture: bool = False,
+                   parse_xml: bool = True, capture: bool = False, sfnt_checksums: bool = False,
+                   sfnt_structure: bool = False,
+                   sfnt_face_index: int | None = None,
                    cancelled: Callable[[], bool] | None = None) -> BinarySnapshot:
     """Inspect content without executing macros, following external links or decoding PDF streams."""
-    if not isinstance(limits, AnatomyLimits) or type(parse_xml) is not bool or type(capture) is not bool:
+    if (not isinstance(limits, AnatomyLimits) or type(parse_xml) is not bool
+            or type(capture) is not bool or type(sfnt_checksums) is not bool or type(sfnt_structure) is not bool):
         raise TypeError('Expected AnatomyLimits and boolean inspection flags')
-    if container not in (None, 'zip', 'pdf', 'cfbf'):
-        raise ValueError('Binary inspection supports container=zip, pdf or cfbf')
+    if sfnt_face_index is not None:
+        positive_int(sfnt_face_index, 'sfnt_face_index', zero=True)
+    if container not in (None, 'zip', 'pdf', 'cfbf', 'sfnt'):
+        raise ValueError('Binary inspection supports container=zip, pdf, cfbf or sfnt')
     with cancellation_scope(cancelled, 'Binary inspection', inherit=True):
         data = read_source(source, limits.max_input_bytes, None)
         checkpoint()
         if container is None:
             is_zip = zipfile.is_zipfile(io.BytesIO(data))
-            is_pdf = b'%PDF-' in data[:1024] and not data.startswith((b'PK\x03\x04', b'PK\x05\x06', CFBF_SIGNATURE))
+            is_sfnt = data.startswith((b'\x00\x01\x00\x00', b'OTTO', b'ttcf'))
+            is_pdf = (b'%PDF-' in data[:1024] and not is_sfnt
+                      and not data.startswith((b'PK\x03\x04', b'PK\x05\x06', CFBF_SIGNATURE)))
             profiles = [name for name, present in (('zip', is_zip), ('pdf', is_pdf),
-                                                   ('cfbf', data.startswith(CFBF_SIGNATURE))) if present]
+                                                   ('cfbf', data.startswith(CFBF_SIGNATURE)), ('sfnt', is_sfnt)) if present]
             if len(profiles) != 1:
-                raise UnsupportedDocumentError('Choose zip/pdf/cfbf explicitly for an ambiguous or unsupported container')
+                raise UnsupportedDocumentError('Choose zip/pdf/cfbf/sfnt explicitly for an ambiguous or unsupported container')
             container = profiles[0]
+        if sfnt_checksums and container != 'sfnt':
+            raise ValueError('sfnt_checksums requires the sfnt container profile')
+        if sfnt_face_index is not None and container != 'sfnt':
+            raise ValueError('sfnt_face_index requires the sfnt container profile')
+        if sfnt_structure and container != 'sfnt':
+            raise ValueError('sfnt_structure requires the sfnt container profile')
         try:
             if container == 'zip':
                 items, details, opc, epub = _zip_items(data, limits, parse_xml, capture)
@@ -424,6 +476,9 @@ def inspect_binary(source: Source, *, container: str | None = None, limits: Anat
                 from opendoc_formats.native.cfbf import inspect_cfbf
 
                 items, details = inspect_cfbf(data, limits, capture)
+                opc, epub = None, None
+            elif container == 'sfnt':
+                items, details = _sfnt_items(data, limits, capture, sfnt_checksums, sfnt_face_index, sfnt_structure)
                 opc, epub = None, None
             else:
                 items, details = _pdf_items(data, limits, capture)

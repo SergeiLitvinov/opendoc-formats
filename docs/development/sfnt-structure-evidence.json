@@ -1,0 +1,60 @@
+{
+  "scope": "Finite readonly sfnt selected-directory order, search parameters, tag spaces, padding and representative table overlap observations",
+  "model": "opendoc-model==0.19.0",
+  "published": false,
+  "dependencies_changed": false,
+  "checks": {
+    "structure_tests_passed": 21,
+    "Anatomy_sfnt_TTC_suite_passed": 355,
+    "strict_mypy_files_passed": 39
+  },
+  "profile": {
+    "native_api": "inspect_sfnt_structure",
+    "public_option": "sfnt_structure=True",
+    "cli_option": "--sfnt-structure",
+    "selected_TTC_face_supported": true,
+    "input_snapshot_and_offsets": "Original bytes and absolute source offsets",
+    "overlap_strategy": "Sweep by offset with farthest-reaching active range; one representative partner per overlapping nonempty table",
+    "zero_length_tables": "Do not create payload overlap",
+    "padding": "Immediate bytes to next four-byte boundary, missing or nonzero recorded",
+    "opaque_trailing_data": "Retained, not reclassified as invalid padding",
+    "search_fields": "Derived from count; do not trust declared binary search parameters",
+    "max_findings_default": 4096,
+    "Anatomy_findings_budget": "Remaining max_items after original source and selected tables"
+  },
+  "preservation": [
+    "No font repair, byte rewriting or checksum changes",
+    "Existing hard bounds and invalid-table rejection remain enabled",
+    "Cancellation or finding quota failure returns no partial report",
+    "Report remains assessment_complete false",
+    "CLI compares the same audit on each input"
+  ],
+  "installed_acceptance": {
+    "packages": [
+      "opendoc-formats==0.42.0",
+      "opendoc-model==0.19.0"
+    ],
+    "commands": [
+      "python -I tools/package_smoke.py",
+      "python -I tools/document_anatomy.py SOURCE --sfnt-structure --compare SOURCE --output NEW_DIRECTORY"
+    ],
+    "fonttools_PDF_Office_HTML_Pillow_absent": true,
+    "healthy_and_damaged_padding_native_and_Anatomy_passed": true,
+    "CLI_structural_finding_and_comparison_passed": true,
+    "runtime_source_wheel_installed_files_identical": 216,
+    "tested_wheel_sha256": "73ce6082f5193d1c2ebe518ac09601d384ef2641ee2235dac6d46d0639376d90"
+  },
+  "source_files_sha256": {
+    "src/opendoc_formats/native/sfnt.py": "57550dbcda6002d77e5a34560896402d2abdacc11630735c7d8579118c61511b",
+    "src/opendoc_formats/anatomy.py": "49ef5664fc7f44590d4c84e492a63764eab79cc3006d477b9b80dbfa68b091a9",
+    "tools/document_anatomy.py": "457189d11206b4431950e709b0d74cc809ea77d105679533cda72725fb2646a5",
+    "tools/package_smoke.py": "8dc41894651b228c125f6567206bc29465e9e0f80868bd06b5f3cc9015e9537b",
+    "tests/test_sfnt_structure.py": "f9cd884d677684856906c31368ed20c86350506aa740c6ec291f031e211453d3"
+  },
+  "limitations": [
+    "Not a complete pairwise overlap graph or collection-wide shared-table audit",
+    "Glyph programs, shaping, rendering, signatures and legal embedding permission are outside this report",
+    "WOFF/WOFF2 and unsupported wrappers remain outside the sfnt profile",
+    "No Model changes or new dependencies; optional fontTools retained for other metadata profiles and actual subsetting"
+  ]
+}

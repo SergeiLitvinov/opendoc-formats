@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Any
 
 from opendoc_model import ArtifactLimitError, DocumentLimits
-from opendoc_model.color import ColorValue
 from opendoc_model.document_model import (
     Block as RichBlock,
 )
@@ -27,7 +26,6 @@ from opendoc_model.document_model import (
     ResourceKind,
     Section,
     TextRun,
-    TextStyle,
 )
 from opendoc_model.document_model import (
     Image as RichImage,
@@ -38,6 +36,7 @@ from opendoc_model.document_model import (
 from opendoc_model.units import canonical_coordinate_contract
 
 from opendoc_formats.errors import BackendUnavailableError, OperationCancelledError, ResourceLimitError
+from opendoc_formats.readers.pdf_styles import native_text_style
 from opendoc_formats.support.cancellation import check_cancelled
 from opendoc_formats.types import BlockType, DocFormat
 
@@ -53,6 +52,7 @@ def read_pdf_model(
     ocr_engine_factory: Callable[..., Any] | None = None,
     limits: DocumentLimits | None = None,
     cancelled: Callable[[], bool] | None = None,
+    capture_text_layouts: bool = False,
 ) -> DocumentModel:
     """Извлечь PDF в богатую модель с текстом, таблицами и изображениями.
 
@@ -78,6 +78,9 @@ def read_pdf_model(
         PDF_SCENARIO_SCAN,
         PDF_SCENARIO_STRUCTURE,
     )
+
+    if type(capture_text_layouts) is not bool:
+        raise ValueError('capture_text_layouts must be boolean')
 
     scenario = mode if mode is not None else (PDF_SCENARIO_STRUCTURE if use_ocr else PDF_SCENARIO_FAST)
     if scenario not in PDF_SCENARIO_MODES:
@@ -192,13 +195,22 @@ def read_pdf_model(
                                       location=f'sections[{len(sections)}].blocks[{len(blocks)}]', cancelled=cancelled)
                 native_table = next((table for table in page.tables
                                      if table.number == semantic_block.meta.get('source_table')), None)
+                table_properties = {"pdf": properties,
+                                    'pdf_column_edges': list(native_table.column_edges) if native_table else [],
+                                    'pdf_row_edges': list(native_table.row_edges) if native_table else []}
+                if (native_table and native_table.strategy != 'text'
+                        and any(cell.row_span > 1 or cell.column_span > 1 for row in rows for cell in row.cells)):
+                    source_bounds = []
+                    for cell in native_table.cells:
+                        check_cancelled(cancelled, 'PDF source table topology')
+                        if cell.bbox is not None:
+                            source_bounds.append(list(cell.bbox))
+                    table_properties['pdf_source_cell_bounds'] = source_bounds
                 blocks.append(
                     RichTable(
                         rows=rows,
                         box=box,
-                        properties={"pdf": properties,
-                                    'pdf_column_edges': list(native_table.column_edges) if native_table else [],
-                                    'pdf_row_edges': list(native_table.row_edges) if native_table else []},
+                        properties=table_properties,
                         provenance=origin(
                             f"semantic-{semantic_block.meta.get('source_block', 'table')}",
                             detail="reconstructed semantic table",
@@ -372,6 +384,10 @@ def read_pdf_model(
 
     attach_pdf_diagnostics(document, path, scenario, geometry, ocr_pages, ocr_failures,
                            limits=limits, cancelled=cancelled)
+    if capture_text_layouts:
+        from opendoc_formats.readers.pdf_text_layout import capture_pdf_text_layouts
+
+        document = capture_pdf_text_layouts(document, path, limits=limits, cancelled=cancelled)
     check_cancelled(cancelled, 'PDF import completion')
     return document
 
@@ -400,34 +416,17 @@ def _pdf_text_runs(source_block: Any, fallback_text: str, meta: dict[str, Any]) 
             if line_index:
                 runs.append(TextRun(text="\n"))
             for span in line.spans:
-                flags = int(span.flags)
-                color = ColorValue.from_pdf_srgb(span.color)
                 runs.append(
                     TextRun(
                         text=span.text,
                         properties={'pdf_origin': list(span.origin), 'pdf_bbox': list(span.bbox)},
-                        style=TextStyle(
-                            font_family=span.font or None,
-                            font_size=Length(span.size) if span.size else None,
-                            bold=bool(flags & 16),
-                            italic=bool(flags & 2),
-                            superscript=bool(flags & 1),
-                            color=color,
-                        ),
+                        style=native_text_style(span.font, span.size, int(span.flags), span.color),
                     )
                 )
         if runs:
             return runs
     font_spans = meta.get("font_spans") or []
     first = font_spans[0] if font_spans else {}
-    flags = int(first.get("flags", 0))
-    color = ColorValue.from_pdf_srgb(int(first.get("color", 0)))
-    style = TextStyle(
-        font_family=first.get("font") or None,
-        font_size=Length(float(first["size"])) if first.get("size") else None,
-        bold=bool(flags & 16),
-        italic=bool(flags & 2),
-        superscript=bool(flags & 1),
-        color=color,
-    )
+    style = native_text_style(first.get('font') or '', float(first.get('size') or 0),
+                               int(first.get('flags', 0)), int(first.get('color', 0)))
     return [TextRun(text=fallback_text, style=style)]

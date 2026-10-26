@@ -1,0 +1,67 @@
+{
+  "scope": "Static quoted-family data-URI TTF/OTF HTML font-face import and explicit program/text bindings",
+  "model": "opendoc-model==0.19.0",
+  "published": false,
+  "dependencies_changed": false,
+  "font_import_tests_passed": 31,
+  "affected_HTML_tests_passed": 173,
+  "source_files_sha256": {
+    "src/opendoc_formats/readers/html_fonts.py": "c0d5cf968f8027bca6a8280e56d1a3dee8b9e95f705f0fc75fe9af13ff40dfbb",
+    "src/opendoc_formats/readers/html_css.py": "caa4f0a10f0ed73149e88724242caf5ac8059d5f690916f8067ed3fc58fe0450",
+    "src/opendoc_formats/readers/html.py": "3daefe54449175107fecf0d57e0c3eee2818da102c619df8bdd4d458c43b724a",
+    "tests/readers/test_html_fonts.py": "ec6685e276c7598b1cfa7867d8e0791a33eb6cab39793223253499c8d2f86133",
+    "tools/html_profile_smoke.py": "05737991a3a973fda94da09419bef5c717ebc7188c649fcf809d77f9e2cb6a37"
+  },
+  "profile": {
+    "media_types": [
+      "font/ttf",
+      "font/otf"
+    ],
+    "source": "single base64 data URI, optional truetype/opentype hint",
+    "family": "one quoted string",
+    "weight": [
+      "normal",
+      "400",
+      "bold",
+      "700"
+    ],
+    "style": [
+      "normal",
+      "italic"
+    ],
+    "max_font_face_rules": 1024,
+    "embedded_byte_budget": "DocumentLimits.max_embedded_bytes, before base64 decoding",
+    "program_validation": "media/signature match and native sfnt directory inspection; not glyph outlines or shaping",
+    "fvar_CFF2_not_bound_as_static_fonts": true,
+    "binding": "FontReference(resource_id, face_index=0)",
+    "payload_deduplication": true,
+    "conflicting_or_partial_family_bindings_not_guessed": true,
+    "no_network_or_file_font_loads": true,
+    "unsupported_profiles_keep_source_and_diagnostics": true,
+    "cancellation_after_decode_propagates": true,
+    "two_HTML_Model_JSON_HTML_cycles_keep_exact_TTF_OTF_programs": true,
+    "same_named_distinct_programs_keep_text_associations": true
+  },
+  "installed_acceptance": {
+    "packages": [
+      "opendoc-formats==0.42.0",
+      "opendoc-model==0.19.0",
+      "beautifulsoup4==4.15.0",
+      "soupsieve==2.10",
+      "tinycss2==1.5.1",
+      "typing-extensions==4.16.0",
+      "webencodings==0.6.1"
+    ],
+    "fonttools_office_PDF_Pillow_engines_absent": true,
+    "command": "python -I tools/html_profile_smoke.py",
+    "runtime_source_wheel_installed_files_identical": 213,
+    "tested_wheel_sha256": "b18ee2dd5565ee08a20621506419fd8a582f3d3e459127d40638b7790566fe7f",
+    "existing_CI_gate_extended_not_dispatched": true
+  },
+  "remaining": [
+    "Local opted-in sources, src fallback, unquoted families, unicode-range and complete CSS font matching",
+    "Full shaping and arbitrary browser/source-renderer acceptance",
+    "HTML/CSS third-party parser internal budgets remain separate work",
+    "fontTools retained for actual subsetting and uncovered font profiles"
+  ]
+}

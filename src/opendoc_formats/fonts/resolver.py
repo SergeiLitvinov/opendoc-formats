@@ -7,14 +7,19 @@ import os
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import lru_cache
+from io import BytesIO
 from pathlib import Path
 from typing import Iterable
 
 import opendoc_model as od
 from opendoc_model.document_model import DocumentModel, Paragraph, Table, TextRun, TextStyle
 
-from opendoc_formats.errors import OperationCancelledError
-from opendoc_formats.support.cancellation import cancellable_items, checkpoint
+from opendoc_formats.errors import InvalidDocumentError, OperationCancelledError, ResourceLimitError, UnsupportedDocumentError
+from opendoc_formats.fonts.sfnt_cmap import read_unicode_coverage
+from opendoc_formats.fonts.sfnt_names import read_program_names
+from opendoc_formats.native.common import read_source
+from opendoc_formats.native.sfnt import SfntLimits, read_face_metrics
+from opendoc_formats.support.cancellation import cancellable_items, cancellation_requested, checkpoint
 
 
 @dataclass(frozen=True)
@@ -268,29 +273,56 @@ def _resolve_block_fonts(block: od.Block, resolve_style: Callable[[od.TextStyle,
 
 def _read_face(path: Path) -> FontFace | None:
     try:
+        try:
+            data = read_source(path, SfntLimits().max_input_bytes, cancellation_requested)
+        except (InvalidDocumentError, ResourceLimitError):
+            data = None  # Keep the established lazy-file profile for larger/unreadable native snapshots.
+        if data is not None:
+            try:
+                face_index = 0 if data.startswith(b'ttcf') else None
+                metrics = read_face_metrics(data, cancelled=cancellation_requested,
+                                            default_variations=True, face_index=face_index)
+                names = read_program_names(data, face_index=face_index)
+                glyphs = read_unicode_coverage(data, face_index=face_index)
+                checkpoint()
+                return FontFace(
+                    family=names.get(16) or names.get(1) or path.stem, path=path, weight=metrics.weight,
+                    italic=metrics.italic, width_class=metrics.width_class, units_per_em=metrics.units_per_em,
+                    average_width=float(metrics.average_width or 500), glyphs=glyphs,
+                    embeddable=not bool(metrics.fs_type & (0x0002 | 0x0200)),
+                    subsettable=not bool(metrics.fs_type & 0x0100),
+                )
+            except (InvalidDocumentError, ResourceLimitError, UnsupportedDocumentError):
+                checkpoint()
         from fontTools.ttLib import TTFont
 
-        font = TTFont(path, lazy=True, fontNumber=0)
-        names = font["name"]
-        family = names.getDebugName(16) or names.getDebugName(1) or path.stem
-        os2 = font.get("OS/2")
-        head = font.get("head")
-        glyphs = frozenset((font.getBestCmap() or {}).keys())
-        fs_type = int(getattr(os2, "fsType", 0))
-        face = FontFace(
-            family=family,
-            path=path,
-            weight=int(getattr(os2, "usWeightClass", 400)),
-            italic=bool(getattr(font.get("post"), "italicAngle", 0)),
-            width_class=int(getattr(os2, "usWidthClass", 5)),
-            units_per_em=int(getattr(head, "unitsPerEm", 1000)),
-            average_width=float(getattr(os2, "xAvgCharWidth", 500) or 500),
-            glyphs=glyphs,
-            embeddable=not bool(fs_type & (0x0002 | 0x0200)),
-            subsettable=not bool(fs_type & 0x0100),
-        )
-        font.close()
-        return face
+        with TTFont(BytesIO(data) if data is not None else path, lazy=True, fontNumber=0) as font:
+            names = font["name"]
+            family = names.getDebugName(16) or names.getDebugName(1) or path.stem
+            os2 = font.get("OS/2")
+            head = font.get("head")
+            try:
+                if data is None:
+                    raise UnsupportedDocumentError('No bounded native font snapshot')
+                glyphs = read_unicode_coverage(data)
+            except (InvalidDocumentError, ResourceLimitError, UnsupportedDocumentError):
+                checkpoint()
+                glyphs = frozenset((font.getBestCmap() or {}).keys())
+            fs_type = int(getattr(os2, "fsType", 0))
+            face = FontFace(
+                family=family,
+                path=path,
+                weight=int(getattr(os2, "usWeightClass", 400)),
+                italic=bool(getattr(font.get("post"), "italicAngle", 0)),
+                width_class=int(getattr(os2, "usWidthClass", 5)),
+                units_per_em=int(getattr(head, "unitsPerEm", 1000)),
+                average_width=float(getattr(os2, "xAvgCharWidth", 500) or 500),
+                glyphs=glyphs,
+                embeddable=not bool(fs_type & (0x0002 | 0x0200)),
+                subsettable=not bool(fs_type & 0x0100),
+            )
+            checkpoint()
+            return face
     except OperationCancelledError:
         raise
     except Exception:  # noqa: BLE001 - malformed/system fonts are skipped independently

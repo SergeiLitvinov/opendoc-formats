@@ -5,6 +5,38 @@
 Цикл через собственный экспортёр используется дополнительно к независимому
 оригиналу и проверке в приложении, которое открывает целевой формат.
 
+## Порядок исследования совместимости
+
+Отправная точка — независимый исходный документ с известным происхождением,
+а не файл, созданный нашим экспортёром. Для воспроизводимости фиксируются SHA-256,
+формат, выбранный профиль инспектора и его лимиты. Исходник остаётся неизменным.
+
+1. Получить физический инвентарь и выгрузить исходные части. Исследовать связи,
+   вложенные контейнеры, шрифты и медиа; неизвестные поля оставить явно неизвестными.
+2. Открыть оригинал в целевом приложении и зафиксировать структуру, текст,
+   геометрию и отображение исследуемых объектов.
+3. Импортировать документ и для каждого исследуемого объекта проследить связь
+   «исходный адрес → объект OpenDoc или сохранённый payload → адрес результата».
+   Если связь не доказана, записать пробел покрытия; совпадения имени или номера
+   объекта недостаточно.
+4. Выполнить экспорт, повторное препарирование и сравнение с оригиналом.
+   Отдельно оценить содержимое, упаковку, редактируемую структуру и отображение.
+5. Внести одну адресную правку, повторить экспорт и проверку в целевом приложении.
+   Проверить как изменённый объект, так и неизменённые соседние объекты и зависимости.
+
+Для каждого дефекта в отчёте нужны исходный SHA-256 и локатор, ожидаемое и
+фактическое поведение, способ воспроизведения и результат нативной проверки.
+Сохранение исходного payload подтверждает сохранность bytes; редактируемость,
+семантика и отображение требуют своих проверок. Текущий `inventory.json` содержит
+физические наблюдения; автоматическая полная карта соответствия с OpenDoc
+остаётся [задачей C-MAP-01](../development/todo.md).
+
+Formats отвечает за разбор формата, исходные адреса, измерения и доказательства
+совместимости. Общие представления документа и их проверка принадлежат OpenDoc.
+Если для исследованного объекта общего представления недостаточно, требуется
+[явный контракт Model](../development/opendoc-proposals.md) с минимальным примером
+и критериями приёмки.
+
 ## Снимок внутреннего устройства
 
 ```python
@@ -23,11 +55,12 @@ changes = compare_snapshots(original, result)
 | Неизвестная бинарная часть | Исходные распакованные bytes, размер и SHA-256; вложения и макросы не запускаются |
 | PDF | Активные xref slots, нормализованное представление словаря, закодированный поток без декодирования, trailer, число страниц и признак ремонта backend |
 | CFBF/OLE container | Исходные секторы, FAT/DIFAT/miniFAT, directory objects, логические потоки и их byte ranges; содержимое OLE не активируется |
+| TTF/OTF sfnt | Исходная программа целиком, directory records, смещения/размеры таблиц, объявленные checksums и SHA-256 payload; по `sfnt_checksums=True` — проверка сумм |
 
 `capture=True` возвращает payload в памяти; обычный снимок хранит инвентарь.
 `BinarySnapshot.to_dict()` — диагностический формат Formats, отдельный от JSON
 документа OpenDoc. Пакет общей модели и её codec не меняются.
-ZIP/XML и CFBF-инспекция используют стандартную библиотеку Python. PDF-инспекция использует
+ZIP/XML, CFBF и sfnt-инспекция используют стандартную библиотеку Python. PDF-инспекция использует
 существующий профиль `pdf` и его [лицензионные условия](dependencies.md).
 
 ## Выгрузка частей и сравнение
@@ -88,6 +121,30 @@ tree, правила сравнения имён, все reserved fields, сем
 всей спецификации этой проверкой не подтверждаются. CLSID и времена — исходные
 значения; обработчик по CLSID не создаётся. Ремонт исходника не выполняется.
 
+Указатели directory entries проверяются отдельно от правил сортировки имён и цветов.
+`directory_links_assessed=true` означает завершённый обход конечного профиля связей;
+`directory_links_valid` показывает отсутствие его замечаний. Профиль основан на
+[полях MS-CFB directory entry](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-cfb/60fe8611-66c3-496b-b70d-a504c94c9ace).
+В `directory_link_findings` каждое замечание содержит `code`, исходный `location`
+вида `cfbf:directory=N/child` и `target` (null для недостигнутой записи):
+
+| Код | Наблюдение |
+| --- | --- |
+| `root-sibling`, `stream-child`, `root-target` | Связь недопустима для роли записи |
+| `inactive-target`, `out-of-range-target` | Цель — пустой slot или адрес вне directory stream |
+| `multiple-references` | На запись указывают несколько допустимых по роли связей |
+| `cycle` | Обнаружен цикл, включая компоненты вне корневого хранилища |
+| `unreached-entry` | Активная запись не достигнута от root по допустимым связям |
+
+`directory_reached_entries` и `directory_unreached_entries` содержат индексы
+в исходном порядке directory stream. Недопустимые по роли связи не создают
+достижимость, но сохраняются буквально в metadata записи. Замечания не уничтожают
+физический инвентарь: это исследование повреждённого контейнера, а не успешный
+семантический импорт OLE. Обход всех компонентов выполняется без рекурсии,
+с линейным числом посещений записей/связей, в рамках `max_items` и с отменой.
+Отсутствие замечаний по указателям не подтверждает порядок имён, red-black правила,
+интерпретацию потоков или полную корректность CFBF.
+
 `max_items` ограничивает отдельно число сканируемых directory slots и общую сумму
 физических секторов с активными directory objects. Числа доступны в details.
 `max_part_bytes` ограничивает сектор и каждый логический поток. `max_total_bytes`
@@ -101,6 +158,225 @@ CFBF-байты из `BinaryItem.payload` внешнего ZIP можно пер
 вызовами пока нет; XML-флаг `parse_xml` не отключает разбор allocation tables CFBF.
 Внешний файл и вложение не исполняются. Полная приёмка OLE-объекта в Word или
 другом приложении остаётся отдельной задачей.
+
+## Таблицы программ TTF/OTF
+
+Самостоятельный `opendoc_formats.native.sfnt.inspect_sfnt` читает физический
+каталог таблиц standalone sfnt с сигнатурой `00010000` или `OTTO` по
+[описанию OpenType Table Directory](https://learn.microsoft.com/en-us/typography/opentype/spec/otff).
+Он использует стандартную библиотеку, не загружает программу шрифта в движок
+и не выполняет инструкции hinting.
+
+```python
+from opendoc_formats.native.sfnt import inspect_sfnt
+
+font = inspect_sfnt("embedded.ttf", capture=True)
+for table in font.tables:
+    print(table.tag, table.offset, table.length, table.sha256)
+```
+
+Результат содержит SHA-256 всего входа, размер, исходный 12-byte header в hex и
+таблицы в порядке directory records. Для каждой сохраняются адрес записи,
+смещение/длина payload, объявленная checksum, SHA-256 и, при `capture=True`,
+точные bytes. Неизвестные печатные ASCII tags сохраняются. `variation_tables`
+перечисляет обнаруженные `fvar/gvar/avar/CFF2/HVAR/VVAR/MVAR`; отсутствие этих tags
+не доказывает полноту интерпретации всех расширений шрифта.
+
+Проверяются границы каталога и таблиц, уникальность/допустимость tags и выравнивание
+начал таблиц на четыре bytes. Повреждённый диапазон даёт `InvalidDocumentError`;
+невыровненная таблица, TTC без выбора face, WOFF/WOFF2 и legacy signatures — явный
+`UnsupportedDocumentError` конечного профиля. Непересечение диапазонов, сортировка
+tags, padding, checksums и внутренние subtables этим API не подтверждаются.
+Объявленная checksum не выдаётся за проверенную.
+
+`SfntLimits` ограничивает размер входа, число таблиц, размер отдельной таблицы
+и сумму их объявленных длин; пересекающиеся диапазоны учитываются повторно.
+Отмена проверяется между таблицами и перед возвратом; одно чтение/хеширование
+неделимо. Ошибка не возвращает частичного инвентаря и не изменяет исходник.
+`assessment_complete=false`: этот инвентарь не определяет cmap/shaping, права
+embedding, валидность glyph IDs, конкретный variable instance или лицензии шрифта.
+Для полного сохранения программы нужны исходные bytes целиком, включая padding
+и неизвестные области; набора извлечённых таблиц недостаточно.
+
+Для TTC 1.0/2.0 face выбирается явно:
+
+```python
+font = inspect_sfnt("collection.ttc", face_index=1, capture=True)
+print(font.face_index, font.directory_offset, font.source_sha256)
+```
+
+SHA-256 и размер относятся ко всей исходной коллекции; `directory_offset`,
+адреса directory records и таблиц абсолютные. Header относится к выбранному face;
+shared tables могут находиться перед его directory и не копируются в новую программу.
+`SfntLimits.max_faces` ограничивает число объявленных faces (по умолчанию 256);
+остальные table quotas действуют на выбранный face. Проверяются TTC header/version,
+массив указателей, диапазон выбранного каталога и его таблиц, декларация DSIG v2.
+Подпись не удостоверяется; полный аудит всех faces, межтабличных overlaps и общего
+графа коллекции остаётся отдельной задачей. Общий Anatomy распознаёт TTC по
+сигнатуре, но требует явного выбора face через `sfnt_face_index`:
+
+```python
+snapshot = inspect_binary("collection.ttc", sfnt_face_index=1, capture=True)
+```
+
+В CLI используется тот же выбор для исходника и сравниваемого результата:
+
+```sh
+uv run python -m tools.document_anatomy collection.ttc --sfnt-face-index 1 --output .opendoc-formats/ttc-inspection
+```
+
+`sfnt:source` содержит всю исходную коллекцию, `sfnt:face=1:table=TAG` — таблицы
+выбранного face. Общий бюджет учитывает original source и таблицы, а число
+объявленных faces ограничивается оставшимся `max_items-1`; отдельного скрытого
+лимита 256 в этом маршруте нет. `sfnt_checksums` сохраняет standalone смысл
+и для TTC явно отклоняется. ZIP/TTC polyglot требует явного `container="sfnt"`.
+
+Общий `inspect_binary("embedded.ttf", capture=True)` распознаёт standalone sfnt
+по сигнатуре; API и CLI также принимают `container="sfnt"` / `--container sfnt`.
+`sfnt:source` содержит исходную программу целиком, включая padding и неизвестные
+области; `sfnt:table=TAG` — отдельный payload таблицы. В details таблицы сохраняются
+`tag`, `offset`, `directory_offset` и `declared_checksum`; её `storage_sha256`
+вычисляется по исходной 16-byte directory record. Поэтому изменение объявленной
+checksum или смещения видно отдельно от изменения содержимого таблицы.
+
+Отдельный `native.sfnt.inspect_sfnt_checksums` сопоставляет объявленную и
+вычисленную сумму каждой таблицы и проверяет standalone `head.checkSumAdjustment`.
+Он использует исходные bytes и не исправляет повреждения. Расчёт следует
+[OpenType checksum](https://learn.microsoft.com/en-us/typography/opentype/spec/otff#calculating-checksums):
+uint32 big-endian с нулевым дополнением последнего слова, при проверке `head`
+поле adjustment считается нулевым. Сумма всего файла учитывает реальные padding
+и trailing bytes; при отсутствии `head` проверка adjustment возвращает `None`.
+Укороченное поле adjustment — явный отказ. Работают `SfntLimits` и проверки
+отмены каждые 64 KiB. Данные и checksum остаются наблюдениями: совпадение не
+доказывает корректность glyph programs, рендера, padding/overlaps или лицензии.
+`assessment_complete` остаётся false. Generic Anatomy не запускает этот отдельный
+аудит по умолчанию. Для общего API включается `inspect_binary("own.ttf", sfnt_checksums=True)`;
+результат находится в `snapshot.to_dict()["details"]["checksums"]`, включая исходный SHA,
+статусы таблиц и adjustment. Флаг допустим только для sfnt, чтобы запрос не был
+молча проигнорирован для ZIP/PDF/CFBF. XML policy и `capture` от него не зависят.
+
+```sh
+uv run python -m tools.document_anatomy own.ttf --sfnt-checksums --output .opendoc-formats/font-audit
+```
+
+При `--compare` тот же аудит выполняется для обоих исходных снимков; различия
+попадают в обычное сравнение metadata/storage/content. `--no-payloads` оставляет
+только JSON с наблюдениями. Данные для аудита берутся из того же снимка bytes,
+что и payload, повторного чтения изменяемого файла нет.
+
+Для этого профиля `AnatomyLimits.max_items` учитывает исходную программу плюс
+все таблицы. `max_part_bytes` ограничивает всю исходную программу и каждую таблицу;
+`max_total_bytes` — размер программы плюс сумму длин таблиц, включая повторное
+учитывание пересекающихся областей. Скрытого отдельного бюджета `SfntLimits`
+в общем инспекторе нет: используются выбранные общие лимиты. `parse_xml=False`
+не отключает бинарный разбор шрифта. Источник сохраняется в сгенерированный `.bin`,
+исходные tags не становятся путями файлов. При нескольких распознанных контейнерах
+профиль требуется выбрать явно. Шрифт, полученный из ZIP, можно передать инспектору
+отдельно; автоматический вложенный обход с общим бюджетом глубины ещё не реализован.
+
+### Структурный аудит каталога и padding
+
+`native.sfnt.inspect_sfnt_structure` проверяет сортировку directory tags,
+производные `searchRange`/`entrySelector`/`rangeShift`, допустимость пробелов
+в tags, padding таблиц до четырёх bytes и пересечения ненулевых payload ranges.
+Findings содержат code, абсолютный offset, tag и описание. При вложенных
+пересечениях указывается один представитель пересекающегося диапазона для
+каждой следующей таблицы; полный попарный граф не строится.
+Исходные байты, объявления и checksums не исправляются. `assessment_complete=false`:
+проверяется конечная структура, а glyph programs, рендер, подписи и лицензии
+остаются за пределами отчёта. Неизвестный trailing payload сохраняется opaque.
+
+```python
+snapshot = inspect_binary("own.ttf", sfnt_structure=True, capture=True)
+findings = snapshot.to_dict()["details"]["structure"]["findings"]
+```
+
+```sh
+uv run python -m tools.document_anatomy own.ttf --sfnt-structure --output .opendoc-formats/structure
+```
+
+Для TTC применяется явно выбранный `sfnt_face_index` / `--sfnt-face-index`;
+общие таблицы других faces не объявляются пересечениями выбранного face.
+Прямой API ограничивает findings через `SfntLimits.max_findings` (4096 по умолчанию).
+В Anatomy findings занимают оставшийся после source и tables бюджет `max_items`.
+Превышение квоты или отмена не возвращают частичный отчёт. Сравнение CLI выполняет
+тот же аудит с обеих сторон; `--no-payloads` оставляет JSON inventory.
+
+Использующий этот инвентарь helper `fonts.sfnt_names.read_program_names`
+разбирает [name version 0/1](https://learn.microsoft.com/en-us/typography/opentype/spec/name)
+для выбора IDs 1/4/6/16 при встраивании шрифта. Это отдельная конечная интерпретация
+строк, а не полная валидация всех name records и BCP 47. В version 1 проверяются
+границы language-tag arrays, UTF-16 строк и ссылки language IDs >= 0x8000.
+Теги не меняют прежний source-order/numeric-English выбор имени. Неизвестная
+кодировка/version, необходимость восстановления UTF-16 или превышение
+native-бюджета передаются прежнему optional reader в `font_program_names`.
+Прямой `read_program_names` возвращает явный отказ вне профиля. Пустые family/full
+не заменяются догадкой. Generic Anatomy по-прежнему сохраняет `name` как точные bytes.
+
+Однобайтовые Macintosh name records читаются стандартными Python-кодеками:
+Roman с языковыми вариантами Icelandic/Turkish/Croatian/Latin-2/Romanian,
+а также отдельные Greek/Cyrillic/Latin-2/Turkish/Icelandic encoding IDs.
+Старые ISO records поддерживают ASCII, UTF-16BE и Latin-1.
+Идентификаторы платформ и языков описаны в
+[OpenType name](https://learn.microsoft.com/en-us/typography/opentype/spec/name).
+Выбор английской записи и порядок aliases остаются прежними; неизвестные
+и многобайтовые Mac encodings сохраняют engine fallback.
+
+`fonts.sfnt_cmap.read_unicode_coverage` разбирает выбранную Unicode subtable
+[cmap 0/2/4/6/12/13](https://learn.microsoft.com/en-us/typography/opentype/spec/cmap).
+Возвращается множество объявленных codepoints с ненулевым glyph ID. Сохраняется
+прежний порядок выбора: `(3,10), (0,6), (0,4), (3,1), (0,3), (0,2), (0,1), (0,0)`;
+в пределах пары используется первая исходная запись. Format 0 читает 256 byte IDs;
+format 6 — BMP-массив uint16 IDs с точным размером, включая пустой массив
+и отображение U+FFFF. Неканонические массивы остаются за пределами native-профиля.
+Format 2 проверяет high-byte keys, single-/double-byte subheaders, общие glyph
+arrays, delta modulo 65536 и адреса относительно исходных offset words.
+Он читается только при выборе Unicode-записи; legacy-кодировка самостоятельно
+в Unicode не преобразуется. Подробности — в [приёмке cmap 2](../development/font-cmap2-evidence.json).
+Format 4 учитывает
+`idDelta`, относительный `idRangeOffset` и нулевые элементы glyph array;
+format 12 — последовательные IDs, format 13 — постоянный ID группы.
+Терминальный segment U+FFFF в format 4, как и в прежнем reader, не добавляет покрытие.
+Сторонние glyph names для этой операции не строятся.
+`read_unicode_mapping` возвращает те же выбранные непустые mappings как независимый
+словарь codepoint → numeric glyph ID. Он используется конечным GSUB reader;
+объявленный ID не доказывает корректность glyph program или исходного shaping.
+
+Границы subtable/arrays, адреса glyph array, terminal segment и диапазоны групп
+проверяются до возврата. Пересекающиеся/неупорядоченные ranges и неизвестная
+выбранная таблица дают явный отказ прямого API; resolver сохраняет engine fallback.
+Из невыбранных legacy таблиц и format 14 читаются только заголовки и границы. Это не
+разбор variation selectors. `max_codepoints` ограничивает суммарную работу по
+объявленным ranges; checkpoints действуют и внутри range. Generic Anatomy
+сохраняет исходный cmap целиком, не объявляя его семантически проверенным.
+
+`native.sfnt.read_face_metrics` читает статические поля face из
+[OS/2](https://learn.microsoft.com/en-us/typography/opentype/spec/os2), `head`, `maxp`
+и [post](https://learn.microsoft.com/en-us/typography/opentype/spec/post).
+В возвращаемом `SfntFaceMetrics` остаются исходные weight/width/units/average/fsType
+и признак ненулевого italicAngle. Версии OS/2 0–5 проверяются по минимальному
+размеру; post 1/2/3 — по профилю glyph-name storage. Отсутствующие поля, variable
+таблицы и неподтверждённые версии дают явный отказ прямого API. Resolver сохраняет
+прежний engine-путь для таких программ. Это проверка используемой metadata,
+а не полная валидация шрифта, glyph programs или юридическое заключение о лицензии.
+
+`native.fvar.inspect_fvar_table` принимает payload таблицы
+[fvar](https://learn.microsoft.com/en-us/typography/opentype/otspec190/fvar),
+возвращает SHA-256, размеры records, оси и named instances. Координаты хранятся
+как исходные signed Fixed 16.16 integers, без округления. Name IDs остаются
+неразрешёнными ссылками, имена и instance не угадываются. Проверяются версия,
+смещения/размеры массивов, уникальность tags, min/default/max, reserved flags
+и диапазоны instance coordinates. Неизвестные profiles дают явный отказ.
+Настраиваемые границы — 8 MiB payload, 64 оси, 4096 instances и 262144 coordinates
+по умолчанию; проверки отмены действуют и внутри coordinate records.
+
+Resolver включает `default_variations=True` только для чтения базовых полей,
+как прежде. Никакие named-instance координаты не применяются. Изменение координат,
+MVAR/HVAR/gvar и поддержка CFF2 требуют отдельной приёмки. `FontReference.face_index`
+в Model обозначает collection face и не используется как номер named instance;
+для выбора координат через общую модель потребуется отдельный контракт Model.
+Generic Anatomy сохраняет fvar payload; автоматического глубокого разбора fvar
+в общем инвентаре пока нет.
 
 ## XML по OPC Content Types
 
@@ -169,6 +445,30 @@ relationship part не является допустимой целью
 недостижимыми. Relationship parts и Content Types не считаются обычными data parts.
 Циклы обходятся без рекурсии и не являются сами по себе потерей.
 
+`Id` проверяется собственным Unicode NCName reader по XML 1.0 Fifth Edition,
+включая supplementary-plane символы до U+EFFFF и combining characters после
+первого символа. Unicode normalization, обрезка whitespace и исправление Id
+не выполняются; разные последовательности codepoints остаются разными Id.
+`Type` проверяется конечным ASCII URI-профилем: scheme, допустимые символы,
+percent escapes, reg-name authority/userinfo/decimal port и один fragment delimiter.
+IRI, IP-literal authorities и whitespace recovery остаются вне профиля;
+finding не объявляет такие входы универсально некорректными OPC.
+Проверка не обращается к URL и не использует сторонний URI/XML-schema engine.
+Неподтверждённые значения дают `opc.relationship-id` / `opc.relationship-type`,
+сохраняя `.rels`, исходные атрибуты и адрес узла. Эти связи не участвуют в
+доказанной достижимости; `unreachable_parts` остаётся пустым при неполном аудите.
+Полная XML Schema/OPC conformance и URI-нормализация этим не подтверждаются.
+Внутренние OPC targets разбираются собственным локальным parser без общего
+кэша `urllib.parse.urlsplit`. Resolver не удерживает строки целей в процессном кэше, кэш
+других пользователей стандартной библиотеки не очищается. Сохранены прежние
+результаты для fragments, пустого query delimiter, root-relative путей и
+проверок обхода каталогов/encoded separators. Это замена механизма разбора,
+а не расширение URI-профиля. [Проверки совместимости и кэша](../development/opc-reference-cache-evidence.json).
+[XML Name productions](https://www.w3.org/TR/xml/#NT-NameStartChar),
+[NCName](https://www.w3.org/TR/xml-names/#NT-NCName),
+[OPC/.NET ID contract](https://source.dot.net/System.IO.Packaging/System/IO/Packaging/InternalRelationshipCollection.cs.html),
+[приёмка лексического профиля](../development/opc-lexical-evidence.json).
+
 Семантически неверная связь даёт finding, сохраняя физический инвентарь и payload.
 Это режим препарирования, а не успешный импорт документа: строгие читатели не
 смягчают проверку пакета. Unsafe ZIP names, CRC, запрещённые DTD, повреждённый XML,
@@ -221,6 +521,17 @@ XML-адрес, имя OPF, id, href, media type и все атрибуты. `st
 сохранённые `file:`, `data:` или `javascript:` остаются инертными непроверенными
 строками. Это не разрешение EPUB-читателю использовать их; ограничения внешних
 ресурсов и data URLs описаны в [EPUB 3.3](https://www.w3.org/TR/epub-33/).
+Локальные пути разрешаются собственным `native.epub.local_path`, общим с нативным
+EPUB-reader. UTF-8 percent escapes декодируются строго и один раз: `%252F` остаётся
+буквальным `%2F` в имени части. Некорректные escapes/UTF-8, исходные и декодированные
+управляющие символы, начальные/конечные неэкранированные пробелы дают адресный отказ
+инспектора до чтения content parts. Значение href и исходный XML остаются прежними.
+Query (включая пустой `?`) и закодированные разделители `%2F`/`%5C` находятся
+вне конечного локального профиля и дают `UnsupportedDocumentError` в inspection;
+нативный EPUB-reader отказывает с `ValueError`. Фрагмент не участвует в выборе ZIP-части
+и не объявляется семантически проверенным. Полная WHATWG URL-нормализация и
+допустимость внешних URL этим не подтверждаются.
+
 Буквальный дубль внешнего href внутри manifest, отсутствующие обязательные поля
 и URL, отвергнутый разбором, дают адресный `InvalidDocumentError`.
 

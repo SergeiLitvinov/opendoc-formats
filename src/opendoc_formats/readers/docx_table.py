@@ -97,6 +97,9 @@ def read_table(table: Any, model: DocumentModel, read_blocks: BlockReader) -> Ta
     from opendoc_formats.ooxml.table_position import import_table_position
 
     import_table_position(table, result)
+    from opendoc_formats.ooxml.source_grid import import_source_grid
+
+    import_source_grid(table, result)
     return result
 
 

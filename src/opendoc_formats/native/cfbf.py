@@ -213,11 +213,93 @@ class _Reader:
                           if entry.kind == 5 else 'cfbf-stream', size, digest.hexdigest(),
                           details=tuple(details.items()), payload=b''.join(chunks) if self.capture else None)
 
+    def directory_links(self, entries: tuple[_Entry, ...]) -> dict[str, Any]:
+        """Audit physical directory pointers, including disconnected components, without recursion."""
+        active = {entry.index: entry for entry in entries}
+        edges: dict[int, list[tuple[str, int]]] = {index: [] for index in active}
+        incoming: dict[int, tuple[int, str]] = {}
+        findings: list[dict[str, Any]] = []
+
+        def finding(code: str, index: int, field: str, target: int) -> None:
+            findings.append({'code': code, 'location': f'cfbf:directory={index}/{field}', 'target': target})
+
+        for entry in entries:
+            checkpoint()
+            details = dict(entry.details)
+            for field in ('left_sibling', 'right_sibling', 'child'):
+                checkpoint()
+                target = details[field]
+                if target == FREE:
+                    continue
+                permitted = True
+                if entry.index == 0 and field != 'child':
+                    finding('root-sibling', entry.index, field, target)
+                    permitted = False
+                if entry.kind == 2 and field == 'child':
+                    finding('stream-child', entry.index, field, target)
+                    permitted = False
+                if target not in active:
+                    finding('inactive-target' if target < self.directory_slots else 'out-of-range-target',
+                            entry.index, field, target)
+                    continue
+                if target == 0:
+                    finding('root-target', entry.index, field, target)
+                    permitted = False
+                # Invalid-role links stay in raw metadata but do not establish containment.
+                if not permitted:
+                    continue
+                edges[entry.index].append((field, target))
+                if target in incoming:
+                    finding('multiple-references', entry.index, field, target)
+                else:
+                    incoming[target] = (entry.index, field)
+
+        # Colour marks are traversal state, independent of the CFBF red/black flags.
+        state: dict[int, int] = {}
+        for seed in active:
+            checkpoint()
+            if seed in state:
+                continue
+            state[seed] = 1
+            stack = [(seed, 0)]
+            while stack:
+                checkpoint()
+                index, position = stack[-1]
+                if position == len(edges[index]):
+                    state[index] = 2
+                    stack.pop()
+                    continue
+                stack[-1] = (index, position+1)
+                field, target = edges[index][position]
+                if state.get(target) == 1:
+                    finding('cycle', index, field, target)
+                elif target not in state:
+                    state[target] = 1
+                    stack.append((target, 0))
+
+        reached = {0}
+        pending = [0]
+        while pending:
+            checkpoint()
+            for _, target in edges[pending.pop()]:
+                if target not in reached:
+                    reached.add(target)
+                    pending.append(target)
+        unreached = tuple(index for index in active if index not in reached)
+        for index in unreached:
+            checkpoint()
+            findings.append({'code': 'unreached-entry', 'location': f'cfbf:directory={index}', 'target': None})
+        return {'directory_links_assessed': True, 'directory_links_valid': not findings,
+                'directory_link_findings': tuple(findings),
+                'directory_reached_entries': tuple(index for index in active if index in reached),
+                'directory_unreached_entries': unreached}
+
     def inspect(self) -> tuple[tuple[BinaryItem, ...], dict[str, Any]]:
         from opendoc_formats.anatomy import BinaryItem
 
         self.allocation()
         entries = self.entries()
+        links = self.directory_links(entries)
         logical = [self.stream(entry) for entry in entries]
         physical = []
         for sector in range(-1, self.count):
@@ -235,6 +317,7 @@ class _Reader:
             'fat_sectors': tuple(self.fat), 'mini_fat_sectors': tuple(self.mini_fat),
             'directory_objects': len(entries), 'directory_slots': self.directory_slots,
             'directory_tree_assessed': False, 'assessment_complete': False,
+            **links,
         }
 
 

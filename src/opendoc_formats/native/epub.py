@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import posixpath
+import re
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 from urllib.parse import unquote, urlsplit
@@ -19,11 +20,21 @@ PACKAGE_TYPE = 'application/oebps-package+xml'
 
 
 def local_path(base: str, href: str) -> str:
-    """Keep the existing EPUB reader's local URL policy; never access filesystem/network."""
+    """Resolve a finite local UTF-8 URL profile without repairing the source reference."""
+    if href != href.strip(' ') or any(ord(char) < 32 or ord(char) == 127 for char in href):
+        raise ValueError('Whitespace/control characters outside the local EPUB URL profile')
     parsed = urlsplit(href)
     if parsed.scheme or parsed.netloc:
         raise ValueError('Remote EPUB package references are not supported')
-    decoded = unquote(parsed.path)
+    if '?' in href.split('#', 1)[0]:
+        raise ValueError('Query in a local EPUB resource URL is outside the supported profile')
+    if re.search(r'%(?![0-9a-fA-F]{2})', parsed.path):
+        raise ValueError('Malformed percent escape in EPUB package path')
+    if re.search(r'%(?:2[fF]|5[cC])', parsed.path):
+        raise ValueError('Encoded path separator is outside the supported EPUB URL profile')
+    decoded = unquote(parsed.path, errors='strict')
+    if any(ord(char) < 32 or ord(char) == 127 for char in decoded):
+        raise ValueError('Encoded control character in EPUB package path')
     if not decoded or decoded.startswith('/') or '\\' in decoded or '\x00' in decoded:
         raise ValueError('Invalid EPUB package path')
     name = posixpath.normpath(posixpath.join(posixpath.dirname(base), decoded))
@@ -34,9 +45,17 @@ def local_path(base: str, href: str) -> str:
 
 def _inspection_path(base: str, href: str, location: str) -> str:
     try:
+        # urlsplit strips some controls and leading spaces; unquote normally repairs bad UTF-8.
+        # Neither transformation is evidence of the original local archive target.
+        if href != href.strip(' ') or any(ord(char) < 32 or ord(char) == 127 for char in href):
+            raise ValueError('Whitespace/control characters outside the local EPUB URL profile')
         parsed = urlsplit(href)
         if parsed.scheme or parsed.netloc:
             raise UnsupportedDocumentError(f'{location}: remote EPUB manifest reference is outside the inspection profile')
+        if '?' in href.split('#', 1)[0]:
+            raise UnsupportedDocumentError(f'{location}: query in a local EPUB resource URL is outside the inspection profile')
+        if re.search(r'%(?:2[fF]|5[cC])', parsed.path):
+            raise UnsupportedDocumentError(f'{location}: encoded path separator is outside the EPUB inspection profile')
         return local_path(base, href)
     except UnsupportedDocumentError:
         raise

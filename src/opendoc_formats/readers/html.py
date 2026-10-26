@@ -27,6 +27,7 @@ from opendoc_model import (
 from opendoc_formats.html_tables import import_caption_semantics, import_table_semantics
 from opendoc_formats.readers.html_css import Cascade
 from opendoc_formats.readers.html_diagnostics import HtmlDiagnostics
+from opendoc_formats.readers.html_fonts import FontFaces
 from opendoc_formats.readers.html_resources import LIMIT, Resources, clean_xml
 from opendoc_formats.support.cancellation import check_cancelled
 
@@ -50,7 +51,7 @@ def read_html_model(path: str | Path, *, resource_root: str | Path | None = None
         raise ValueError("HTML exceeds 10 MiB")
     soup = BeautifulSoup(data, "html.parser")
     check_cancelled(cancelled, 'HTML parsing')
-    reader = HtmlReader(soup, source, resource_root, cancelled=cancelled)
+    reader = HtmlReader(soup, source, resource_root, limits=limits, cancelled=cancelled)
     for node in soup.find_all(["script", "iframe", "object", "embed", "link", "base"]):
         reader.warn("html-content", f"Не исполнен или не загружен элемент: {node.name}", node)
     for node in soup.find_all(True):
@@ -84,13 +85,14 @@ def read_html_model(path: str | Path, *, resource_root: str | Path | None = None
 
 class HtmlReader:
     def __init__(self, soup: Any, source: Path, resource_root: str | Path | None, *,
-                 cancelled: Callable[[], bool] | None = None) -> None:
+                 limits: od.DocumentLimits | None = None, cancelled: Callable[[], bool] | None = None) -> None:
         self.source, self.list_count = source, 0
         self.cancelled = cancelled
         self.diagnostics = HtmlDiagnostics(cancelled=cancelled)
         self.warn = self.diagnostics.warn
-        self.css = Cascade(soup, self.warn, cancelled=cancelled)
         self.resources = Resources(self.warn, resource_root, cancelled=cancelled)
+        fonts = FontFaces(self.resources.items, self.warn, limits=limits, cancelled=cancelled)
+        self.css = Cascade(soup, self.warn, fonts=fonts, cancelled=cancelled)
         self.styles = {}
         source_ids = Counter()
         for node in soup.find_all(id=True):

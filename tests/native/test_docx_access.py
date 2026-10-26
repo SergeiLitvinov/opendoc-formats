@@ -328,7 +328,7 @@ def test_missing_optional_engine(source, monkeypatch):
         return original(name)
 
     monkeypatch.setattr(common.importlib, "import_module", unavailable)
-    with pytest.raises(BackendUnavailableError):
+    with pytest.raises(BackendUnavailableError, match='docx-native'):
         DocxPackage(source)
 
 

@@ -1,0 +1,45 @@
+{
+  "scope": "Adjacent GSUB ContextSubst/ChainContextSubst types 5/6 format 3 and extensions 7->5/6; static standalone TrueType post 1/2/3/4; validation only",
+  "model": "opendoc-model==0.19.0; import opendoc_model",
+  "published": false,
+  "dependencies_changed": false,
+  "specification": "https://learn.microsoft.com/en-us/typography/opentype/spec/chapter2#sequence-context-format-3-coverage-based-glyph-contexts",
+  "checks": {
+    "new_context_tests_passed": 66,
+    "font_regression_passed": 1088,
+    "font_regression_skipped": 1,
+    "skip_reason": "Real POSIX fork unavailable on Windows",
+    "regression_scope": "All tests/**/*.py filenames containing font/sfnt/fvar/ligature; not a full-project regression",
+    "equivalence": "Independent raw format-3 bytes, coverage 1/2, direct/extension, before/after ligatures and shared storage match the previous fontTools mapping; native path forbids engine imports",
+    "references": "SequenceLookupRecords preserve order, bounded lookup indices checked without recursion or execution; sequenceIndex outside original input range retains engine fallback because earlier substitutions may expand the sequence",
+    "damage": "Wrong format, empty input, lookup outside LookupList, offsets into parent header, malformed coverage counts/order/glyph IDs and all truncations of both owned tables reject partial evidence",
+    "work_budget": "Repeated shared context coverages exhaust existing 262144 word/coverage work budget",
+    "cancellation": "Cancellation within context coverage validation propagates without engine fallback",
+    "pdf": "Real Story PDF for GSUB 1.0/1.1 and post 1/2/3/4: text restored after save/reload, unchanged MuPDF pixels with fontTools import forbidden",
+    "installed_pdf_smoke": "Fresh isolated wheel with Model 0.19.0 and PyMuPDF 1.28.2 only: eight owned TTF/OTF programs, exact embedded bytes, text, stable pixels, two JSON cycles, PDF re-import and opt-in TextLayout; fontTools/Pillow/Office/HTML engines absent",
+    "strict_mypy_files": 41,
+    "ruff": "passed",
+    "license_inventory": "passed",
+    "boundary_audit_modules": 217
+  },
+  "fixtures": [
+    {
+      "file": "tests/native/data/ligature-context5.ttf",
+      "bytes": 1360
+    },
+    {
+      "file": "tests/native/data/ligature-context6.ttf",
+      "bytes": 1384
+    }
+  ],
+  "fixture_license": "MIT; Copyright 2026 Sergei Litvinov; own outlines, raw GSUB, fixed timestamps and license records; reproducibility asserted",
+  "boundary": "Formats owns binary validation and ToUnicode evidence; Model unchanged. No execution of nested lookups or shaping. Context formats 1/2, nonzero flags, sequence indices requiring modified input interpretation, CFF/variations and real subsetting retain the established fontTools path; engine internal resources are outside native budgets.",
+  "source_sha256": {
+    "src/opendoc_formats/fonts/sfnt_ligatures.py": "91df1d3aab0ee13d41850e2740da20af709f035f0e0da79269df65e3d336e395",
+    "tests/test_native_font_context_gsub.py": "abdbcdba22cd1afbeed87cfe33818453e37a54072e100cb0759598cb5b1471e6",
+    "tests/test_native_font_ligatures.py": "91733c164e2784de81df48e2c7b2cb85cfa7f38f9223cdf6a02c280debd31db9",
+    "tools/pdf_ligature_smoke.py": "a06afd17a9b9c497205afd353f29a903f49dc7323454073c89851046cf26d4ac",
+    "tests/native/data/ligature-context5.ttf": "3b53d3b1784e022ef0340d71a1b6951f1f401b7e0ff6b41bc6bbabce32d0c609",
+    "tests/native/data/ligature-context6.ttf": "8c25375344548742a25a68030072732ce7da3de6d4b0652f31dc814b5e4b8ac6"
+  }
+}

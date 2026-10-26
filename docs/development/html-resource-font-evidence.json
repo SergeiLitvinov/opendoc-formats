@@ -1,0 +1,96 @@
+{
+  "scope": "Standalone TTF/OTF resource fonts in semantic HTML export; not HTML font-face import or full shaping",
+  "model": "opendoc-model==0.19.0",
+  "published": false,
+  "dependencies_changed": false,
+  "resource_font_tests_passed": 40,
+  "affected_font_html_pdf_docx_tests_passed": 358,
+  "additional_html_stages_cancellation_tables_tests_passed": 70,
+  "total_focused_tests_passed": 428,
+  "source_files_sha256": {
+    "src/opendoc_formats/fonts/resource_fonts.py": "af9407577da8d762d28b262f6a0fec3eea605ab35b587e1149a0cae6de14e0cb",
+    "src/opendoc_formats/fonts/html_embedding.py": "63604aa8e6b1207700186857b6918bcd55eca8e1f70b31a840b3b650479262b6",
+    "src/opendoc_formats/writers/html_writer.py": "869daae91d3a3904b3010ee47ea94af5df4eefa65a39426625f60c7e01f3833f",
+    "src/opendoc_formats/writers/pdf_writer.py": "1b98869450bdb7b390c5fefc8af22af2a724b7394e6aa64246aedd1753a6d7d2",
+    "tests/writers/test_html_resource_fonts.py": "8f7ec3c846aac92b5edd0a08aba234390d340890e5334b3d50dec2f934412418",
+    "tools/html_font_smoke.py": "9b6d6a5819c4b0916a82e25f814121deda96f787c4863ff0d9421eeb5d31dbd8"
+  },
+  "profile": {
+    "media_types": [
+      "font/ttf",
+      "font/otf"
+    ],
+    "face_indices": [
+      null,
+      0
+    ],
+    "font_tools_or_subsetting_needed": false,
+    "full_data_uri_bytes_checked": true,
+    "same_named_distinct_programs_keep_separate_CSS_bindings": true,
+    "CSS_formats": [
+      "truetype",
+      "opentype"
+    ],
+    "invalid_restricted_missing_glyph_or_ambiguous_bindings_rejected": true,
+    "quota_before_materialization": "DocumentLimits.max_embedded_bytes",
+    "cancellation_cleanup_and_existing_target_preservation": true,
+    "caller_model_immutable": true,
+    "two_JSON_cycles": true
+  },
+  "installed_acceptance": {
+    "packages": [
+      "opendoc-formats==0.42.0",
+      "opendoc-model==0.19.0"
+    ],
+    "all_optional_format_engines_absent": true,
+    "commands": [
+      "python -I tools/html_font_smoke.py",
+      "python -I tools/package_smoke.py"
+    ],
+    "pip_check_passed": true,
+    "runtime_source_wheel_installed_files_identical": 212,
+    "tested_wheel_sha256": "10679df6e13145653ca24173f3c19827f2b5c521eb1235105353280adeb89042",
+    "CI_not_dispatched": true
+  },
+  "browser_acceptance": {
+    "surface": "Codex in-app browser; local synthetic document, DOM-visible font proof",
+    "same_named_TTF": {
+      "passed": true,
+      "loaded_families": [
+        "ODF Embedded 002ab3822db7",
+        "ODF Embedded b6bbabbda8e0"
+      ],
+      "font_size_px": 26.6667,
+      "text": [
+        "fi",
+        "ti"
+      ],
+      "measured_widths_px": [
+        13.329986572265625,
+        23.993988037109375
+      ],
+      "expected_widths_em": [
+        0.5,
+        0.9
+      ]
+    },
+    "OTF_CFF": {
+      "passed": true,
+      "loaded_family": "ODF Embedded e102a71e4f21",
+      "text": "AB",
+      "font_size_px": 26.6667,
+      "measured_width_px": 31.991973876953125,
+      "expected_width_em": 1.2
+    },
+    "tolerance_em": 0.002,
+    "headless_edge_probe_accepted": false
+  },
+  "specification": "https://www.w3.org/TR/css3-fonts/#src-desc",
+  "remaining": [
+    "Additional HTML font-face profiles and original-source shaping acceptance; finite data-URI import accepted in html-font-import-evidence.json",
+    "PPTX resource font projection, collection faces and unsupported font wrappers",
+    "fontTools extra retained for subsetting and uncovered parser profiles",
+    "Full programs and base64 can increase HTML size",
+    "No Model changes; existing resource and FontReference contracts used"
+  ]
+}

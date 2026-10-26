@@ -258,6 +258,76 @@ def test_xml_base_is_outside_the_finite_inspection_profile():
         inspect(entries)
 
 
+@pytest.mark.parametrize('href,target', [
+    ('Text/%E2%82%AC', 'Book/Text/€'),
+    ('Text/%F0%9F%A6%8A', 'Book/Text/🦊'),
+    ('Text/%252F', 'Book/Text/%2F'),
+    ('Text/own%20chapter#part?uninterpreted', 'Book/Text/own chapter'),
+    ('Text/%2e%2e/Text/own%20chapter', 'Book/Text/own chapter'),
+    ('Text/own%3Fchapter', 'Book/Text/own?chapter'),
+    ('Text/own%23chapter', 'Book/Text/own#chapter'),
+    ('Text/%20chapter', 'Book/Text/ chapter'),
+])
+def test_valid_local_percent_paths_resolve_once_and_keep_original_attributes(href, target):
+    entries = publication()
+    payload = entries.pop('Book/Text/own chapter')
+    entries[target] = payload
+    entries['Book/package'] = entries['Book/package'].decode('utf-16').replace(
+        'Text/own%20chapter', href).encode('utf-16')
+    snapshot = inspect(entries, capture=True)
+    reference = snapshot.epub.references[0]
+    assert reference.href == href and reference.resolved_target == target and reference.status == 'local'
+    assert dict(reference.attributes)['href'] == href
+    assert next(item for item in snapshot.items if item.locator == 'zip:/'+target).payload == payload
+    assert not snapshot.epub.to_dict()['assessment_complete']
+
+
+@pytest.mark.parametrize('href,error', [
+    ('Text/own%chapter', InvalidDocumentError),
+    ('Text/own%', InvalidDocumentError),
+    ('Text/own%2', InvalidDocumentError),
+    ('Text/%FF', InvalidDocumentError),
+    ('Text/%C3', InvalidDocumentError),
+    ('Text/%ED%A0%80', InvalidDocumentError),
+    ('Text/%00', InvalidDocumentError),
+    ('Text/%09', InvalidDocumentError),
+    ('Text/%7F', InvalidDocumentError),
+    (' Text/own%20chapter', InvalidDocumentError),
+    ('Text/own%20chapter ', InvalidDocumentError),
+    ('Text/own&#x9;chapter', InvalidDocumentError),
+    ('Text/own&#xA;chapter', InvalidDocumentError),
+    ('Text/own&#xD;chapter', InvalidDocumentError),
+    ('Text%2Fown%20chapter', UnsupportedDocumentError),
+    ('Text%5cown%20chapter', UnsupportedDocumentError),
+    ('Text/own%20chapter?version=1', UnsupportedDocumentError),
+    ('Text/own%20chapter?', UnsupportedDocumentError),
+])
+def test_ambiguous_local_urls_fail_at_original_manifest_node_without_reading_resource(href, error, monkeypatch):
+    entries = publication()
+    entries['Book/package'] = entries['Book/package'].decode('utf-16').replace(
+        'Text/own%20chapter', href).encode('utf-16')
+    source = zip_bytes(list(entries.items()), compression=zipfile.ZIP_STORED)
+    opened = []
+    original = zipfile.ZipFile.open
+
+    def tracked(self, info, *args, **kwargs):
+        opened.append(info.filename if isinstance(info, zipfile.ZipInfo) else info)
+        return original(self, info, *args, **kwargs)
+
+    monkeypatch.setattr(zipfile.ZipFile, 'open', tracked)
+    with pytest.raises(error, match=r'zip:/Book/package#xml:0/1/0:'):
+        inspect_binary(source)
+    assert opened == ['mimetype', 'META-INF/container.xml', 'Book/package']
+
+
+@pytest.mark.parametrize('path', ['Book/package?query', 'Book/%FF', 'Book/package%', ' Book/package'])
+def test_rootfile_local_url_validation_keeps_container_source_location(path):
+    entries = publication()
+    entries['META-INF/container.xml'] = entries['META-INF/container.xml'].replace(b'Book/package', path.encode())
+    with pytest.raises((InvalidDocumentError, UnsupportedDocumentError), match=r'zip:/META-INF/container.xml#xml:0/0/0:'):
+        inspect(entries)
+
+
 def test_remote_rootfile_refusal_locates_the_original_container_node():
     entries = publication()
     entries['META-INF/container.xml'] = entries['META-INF/container.xml'].replace(

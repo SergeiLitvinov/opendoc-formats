@@ -30,6 +30,7 @@ from opendoc_model.limits import DocumentLimits
 from opendoc_model.units import points_to_css_px
 
 from opendoc_formats.fonts.html_embedding import embedded_font_stylesheet
+from opendoc_formats.fonts.resource_fonts import ResourceFontResolver, check_resource_font_usages, document_font_resolver
 from opendoc_formats.html_tables import IMPORTED, SCOPE_TO_HTML
 from opendoc_formats.support.cancellation import cancellation_scope, checkpoint
 from opendoc_formats.writers.color_preflight import preflight_colors
@@ -99,17 +100,19 @@ def write_html_model(
 ) -> ConversionReport:
     """Write self-contained HTML with cancellation before atomic publication."""
     with cancellation_scope(cancelled, 'HTML export', check_on_exit=False):
-        return _write_html_model(document, output_path, limits=limits)
+        report = ConversionReport(Path(output_path))
+        with document_font_resolver(document, report, limits=limits, target='html') as resolver:
+            return _write_html_model(document, output_path, report=report, resolver=resolver, limits=limits)
 
 
 def _write_html_model(
-    document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None = None,
+    document: DocumentModel, output_path: str | Path, *, report: ConversionReport, resolver: ResourceFontResolver,
+    limits: DocumentLimits | None = None,
 ) -> ConversionReport:
     """Записать ``DocumentModel`` в один переносимый HTML-файл."""
 
     output = Path(output_path)
     output.parent.mkdir(parents=True, exist_ok=True)
-    report = ConversionReport(output)
     from opendoc_model import PreservationState, get_integration
 
     integration = get_integration(document, limits=limits)
@@ -140,7 +143,9 @@ def _write_html_model(
     if not report.success:
         return report
     document = prepared.value
-    document = prepare_fonts(document, report, limits=limits)
+    document = prepare_fonts(document, report, limits=limits, resolver=resolver)
+    paths = frozenset(str(face.path) for face in resolver.resource_faces.values())
+    check_resource_font_usages(document, paths, report, target='html', limits=limits)
     if not report.success:
         return report
     from opendoc_formats.writers.color_inheritance import materialize_docx_colors
@@ -520,7 +525,8 @@ class _HtmlRenderer:
                     if key in cell.properties:
                         attributes += f' {attribute}="{escape(str(cell.properties[key]), quote=True)}"'
                 content = self._blocks(cell.blocks, f"{location}.rows[{row_index}].cells[{cell_index}].blocks")
-                cells.append(f"<{tag}{attributes}{_style_attribute(cell_border_styles.get(id(cell), []))}>{content}</{tag}>")
+                cell_styles = [*cell_border_styles.get(id(cell), []), *self._table_cell_styles(table, row_index, cell_index)]
+                cells.append(f"<{tag}{attributes}{_style_attribute(cell_styles)}>{content}</{tag}>")
             rows.append("<tr>" + "".join(cells) + "</tr>")
         styles = self._geometry_style(table.box, table.properties, positioned=True)
         styles.extend(border_styles)
@@ -545,6 +551,9 @@ class _HtmlRenderer:
             columns.append(f'<colgroup id="{escape(definition.id, quote=True)}" span="{definition.span}"></colgroup>')
             position = definition.start + definition.span
         return f"<table{anchor_attr}{_style_attribute(styles)}>{caption_html}{''.join(columns)}{''.join(rows)}</table>"
+
+    def _table_cell_styles(self, table: Table, row: int, cell: int) -> list[str]:
+        return []
 
     @staticmethod
     def _text_style(style: TextStyle) -> list[str]:

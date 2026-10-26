@@ -1,0 +1,36 @@
+{
+  "scope": "Static standalone TrueType post 1.0 GSUB/ToUnicode mapping; no shaping engine or subsetting replacement",
+  "native_module": "src/opendoc_formats/fonts/sfnt_ligatures.py",
+  "tests": "tests/test_native_font_ligatures.py",
+  "verification": {
+    "ligature_module_passed": 150,
+    "focused_font_and_pdf_suite_passed": 369,
+    "mypy_source_files_passed": 39,
+    "post1_mapping_cases_against_fonttools": 24,
+    "post1_saved_pdf_text_and_identical_pixels_cases": 2,
+    "post1_invalid_identity_cases": 2,
+    "fonttools_import_forbidden_on_accepted_mapping_and_pdf_repair": true
+  },
+  "profile": {
+    "post_version": "1.0",
+    "glyph_count_maximum": 258,
+    "post_header_minimum_bytes": 32,
+    "gsub_versions": ["1.0", "1.1 with NULL FeatureVariations offset"],
+    "lookup_types": ["4", "7 wrapping 4"],
+    "coverage_formats": [1, 2],
+    "lookup_flags": 0
+  },
+  "preservation": [
+    "Numerical glyph identity connects cmap and GSUB without reconstructing standard Macintosh glyph names",
+    "Ambiguous sequences and unencoded components keep the established unknown policy",
+    "Only generated PDF ToUnicode changes; glyph programs and painted pixels are unchanged in the finite fixtures",
+    "Shared face validation, GSUB work budgets and cooperative cancellation remain active"
+  ],
+  "limitations": [
+    "Synthetic owned fixtures; not acceptance of every independent TrueType font or renderer",
+    "Existing fontTools fallback retained for unsupported or malformed profiles",
+    "No removal of optional fonts extra or actual fontTools subsetting",
+    "No OpenDoc Model changes",
+    "No publication"
+  ]
+}

@@ -14,7 +14,9 @@ from opendoc_formats.pdf import PdfLimits, PdfPlacedGlyph, PdfTextPlacement
 
 
 def text_placements(page: Any, page_index: int, limits: PdfLimits,
-                    cancelled: Callable[[], bool] | None) -> tuple[PdfTextPlacement, ...]:
+                    cancelled: Callable[[], bool] | None, *, include_bounds: bool = True) -> tuple[PdfTextPlacement, ...]:
+    if type(include_bounds) is not bool:
+        raise ValueError('include_bounds must be boolean')
     import pymupdf
 
     mupdf = pymupdf.mupdf
@@ -89,7 +91,7 @@ def text_placements(page: Any, page_index: int, limits: PdfLimits,
                         if any(not math.isfinite(value) for value in values):
                             raise InvalidDocumentError('Non-finite PDF placement coordinates')
                         bbox = None
-                        if item.gid >= 0:
+                        if item.gid >= 0 and include_bounds:
                             box = mupdf.fz_bound_glyph(font, item.gid, placed)
                             bbox = (float(box.x0), float(box.y0), float(box.x1), float(box.y1))
                         if any(not math.isfinite(value) for value in (bbox or ())):

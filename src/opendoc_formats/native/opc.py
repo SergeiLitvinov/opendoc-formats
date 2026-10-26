@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable, Mapping
 from pathlib import PurePosixPath
 from typing import TYPE_CHECKING
-from urllib.parse import unquote, urlsplit
+from urllib.parse import unquote
 
 from opendoc_formats.errors import InvalidDocumentError
 from opendoc_formats.package_resources import _part_name
@@ -17,6 +18,25 @@ if TYPE_CHECKING:
 CONTENT_TYPES = '{http://schemas.openxmlformats.org/package/2006/content-types}'
 RELATIONSHIPS = '{http://schemas.openxmlformats.org/package/2006/relationships}'
 RELATIONSHIPS_TYPE = 'application/vnd.openxmlformats-package.relationships+xml'
+_SCHEME = re.compile(r'[A-Za-z][A-Za-z0-9+.-]*:')
+
+
+def _internal_uri_path(value: str) -> str:
+    """Match the established local urlsplit profile without retaining source strings."""
+    checkpoint()
+    # Keep the established leading-ASCII-space treatment. The caller rejects
+    # controls before parsing; query/fragment ordering is significant.
+    path = value.lstrip(' ').partition('#')[0]
+    path, _delimiter, query = path.partition('?')
+    if query or _SCHEME.match(path):
+        raise ValueError('Non-local OPC reference')
+    if path.startswith('//'):
+        authority, delimiter, rest = path[2:].partition('/')
+        if authority:
+            raise ValueError('Authority in local OPC reference')
+        path = '/'+rest if delimiter else ''
+    checkpoint()
+    return path
 
 
 def relationship_owner(name: str) -> str | None:
@@ -33,12 +53,9 @@ def resolve_target(owner: str, value: str) -> str:
     if not value or any(ord(char) < 32 or ord(char) == 127 for char in value):
         raise InvalidDocumentError(f'{owner}: invalid internal OPC target {value!r}')
     try:
-        parsed = urlsplit(value)
+        path = _internal_uri_path(value)
     except ValueError as error:
         raise InvalidDocumentError(f'{owner}: invalid internal OPC target {value!r}') from error
-    if parsed.scheme or parsed.netloc or parsed.query:
-        raise InvalidDocumentError(f'{owner}: invalid internal OPC target {value!r}')
-    path = parsed.path
     if not path:
         return owner
     segments = [] if path.startswith('/') else owner.split('/')[1:-1]

@@ -2,13 +2,30 @@
 
 from __future__ import annotations
 
+import json
+import os
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
 
 from opendoc_model.document_model import Block, DocumentModel, Paragraph, Table, TextRun
 
+from opendoc_formats.errors import OperationCancelledError
+from opendoc_formats.fonts.subset_cache import SubsetCache, SubsetKey
 from opendoc_formats.support.cancellation import checkpoint
+
+_SUBSET_CACHE = SubsetCache()
+
+
+def _reset_subset_cache_after_fork() -> None:
+    global _SUBSET_CACHE
+    # A fork may inherit a cache lock held by a thread which does not exist in the child.
+    _SUBSET_CACHE = SubsetCache(maximum_bytes=_SUBSET_CACHE.maximum_bytes,
+                                maximum_entries=_SUBSET_CACHE.maximum_entries)
+
+
+if hasattr(os, 'register_at_fork'):
+    os.register_at_fork(after_in_child=_reset_subset_cache_after_fork)
 
 
 @dataclass(frozen=True)
@@ -75,14 +92,18 @@ def collect_font_usages(document: DocumentModel) -> list[FontUsage]:
 
 def subset_font(usage: FontUsage) -> bytes:
     """Return a deterministic glyph subset, falling back to the full font if unsupported."""
+    checkpoint()
     source = usage.path.read_bytes()
+    checkpoint()
     if not usage.characters or not usage.subsettable:
         return source
+    cache_key: SubsetKey | None = None
+    engine: tuple[object, ...] = ()
+    inserted = False
     try:
         from fontTools import subset
         from fontTools.ttLib import TTFont
 
-        font = TTFont(BytesIO(source), recalcTimestamp=False)
         options = subset.Options()
         options.recalc_timestamp = False
         options.canonical_order = True
@@ -90,14 +111,43 @@ def subset_font(usage: FontUsage) -> bytes:
         options.name_IDs = ['*']
         options.name_languages = ['*']
         options.name_legacy = True
-        subsetter = subset.Subsetter(options=options)
-        subsetter.populate(text="".join(sorted(usage.characters)))
-        subsetter.subset(font)
-        output = BytesIO()
-        font.save(output, reorderTables=True)
-        font.close()
-        return output.getvalue()
+        characters = ''.join(sorted(usage.characters))
+        engine = (TTFont, TTFont.__init__, TTFont.__enter__, TTFont.__exit__, TTFont.save, TTFont.close,
+                  subset.Subsetter, subset.Subsetter.__init__, subset.Subsetter.populate, subset.Subsetter.subset,
+                  subset.Options, subset.Options.__init__)
+        try:
+            settings = json.dumps(vars(options), sort_keys=True, ensure_ascii=True, allow_nan=False)
+        except (TypeError, ValueError):
+            settings = None  # Unfamiliar option objects still use the established engine, without caching.
+        if settings is not None:
+            cache_key = source, characters, settings
+            cached = _SUBSET_CACHE.get(cache_key, engine)
+            checkpoint()
+            if cached is not None:
+                return cached
+        checkpoint()
+        with TTFont(BytesIO(source), recalcTimestamp=False) as font:
+            checkpoint()
+            subsetter = subset.Subsetter(options=options)
+            subsetter.populate(text=characters)
+            checkpoint()
+            subsetter.subset(font)
+            checkpoint()
+            output = BytesIO()
+            font.save(output, reorderTables=True)
+            checkpoint()
+            result = output.getvalue()
+        checkpoint()
+        if cache_key is not None:
+            inserted = _SUBSET_CACHE.put(cache_key, engine, result)
+            checkpoint()
+        return result
+    except OperationCancelledError:
+        if inserted and cache_key is not None:
+            _SUBSET_CACHE.discard(cache_key, engine)
+        raise
     except Exception:  # noqa: BLE001 - unsupported fonts remain embeddable without subsetting
+        checkpoint()
         return source
 
 

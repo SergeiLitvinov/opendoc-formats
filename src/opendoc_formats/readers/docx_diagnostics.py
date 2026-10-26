@@ -18,6 +18,7 @@ from opendoc_model import (
     PreservationRecord,
     PreservationState,
     Provenance,
+    Table,
     TableCell,
     get_integration,
     set_integration,
@@ -142,6 +143,16 @@ def attach_docx_diagnostics(document: Any, model: DocumentModel, source: Path, *
             except etree.XMLSyntaxError:
                 root = None
             if root is not None:
+                if root.tag == '{urn:opendoc-formats:source-grid:1}grid':
+                    marker = '_og_'+root.get('id', '')
+                    if not any(node.get(W+'name') == marker for node in document.part.element.iter(W+'bookmarkStart')):
+                        records.append(PreservationRecord(
+                            issue=DiagnosticIssue('docx.source-grid', IssueSeverity.WARNING,
+                                                  'Source grid has no table binding; actual Word grid is retained',
+                                                  f'{source}!{name}', reason='source-grid-unbound'),
+                            state=PreservationState.OPAQUE if complete_part else PreservationState.LOST,
+                            provenance=Provenance('docx', str(source), package_part=name),
+                        ))
                 for node in root.iter():
                     checkpoint()
                     feature = _feature(node)
@@ -177,6 +188,15 @@ def attach_docx_diagnostics(document: Any, model: DocumentModel, source: Path, *
                    {"target": target, "external": relation.is_external})
     for reference in walk_model(model, limits=limits):
         checkpoint()
+        grid = reference.node.properties.get('docx_source_grid_identity') if isinstance(reference.node, Table) else None
+        if grid is not None and grid.get('state') != 'verified':
+            records.append(PreservationRecord(
+                issue=DiagnosticIssue('docx.source-grid', IssueSeverity.WARNING,
+                                      'Source grid identity is unverified; actual Word grid is retained',
+                                      f'{source}#{reference.path}', reason='source-grid-unverified'),
+                state=PreservationState.OPAQUE,
+                provenance=Provenance('docx', str(source), object_id=reference.path),
+            ))
         if isinstance(reference.node, TableCell) and reference.node.properties.get('docx_merge_borders_unsupported'):
             records.append(PreservationRecord(
                 issue=DiagnosticIssue('docx.merge-borders', IssueSeverity.LOSS,

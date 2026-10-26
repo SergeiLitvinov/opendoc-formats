@@ -15,6 +15,8 @@ ROOT = Path(__file__).resolve().parents[1]
 REQUIRED = {
     "opendoc_formats/docx_profile.py",
     "opendoc_formats/writers/docx_flow.py",
+    "opendoc_formats/writers/docx_flow_borders.py",
+    "opendoc_formats/ooxml/source_grid.py",
     "opendoc_formats/docx.py",
     "opendoc_formats/pdf.py",
     "opendoc_formats/office.py",
@@ -52,7 +54,7 @@ def check(dist: Path, tag: str | None = None) -> None:
         metadata = BytesParser().parsebytes(archive.read(prefix + "METADATA"))
         if metadata["Name"] != "opendoc-formats" or metadata["Version"] != expected:
             raise ValueError("Wheel metadata mismatch")
-        if "opendoc-model==0.18.1" not in metadata.get_all("Requires-Dist", []):
+        if "opendoc-model==0.19.0" not in metadata.get_all("Requires-Dist", []):
             raise ValueError("Missing mandatory OpenDoc contract")
         if not REQUIRED <= wheel_names:
             raise ValueError(f"Wheel resources missing: {REQUIRED - wheel_names}")

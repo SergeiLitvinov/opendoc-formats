@@ -25,8 +25,11 @@ class ImportOptions:
     cancelled: Callable[[], bool] | None = None
     txt_profile: TextProfile = field(default_factory=TextProfile)
     epub_include_nonlinear: bool = False
+    pdf_text_layouts: bool = False
 
     def __post_init__(self) -> None:
+        if type(self.pdf_text_layouts) is not bool:
+            raise ValueError('pdf_text_layouts must be boolean')
         if type(self.epub_include_nonlinear) is not bool:
             raise ValueError("epub_include_nonlinear must be boolean")
         if not isinstance(self.txt_profile, TextProfile):
@@ -276,7 +279,7 @@ def _epub(path: Path, options: ImportOptions) -> DocumentModel:
 def _pdf(path: Path, options: ImportOptions) -> DocumentModel:
     reader = cast(Callable[..., DocumentModel], import_module("opendoc_formats.readers.pdf_model").read_pdf_model)
     return reader(path=path, mode=options.pdf_mode, ocr_engine_factory=options.ocr_engine_factory,
-                  limits=options.document_limits, cancelled=options.cancelled)
+                  limits=options.document_limits, cancelled=options.cancelled, capture_text_layouts=options.pdf_text_layouts)
 
 
 def _json(path: Path, options: ImportOptions) -> DocumentModel:

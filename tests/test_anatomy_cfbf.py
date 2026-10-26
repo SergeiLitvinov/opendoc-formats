@@ -152,6 +152,78 @@ def test_directory_links_are_raw_observations_without_a_tree_validity_claim():
     assert dict(root.details)['child'] == 0
     assert not dict(snapshot.details)['directory_tree_assessed']
     assert not dict(snapshot.details)['assessment_complete']
+    assert dict(snapshot.details)['directory_links_assessed']
+    assert not dict(snapshot.details)['directory_links_valid']
+    assert any(finding['code'] == 'root-target' for finding in dict(snapshot.details)['directory_link_findings'])
+
+
+@pytest.mark.parametrize('version', [3, 4])
+def test_directory_pointer_graph_preserves_exact_bytes_and_reaches_original_entries(version):
+    source = own_cfbf(version=version)[0]
+    snapshot = inspect_binary(source, capture=True)
+    details = dict(snapshot.details)
+    assert details['directory_links_valid'] and details['directory_links_assessed']
+    assert details['directory_link_findings'] == ()
+    assert details['directory_reached_entries'] == (0, 1, 2, 3)
+    assert details['directory_unreached_entries'] == ()
+    assert not details['directory_tree_assessed']  # Name order/red-black rules are a separate profile.
+    assert b''.join(item.payload for item in snapshot.items if item.kind == 'cfbf-physical-sector') == source
+
+
+@pytest.mark.parametrize('index,field,target,code', [
+    (0, 68, 2, 'root-sibling'),
+    (1, 76, 3, 'stream-child'),
+    (1, 68, 99, 'out-of-range-target'),
+    (3, 76, 4, 'inactive-target'),
+    (2, 72, 1, 'cycle'),
+    (3, 76, 2, 'multiple-references'),
+])
+def test_bad_directory_links_are_located_without_discarding_physical_payload(index, field, target, code):
+    # v4 has unallocated directory slots beyond the four original active entries.
+    source = changed(8192+index*128+field, target, data=own_cfbf(version=4)[0])
+    snapshot = inspect_binary(source, capture=True)
+    details = dict(snapshot.details)
+    assert details['directory_links_assessed'] and not details['directory_links_valid']
+    expected_field = {68: 'left_sibling', 72: 'right_sibling', 76: 'child'}[field]
+    expected = {'code': code, 'location': f'cfbf:directory={index}/{expected_field}', 'target': target}
+    assert expected in details['directory_link_findings']
+    assert b''.join(item.payload for item in snapshot.items if item.kind == 'cfbf-physical-sector') == source
+    assert not details['assessment_complete']
+
+
+def test_disconnected_directory_component_is_audited_for_cycles_and_never_called_reachable():
+    source = changed(1024+128+72, 0xffffffff)  # Disconnect Folder from Small.
+    source = changed(1024+3*128+76, 3, data=source)
+    details = dict(inspect_binary(source).details)
+    assert details['directory_reached_entries'] == (0, 1, 2)
+    assert details['directory_unreached_entries'] == (3,)
+    assert {finding['code'] for finding in details['directory_link_findings']} == {'cycle', 'unreached-entry'}
+
+
+def test_valid_nested_storage_can_own_a_stream_without_duplicate_references():
+    source = changed(1024+128+68, 0xffffffff)  # Large becomes a child of Folder.
+    source = changed(1024+3*128+76, 2, data=source)
+    details = dict(inspect_binary(source).details)
+    assert details['directory_links_valid']
+    assert details['directory_reached_entries'] == (0, 1, 2, 3)
+
+
+def test_directory_link_cancellation_preserves_source_and_does_not_leak_scope(monkeypatch):
+    import opendoc_formats.native.cfbf as cfbf
+
+    source = own_cfbf()[0]
+    stop = Event()
+    original = cfbf._Reader.directory_links
+
+    def cancel(self, entries):
+        stop.set()
+        return original(self, entries)
+
+    with monkeypatch.context() as context:
+        context.setattr(cfbf._Reader, 'directory_links', cancel)
+        with pytest.raises(OperationCancelledError):
+            inspect_binary(source, cancelled=stop.is_set)
+    assert dict(inspect_binary(source).details)['directory_links_valid']
 
 
 def test_polyglot_requires_explicit_container_and_each_physical_view_remains_available():

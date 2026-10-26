@@ -23,7 +23,7 @@ classifiers = [
     "Typing :: Typed",
     "Topic :: Text Processing :: General",
 ]
-dependencies = ["opendoc-model==0.18.1"]
+dependencies = ["opendoc-model==0.19.0"]
 
 [project.optional-dependencies]
 pdf-text = ["pypdf>=4"]
@@ -32,6 +32,7 @@ pdf-rich = ["pymupdf>=1.24,<2"]
 pdf-docx = ["pdf2docx>=0.2", "pymupdf>=1.24,<2"]
 pdf-layout = ["pdfplumber>=0.11"]
 docx = ["python-docx>=1.1", "lxml>=5"]
+docx-native = ["lxml>=5"]
 pptx = ["python-pptx>=1.0.2", "lxml>=5", "Pillow>=10"]
 epub = ["beautifulsoup4>=4.12"]
 fonts = ["fonttools>=4.50"]
@@ -50,7 +51,7 @@ Changelog = "https://github.com/SergeiLitvinov/opendoc-formats/blob/main/docs/de
 where = ["src"]
 
 [tool.uv.sources]
-opendoc-model = { url = "https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.18.1/opendoc_model-0.18.1-py3-none-any.whl" }
+opendoc-model = { url = "https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.19.0/opendoc_model-0.19.0-py3-none-any.whl" }
 
 [tool.ruff]
 line-length = 130
@@ -81,6 +82,14 @@ follow_imports = "silent"
 ignore_missing_imports = true
 files = [
     "src/opendoc_formats/native/cfbf.py",
+    "src/opendoc_formats/native/sfnt.py",
+    "src/opendoc_formats/native/fvar.py",
+    "src/opendoc_formats/fonts/word_metrics.py",
+    "src/opendoc_formats/fonts/sfnt_names.py",
+    "src/opendoc_formats/fonts/sfnt_cmap.py",
+    "src/opendoc_formats/fonts/sfnt_ligatures.py",
+    "src/opendoc_formats/fonts/subset_cache.py",
+    "src/opendoc_formats/fonts/embedding.py",
     "src/opendoc_formats/api.py", "src/opendoc_formats/export.py", "src/opendoc_formats/text_profile.py",
     "src/opendoc_formats/types.py", "src/opendoc_formats/docx.py", "src/opendoc_formats/pdf.py",
     "src/opendoc_formats/office.py", "src/opendoc_formats/package_resources.py", "src/opendoc_formats/errors.py",
@@ -94,9 +103,14 @@ files = [
     "src/opendoc_formats/native/pdf_text.py",
     "src/opendoc_formats/native/pdf_placements.py",
     "src/opendoc_formats/readers/pdf_paint.py",
+    "src/opendoc_formats/readers/pdf_font_bindings.py",
+    "src/opendoc_formats/readers/pdf_text_layout.py",
+    "src/opendoc_formats/readers/pdf_layout_bindings.py",
+    "src/opendoc_formats/readers/pdf_styles.py",
     "src/opendoc_formats/readers/pdf.py", "src/opendoc_formats/readers/pdf_diagnostics.py",
     "src/opendoc_formats/readers/pdf_semantic.py", "src/opendoc_formats/readers/pdf_ocr_merge.py",
     "src/opendoc_formats/readers/html_text.py", "src/opendoc_formats/readers/epub.py",
+    "src/opendoc_formats/readers/html_fonts.py",
     "src/opendoc_formats/readers/_djvu_text.py",
 ]
 

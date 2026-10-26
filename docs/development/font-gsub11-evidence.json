@@ -1,0 +1,26 @@
+{
+  "scope": "Static standalone TrueType/post-3 GSUB 1.1 without FeatureVariations; not shaping",
+  "specification": "https://learn.microsoft.com/en-us/typography/opentype/spec/gsub#gsub-header",
+  "model": "opendoc-model==0.19.0",
+  "published": false,
+  "dependencies_changed": false,
+  "native_GSUB_tests_passed": 67,
+  "GSUB_unicode_and_public_PDF_resource_tests_passed": 106,
+  "source_files_sha256": {
+    "src/opendoc_formats/fonts/sfnt_ligatures.py": "58fd8a771e3a1b86239003fb0982a72623f366456f6a4324d0573f40ab8ce02f",
+    "tests/test_native_font_ligatures.py": "8c5b03949a21657dc1463a2f37430fc30054dbc8cf66f00494abe05eaa358968"
+  },
+  "acceptance": [
+    "Independent raw GSUB 1.0/1.1 lookup 4/7 and coverage 1/2 match fontTools oracle",
+    "Accepted parser and PDF mapping path forbids fontTools imports",
+    "Truncated 14-byte header and offsets into extended header rejected",
+    "Unknown versions rejected, nonzero FeatureVariations uses established engine fallback",
+    "Real Story PDF 1.0/1.1: saved-file text repaired with identical MuPDF pixels",
+    "Existing quotas, cancellation, glyph ambiguity and full program resource verification retained"
+  ],
+  "remaining": [
+    "Variable fonts and FeatureVariations not interpreted by native ligature reader",
+    "No full shaping or independent multi-renderer conformance claim",
+    "fontTools remains optional for actual subsetting and uncovered profiles"
+  ]
+}

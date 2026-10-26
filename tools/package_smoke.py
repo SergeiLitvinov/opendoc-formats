@@ -42,7 +42,205 @@ def diagnostics_smoke() -> None:
 
 
 def anatomy_smoke() -> None:
+    from opendoc_model import Length, TextStyle
+
     from opendoc_formats.anatomy import compare_snapshots, inspect_binary
+    from opendoc_formats.fonts.resolver import _read_face
+    from opendoc_formats.fonts.resource_fonts import font_program_names
+    from opendoc_formats.fonts.sfnt_cmap import read_unicode_coverage, read_unicode_mapping
+    from opendoc_formats.fonts.sfnt_ligatures import read_ligature_mapping
+    from opendoc_formats.fonts.word_metrics import word_line_ascent, word_line_descent
+    from opendoc_formats.native.epub import local_path
+    from opendoc_formats.native.sfnt import inspect_sfnt, inspect_sfnt_checksums, inspect_sfnt_structure, read_face_metrics
+
+    assert local_path('OPS/book.opf', 'Text/%F0%9F%A6%8A#part') == 'OPS/Text/🦊'
+    assert local_path('OPS/book.opf', 'Text/%252F') == 'OPS/Text/%2F'
+    for ambiguous in ('Text/%FF', 'Text/own%', 'Text%2Fown', 'Text/own?query'):
+        try:
+            local_path('OPS/book.opf', ambiguous)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError('Ambiguous EPUB URL was silently resolved')
+
+    font = struct.pack('>4s4H4sIII', b'\0\1\0\0', 1, 16, 0, 0, b'OWN ', 0, 28, 3)+b'Own\0'
+    font_inventory = inspect_sfnt(font, capture=True)
+    assert font_inventory.source_sha256 == hashlib.sha256(font).hexdigest()
+    assert font_inventory.tables[0].payload == b'Own' and font_inventory.tables[0].offset == 28
+    assert not font_inventory.assessment_complete
+    checksums = inspect_sfnt_checksums(font)
+    assert checksums.tables[0].computed == 0x4f776e00 and not checksums.tables[0].valid
+    assert checksums.adjustment_valid is None and not checksums.assessment_complete
+    assert not inspect_sfnt_structure(font).findings
+    damaged_padding = font[:-1]+b'\1'
+    assert inspect_sfnt_structure(damaged_padding).findings[0].code == 'sfnt.padding.nonzero'
+    structured = inspect_binary(damaged_padding, capture=True, sfnt_structure=True)
+    assert structured.items[0].payload == damaged_padding
+    assert dict(structured.details)['structure']['findings'][0]['code'] == 'sfnt.padding.nonzero'
+    font_snapshot = inspect_binary(font, capture=True)
+    assert font_snapshot.container == 'sfnt' and font_snapshot.items[0].payload == font
+    assert font_snapshot.items[1].payload == b'Own'
+    audited_snapshot = inspect_binary(font, sfnt_checksums=True)
+    assert dict(audited_snapshot.details)['checksums']['source_sha256'] == font_snapshot.source_sha256
+    assert dict(audited_snapshot.details)['checksums']['tables'][0]['computed'] == 0x4f776e00
+
+    names = ((1, 'Own Family'), (4, 'Own Full'), (6, 'Own-Regular'), (16, 'Own Typographic'))
+    name_records, strings = bytearray(), bytearray()
+    for identifier, value in names:
+        encoded = value.encode('utf-16-be')
+        name_records.extend(struct.pack('>6H', 3, 1, 0x409, identifier, len(encoded), len(strings)))
+        strings.extend(encoded)
+    name_table = struct.pack('>3H', 0, len(names), 6+len(name_records))+name_records+strings
+    name_program = (struct.pack('>4s4H4sIII', b'\0\1\0\0', 1, 16, 0, 0, b'name', 0, 28, len(name_table))+name_table)
+    assert font_program_names(name_program) == ('Own Typographic', tuple(value for _, value in names))
+    tagged_records = bytearray(name_records)
+    for number in range(len(names)):
+        struct.pack_into('>H', tagged_records, 12*number+4, 0x8000)
+    tagged_table = (struct.pack('>3H', 1, len(names), 6+len(tagged_records)+6)+tagged_records
+                    +struct.pack('>3H', 1, 4, len(strings))+strings+b'\0e\0n')
+    tagged_program = struct.pack('>4s4H4sIII', b'\0\1\0\0', 1, 16, 0, 0, b'name', 0, 28, len(tagged_table))+tagged_table
+    assert font_program_names(tagged_program) == ('Own Typographic', tuple(value for _, value in names))
+    legacy_records, legacy_strings = bytearray(), bytearray()
+    legacy_names = [(identifier, '日本 '+value if identifier != 6 else value) for identifier, value in names]
+    for identifier, value in legacy_names:
+        encoded = value.encode('shift_jis')
+        legacy_records.extend(struct.pack('>6H', 3, 2, 0x411, identifier, len(encoded), len(legacy_strings)))
+        legacy_strings.extend(encoded)
+    legacy_table = struct.pack('>3H', 0, len(names), 6+len(legacy_records))+legacy_records+legacy_strings
+    legacy_program = struct.pack('>4s4H4sIII', b'\0\1\0\0', 1, 16, 0, 0, b'name', 0, 28, len(legacy_table))+legacy_table
+    assert font_program_names(legacy_program) == ('日本 Own Typographic', tuple(value for _, value in legacy_names))
+    for platform, encoding, language, prefix, codec in (
+        (1, 7, 32, 'Шрифт', 'mac_cyrillic'),
+        (1, 0, 17, 'Şİğ', 'mac_turkish'),
+        (2, 2, 0, 'Café', 'latin1'),
+    ):
+        portable_records, portable_strings = bytearray(), bytearray()
+        portable_names = [(identifier, prefix+value) for identifier, value in names]
+        for identifier, value in portable_names:
+            encoded = value.encode(codec)
+            portable_records.extend(struct.pack('>6H', platform, encoding, language, identifier,
+                                                len(encoded), len(portable_strings)))
+            portable_strings.extend(encoded)
+        portable_table = struct.pack('>3H', 0, len(names), 6+len(portable_records))+portable_records+portable_strings
+        portable_font = struct.pack('>4s4H4sIII', b'\0\1\0\0', 1, 16, 0, 0, b'name', 0, 28, len(portable_table))+portable_table
+        assert font_program_names(portable_font) == (prefix+'Own Typographic', tuple(value for _, value in portable_names))
+
+    subtable = struct.pack('>HH6I', 12, 0, 28, 0, 1, 0x1f600, 0x1f602, 1)
+    cmap_table = struct.pack('>4HI', 0, 1, 3, 10, 12)+subtable
+    cmap_program = struct.pack('>4s4H4sIII', b'\0\1\0\0', 1, 16, 0, 0, b'cmap', 0, 28, len(cmap_table))+cmap_table
+    assert read_unicode_coverage(cmap_program) == frozenset({0x1f600, 0x1f601, 0x1f602})
+    for legacy_subtable in (
+        struct.pack('>3H', 0, 262, 0)+bytes(65)+b'\1\0\2'+bytes(188),
+        struct.pack('>8H', 6, 16, 0, 65, 3, 1, 0, 2),
+    ):
+        legacy_cmap = struct.pack('>4HI', 0, 1, 3, 1, 12)+legacy_subtable
+        legacy_font = struct.pack('>4s4H4sIII', b'\0\1\0\0', 1, 16, 0, 0, b'cmap', 0, 28, len(legacy_cmap))+legacy_cmap
+        assert read_unicode_coverage(legacy_font) == frozenset({65, 67})
+
+    # Own physical metric tables; no glyph interpreter or complete-font claim.
+    head, horizontal = bytearray(54), bytearray(36)
+    struct.pack_into('>I', head, 0, 0x10000)
+    struct.pack_into('>I', head, 12, 0x5f0f3cf5)
+    struct.pack_into('>H', head, 18, 1000)
+    struct.pack_into('>Ihhh', horizontal, 0, 0x10000, 800, -200, 0)
+    metrics_program = (struct.pack('>4s4H', b'\0\1\0\0', 2, 32, 1, 0)
+                       + struct.pack('>4sIII', b'head', 0, 44, 54)
+                       + struct.pack('>4sIII', b'hhea', 0, 100, 36)+head+b'\0\0'+horizontal)
+    with TemporaryDirectory(prefix='opendoc_metrics_') as directory:
+        path = Path(directory)/'own.ttf'
+        path.write_bytes(metrics_program)
+        style = TextStyle(font_family='Own', font_size=Length(10), properties={'font_resolution': {'path': str(path)}})
+        assert word_line_ascent(style) == 8 and word_line_descent(style) == 2
+
+        os2, post, maximum = bytearray(78), bytearray(32), bytearray(32)
+        struct.pack_into('>Hh3H', os2, 0, 0, 500, 400, 5, 0)
+        struct.pack_into('>I', post, 0, 0x30000)
+        struct.pack_into('>IH', maximum, 0, 0x10000, 4)
+        tables = {'head': head, 'hhea': horizontal, 'OS/2': os2, 'post': post,
+                  'maxp': maximum, 'name': name_table, 'cmap': cmap_table}
+        def face_program() -> bytes:
+            directory_records, payload = bytearray(), bytearray()
+            for tag, table in sorted(tables.items()):
+                offset = 12+16*len(tables)+len(payload)
+                directory_records.extend(struct.pack('>4sIII', tag.encode('ascii'), 0, offset, len(table)))
+                payload.extend(table)
+                payload.extend(bytes(-len(payload) % 4))
+            selector = len(tables).bit_length()-1
+            search = 16*(1 << selector)
+            header = struct.pack('>4s4H', b'\0\1\0\0', len(tables), search, selector, 16*len(tables)-search)
+            return header+directory_records+payload
+
+        path.write_bytes(face_program())
+        face = _read_face(path)
+        assert face is not None and face.family == 'Own Typographic' and face.units_per_em == 1000
+        assert face.glyphs == frozenset({0x1f600, 0x1f601, 0x1f602})
+        assert face.embeddable and face.subsettable
+        post4 = bytearray(post)
+        struct.pack_into('>I', post4, 0, 0x40000)
+        post4.extend(struct.pack('>4H', 0xffff, 0xd800, 65, 65))
+        tables['post'] = post4
+        native_post4 = face_program()
+        path.write_bytes(native_post4)
+        assert _read_face(path) == face and path.read_bytes() == native_post4
+        tables['post'] = post
+        tables['fvar'] = (struct.pack('>8H', 1, 0, 16, 2, 1, 20, 1, 8)
+                          +struct.pack('>4s3i2H', b'wght', 100*65536, 400*65536, 900*65536, 0, 256)
+                          +struct.pack('>2Hi', 257, 0, 700*65536))
+        path.write_bytes(face_program())
+        default_face = _read_face(path)
+        assert default_face == face and default_face.weight == 400
+        tables.pop('fvar')
+        first = face_program()
+        struct.pack_into('>H', head, 18, 2048)
+        second = face_program()
+        struct.pack_into('>H', head, 18, 1000)
+        collection_parts = []
+        base = 20
+        for program in (first, second):
+            absolute = bytearray(program)
+            count = struct.unpack_from('>H', absolute, 4)[0]
+            for index in range(count):
+                location = 12+16*index+8
+                struct.pack_into('>I', absolute, location, base+struct.unpack_from('>I', absolute, location)[0])
+            collection_parts.append(bytes(absolute))
+            base += len(absolute)
+        collection = struct.pack('>4s4I', b'ttcf', 0x10000, 2, 20, 20+len(first))+b''.join(collection_parts)
+        path.write_bytes(collection)
+        assert _read_face(path) == face
+        selected = inspect_sfnt(collection, face_index=1, capture=True)
+        assert selected.face_index == 1 and selected.directory_offset == 20+len(first)
+        assert all(table.payload == collection[table.offset:table.offset+table.length] for table in selected.tables)
+        assert read_face_metrics(collection, face_index=1).units_per_em == 2048
+        collection_snapshot = inspect_binary(collection, sfnt_face_index=1, capture=True)
+        assert collection_snapshot.container == 'sfnt' and dict(collection_snapshot.details)['face_index'] == 1
+        assert collection_snapshot.items[0].payload == collection
+        assert [item.locator for item in collection_snapshot.items[1:]] == [
+            'sfnt:face=1:table='+table.tag for table in selected.tables]
+        assert all(item.payload == table.payload
+                   for item, table in zip(collection_snapshot.items[1:], selected.tables, strict=True))
+        assert path.read_bytes() == collection
+        keys = [0]*256
+        keys[0x81] = keys[0x82] = 8
+        high_bytes = (struct.pack('>3H', 2, 546, 0)+struct.pack('>256H', *keys)
+                      +struct.pack('>2HhH', 65, 3, 0, 10)+struct.pack('>2HhH', 65, 3, -1, 8)
+                      +struct.pack('>6H', 1, 0, 2, 2, 0, 3))
+        tables['cmap'] = struct.pack('>4HI', 0, 1, 3, 1, 12)+high_bytes
+        encoded = face_program()
+        expected_mapping = {65: 1, 67: 2, 0x8141: 1, 0x8143: 2, 0x8241: 1, 0x8243: 2}
+        assert read_unicode_mapping(encoded) == expected_mapping
+        path.write_bytes(encoded)
+        high_byte_face = _read_face(path)
+        assert high_byte_face is not None and high_byte_face.glyphs == frozenset(expected_mapping)
+        assert high_byte_face.family == face.family and high_byte_face.units_per_em == face.units_per_em
+        assert high_byte_face.embeddable == face.embeddable and high_byte_face.subsettable == face.subsettable
+        assert path.read_bytes() == encoded
+        tables['cmap'] = struct.pack('>4HI', 0, 1, 3, 1, 12)+struct.pack('>9H', 6, 18, 0, 102, 4, 1, 0, 0, 2)
+        scripts = struct.pack('>H4s7H', 1, b'DFLT', 8, 4, 0, 0, 0xffff, 1, 0)
+        features = struct.pack('>H4s4H', 1, b'liga', 8, 0, 1, 0)
+        ligature = struct.pack('>12H', 1, 18, 1, 8, 1, 4, 3, 2, 2, 1, 1, 1)
+        lookups = struct.pack('>6H', 1, 4, 4, 0, 1, 8)+ligature
+        tables['GSUB'] = struct.pack('>I3H', 0x10000, 10, 30, 44)+scripts+features+lookups
+        assert read_ligature_mapping(face_program()) == {3: 'fi'}
 
     source = io.BytesIO()
     with zipfile.ZipFile(source, 'w') as archive:
@@ -64,6 +262,22 @@ def anatomy_smoke() -> None:
     assert snapshot.opc.reachable_parts == ('/word/own',)
     assert snapshot.opc.unreachable_parts == ('/word/unknown.bin',)
     assert compare_snapshots(snapshot, inspect_binary(source.getvalue()))['binary_identical']
+    for old, new, code in [('Id="own"', 'Id="Связь1"', None),
+                           ('Id="own"', 'Id="1bad"', 'opc.relationship-id'),
+                           ('Type="urn:own"', 'Type="urn:bad%"', 'opc.relationship-type')]:
+        lexical = io.BytesIO()
+        with zipfile.ZipFile(io.BytesIO(source.getvalue())) as original, zipfile.ZipFile(lexical, 'w') as updated:
+            for info in original.infolist():
+                data = original.read(info.filename)
+                if info.filename == '_rels/.rels':
+                    data = data.decode().replace(old, new).encode()
+                updated.writestr(info, data)
+        audited = inspect_binary(lexical.getvalue(), capture=True)
+        assert audited.items[0].payload is not None
+        assert audited.opc.reachability_complete is (code is None)
+        if code is not None:
+            assert any(finding.code == code for finding in audited.opc.findings)
+            assert not audited.opc.unreachable_parts
     epub = io.BytesIO()
     with zipfile.ZipFile(epub, 'w') as archive:
         archive.writestr('mimetype', b'application/epub+zip')
@@ -115,6 +329,38 @@ def compound_smoke() -> None:
     assert next(item for item in snapshot.items if item.locator == 'cfbf:directory=1').payload == payload
     assert b''.join(item.payload for item in snapshot.items if item.kind == 'cfbf-physical-sector') == original
     assert not dict(snapshot.details)['assessment_complete']
+    assert dict(snapshot.details)['directory_links_valid']
+
+
+def font_subset_smoke() -> None:
+    from fontTools import subset
+    from fontTools.ttLib import TTFont
+
+    from opendoc_formats.fonts.embedding import FontUsage, subset_font
+
+    source = (Path(__file__).resolve().parents[1]/'tests/native/data/ligature-post3.ttf').read_bytes()
+    calls, original = [], subset.Subsetter.subset
+
+    def observed(self, font):
+        calls.append(True)
+        return original(self, font)
+
+    subset.Subsetter.subset = observed
+    try:
+        with TemporaryDirectory(prefix='opendoc_subset_cache_') as directory:
+            path = Path(directory)/'own.ttf'
+            path.write_bytes(source)
+            usage = FontUsage('Own', path, False, False, frozenset('fi'), True, True)
+            first = subset_font(usage)
+            assert first == subset_font(usage) and calls == [True]
+            with TTFont(io.BytesIO(first)) as reduced, TTFont(io.BytesIO(source)) as original_font:
+                def records(font):
+                    return sorted((n.platformID, n.platEncID, n.langID, n.nameID, n.string) for n in font['name'].names)
+                assert records(reduced) == records(original_font)
+                assert set(reduced.getBestCmap()) >= {ord('f'), ord('i')}
+            assert path.read_bytes() == source
+    finally:
+        subset.Subsetter.subset = original
 
 
 def main() -> None:
@@ -122,6 +368,7 @@ def main() -> None:
     parser.add_argument("--all-formats", action="store_true")
     parser.add_argument("--pdf-text", action="store_true")
     parser.add_argument("--epub", action="store_true")
+    parser.add_argument("--fonts", action="store_true")
     args = parser.parse_args()
     from opendoc_model import (
         DocumentLimits,
@@ -159,7 +406,7 @@ def main() -> None:
     from opendoc_formats.support.inspection import inspect_path
 
     assert opendoc_formats.__version__ == version("opendoc-formats")
-    assert version("opendoc-model") == "0.18.1"
+    assert version("opendoc-model") == "0.19.0"
     assert importlib.util.find_spec("ebooklib") is None, "Removed EPUB engine leaked into the installed profile"
     engines = ("bs4", "fitz", "pymupdf", "lxml", "docx", "pptx", "ebooklib", "fontTools")
     assert all(name not in sys.modules for name in engines)
@@ -171,7 +418,7 @@ def main() -> None:
     default_registry()
     default_exporter_registry()
     if not args.all_formats:
-        absent = tuple(name for name in engines if name != "bs4" or not args.epub)
+        absent = tuple(name for name in engines if not ((name == 'bs4' and args.epub) or (name == 'fontTools' and args.fonts)))
         assert all(importlib.util.find_spec(name) is None for name in absent)
         for constructor in (DocxPackage, PdfDocument):
             try:
@@ -181,6 +428,8 @@ def main() -> None:
             else:
                 raise AssertionError("Native access should diagnose absent optional backend")
         find_libreoffice()
+    if args.fonts:
+        font_subset_smoke()
     document = DocumentModel(
         sections=[
             Section(

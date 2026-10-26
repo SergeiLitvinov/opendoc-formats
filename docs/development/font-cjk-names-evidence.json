@@ -1,0 +1,28 @@
+{
+  "scope": "Standard-codec Macintosh Japanese/Traditional Chinese/Korean/Simplified Chinese name records; no glyph or shaping changes",
+  "published": false,
+  "dependencies_changed": false,
+  "implementation": "Python standard-library x_mac_japanese/x_mac_trad_chinese/x_mac_korean/x_mac_simp_chinese codecs; no copied translation tables or codec registration",
+  "oracle": "fontTools 4.66.1 TTFont name.getDebugName and complete FontFace metadata",
+  "checks": {
+    "name_tests_passed": 74,
+    "font_regression_passed": 763,
+    "font_regression_skipped": 1,
+    "skip_reason": "Real POSIX fork is unavailable on Windows; cache child-reset behavior is checked separately",
+    "font_regression_selection": "All tests/**/*.py filenames containing font, sfnt, fvar or ligature; not a new full-project regression",
+    "repertoire": "Every strictly decodable non-NUL one/two-byte unit per codec, separator-delimited in bounded name records, all IDs 1/4/6/16; results equal engine with fontTools import forbidden during native reads",
+    "full_face": "Japanese, Traditional Chinese, Korean and Simplified Chinese owned font fixtures match engine FontFace with fontTools import forbidden; source bytes unchanged",
+    "fallback": "Macintosh extension bytes unsupported by standard codecs preserve engine results and invoke the existing fallback",
+    "cjk_limits_and_cancellation": "Repeated CJK name bytes exhaust the native work quota; cancellation between records propagates without engine fallback",
+    "strict_mypy_files_passed": 41,
+    "ruff": "passed",
+    "strict_documentation_build": "passed",
+    "license_inventory_and_boundary_audit": "passed"
+  },
+  "limits": "Existing 32 MiB sfnt input, 4096 name records/language-tag records, 8 MiB repeated decoded-byte work and cancellation checkpoints unchanged; third-party fallback is not bounded by these quotas",
+  "remaining": "Macintosh extension/recovery profiles, compressed wrappers and unsupported metadata retain fontTools; real subsetting still requires the optional engine. No general fontTools removal or universal fidelity claim.",
+  "source_sha256": {
+    "src/opendoc_formats/fonts/sfnt_names.py": "732d5c3bc62a57190c0c563b5c1897b89fdb43251928561bcc16263f9eb90efb",
+    "tests/test_native_font_names.py": "e1c79b004bbd0e67f0aa094665894252f550fc0e20fcc18280bf428a237b2771"
+  }
+}

@@ -25,7 +25,11 @@ with DocxPackage("source.docx") as package:
     print(result.changed_parts, result.sha256)
 ```
 
-Нужен extra `docx`. Снимки содержат роли частей, порядок body, текст и диапазоны runs,
+Достаточно extra `docx-native` (только lxml); extra `docx` также подходит.
+`docx-native` не включает богатый импорт/экспорт Model через python-docx.
+Условия lxml и его XSL-ресурсов остаются в силе:
+[лицензии профиля](dependencies.md#лицензия-каждого-профиля).
+Снимки содержат роли частей, порядок body, текст и диапазоны runs,
 стили, таблицы/строки/ячейки, ширину сетки, объединения и признаки сложного содержимого.
 ID и Unicode-диапазоны относятся к первоначальному состоянию пакета. Несколько правок
 применяются одной транзакцией; пересечения и неоднозначные вставки отвергаются.
@@ -127,6 +131,90 @@ clipping, группы и итоговая видимость не входят 
 является суммарной прозрачностью групп; порядок callback не объявляется порядком
 чтения. Цвет, stroke state, clip/group/layer и полная семантика PDF остаются
 отдельными наблюдениями/задачами. Метод не добавляет зависимости к extra `pdf`.
+
+Рабочий семантический PDF reader использует этот же ограниченный обработчик
+для сопоставления FONT resources с нарисованным текстом. Отдельного обхода
+MuPDF для этой привязки нет. Сохраняется конечная fill-only политика: совпасть
+должны реальная программа, Unicode и округлённый до 0.001 pt origin; имя семейства
+не является доказательством. Совпадающие программы в разных ресурсах не выбираются
+произвольно. Stroke/clip/ignore не превращаются в fill-привязку.
+Этот потребитель получает матрицы без вычисления glyph outlines; полный
+`PdfDocument.page_text_placements` сохраняет прежние `glyph_bbox` observations.
+
+Для static standalone OTF с одной CFF1 программой допускается точное совпадение
+native buffer с таблицей `CFF ` внутри ресурса: собственный sfnt reader подтверждает
+границы и SHA-256 таблицы, CFF1 header/Name INDEX ограничивают профиль одним font.
+Variable/CFF2 и несколько подходящих контейнеров остаются неподтверждёнными.
+Это связь исходных bytes и glyph ID, не полная валидация CFF или shaping.
+
+В этом рабочем пути на каждой странице `DocumentLimits.max_nodes` ограничивает число native spans,
+`max_bytes` применяется отдельно к glyph records/metadata и native font-buffer copies,
+`max_embedded_bytes` — исходные FONT payload. Для таблиц OTF действует также предел
+`min(4096, max_nodes)`. Превышения дают `ArtifactLimitError` с path/quota/maximum;
+отмена проверяется внутри обработчика, поворот страницы восстанавливается при отказе.
+Квоты не ограничивают внутренние выделения MuPDF до callback и не прерывают
+произвольный native call в любой момент. Типизированные Model TextLayout создаются
+только в явно выбранном режиме наблюдений; C-PDF-01 остаётся открытым.
+
+### TextLayout в Model
+
+```python
+from opendoc_formats import ImportOptions, read_document, write_document
+from opendoc_model import get_integration
+
+result = read_document("source.pdf", options=ImportOptions(pdf_text_layouts=True))
+if result.success:
+    layouts = get_integration(result.document).text_layouts
+    write_document(result.document, "observations.json")
+```
+
+Прямой reader принимает `read_pdf_model(path=..., capture_text_layouts=True)`.
+По умолчанию оба режима выключены. Режим сохраняет отдельные native fill/stroke/
+ignore/clip occurrences как публичные Model `TextLayout`, матрицы и доказанные
+FONT/face. Для standalone static TTF и однозначного OTF/CFF известен face 0;
+отсутствующий или неоднозначный источник, variable/font-set face не угадываются.
+Неизвестный glyph ID записывается как None, а не как допустимый номер другого face.
+
+При точном единственном совпадении исходного Unicode, позиции, полного стиля
+и явно выбранной FONT-программы создаются logical ranges/clusters и snapshot
+`state="verified"`, `binding_version=2`. Лигатура `fi` связывает один физический
+глиф с двумя кодовыми точками. Native continuation `-1` принимается только после
+физического глифа с той же матрицей; неизвестный Unicode, близкая позиция,
+изменённый стиль, отсутствующая FONT-ссылка или несколько владельцев остаются
+`unknown`, без выдуманной связи. Это подтверждение logical mapping, а полный
+paint/visibility state остаётся `unassessed`.
+
+Native sentinel/Unicode continuation не становится вторым физическим глифом:
+исходный PDF сохраняется как ATTACHMENT с SHA-256,
+в extra layout остаются source resource ID и индексы физических native records.
+Оригинальный PDF и низкоуровневый Formats API сохраняют неподтверждённые Unicode,
+sentinels, clip/group/paint данные. В Model не вводится отдельный private glyph codec.
+
+Для известной геометрии `layout.transform` переводит crop-local координаты MuPDF
+в общий page frame `x=PDF x, y=-PDF y`. Rotation хранится в PageGeometry отдельно.
+Для неподтверждённого frame (например, UserUnit вне поддержанного профиля)
+`page_id=None`; остаются native local matrices и provenance, без выдуманного
+преобразования к странице. Имена backend/version и причина неизвестного binding
+сохраняются как форматные extra. Это не доказательство reading order или видимости.
+
+Снимок источника и FONT payload вместе подчиняются `max_embedded_bytes`.
+Native spans/records ограничены `max_nodes` на странице и совокупно; полный
+Model budget проверяется публичными setters. Нативные allocations до callback
+по-прежнему не являются жёстко ограниченными. Возвращается подготовленная копия;
+отмена или ошибка не оставляют частично добавленный layout в исходной модели.
+Повторный захват того же источника не дублирует pages, layouts или snapshot.
+Anchors/ranges и неизвестные extra сохраняются. После правки текста или стиля
+публичный getter Model возвращает `stale`; повторное чтение исходного PDF
+не подтверждает изменённого владельца и заменяет свою связь на `unknown`.
+Связи других producers проходят обычную проверку Model и не инвалидируются молча.
+Некорректные общие диапазоны после сокращения/удаления текста требуют отдельной
+правки или remap; захват не удаляет их ради обхода validation.
+
+JSON переносит наблюдения через публичный codec Model. PDF/DOCX/HTML и другие
+writer без поддержки TextLayout возвращают `export.text-layout` до замены файла.
+Для обычной конвертации используется стандартный импорт без этого режима.
+Remap после split/merge, остальные logical profiles и native writer projection
+остаются в C-PDF-01. [Проверки режима](../development/pdf-text-layout-capture-evidence.json).
 
 `max_text_spans` ограничивает число occurrences, `max_text_chars` — число native
 glyph records, включая continuations. `max_text_metadata_bytes` ограничивает сумму

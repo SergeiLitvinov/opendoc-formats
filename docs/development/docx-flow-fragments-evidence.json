@@ -1,0 +1,269 @@
+{
+  "scope": "Complete uniform ruled PDF table grid represented by consecutive collinear fragments; explicit semantic Word flow, not pixel-identical PDF pagination",
+  "published": false,
+  "dependencies_changed": false,
+  "model": "opendoc-model==0.19.0; import opendoc_model; no Model changes",
+  "checks": {
+    "source_pixels": "Owned whole-stroke and 24-fragment two-page PDFs have identical MuPDF pixels at 108 dpi",
+    "native_structure": "Public/direct flow, full 3x3 and crop 2x2 produce byte-identical table XML to whole-stroke fixture, no media raster/SVG, unchanged source JSON",
+    "mapping": "Every one of 24 source occurrences accounted; crop excludes 12 fragments completely outside retained bounds",
+    "cycle": "DOCX import -> Model JSON -> DOCX keeps retained editable cell texts",
+    "refusal": "Gap, overlap and heterogeneous width reject before publication and preserve previous file/model",
+    "focused_regression_passed": 94,
+    "regression_scope": "test_docx_flow.py, test_text_flow.py, test_pdf_mapping.py and test_mapping_composition.py; not a new full-project run",
+    "cancellation": "Cancellation during fragment coverage propagates; native mapping tolerance and positive-overlap cases checked",
+    "installed_smoke": "Passed isolated tools/docx_flow_smoke.py --minimal --fragmented with Formats/Model/python-docx/lxml/typing-extensions only; no PDF, fontTools, Pillow, NumPy or pdf2docx engines",
+    "strict_mypy_files": 41,
+    "ruff": "passed",
+    "documentation": "strict build passed",
+    "license_inventory": "passed",
+    "boundary_audit_modules": 217,
+    "ci": "Local workflow parsed; fragmented minimal gate added, not dispatched"
+  },
+  "limits": "Existing 2..256 source edges, 1000000 matching comparisons, DocumentLimits and cancellation remain; native coverage permits the existing 0.0001 pt coordinate tolerance",
+  "remaining": "Independent larger original corpus; merges, differing strokes, unmatched vectors, groups and non-collinear profiles remain TODO. Existing pdf2docx extra remains until the full replacement route is accepted.",
+  "native_acceptance": {
+    "word": [
+      {
+        "program": "Microsoft Word",
+        "observations": [
+          {
+            "file": "flow",
+            "pages": 2,
+            "widths": [
+              100.0,
+              100.0,
+              100.0,
+              100.0
+            ],
+            "outline": 2
+          },
+          {
+            "file": "native-0",
+            "pages": 2,
+            "widths": [
+              100.0,
+              100.0,
+              100.0,
+              100.0
+            ],
+            "outline": 2
+          },
+          {
+            "file": "native-1",
+            "pages": 2,
+            "widths": [
+              100.0,
+              100.0,
+              100.0,
+              100.0
+            ],
+            "outline": 2
+          }
+        ],
+        "version": "16.0",
+        "build": "16.0.17932",
+        "success": true
+      },
+      {
+        "program": "Microsoft Word",
+        "observations": [
+          {
+            "file": "flow",
+            "pages": 2,
+            "widths": [
+              100.0,
+              100.0,
+              100.0,
+              100.0
+            ],
+            "outline": 2
+          },
+          {
+            "file": "native-0",
+            "pages": 2,
+            "widths": [
+              100.0,
+              100.0,
+              100.0,
+              100.0
+            ],
+            "outline": 2
+          },
+          {
+            "file": "native-1",
+            "pages": 2,
+            "widths": [
+              100.0,
+              100.0,
+              100.0,
+              100.0
+            ],
+            "outline": 2
+          }
+        ],
+        "version": "16.0",
+        "build": "16.0.17932",
+        "success": true
+      }
+    ],
+    "pairs": [
+      {
+        "case": "flow",
+        "pages": 2,
+        "pixel_sha256": [
+          "3e121fd74a1fe435820ea249f6af50abd9a98c360047ebece169e85b372fca36",
+          "e9adfe8060bef08a8331fe8f2b9ff6700afc46b2b3c0c4cb5707c8021cc6964a"
+        ]
+      },
+      {
+        "case": "native-0",
+        "pages": 2,
+        "pixel_sha256": [
+          "3e121fd74a1fe435820ea249f6af50abd9a98c360047ebece169e85b372fca36",
+          "e9adfe8060bef08a8331fe8f2b9ff6700afc46b2b3c0c4cb5707c8021cc6964a"
+        ]
+      },
+      {
+        "case": "native-1",
+        "pages": 2,
+        "pixel_sha256": [
+          "3e121fd74a1fe435820ea249f6af50abd9a98c360047ebece169e85b372fca36",
+          "e9adfe8060bef08a8331fe8f2b9ff6700afc46b2b3c0c4cb5707c8021cc6964a"
+        ]
+      }
+    ],
+    "docx_sha256": {
+      "whole/flow.docx": "d956b49c35ca288ff9b3803b86afbb1e8b5c4e02a20aa9b642d37a0bd5a90d72",
+      "fragments/flow.docx": "0f8c083ac4ec8a338c06a618352e0030829527b73b7c22c7ec7815f82e672778",
+      "whole/native-0.docx": "6a94489953b3206f0a14f528bb9c7365508f3cfdd698b5985beaea9526dd3bdd",
+      "fragments/native-0.docx": "53f1ce231f59b88593fc3bfb79c26d5cc7be6f6b6000d3290a8ab8642752b877",
+      "whole/native-1.docx": "538b6fc372983540423e25401b07dae44f3d086897424fd07c185f9f3f4e2fa3",
+      "fragments/native-1.docx": "e1e2ff9abad7731fbb16be011faf1a038d7585e32c1627c7823db172386af571"
+    },
+    "poppler_checks": [
+      {
+        "file": "whole/flow.pdf",
+        "pages": [
+          [
+            [
+              900,
+              751
+            ],
+            "e5bbea5175c7080188fa39146f455505e2b23f95323a2114bd591af2bb73e3b8"
+          ],
+          [
+            [
+              900,
+              751
+            ],
+            "4d6c959998f0b2ee79773c409f3dcec1ebde0d9edf1741f011dae455c8b6ddc6"
+          ]
+        ]
+      },
+      {
+        "file": "whole/native-0.pdf",
+        "pages": [
+          [
+            [
+              900,
+              751
+            ],
+            "e5bbea5175c7080188fa39146f455505e2b23f95323a2114bd591af2bb73e3b8"
+          ],
+          [
+            [
+              900,
+              751
+            ],
+            "4d6c959998f0b2ee79773c409f3dcec1ebde0d9edf1741f011dae455c8b6ddc6"
+          ]
+        ]
+      },
+      {
+        "file": "whole/native-1.pdf",
+        "pages": [
+          [
+            [
+              900,
+              751
+            ],
+            "e5bbea5175c7080188fa39146f455505e2b23f95323a2114bd591af2bb73e3b8"
+          ],
+          [
+            [
+              900,
+              751
+            ],
+            "4d6c959998f0b2ee79773c409f3dcec1ebde0d9edf1741f011dae455c8b6ddc6"
+          ]
+        ]
+      },
+      {
+        "file": "fragments/flow.pdf",
+        "pages": [
+          [
+            [
+              900,
+              751
+            ],
+            "e5bbea5175c7080188fa39146f455505e2b23f95323a2114bd591af2bb73e3b8"
+          ],
+          [
+            [
+              900,
+              751
+            ],
+            "4d6c959998f0b2ee79773c409f3dcec1ebde0d9edf1741f011dae455c8b6ddc6"
+          ]
+        ]
+      },
+      {
+        "file": "fragments/native-0.pdf",
+        "pages": [
+          [
+            [
+              900,
+              751
+            ],
+            "e5bbea5175c7080188fa39146f455505e2b23f95323a2114bd591af2bb73e3b8"
+          ],
+          [
+            [
+              900,
+              751
+            ],
+            "4d6c959998f0b2ee79773c409f3dcec1ebde0d9edf1741f011dae455c8b6ddc6"
+          ]
+        ]
+      },
+      {
+        "file": "fragments/native-1.pdf",
+        "pages": [
+          [
+            [
+              900,
+              751
+            ],
+            "e5bbea5175c7080188fa39146f455505e2b23f95323a2114bd591af2bb73e3b8"
+          ],
+          [
+            [
+              900,
+              751
+            ],
+            "4d6c959998f0b2ee79773c409f3dcec1ebde0d9edf1741f011dae455c8b6ddc6"
+          ]
+        ]
+      }
+    ],
+    "visual_inspection": "Both MuPDF page PNGs inspected: 2x2 table, full borders, correct selected text and following heading/page text",
+    "word_edit_verified": "Edited cell saved by Microsoft Word and re-read through python-docx in both cases"
+  },
+  "source_sha256": {
+    "src/opendoc_formats/writers/docx_flow.py": "0bf8e79269a73aaa4e07c49f078e8cd3e2168fabc94bc3edbbbf0c05c1a9cfa6",
+    "tests/writers/test_docx_flow.py": "896188abff57cc307e852e3b42a96142a374adf106189de6cdc33d449a682d87",
+    "tools/docx_flow_smoke.py": "0f0165e3a3849ab3ebb2fda3617e7dc221183906fa7a44b8cbb90b1140774325",
+    "tools/docx_flow_word_acceptance.ps1": "03796f5f650246e5223a4ee00c0b6b13eecb8ad4d195e4da243c2d7cecbb6813"
+  }
+}

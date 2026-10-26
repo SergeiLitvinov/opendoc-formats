@@ -12,7 +12,7 @@
 
 Импорт и экспорт файлов через модель OpenDoc, с диагностикой преобразований.
 Пакет: `opendoc-formats`, импорт: `opendoc_formats`; Python 3.11+.
-**Обязательная зависимость — OpenDoc Model 0.18.1 (`opendoc-model`, MIT).** Собственной копии модели и зависимости от приложений нет.
+**Обязательная зависимость — OpenDoc Model 0.19.0 (`opendoc-model`, MIT).** Собственной копии модели и зависимости от приложений нет.
 
 Проект экосистемы [okidoki](https://github.com/search?q=user%3ASergeiLitvinov+topic%3Aokidoki&type=repositories), со своими версиями, тестами и выпусками.
 Библиотека предназначена для открытых проектов. MIT собственного кода и условия
@@ -51,16 +51,20 @@
 
 Из [GitHub Release](https://github.com/SergeiLitvinov/opendoc-formats/releases), без зависимости от публикации на PyPI.
 Опубликованный Formats 0.42.0 требует Model 0.18.0; исходники с накопленными
-улучшениями используют Model 0.18.1. Для опубликованной пары:
+улучшениями используют Model 0.19.0. Для опубликованной пары:
 
 ```sh
-python -m pip install "opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.18.0/opendoc_model-0.18.0-py3-none-any.whl" "opendoc-formats[docx,html] @ https://github.com/SergeiLitvinov/opendoc-formats/releases/download/v0.42.0/opendoc_formats-0.42.0-py3-none-any.whl"
+python -m pip install "opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.19.0/opendoc_model-0.19.0-py3-none-any.whl" "opendoc-formats[docx,html] @ https://github.com/SergeiLitvinov/opendoc-formats/releases/download/v0.42.0/opendoc_formats-0.42.0-py3-none-any.whl"
 ```
 
 Необязательные движки импортируются только при выборе обработчика. TXT/JSON работают с базовой установкой.
 Extra `pdf` устанавливает один PyMuPDF для модели, геометрии, рендера и PDF writer.
 Альтернативы подключаются явно: `pdf-text` — pypdf, `pdf-layout` — pdfplumber,
 `pdf-docx` — отдельный converter pdf2docx. Их зависимости не входят в обычный `pdf`.
+
+Для снимков и адресной правки исходного DOCX через `DocxPackage` достаточно
+`docx-native` с одним lxml. Полный импорт/экспорт модели DOCX использует `docx`.
+Подробнее — [нативный доступ](guide/native-access.md).
 
 ## Пример
 

@@ -2,9 +2,11 @@
 
 import hashlib
 import json
+from contextlib import contextmanager
 from copy import deepcopy
 from dataclasses import replace
 from pathlib import Path
+from threading import Event
 
 import pymupdf
 import pytest
@@ -87,16 +89,13 @@ def test_occurrences_reorder_delete_and_codec_do_not_use_resource_as_identity(tm
 def test_outer_refusal_clears_actual_targets_and_keeps_previous_file(tmp_path, monkeypatch, case):
     output = tmp_path / 'output.pdf'
     output.write_bytes(b'previous')
-    checks = 0
-
-    def cancelled():
-        nonlocal checks
-        checks += 1
-        return case == 'cancel' and checks >= 3
+    stop = Event()
 
     def gate(report, staged):
         mapping = get_object_mapping(report)
         assert mapping.publication == 'staged' and mapping.targets
+        if case == 'cancel':
+            stop.set()
         if case == 'callback-error':
             raise ValueError('Own gate failure')
         if case == 'changed':
@@ -115,7 +114,7 @@ def test_outer_refusal_clears_actual_targets_and_keeps_previous_file(tmp_path, m
             return native(source, target)
 
         monkeypatch.setattr(module.os, 'replace', fail)
-    report = write_document(_document(), output, options=ExportOptions(cancelled=cancelled, quality_gate=gate))
+    report = write_document(_document(), output, options=ExportOptions(cancelled=stop.is_set, quality_gate=gate))
     assert not report.success
     mapping = get_object_mapping(report)
     assert mapping.publication == ('invalidated' if case in ('changed', 'deleted') else 'rejected')
@@ -123,6 +122,34 @@ def test_outer_refusal_clears_actual_targets_and_keeps_previous_file(tmp_path, m
     assert all(entry.target_ids is None for entry in mapping.entries)
     assert mapping.publication_issue.reason
     assert output.read_bytes() == b'previous'
+
+
+@pytest.mark.parametrize('phase', ['entry', 'preparation'])
+def test_early_cancellation_does_not_invent_a_mapping_or_replace_destination(tmp_path, monkeypatch, phase):
+    import opendoc_formats.writers.pdf_writer as writer
+
+    document = _document()
+    before = document_to_json(document)
+    output = tmp_path/'keep.pdf'
+    output.write_bytes(b'previous')
+    stop = Event()
+    if phase == 'entry':
+        stop.set()
+    else:
+        original = writer.document_font_resolver
+
+        @contextmanager
+        def interrupted(*args, **kwargs):
+            stop.set()
+            with original(*args, **kwargs) as resolver:
+                yield resolver
+
+        monkeypatch.setattr(writer, 'document_font_resolver', interrupted)
+    report = write_document(document, output, options=ExportOptions(cancelled=stop.is_set))
+    assert not report.success and any(issue.feature == 'export.cancelled' for issue in report.issues)
+    assert get_object_mapping(report) is None
+    assert output.read_bytes() == b'previous' and document_to_json(document) == before
+    assert [path.name for path in tmp_path.iterdir()] == ['keep.pdf']
 
 
 def test_unsupported_without_surrogate_has_typed_rejected_attempt(tmp_path):

@@ -12,6 +12,7 @@ from opendoc_formats.fonts.embedding import collect_font_usages, subset_font
 from opendoc_formats.support.cancellation import checkpoint
 
 _MIME_TYPES = {".ttf": "font/ttf", ".otf": "font/otf", ".woff": "font/woff", ".woff2": "font/woff2"}
+_CSS_FORMATS = {'.ttf': 'truetype', '.otf': 'opentype', '.woff': 'woff', '.woff2': 'woff2'}
 
 
 def embedded_font_stylesheet(
@@ -62,7 +63,7 @@ def embedded_font_stylesheet(
         escaped_family = family.replace("\\", "\\\\").replace('"', '\\"')
         rules.append(
             f'@font-face {{ font-family: "{escaped_family}"; src: url("data:{mime};base64,{encoded}") '
-            f'format("{suffix.removeprefix(".")}"); font-weight: {bold}; font-style: {"italic" if italic else "normal"}; }}'
+            f'format("{_CSS_FORMATS[suffix]}"); font-weight: {bold}; font-style: {"italic" if italic else "normal"}; }}'
         )
         embedded.add(identity)
         total_bytes += len(source_data)
@@ -77,8 +78,9 @@ def embedded_font_stylesheet(
     return "\n".join(rules)
 
 
-def archived_font_stylesheet(document: DocumentModel, workspace: object, report: ConversionReport) -> str:
-    """Write font subsets into an artifact archive and return relative @font-face rules."""
+def archived_font_stylesheet(document: DocumentModel, workspace: object, report: ConversionReport, *,
+                             full_program_paths: frozenset[str] = frozenset()) -> str:
+    """Archive subsets or explicitly retained full programs and return relative @font-face rules."""
     rules: list[str] = []
     source_bytes = embedded_bytes = 0
     embedded = 0
@@ -87,7 +89,7 @@ def archived_font_stylesheet(document: DocumentModel, workspace: object, report:
             continue
         try:
             source_size = usage.path.stat().st_size
-            data = subset_font(usage)
+            data = usage.path.read_bytes() if str(usage.path) in full_program_paths else subset_font(usage)
             suffix = usage.path.suffix.casefold()
             if suffix not in _MIME_TYPES:
                 continue

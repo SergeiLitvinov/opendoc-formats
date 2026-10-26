@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable, Mapping
 from typing import TYPE_CHECKING
 
@@ -11,6 +12,44 @@ from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 
 if TYPE_CHECKING:
     from opendoc_formats.anatomy import BinaryItem, OpcAudit
+
+# XML 1.0 Fifth Edition NameStartChar/NameChar, excluding colon for NCName.
+_START = (r'A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF'
+          r'\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD'
+          r'\U00010000-\U000EFFFF')
+_NCNAME = re.compile('['+_START+']['+_START+r'\-.0-9\u00B7\u0300-\u036F\u203F-\u2040]*')
+_URI_CHARACTERS = re.compile(r"[A-Za-z0-9._~!$&'()*+,;=:/?@%#-]+")
+_BAD_PERCENT = re.compile(r'%(?![0-9A-Fa-f]{2})')
+_SCHEME = re.compile(r'[A-Za-z][A-Za-z0-9+.-]*')
+
+
+def _literal_id(value: str) -> bool:
+    checkpoint()
+    result = _NCNAME.fullmatch(value) is not None
+    checkpoint()
+    return result
+
+
+def _literal_type(value: str) -> bool:
+    """Finite ASCII URI syntax, without IRI/whitespace repair or IP-literal authorities."""
+    checkpoint()
+    if _URI_CHARACTERS.fullmatch(value) is None or _BAD_PERCENT.search(value) or value.count('#') > 1:
+        checkpoint()
+        return False
+    scheme, separator, suffix = value.partition(':')
+    authority = ''
+    if suffix.startswith('//'):
+        authority = suffix[2:]
+        for delimiter in '/?#':
+            checkpoint()
+            authority = authority.partition(delimiter)[0]
+    # Generic reg-name authority and optional userinfo/decimal port. Bracketed
+    # IP literals are deliberately outside this inspection profile.
+    host_port = authority.rsplit('@', 1)[-1].split(':')
+    result = bool(separator and _SCHEME.fullmatch(scheme) and authority.count('@') <= 1 and len(host_port) <= 2
+                  and (len(host_port) == 1 or all('0' <= char <= '9' for char in host_port[1])))
+    checkpoint()
+    return result
 
 
 def audit_package(items: Iterable[BinaryItem], overrides: Mapping[str, str]) -> OpcAudit:
@@ -71,8 +110,15 @@ def audit_package(items: Iterable[BinaryItem], overrides: Mapping[str, str]) -> 
                 finding('relationship-attributes', location, 'Missing required attribute or duplicate relationship Id')
             if identifier:
                 seen.add(identifier)
+                if not _literal_id(identifier):
+                    finding('relationship-id', location, 'Id is outside the literal XML NCName profile')
+                    valid = False
+            if kind and not _literal_type(kind):
+                finding('relationship-type', location, 'Type is outside the inspected literal ASCII URI profile')
+                valid = False
             if attributes.keys()-{'Id', 'Type', 'Target', 'TargetMode'}:
                 finding('relationship-extension', location, 'Attributes are outside the relationship profile')
+            checkpoint()
             if valid and mode == 'External':
                 status = 'external'  # retained literally; no URL, filesystem or network access
             elif valid and mode == 'Internal':

@@ -1,0 +1,245 @@
+{
+  "scope": "Full measured ruled PDF tables with row/column spans; native Word flow, no raster or DOCX conversion bridge",
+  "published": false,
+  "dependencies_changed": false,
+  "model": "opendoc-model==0.19.0; existing row_span/column_span/width/border DTOs only, no Model changes",
+  "checks": {
+    "regression_passed": 111,
+    "regression_scope": "test_docx_flow.py, test_text_flow.py, test_pdf_mapping.py and test_mapping_composition.py; not a full-project run",
+    "source": "Owned one-page PDF: horizontal 2-column merge plus vertical 2-row merge in a 3x3 physical grid, 7 logical cells, 8 independently accounted source lines",
+    "cycles": "Public/direct API, native gridSpan/vMerge, 200 pt merged width, immutable input JSON and two DOCX/JSON cycles",
+    "refusals": "Edited source spans, reordered inconsistent geometry, cropped merged topology, missing stroke and actual altered Word gridSpan preserve prior destination and Model",
+    "mapping": "All source occurrences accounted; merged native locator includes full table with checked cell_topology",
+    "word": "Microsoft Word 16.0 build 16.0.17932: 7 cells, correct texts, 100/200 pt widths, black 1 pt borders, read-only SHA preservation and native tall-cell edit",
+    "pixels": "Three Word PDFs have identical page pixels in MuPDF and independent Poppler at 108 dpi; page PNG visually inspected",
+    "installed_smoke": "Passed tools/docx_flow_merge_smoke.py in isolated installed wheel with only Formats/Model/python-docx/lxml/typing-extensions; no PDF/fontTools/Pillow/NumPy engines",
+    "strict_mypy_files": 41,
+    "ruff": "passed",
+    "documentation": "strict build passed",
+    "boundary_audit_modules": 217,
+    "native_tamper_focus": "Additional strengthened-case recheck passed: error explicitly names merged-cell topology mismatch; no runtime changes after the 111-case run"
+  },
+  "remaining": "Crops without independent measured source inventory, cuts through source cells, permutations, Word one-row grid normalization, larger originals and unsupported graphics remain TODO; whole-cell rectangle crop acceptance is documented in docx-flow-merge-crop-evidence.json.",
+  "native_acceptance": {
+    "build": "16.0.17932",
+    "observations": [
+      {
+        "file": "flow",
+        "pages": 1,
+        "cells": [
+          {
+            "row": 1,
+            "width": 200.0,
+            "column": 1,
+            "text": "Top merge"
+          },
+          {
+            "row": 1,
+            "width": 100.0,
+            "column": 2,
+            "text": "R1C3"
+          },
+          {
+            "row": 2,
+            "width": 100.0,
+            "column": 1,
+            "text": "Tall merge"
+          },
+          {
+            "row": 2,
+            "width": 100.0,
+            "column": 2,
+            "text": "R2C2"
+          },
+          {
+            "row": 2,
+            "width": 100.0,
+            "column": 3,
+            "text": "R2C3"
+          },
+          {
+            "row": 3,
+            "width": 100.0,
+            "column": 2,
+            "text": "R3C2"
+          },
+          {
+            "row": 3,
+            "width": 100.0,
+            "column": 3,
+            "text": "R3C3"
+          }
+        ]
+      },
+      {
+        "file": "native-0",
+        "pages": 1,
+        "cells": [
+          {
+            "row": 1,
+            "width": 200.0,
+            "column": 1,
+            "text": "Top merge"
+          },
+          {
+            "row": 1,
+            "width": 100.0,
+            "column": 2,
+            "text": "R1C3"
+          },
+          {
+            "row": 2,
+            "width": 100.0,
+            "column": 1,
+            "text": "Tall merge"
+          },
+          {
+            "row": 2,
+            "width": 100.0,
+            "column": 2,
+            "text": "R2C2"
+          },
+          {
+            "row": 2,
+            "width": 100.0,
+            "column": 3,
+            "text": "R2C3"
+          },
+          {
+            "row": 3,
+            "width": 100.0,
+            "column": 2,
+            "text": "R3C2"
+          },
+          {
+            "row": 3,
+            "width": 100.0,
+            "column": 3,
+            "text": "R3C3"
+          }
+        ]
+      },
+      {
+        "file": "native-1",
+        "pages": 1,
+        "cells": [
+          {
+            "row": 1,
+            "width": 200.0,
+            "column": 1,
+            "text": "Top merge"
+          },
+          {
+            "row": 1,
+            "width": 100.0,
+            "column": 2,
+            "text": "R1C3"
+          },
+          {
+            "row": 2,
+            "width": 100.0,
+            "column": 1,
+            "text": "Tall merge"
+          },
+          {
+            "row": 2,
+            "width": 100.0,
+            "column": 2,
+            "text": "R2C2"
+          },
+          {
+            "row": 2,
+            "width": 100.0,
+            "column": 3,
+            "text": "R2C3"
+          },
+          {
+            "row": 3,
+            "width": 100.0,
+            "column": 2,
+            "text": "R3C2"
+          },
+          {
+            "row": 3,
+            "width": 100.0,
+            "column": 3,
+            "text": "R3C3"
+          }
+        ]
+      }
+    ],
+    "success": true,
+    "version": "16.0",
+    "program": "Microsoft Word",
+    "render_pairs": [
+      {
+        "case": "flow",
+        "mupdf": [
+          [
+            900,
+            751,
+            "57a939d51f328ac8e39de5fedfee9f355c04d80b7a92a0d19931d050fe6b4297"
+          ]
+        ],
+        "poppler": [
+          [
+            [
+              900,
+              751
+            ],
+            "5cc3de9b18a12fa7f6c946fd1bfef8542e9921612cca1c8ac4d784876febcbb3"
+          ]
+        ],
+        "docx_sha256": "11bb030a73068c3d95bf99b7e170ae1f2afbaf69c46d5419da61afa552bb5f05"
+      },
+      {
+        "case": "native-0",
+        "mupdf": [
+          [
+            900,
+            751,
+            "57a939d51f328ac8e39de5fedfee9f355c04d80b7a92a0d19931d050fe6b4297"
+          ]
+        ],
+        "poppler": [
+          [
+            [
+              900,
+              751
+            ],
+            "5cc3de9b18a12fa7f6c946fd1bfef8542e9921612cca1c8ac4d784876febcbb3"
+          ]
+        ],
+        "docx_sha256": "ade6b2d100e4532b99e6818cdfaa922308ee8601ef43b8b68d0c6bf75c333589"
+      },
+      {
+        "case": "native-1",
+        "mupdf": [
+          [
+            900,
+            751,
+            "57a939d51f328ac8e39de5fedfee9f355c04d80b7a92a0d19931d050fe6b4297"
+          ]
+        ],
+        "poppler": [
+          [
+            [
+              900,
+              751
+            ],
+            "5cc3de9b18a12fa7f6c946fd1bfef8542e9921612cca1c8ac4d784876febcbb3"
+          ]
+        ],
+        "docx_sha256": "f514aa44c211c1fd7ba97131527fbd6f34030f0a4c80c1e53f363c2f2ee8f148"
+      }
+    ],
+    "native_edit": "Word-edited text re-imported with row_span=2 intact",
+    "index_note": "Word COM ColumnIndex for the right cell in the horizontally merged first row is 2; logical source grid column is 3. DTO/native XML topology is verified independently."
+  },
+  "source_sha256": {
+    "src/opendoc_formats/writers/docx_flow.py": "09c5182e099da20d5a98c0a49558aadbc89d63d0921adfc8b613767c59ec1c2d",
+    "tests/writers/test_docx_flow.py": "347c8c116ec47705847b8289b7ffb197ceeed6094559a5cb6c2a750c1a665e75",
+    "tools/docx_flow_merge_smoke.py": "fa8e6ffbca887a5ca0736a7769e2c28d153a473c37a67a536650575671c42067",
+    "tools/docx_flow_merge_word_acceptance.ps1": "324cb2eb8de6e5d1ed4e2c9c746d2f14fa71042f389e5d7cb6bc348b96e43e1d"
+  }
+}
