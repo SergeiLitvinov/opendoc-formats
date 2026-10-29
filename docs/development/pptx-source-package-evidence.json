@@ -1,0 +1,74 @@
+{
+  "scope": "Physical original PPTX ZIP/OPC payloads and a finite proved relationship projection retained in Model/JSON, before the native engine can rename or repair parts",
+  "model": "opendoc-model==0.19.0; import opendoc_model",
+  "published": false,
+  "dependencies_changed": false,
+  "model_contract_changes": false,
+  "implementation": {
+    "module": "opendoc_formats.readers.pptx_package",
+    "inventory": "Existing bounded Formats Anatomy ZIP/XML and OPC audit; no new parser dependency",
+    "model_storage": "PackageGraph(format=pptx) contains raw physical file payloads, including root, [Content_Types].xml and .rels; this is a source inventory, not the helper's editable graph",
+    "relationships": "Only finite proved internal/external edges with physical owners and unique IDs; rejected and ambiguous occurrences remain in raw .rels with source-located audit findings",
+    "provenance": "Every physical part has an opaque preservation record with original path, part, decoded-byte SHA256 and size; no semantic fidelity or export restoration claim",
+    "source_consistency": "Engine and inventory use the same captured bytes; a test removes the temporary original before engine open and confirms no source reopen",
+    "untyped_parts": "Opaque application/octet-stream in the DTO; absent original declaration remains explicit as declared_content_type=null",
+    "security": "External links inert; shared bounded raw size/XML nodes/depth before Presentation; no DTD/entities; binary declared media types are not decoded merely by .xml suffix",
+    "budget": "Model validates graph and shared integration/model budgets; raw package bytes and decoded semantic resources both count rather than being hidden",
+    "export_boundary": "PPTX writer still generates a new package with explicit LOSS; DOCX writer reports foreign graph loss and never inserts PPTX parts; restoring a whole physical source root through the generic helper refuses before mutation"
+  },
+  "tests": {
+    "source_package": {
+      "file": "tests/readers/test_pptx_source_package.py",
+      "passed": 19,
+      "seconds": 5.35,
+      "checks": [
+        "All original part bytes compared to original ZIP after two JSON cycles",
+        "Cycles, shared targets, unknown binary parts, disconnected components and inert external links",
+        "Every opaque part record bound by path/hash/length",
+        "Missing target/owner, duplicate ID including first occurrence, invalid Type and escaping target",
+        "Physical original slide names after engine display-order renaming",
+        "Input and embedded byte limits, zero embedded budget, XML nodes/depth before engine open",
+        "Late cancellation during graph assembly preserves original",
+        "DTD in unreachable XML rejected; declared binary .xml payload held as bytes",
+        "Missing officeDocument entry point never invents a root",
+        "Generated PPTX reports package LOSS; foreign PPTX parts do not leak into DOCX",
+        "Unbound physical-root restoration refuses before mutation",
+        "Physical inventory and semantic projection share one source generation"
+      ]
+    },
+    "pptx_regression": {
+      "command": "python -m pytest tests/readers tests/writers tests/support/test_ooxml_pptx_package.py tests/support/test_ooxml_package.py -k 'pptx or office_export_cancellation or ooxml_package' -q --tb=short",
+      "passed": 388,
+      "deselected": 1545,
+      "seconds": 146.40,
+      "note": "Broad regression before the final two additive guard/source-consistency cases, which passed in the final 19-case source test run; not full-project regression"
+    },
+    "large_pptx": {
+      "command": "python -m pytest tests/test_import_limits.py -k 'pptx or inspection_selected_budget' -q --tb=short",
+      "passed": 5,
+      "seconds": 102.34,
+      "scope": "Own 35 slides / 6720 runs, selected 200000-node budget, public JSON cycles, inspection/export/refusal and unchanged source"
+    },
+    "deterministic_cancellation_oracle": "Complete native model/package comparison retained; only producer-created XLSX timestamp fixed in the cancellation test, no package parts removed from comparison",
+    "chart_oracle": "Chart feature checks retained; source package LOSS checked separately from chart-statistics assertions",
+    "installed_profile": {
+      "command": "python -I tools/pptx_package_smoke.py",
+      "python": "3.15.2",
+      "packages": ["opendoc-formats==0.42.0", "opendoc-model==0.19.0", "python-pptx==1.0.2", "lxml==6.1.3", "Pillow==12.3.0", "typing-extensions==4.16.0", "xlsxwriter==3.3.0"],
+      "without": ["fontTools", "DOCX engine", "PDF engine", "bs4"],
+      "result": "passed: physical original parts, unknown payload, inert external edge and two JSON cycles"
+    },
+    "ruff": "passed",
+    "strict_mypy_configured_files": 41,
+    "boundary_audit_modules": 220,
+    "license_inventory": "passed",
+    "strict_docs_build": "passed"
+  },
+  "remaining": [
+    "Bind source presentation/slide/master/layout objects to editable output and restore their dependencies without overwriting edits or retaining stale references",
+    "Native PowerPoint original rendering and edits, full semantic animations/media/groups/workbooks/OLE",
+    "ZIP storage metadata/signatures preservation; decoded part bytes are not proof of complete original archive reconstruction",
+    "Complete source-object to semantic-object to exported-object correspondence and full C-MAP-01 acceptance",
+    "Current local CI modifications have not been pushed or run on GitHub"
+  ]
+}

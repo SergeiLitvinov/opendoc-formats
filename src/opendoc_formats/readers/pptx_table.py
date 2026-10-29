@@ -24,10 +24,10 @@ def read_table(
     alignments: dict[str, str],
 ) -> od.Table:
     rows = []
-    for row in element.findall(A + "tr"):
+    for row_index, row in enumerate(element.findall(A + "tr")):
         checkpoint()
         cells = []
-        for cell in row.findall(A + "tc"):
+        for column_index, cell in enumerate(row.findall(A + "tc")):
             checkpoint()
             blocks = []
             for paragraph in cell.findall(A + "txBody/" + A + "p"):
@@ -48,6 +48,7 @@ def read_table(
                     )
                 )
             settings = _cell_settings(cell.find(A + "tcPr"), theme_colors, resolve_color)
+            settings['opendoc_formats.pptx_cell'] = {'row': row_index, 'column': column_index}
             cells.append(TableCell(blocks, int(cell.get("rowSpan", "1")), int(cell.get("gridSpan", "1")), settings))
         rows.append(TableRow(cells, {"height_pt": float(row.get("h", "0")) / 12700}))
     properties = {}

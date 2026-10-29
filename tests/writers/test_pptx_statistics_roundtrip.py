@@ -40,7 +40,9 @@ def test_statistics_mutation_roundtrip(tmp_path, kind, trend_type):
         output = tmp_path / f"stats{cycle}.pptx"
         report = write_pptx_model(model, output)
         assert report.success
-        assert not any("не перенесены" in issue.message for issue in report.issues)
+        assert not any("не перенесены" in issue.message for issue in report.issues if issue.feature != 'package')
+        if model.package is not None:
+            assert any(issue.feature == 'package' for issue in report.issues)
         series_xml = Presentation(output).slides[0].shapes[0].chart.series[0]._element
         tags = [child.tag for child in series_xml]
         model = read_pptx_model(output)

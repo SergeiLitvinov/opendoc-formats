@@ -19,10 +19,36 @@ def _writer(kind):
 
 
 @pytest.mark.parametrize('kind', ['docx', 'pptx'])
-def test_no_signal_preserves_complete_native_model(request, tmp_path, kind):
+def test_no_signal_preserves_complete_native_model(request, monkeypatch, tmp_path, kind):
     source = request.getfixturevalue(kind + '_source')
     model = read_document(source).document
     original = document_to_json(model)
+    if kind == 'pptx':
+        from datetime import datetime, timezone
+        from zipfile import ZipInfo
+
+        from pptx.chart import xlsx
+        from pptx.opc.serialized import _ZipPkgWriter
+
+        workbook_type = xlsx.Workbook
+
+        def stable_workbook(*args, **kwargs):
+            workbook = workbook_type(*args, **kwargs)
+            # Capture now includes complete XLSX bytes. Hold producer timestamps
+            # fixed to compare the cancellation callback, without ignoring parts.
+            workbook.set_properties({'created': datetime(2000, 1, 1, tzinfo=timezone.utc)})
+            return workbook
+
+        monkeypatch.setattr(xlsx, 'Workbook', stable_workbook)
+
+        def stable_package_write(writer, pack_uri, blob):
+            info = ZipInfo(pack_uri.membername, date_time=(2000, 1, 1, 0, 0, 0))
+            info.compress_type = writer._zipf.compression
+            writer._zipf.writestr(info, blob)
+
+        # Source SHA now includes archive headers too; keep only producer time
+        # deterministic and still compare the complete captured model/package.
+        monkeypatch.setattr(_ZipPkgWriter, 'write', stable_package_write)
     target = tmp_path / ('complete.' + kind)
     assert _writer(kind)(model, target).success
     expected = document_to_json(read_document(target).document)

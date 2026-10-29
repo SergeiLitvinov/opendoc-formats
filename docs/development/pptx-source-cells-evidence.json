@@ -1,0 +1,75 @@
+{
+  "scope": "Bindings v3: physical native PPTX table text slots and plain insertion in an existing empty paragraph, with source package and merge topology retained",
+  "published": false,
+  "dependencies_changed": false,
+  "model": "opendoc-model==0.19.0; import opendoc_model",
+  "model_contract_changes": false,
+  "implementation": {
+    "module": "opendoc_formats.ooxml.pptx_source_cells",
+    "physical_identity": "Formats-owned cell properties opendoc_formats.pptx_cell preserve original physical row/column; not a substitute for complete logical-table normalization",
+    "topology": "Validate rectangular physical grid, positive bounded origin spans, nonoverlapping coverage and exact hMerge/vMerge ownership; continuation slots cannot be edited as origins",
+    "text": "Native a:r/a:t binds to existing Model Paragraph runs; original breaks and empty middle paragraphs remain structural, links/styles unchanged",
+    "empty_slot": "One plain TextRun may fill an empty paragraph with no new style/link/properties; copy native endParaRPr caret formatting to new rPr, retaining original end marker; linked caret defaults remain outside profile",
+    "freshness": "Mask only proved cell text or plain empty-slot insertion in official Model codec digest; rows/cells/spans/style changes remain protected",
+    "compatibility": "v1/v2 snapshots retain their former scope; v3 captures new cells without reinterpreting old snapshots",
+    "shared_dom": "Cell text, shape text and geometry modify one bounded source DOM; no projection overwrites another",
+    "publication": "Cancellation checked before each cell mutation; old destination and input Model retained on refusal/cancellation"
+  },
+  "checks": {
+    "cell_test_file": "tests/writers/test_pptx_source_cells.py",
+    "cell_cases_passed": 16,
+    "source_profiles_combined_passed": 57,
+    "source_profiles_command": "python -m pytest tests/writers/test_pptx_source_cells.py tests/writers/test_pptx_source_text.py tests/writers/test_pptx_source_geometry.py -q --tb=short",
+    "regression_command": "python -m pytest tests/readers tests/writers tests/support/test_ooxml_pptx_package.py tests/support/test_ooxml_package.py -k 'pptx or office_export_cancellation or ooxml_package' -q --tb=short",
+    "regression_passed": 447,
+    "regression_deselected": 1545,
+    "regression_seconds": 146.72,
+    "full_project_run": false,
+    "large_pptx_cases_passed": 5,
+    "large_pptx_seconds": 79.07,
+    "large_pptx_scope": "Own 35-slide/6720-run fixture, selected budgets, public JSON, inspection/export and unchanged source",
+    "retention": "Two JSON/PPTX cycles, all unchanged ZIP file payload bytes, tblGrid/row heights/merge attributes/tcPr, link and run formatting, unknown inert ZIP neighbor, simultaneous table translation",
+    "negative": "Continuation edit, row/cell reorder, changed spans/fill/new insertion style, unsupported new control characters, incomplete/unknown/overflow merge topology; no guessed bindings",
+    "source_integrity": "Original input bytes and input Model JSON unchanged",
+    "ruff": "passed",
+    "strict_mypy_configured_files": 41,
+    "boundary_audit_modules": 227,
+    "wheel_and_sdist_structure": "passed",
+    "installed_wheel": {
+      "python": "3.12.16",
+      "profile": "pptx only; fontTools, DOCX/PDF engines and bs4 absent",
+      "result": "passed: native shape text and Box plus existing cell edit and empty-cell insertion; only source slide XML changes",
+      "packages": ["opendoc-formats==0.42.0", "opendoc-model==0.19.0", "python-pptx==1.0.2", "lxml==6.1.3", "Pillow==12.3.0", "typing-extensions==4.16.0", "xlsxwriter==3.3.1"]
+    },
+    "strict_docs_build": "passed",
+    "license_inventory": "matches unchanged lockfile"
+  },
+  "independent_powerpoint": {
+    "version": "16.0",
+    "source": "Own merged/styled/empty fixture from tests.writers.test_pptx_source_cells.own_table",
+    "script": "tools/pptx_cells_powerpoint_acceptance.ps1",
+    "procedure": "Native TextRange replaces merged origin and styled first run and fills empty cell; export native reference and library PPTX separately to PDF with macros disabled and read-only original",
+    "source_unchanged": true,
+    "new_empty_cell_font_size_pt": 23.0,
+    "image_reviewed": true,
+    "mupdf": {
+      "equal": true,
+      "dpi": 108,
+      "page_pixels": [1080, 810],
+      "pixel_sha256": "9810a9beb55b698af81efa9a12e77cf5634ca0bc27e7543db743d904baa54df9"
+    },
+    "poppler": {
+      "equal": true,
+      "dpi": 108,
+      "page_pixels": [1080, 810],
+      "pixel_sha256": "ba1a862ebb5086940f62a4eb9c9467ee366eaba83dac9af1e00d77120c62e437"
+    },
+    "equality_policy": "Native vs Formats within each renderer; no equality asserted between different renderer implementations"
+  },
+  "remaining": [
+    "Full logical merged-table projection for cross-format conversion, beyond physical source editing slots",
+    "New complex paragraph/run topology, fields, unsupported caret defaults and source table style editing",
+    "Native reflow/auto-row-height acceptance on broader independent originals",
+    "Complete grid/row resize, signatures, ZIP metadata and full C-PPTX-01 acceptance"
+  ]
+}

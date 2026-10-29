@@ -1,0 +1,71 @@
+{
+  "scope": "Explicit PptxProfile(layout=source): uniquely bound DrawingML text runs edited in original PPTX payloads; default rebuild unchanged",
+  "published": false,
+  "dependencies_changed": false,
+  "model": "opendoc-model==0.19.0; import opendoc_model",
+  "model_contract_changes": false,
+  "binding": {
+    "metadata": "opendoc_formats.pptx_source_text version 1",
+    "ownership": "Formats derives source run addresses from physical slide payloads and original provenance, not text-value guesses",
+    "freshness": "Official Model codec canonicalization with only supported text slots masked; every other property, source part, resource, link, style, geometry and structural change remains in the digest",
+    "failure_policy": "Explicit source profile refuses stale/unbound/unsupported edits, never silently replaces source with rebuild output"
+  },
+  "native_payloads": {
+    "unchanged": "All physical file payload bytes equal after two JSON/PPTX cycles without edits",
+    "text_edit": "Only the source slide XML changes; canonical XML equals original after the identical addressed a:t substitution",
+    "neighbors": "Unknown opaque parts, .rels, theme/master/layout and unchanged native objects retain original payload bytes",
+    "topology": "Own grouped shape with multiple runs, bold/italic, hyperlink, paragraph separator and neighbor text survives two cycles",
+    "signatures": "Text edits refuse native signature indicators by conventional path, declared content type or relationship type; no complete cryptographic validation claim",
+    "zip": "LOSS pptx.source-container explicitly reports missing archive-byte identity and original ZIP storage metadata"
+  },
+  "checks": {
+    "targeted_command": "python -m pytest tests/writers/test_pptx_source_text.py tests/writers/test_office_export_cancellation.py -q --tb=short",
+    "targeted_passed": 52,
+    "regression_command": "python -m pytest tests/readers tests/writers tests/support/test_ooxml_pptx_package.py tests/support/test_ooxml_package.py -k 'pptx or office_export_cancellation or ooxml_package' -q --tb=short",
+    "regression_passed": 410,
+    "regression_deselected": 1545,
+    "regression_seconds": 196.25,
+    "full_project_run": false,
+    "large_pptx_passed": 5,
+    "large_pptx_seconds": 69.95,
+    "large_pptx_scope": "Own 35-slide/6720-run fixture, selected Model budgets, public JSON, inspection/export and refusal behavior",
+    "public_api_and_release_contracts_passed": 36,
+    "cancellation_oracle": "Complete model/package comparison retained; XLSX producer time and ZIP producer headers made deterministic only in the inactive-callback comparison test",
+    "ruff": "passed",
+    "strict_mypy_configured_files": 41,
+    "boundary_audit_modules": 223,
+    "license_inventory": "passed",
+    "strict_docs_build": "passed",
+    "release_structure": "wheel, sdist, resources, licenses and metadata passed",
+    "installed_profile": {
+      "python": "3.12.16",
+      "command": "python -I tools/pptx_package_smoke.py",
+      "result": "passed: installed extra pptx retains all source parts, performs native text edit with only slide XML changed and reimports the edited text",
+      "without": ["fontTools", "DOCX engine", "PDF engine", "bs4"],
+      "packages": ["opendoc-formats==0.42.0", "opendoc-model==0.19.0", "python-pptx==1.0.2", "lxml==6.1.3", "Pillow==12.3.0", "typing-extensions==4.16.0", "xlsxwriter==3.3.0"]
+    }
+  },
+  "independent_native_acceptance": {
+    "application": "PowerPoint 16.0",
+    "source": "Own inert PPTX from tests.readers.test_pptx_source_package.own_pptx",
+    "procedure": "Same text replacement applied through native TextRange.Runs(1) in original and through Formats source profile; both opened read-only with macros disabled; independent PDFs exported; Formats output edited again natively and reimported",
+    "script": "tools/pptx_source_powerpoint_acceptance.ps1",
+    "source_sha256": "8ff9e837e873c0f4f2fc52aa1f8ea9514886c5d3f5a7a2d88d40cd48c6d19c89",
+    "library_pptx_sha256": "88f3b0f7f35d408819412efdfd6b844eb90831247cb45651caf545342661239e",
+    "source_unchanged": true,
+    "mupdf_108dpi_equal": true,
+    "poppler_108dpi_equal": true,
+    "equality_policy": "Within each renderer; no equality asserted between renderer implementations",
+    "mupdf_page_pixels": [1080, 810],
+    "mupdf_pixel_sha256": "ca1e5b30fa4d2a045e7036d04a685c79abcd4102369e22d633d1744869a8404c",
+    "image_reviewed": true,
+    "native_reedit_reimport": true,
+    "boundary": "One native acceptance example plus finite XML/engine corpus; no full PowerPoint feature acceptance claim"
+  },
+  "remaining": [
+    "Native projection of geometry/styles/links/notes/resources/structure edits without replacing unaffected objects",
+    "Fields, explicit breaks, empty scopes, complex text constructs and changes to run topology",
+    "Complete ZIP metadata and signature acceptance, other source package profiles",
+    "Broad independent original/native editing/rendering corpus, including animation/media and embedded objects"
+  ]
+}

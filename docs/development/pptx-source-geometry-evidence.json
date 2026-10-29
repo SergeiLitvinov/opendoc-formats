@@ -1,0 +1,68 @@
+{
+  "scope": "Bound explicit native Box edits in original PPTX frames; shared DrawingML group math and bounded source DOMs",
+  "published": false,
+  "dependencies_changed": false,
+  "model": "opendoc-model==0.19.0; import opendoc_model",
+  "model_contract_changes": false,
+  "implementation": {
+    "shared_math": "Existing reader matrix/group computations moved to ooxml.pptx_transforms without changing equations",
+    "projection": "Invert preserved parent frame and absolute axis-aligned bounds to native off/ext/rot; reject singular, ambiguous or unrepresentable requests",
+    "frames": "Figures, pictures and unconnected connectors support position/size/rotation; GraphicFrame supports translation only",
+    "precision": "At most one slide-coordinate EMU per x/y/width/height and half a native angular unit; amplification by group scale checked by forward projection after native integer quantization",
+    "neighbors": "Original parent frames and all unchanged native payloads retained; text and geometry share one DOM to avoid overwriting each other",
+    "bindings": "Version 2 masks verified native Box frames; version 1 retains the existing text-only contract",
+    "decoder_budget": "Source DOM element/depth/characters budget shared across slide roots; comments and processing instructions counted before lxml DOM allocation; legacy Anatomy element-inventory semantics unchanged"
+  },
+  "tests": {
+    "geometry_file": "tests/writers/test_pptx_source_geometry.py",
+    "geometry_cases": 21,
+    "corpus": "Ordinary/rotated/flipped/nested/nonuniform groups, figures/images/free lines, table movement, simultaneous text and Box edits, two JSON/PPTX cycles with canonical native XML and unchanged other payload bytes",
+    "negative": "Ambiguous 45-degree resize, table grid resize, connected endpoints, native mirrored reframe outside precision, malformed source XML quotas including comments/PI; old file and Model retained",
+    "regression_command": "python -m pytest tests/readers tests/writers tests/support/test_ooxml_pptx_package.py tests/support/test_ooxml_package.py -k 'pptx or office_export_cancellation or ooxml_package' -q --tb=short",
+    "regression_passed": 431,
+    "regression_deselected": 1545,
+    "regression_seconds": 134.36,
+    "full_project_run": false,
+    "geometry_and_anatomy_command": "python -m pytest tests/writers/test_pptx_source_geometry.py tests/test_anatomy_opc.py tests/test_anatomy_epub.py -q --tb=short",
+    "geometry_and_anatomy_passed": 157,
+    "large_pptx_cases_passed": 5,
+    "large_pptx_seconds": 86.04,
+    "large_pptx_scope": "Own 35-slide/6720-run fixture, selected budgets, public JSON, inspection/export and unchanged source",
+    "installed_wheel": "Passed: pptx-only profile without fontTools/DOCX/PDF/bs4, native text plus position/width/rotation edit, only source slide XML changed",
+    "python": "3.12.16",
+    "wheel_and_sdist_structure": "passed",
+    "ruff": "passed",
+    "strict_mypy_configured_files": 41,
+    "boundary_audit_modules": 226,
+    "license_inventory": "passed",
+    "strict_docs_build": "passed"
+  },
+  "independent_powerpoint": {
+    "version": "16.0",
+    "script": "tools/pptx_geometry_powerpoint_acceptance.ps1",
+    "source": "Own grouped textbox with 25-degree, nonuniform parent transform; separate nested reflected source for refusal",
+    "procedure": "Edit child Left/Top/Width/Height/Rotation through PowerPoint; save native PPTX/PDF; import resulting Box and apply it to original source through Formats; render library PPTX separately in PowerPoint",
+    "source_opening": "Read-only, macros disabled, no attachment to a running PowerPoint app",
+    "accepted_error_points": {
+      "x": 0.00003725914578467382,
+      "y": 0.00005538286741568754,
+      "width": 0.00003568140891729854,
+      "height": 0.000016638514267697246,
+      "rotation": 0.0
+    },
+    "page_pixels_at_108dpi": [1080, 810],
+    "mupdf": {"changed_rgb_channels": 9, "max_channel_delta": 10, "sum_channel_delta": 36},
+    "poppler": {"changed_rgb_channels": 0, "max_channel_delta": 0, "sum_channel_delta": 0},
+    "equality_policy": "Within each renderer; no universal pixel-identity claim for geometry",
+    "image_reviewed": true,
+    "nested_reflected_case": "PowerPoint normalized its group; target Box not representable in preserved original frames within one slide EMU; Formats refused instead of silently drifting",
+    "refusal_regression": "test_native_mirrored_reframe_outside_source_precision_refuses"
+  },
+  "remaining": [
+    "Controlled parent-frame normalization while preserving every child and paint/text semantics",
+    "Inherited placeholder geometry and ambiguous local extents outside the finite profile",
+    "Connected endpoint projection and table/chart grid/row resizing",
+    "Native styles/notes/content/structure edits, complete signature and ZIP metadata acceptance",
+    "Broader independent originals and native PowerPoint rendering/editing corpus; this finite acceptance is not full C-PPTX-01"
+  ]
+}

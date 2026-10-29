@@ -14,6 +14,7 @@ from opendoc_model import ArtifactLimitError, ConversionReport, DocumentLimits, 
 
 from opendoc_formats.docx_profile import DocxProfile
 from opendoc_formats.errors import OperationCancelledError
+from opendoc_formats.pptx_profile import PptxProfile
 from opendoc_formats.support.backends import missing_backends
 from opendoc_formats.support.object_mapping import get_object_mapping, mapping_publication, mapping_result_matches
 from opendoc_formats.text_profile import TextProfile, decode_text
@@ -27,8 +28,11 @@ class ExportOptions:
     txt_profile: TextProfile | None = None
     quality_gate: Callable[[ConversionReport, Path], bool] | None = None
     docx_profile: DocxProfile | None = None
+    pptx_profile: PptxProfile | None = None
 
     def __post_init__(self) -> None:
+        if self.pptx_profile is not None and not isinstance(self.pptx_profile, PptxProfile):
+            raise ValueError('pptx_profile must be PptxProfile or None')
         if self.docx_profile is not None and not isinstance(self.docx_profile, DocxProfile):
             raise ValueError('docx_profile must be DocxProfile or None')
         if self.txt_profile is not None and not isinstance(self.txt_profile, TextProfile):
@@ -56,12 +60,15 @@ class _ModelWriter:
         self, document: DocumentModel, path: Path, *, limits: DocumentLimits | None = None,
         cancelled: Callable[[], bool] | None = None,
         docx_profile: DocxProfile | None = None,
+        pptx_profile: PptxProfile | None = None,
     ) -> ConversionReport:
         writer = cast(Callable[..., ConversionReport], getattr(
             import_module('opendoc_formats.writers.' + self.module), self.name,
         ))
         if self.module == 'docx_writer':
             return writer(document, path, limits=limits, cancelled=cancelled, profile=docx_profile)
+        if self.module == 'pptx_writer':
+            return writer(document, path, limits=limits, cancelled=cancelled, profile=pptx_profile)
         if self.module in {'pdf_writer', 'pptx_writer', 'html_writer', 'epub_writer', 'latex_writer'}:
             return writer(document, path, limits=limits, cancelled=cancelled)
         return writer(document, path, limits=limits)
@@ -181,6 +188,7 @@ class ExporterRegistry:
                     if exporter.writer is _json else exporter.writer(
                         document, staged, limits=options.document_limits, cancelled=options.cancelled,
                         docx_profile=options.docx_profile,
+                        pptx_profile=options.pptx_profile,
                     ) if isinstance(exporter.writer, _ModelWriter) else exporter.writer(document, staged)
                 )
             except ArtifactLimitError as error:

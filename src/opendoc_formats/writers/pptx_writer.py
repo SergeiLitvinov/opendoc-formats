@@ -11,6 +11,7 @@ from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import Box, DocumentModel, Formula, Image, Paragraph, Section, Table
 from opendoc_model.limits import DocumentLimits
 
+from opendoc_formats.pptx_profile import PptxProfile
 from opendoc_formats.support.cancellation import cancellation_scope, checkpoint
 from opendoc_formats.writers.pptx_chart_writer import write_chart
 from opendoc_formats.writers.pptx_geometry_writer import write_shape
@@ -23,9 +24,22 @@ from opendoc_formats.writers.pptx_text_writer import set_color, write_text
 def write_pptx_model(
     document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None = None,
     cancelled: Callable[[], bool] | None = None,
+    profile: PptxProfile | None = None,
 ) -> ConversionReport:
     """Write editable PPTX, cancelling before publication without changing the destination."""
     with cancellation_scope(cancelled, 'PPTX export', check_on_exit=False):
+        if profile is not None and not isinstance(profile, PptxProfile):
+            raise ValueError('profile must be PptxProfile or None')
+        if profile is not None and profile.layout == 'source':
+            from opendoc_formats.writers.pptx_source_writer import write_source_text
+
+            errors = document.validate(limits=limits)
+            if errors:
+                report = ConversionReport(Path(output_path))
+                for error in errors:
+                    report.add(IssueSeverity.ERROR, 'model', error)
+                return report
+            return write_source_text(document, Path(output_path), limits=limits)
         return _write_pptx_model(document, output_path, limits=limits)
 
 

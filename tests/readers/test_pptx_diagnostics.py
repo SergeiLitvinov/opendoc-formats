@@ -28,8 +28,9 @@ def _verify_locations(source, document):
         for record in ledger.preservation:
             provenance = record.provenance
             assert provenance.source_path == str(source)
-            root = etree.fromstring(archive.read(provenance.package_part.lstrip("/")))
+            data = archive.read(provenance.package_part.lstrip("/"))
             if "#xpath=" in record.issue.location:
+                root = etree.fromstring(data)
                 xpath = record.issue.location.split("#xpath=", 1)[1]
                 assert root.xpath(xpath, namespaces={key: value for key, value in root.nsmap.items() if key})
     assert get_integration(document_from_json(document_to_json(document))) == ledger
@@ -58,8 +59,8 @@ def test_transition_timing_group_media_and_3d_have_source_locations(tmp_path):
     presentation.save(source)
     result = read_document(source)
     assert result.success and not result.lossless
-    assert {issue.reason for issue in result.issues} == {
-        "original-package-not-retained", "flattened-group", "unsupported-transition", "unsupported-timing",
+    assert {issue.reason for issue in result.issues if issue.code != 'pptx.package-part'} == {
+        "original-package-retained", "flattened-group", "unsupported-transition", "unsupported-timing",
         "unsupported-audio", "unsupported-video", "unsupported-3d",
     }
     assert "Retained group text" in str(result.document)

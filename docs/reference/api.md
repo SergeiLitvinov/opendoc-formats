@@ -124,7 +124,7 @@ read_document(path: str | Path, *, format_id: str | None=None, options: ImportOp
 
 ### ExportOptions
 
-[Исходник, строка 23](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L23)
+[Исходник, строка 24](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L24)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -134,10 +134,11 @@ read_document(path: str | Path, *, format_id: str | None=None, options: ImportOp
 | `txt_profile` | `TextProfile &#124; None` | `None` |
 | `quality_gate` | `Callable[[ConversionReport, Path], bool] &#124; None` | `None` |
 | `docx_profile` | `DocxProfile &#124; None` | `None` |
+| `pptx_profile` | `PptxProfile &#124; None` | `None` |
 
 ### ExporterSpec
 
-[Исходник, строка 71](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L71)
+[Исходник, строка 78](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L78)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -150,11 +151,11 @@ read_document(path: str | Path, *, format_id: str | None=None, options: ImportOp
 
 ### ExporterRegistry
 
-[Исходник, строка 97](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L97)
+[Исходник, строка 104](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L104)
 
 ### ExporterRegistry.__init__
 
-[Исходник, строка 98](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L98)
+[Исходник, строка 105](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L105)
 
 ```python
 __init__(self) -> None
@@ -162,7 +163,7 @@ __init__(self) -> None
 
 ### ExporterRegistry.register
 
-[Исходник, строка 102](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L102)
+[Исходник, строка 109](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L109)
 
 ```python
 register(self, exporter: ExporterSpec) -> None
@@ -170,7 +171,7 @@ register(self, exporter: ExporterSpec) -> None
 
 ### ExporterRegistry.exporters
 
-[Исходник, строка 110](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L110)
+[Исходник, строка 117](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L117)
 
 ```python
 exporters(self) -> tuple[ExporterSpec, ...]
@@ -178,7 +179,7 @@ exporters(self) -> tuple[ExporterSpec, ...]
 
 ### ExporterRegistry.write
 
-[Исходник, строка 113](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L113)
+[Исходник, строка 120](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L120)
 
 ```python
 write(self, document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport
@@ -186,7 +187,7 @@ write(self, document: DocumentModel, path: str | Path, *, format_id: str | None=
 
 ### default_exporter_registry
 
-[Исходник, строка 368](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L368)
+[Исходник, строка 376](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L376)
 
 ```python
 default_exporter_registry() -> ExporterRegistry
@@ -194,7 +195,7 @@ default_exporter_registry() -> ExporterRegistry
 
 ### write_document
 
-[Исходник, строка 392](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L392)
+[Исходник, строка 400](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L400)
 
 ```python
 write_document(document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport
@@ -928,7 +929,7 @@ compare_snapshots(before: BinarySnapshot, after: BinarySnapshot) -> dict[str, An
 
 ### inspect_binary
 
-[Исходник, строка 440](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L440)
+[Исходник, строка 450](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L450)
 
 ```python
 inspect_binary(source: Source, *, container: str | None=None, limits: AnatomyLimits=AnatomyLimits(), parse_xml: bool=True, capture: bool=False, sfnt_checksums: bool=False, sfnt_structure: bool=False, sfnt_face_index: int | None=None, cancelled: Callable[[], bool] | None=None) -> BinarySnapshot

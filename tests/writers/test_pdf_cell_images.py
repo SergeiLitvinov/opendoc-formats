@@ -26,8 +26,23 @@ from opendoc_formats import read_document, write_document
 from tests.writers.test_pdf_docx_rasters import own_pixels
 
 
-def test_owned_rgba_fixture_is_reproducible():
-    assert (Path(__file__).resolve().parents[1]/'native/data/table-image.png').read_bytes() == own_pixels()
+@pytest.mark.parametrize('compression', [0, 1, 9])
+def test_owned_rgba_fixture_is_reproducible(compression):
+    # PNG deflate streams can differ across zlib builds. Reproducibility concerns
+    # every source pixel, including RGB under alpha=0, rather than encoder bytes.
+    from PIL import Image as Pixels
+
+    fixture = Path(__file__).resolve().parents[1]/'native/data/table-image.png'
+    with Pixels.open(BytesIO(own_pixels())) as source:
+        compressed = BytesIO()
+        source.save(compressed, format='PNG', compress_level=compression)
+    if compression == 0:
+        assert compressed.getvalue() != fixture.read_bytes()
+    with Pixels.open(fixture) as actual, Pixels.open(BytesIO(compressed.getvalue())) as expected:
+        assert actual.format == expected.format == 'PNG'
+        assert actual.mode == expected.mode == 'RGBA'
+        assert actual.size == expected.size == (120, 180)
+        assert actual.tobytes() == expected.tobytes()
 
 
 def own_cell_document(path, form='plain', alignment='left', lines=8):

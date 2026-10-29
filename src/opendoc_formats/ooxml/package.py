@@ -89,6 +89,8 @@ def restore_package_graph(
 ) -> dict[str, Any]:
     """Restore graph parts and relationships into a python-opc root part."""
 
+    if graph.root in graph.parts:
+        raise ValueError('A physical source root requires an explicit editable binding before graph restoration')
     pack_uri_type, part_type = _opc_types(root_part)
 
     package = root_part.package
@@ -106,7 +108,7 @@ def restore_package_graph(
                 for attribute, value in cancellable_items(node.attrib.items()):
                     if attribute.startswith("{" + _RELATIONSHIP_BASE + "}") and value not in source_ids:
                         raise ValueError(f"Opaque OOXML refers to an unretained source relationship: {name}#{value}")
-    parts = {name: part_type(pack_uri_type(part.name), part.media_type, part.data, package)
+    parts = {name: part_type(partname=pack_uri_type(part.name), content_type=part.media_type, blob=part.data, package=package)
              for name, part in cancellable_items(graph.parts.items())}
     parts.update(source_parts)
     running_types = {f"{_RELATIONSHIP_BASE}/{name}" for name in ("header", "footer")}
@@ -117,7 +119,7 @@ def restore_package_graph(
     for relationship_id, relationship in list(root_part.rels.items()):
         checkpoint()
         if relationship.reltype in root_relationship_types and relationship.reltype != f"{_RELATIONSHIP_BASE}/image":
-            root_part.drop_rel(relationship_id)
+            _drop_relationship(root_part, relationship_id)
     occupied = set(cancellable_items(graph.parts)) | {str(part.partname) for part in cancellable_items(package.iter_parts())}
     for part in list(cancellable_items(package.iter_parts())):
         checkpoint()
@@ -139,7 +141,8 @@ def restore_package_graph(
         destination = relationship.target if relationship.external else parts[relationship.target]
         if source is root_part:
             _reserve_relationship_id(source, relationship.id, protected_roots)
-            source.rels.add_relationship(
+            _add_relationship(
+                source,
                 relationship.relationship_type,
                 destination,
                 relationship.id,
@@ -148,7 +151,8 @@ def restore_package_graph(
         else:
             if relationship.source in source_parts:
                 _reserve_relationship_id(source, relationship.id, getattr(source, "_opendoc_opaque_roots", ()))
-            source.rels.add_relationship(
+            _add_relationship(
+                source,
                 relationship.relationship_type,
                 destination,
                 relationship.id,
@@ -165,14 +169,17 @@ def _reserve_relationship_id(root_part: Any, relationship_id: str, protected_roo
     if existing is None:
         return
     replacement_id = root_part.rels._next_rId
-    root_part.rels.add_relationship(
+    _add_relationship(
+        root_part,
         existing.reltype,
         existing.target_ref if existing.is_external else existing.target_part,
         replacement_id,
         is_external=existing.is_external,
     )
-    root_part.drop_rel(relationship_id)
+    _drop_relationship(root_part, relationship_id)
     element = getattr(root_part, "element", None)
+    if element is None:
+        element = getattr(root_part, "_element", None)
     if element is None:
         return
     protected = {node for root in cancellable_items(protected_roots) for node in cancellable_items(root.iter())}
@@ -218,10 +225,31 @@ def _add_part(graph: PackageGraph, part: Any) -> str:
     return name
 
 
+def _add_relationship(source: Any, reltype: str, target: Any, relationship_id: str, *, is_external: bool) -> None:
+    """Keep source rIds, including distinct edges to the same target, in both engines."""
+    if source.__class__.__module__.startswith('pptx.'):
+        from pptx.opc.constants import RELATIONSHIP_TARGET_MODE
+        from pptx.opc.package import _Relationship
+
+        mode = RELATIONSHIP_TARGET_MODE.EXTERNAL if is_external else RELATIONSHIP_TARGET_MODE.INTERNAL
+        source.rels._rels[relationship_id] = _Relationship(source.partname.baseURI, relationship_id, reltype, mode, target)
+    else:
+        source.rels.add_relationship(reltype, target, relationship_id, is_external=is_external)
+
+
+def _drop_relationship(source: Any, relationship_id: str) -> None:
+    if source.__class__.__module__.startswith('pptx.'):
+        # XmlPart.drop_rel refuses multiple references before those references are
+        # remapped. Restoration owns that remap and must free the original rId.
+        source.rels.pop(relationship_id)
+    else:
+        source.drop_rel(relationship_id)
+
+
 def _opc_types(root_part: Any) -> tuple[type[Any], type[Any]]:
     if root_part.__class__.__module__.startswith("pptx."):
+        from pptx.opc.package import Part
         from pptx.opc.packuri import PackURI
-        from pptx.opc.part import Part
     else:
         from docx.opc.packuri import PackURI
         from docx.opc.part import Part

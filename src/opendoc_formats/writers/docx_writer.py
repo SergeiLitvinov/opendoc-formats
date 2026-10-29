@@ -300,6 +300,9 @@ def _restore_package_graph(
         report.add(IssueSeverity.ERROR, 'package-graph', str(error))
         return None
     graph = document.package
+    if graph is not None and graph.format != 'ooxml':
+        report.add(IssueSeverity.LOSS, 'package-graph',
+                   'Исходный пакет другого формата не восстанавливается в DOCX.', 'package')
     source_parts = {
         part._opendoc_source_part: part for part in cancellable_items(target.part.package.iter_parts())
         if getattr(part, "_opendoc_source_part", None)

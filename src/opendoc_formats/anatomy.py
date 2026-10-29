@@ -199,7 +199,7 @@ class _Budget:
             raise ResourceLimitError(f'{location}: max_xml_characters exceeded')
 
 
-def _xml_nodes(data: bytes, location: str, budget: _Budget) -> tuple[XmlNodeInfo, ...]:
+def _xml_nodes(data: bytes, location: str, budget: _Budget, *, count_markup: bool = False) -> tuple[XmlNodeInfo, ...]:
     parser = expat.ParserCreate(namespace_separator='}')
     nodes: list[XmlNodeInfo] = []
     stack: list[_XmlFrame] = []
@@ -246,8 +246,18 @@ def _xml_nodes(data: bytes, location: str, budget: _Budget) -> tuple[XmlNodeInfo
         if uri is not None:
             name(uri)
 
+    def markup(*values: str) -> None:
+        checkpoint()
+        budget.nodes += 1
+        if budget.nodes > budget.limits.max_xml_nodes:
+            raise ResourceLimitError(f'{location}: XML markup node limit exceeded')
+        budget.characters_used(sum(map(len, values)), location)
+
     parser.StartElementHandler, parser.EndElementHandler, parser.CharacterDataHandler = start, end, text
     parser.StartNamespaceDeclHandler = namespace
+    if count_markup:
+        parser.CommentHandler = markup
+        parser.ProcessingInstructionHandler = markup
     parser.StartDoctypeDeclHandler = forbidden
     parser.EntityDeclHandler = forbidden
     parser.ExternalEntityRefHandler = forbidden
