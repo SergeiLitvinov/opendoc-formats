@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from opendoc_formats.ooxml.pptx_placeholders import placeholder_chain as placeholder_chain
 from opendoc_formats.readers.pptx_paragraph import (
     frame_metadata,
     merge_paragraph_settings,
@@ -14,45 +15,8 @@ from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 
 A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
 P = "{http://schemas.openxmlformats.org/presentationml/2006/main}"
-MASTER_TYPES = {
-    "ctrTitle": "title",
-    "subTitle": "body",
-    "obj": "body",
-    "pic": "body",
-    "chart": "body",
-    "tbl": "body",
-    "clipArt": "body",
-    "dgm": "body",
-    "media": "body",
-}
 
 
-def placeholder_chain(element: Any, layout: Any, master: Any) -> list[Any]:
-    """Вернуть образец → макет для однозначной связи idx, затем типа."""
-    ph = element.find(f"{P}nvSpPr/{P}nvPr/{P}ph")
-    if ph is None or layout is None:
-        return []
-    matches = [
-        shape
-        for shape in cancellable_items(layout.iter(P + "sp"))
-        if (candidate := shape.find(f"{P}nvSpPr/{P}nvPr/{P}ph")) is not None and candidate.get("idx", "0") == ph.get("idx", "0")
-    ]
-    if len(matches) != 1:
-        return []
-    parent = matches[0]
-    parent_ph = parent.find(f"{P}nvSpPr/{P}nvPr/{P}ph")
-    kind = parent_ph.get("type", "obj")
-    kind = MASTER_TYPES.get(kind, kind)
-    ancestors = (
-        []
-        if master is None
-        else [
-            shape
-            for shape in cancellable_items(master.iter(P + "sp"))
-            if (candidate := shape.find(f"{P}nvSpPr/{P}nvPr/{P}ph")) is not None and candidate.get("type", "obj") == kind
-        ]
-    )
-    return (ancestors if len(ancestors) == 1 else []) + [parent]
 
 
 def inherited_frame(chain: list[Any], element: Any) -> dict[str, Any]:

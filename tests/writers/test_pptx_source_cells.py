@@ -15,6 +15,7 @@ from pptx.util import Pt
 from opendoc_formats import ExportOptions, PptxProfile, read_document, write_document
 from opendoc_formats.ooxml.pptx_source_cells import CELL_KEY
 from opendoc_formats.ooxml.pptx_source_text import KEY, source_digest
+from opendoc_formats.ooxml.table_grid import native_grid
 
 A = '{http://schemas.openxmlformats.org/drawingml/2006/main}'
 OPTIONS = ExportOptions(pptx_profile=PptxProfile(layout='source'))
@@ -64,7 +65,10 @@ def model_at(source):
 
 
 def cell(model, row, column):
-    return model.sections[0].blocks[0].rows[row].cells[column]
+    table = model.sections[0].blocks[0]
+    if table.properties.get('opendoc_formats.pptx_table_grid', {}).get('layout') == 'logical-origins':
+        return next(cell for r, c, cell in native_grid(table)[1] if (r, c) == (row, column))
+    return table.rows[row].cells[column]
 
 
 def edit_cells(model, cycle):
@@ -126,7 +130,7 @@ def test_cell_edits_keep_native_table_structure_and_two_json_cycles(tmp_path):
 def test_unsupported_cell_edit_refuses_atomically(tmp_path, change):
     model = model_at(own_table(tmp_path))
     if change == 'continuation':
-        cell(model, 1, 1).blocks[0].content.append(TextRun('Hidden continuation edit'))
+        model.sections[0].blocks[0].properties['opendoc_formats.pptx_continuations'][0]['properties']['fill'] = '#123456'
     elif change == 'row-order':
         model.sections[0].blocks[0].rows.reverse()
     elif change == 'cell-order':

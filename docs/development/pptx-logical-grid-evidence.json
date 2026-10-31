@@ -1,0 +1,90 @@
+{
+  "scope": "Validated rectangular PPTX merges projected as sparse logical Table origins; native source bindings retain physical coordinates",
+  "model": "opendoc-model==0.19.0; import opendoc_model",
+  "model_contract_changes": false,
+  "dependencies_changed": false,
+  "implementation": {
+    "reader": "Only merge origins become TableCell nodes; fully covered rows retain empty logical cells lists",
+    "validation": "Physical rectangular grid, bounded spans, nonoverlapping complete ownership and exact hMerge/vMerge flags",
+    "fallback": "Unproved topology or text in a continuation retains every physical cell and emits located pptx.table-grid loss; unchanged source export retains all payloads, edited unproved cells refuse atomically",
+    "widths": "Original point widths for PPTX; general grid_widths_twips rounded to the Model unit for other routes",
+    "rebuild": "Bounded native_grid places sparse spans; direct continuation appearance restored only for matching physical owner identity and current merge coverage",
+    "source": "Logical cell index maps to validated physical row/column; existing physical v3 snapshots supported; v1/v2 retain previous scope",
+    "ownership": "Formats-owned properties and parsers only; no new Model DTO, dependency or contract"
+  },
+  "checks": {
+    "test_file": "tests/writers/test_pptx_logical_grid.py",
+    "full_project_run": false,
+    "ruff": "passed",
+    "configured_strict_mypy": "41 files passed",
+    "boundary_audit_modules": 228,
+    "docs": "generated and strict build passed",
+    "dependency_license_inventory": "unchanged reviewed lockfile matches inventory",
+    "wheel_sdist": "release 0.42.0 archives, licenses, metadata and resources verified",
+    "minimal_pptx_profile": {
+      "passed": true,
+      "python": "3.12.16",
+      "script": "tools/pptx_package_smoke.py",
+      "scope": "Installed wheel, opaque package, two JSON cycles, merged logical origins, source cell and Box edits, native rebuild",
+      "absent_dependencies": [
+        "fontTools",
+        "docx",
+        "pymupdf",
+        "pypdf",
+        "bs4"
+      ],
+      "installed": [
+        "opendoc-formats==0.42.0",
+        "opendoc-model==0.19.0",
+        "python-pptx==1.0.2",
+        "lxml==6.1.3",
+        "Pillow==12.3.0",
+        "typing-extensions==4.16.0",
+        "xlsxwriter==3.3.1"
+      ],
+      "license_inventory_scope": "Reviewed uv.lock is unchanged; this smoke additionally checks xlsxwriter 3.3.1, while the lock pins 3.3.0"
+    },
+    "logical_grid_cases_passed": 9,
+    "regression_command": "python -m pytest tests/readers tests/writers tests/support/test_ooxml_pptx_package.py tests/support/test_ooxml_package.py -k 'pptx or office_export_cancellation or ooxml_package' -q --tb=short",
+    "regression_passed": 456,
+    "regression_deselected": 1545,
+    "regression_seconds": 173.05
+  },
+  "native_acceptance": {
+    "application": "Microsoft PowerPoint 16.0",
+    "script": "tools/pptx_cells_powerpoint_acceptance.ps1",
+    "fixture": "tests.writers.test_pptx_source_cells.own_table",
+    "edits": "Merged origin, first styled run after horizontal merge, plain insertion into empty cell",
+    "source_unchanged": true,
+    "inserted_font_size_pt": 23.0,
+    "source_changed_parts": [
+      "/ppt/slides/slide1.xml"
+    ],
+    "cell_text_edits": 3,
+    "renders": {
+      "mupdf": {
+        "dimensions": [
+          1080,
+          810
+        ],
+        "all_pixels_equal": true,
+        "decoded_rgb_sha256": "9810a9beb55b698af81efa9a12e77cf5634ca0bc27e7543db743d904baa54df9"
+      },
+      "poppler": {
+        "dimensions": [
+          1080,
+          810
+        ],
+        "all_pixels_equal": true,
+        "decoded_rgb_sha256": "ba1a862ebb5086940f62a4eb9c9467ee366eaba83dac9af1e00d77120c62e437"
+      }
+    },
+    "image_inspected": true
+  },
+  "limits": [
+    "Not full layout/theme fidelity for rebuild or cross-format page layout",
+    "Invalid merges and hidden continuation content remain explicitly unproved physical projection",
+    "No arbitrary source structure/style/run topology editing or automatic repair",
+    "ZIP metadata/archive byte identity and signatures outside the accepted edit profile"
+  ]
+}

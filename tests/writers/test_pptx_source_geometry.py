@@ -121,9 +121,10 @@ def test_ambiguous_45_degree_resize_refuses_without_replacing_destination(tmp_pa
     assert output.read_bytes() == b'previous' and document_to_json(model) == before
 
 
-def test_graphic_frame_resize_requires_native_grid_projection(tmp_path):
+def test_legacy_graphic_frame_resize_requires_native_grid_projection(tmp_path):
     source, identity = fixture(tmp_path, 'table')
     model = read_document(source).document
+    model.metadata[KEY] = {'version': 3, 'digest': source_digest(model)}
     block_with(model, identity).box.width += 10
     result = write_document(model, tmp_path/'refused.pptx', options=OPTIONS)
     assert not result.success and not (tmp_path/'refused.pptx').exists()

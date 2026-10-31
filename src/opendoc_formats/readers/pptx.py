@@ -282,6 +282,9 @@ def _placeholder_geometry(element: Any, state: _ImporterState) -> Optional[tuple
     chain = placeholder_chain(element, state.layout_element, state.master_element)
     for parent, sp_tree in zip(reversed(chain), (state.layout_element, state.master_element)):
         checkpoint()
+        declared = parent.find(_p('spPr')+'/'+_a('xfrm'))
+        if declared is not None and (declared.find(_a('off')) is None or declared.find(_a('ext')) is None):
+            return None
         ph = _placeholder_info(parent)
         result = _walk_layout_placeholder(sp_tree, _Transform(), ph[0], ph[1])
         if result is not None:
@@ -591,6 +594,13 @@ def _collect_shape_element(
         return
     xfrm = _shape_xfrm(element)
     if xfrm is None:
+        declared = element.find(_p('spPr')+'/'+_a('xfrm'))
+        if declared is not None:
+            if state.diagnostics:
+                state.diagnostics.record('pptx.shape', 'incomplete-local-frame',
+                                         'Partial local transform retained opaque; inherited dimensions are not guessed',
+                                         element, state=PreservationState.OPAQUE)
+            return
         xfrm = _placeholder_geometry(element, state)
     if xfrm is None:
         if state.diagnostics:
@@ -1070,7 +1080,12 @@ def _related_part(slide_part: Any, r_id: str) -> Any:
 def _handle_graphic_frame(element: Any, slide_part: Any, state: _ImporterState, blocks: list[Any], box: Box) -> None:
     table = element.find(f".//{_a('tbl')}")
     if table is not None:
-        blocks.append(_table_block(table, box, slide_part, state.theme_colors))
+        block = _table_block(table, box, slide_part, state.theme_colors)
+        blocks.append(block)
+        grid = block.properties.get('opendoc_formats.pptx_table_grid', {})
+        if grid.get('layout') == 'physical-unverified' and state.diagnostics:
+            state.diagnostics.record('pptx.table-grid', grid['reason'],
+                                     'Physical cells retained; logical merge topology is unproved', element)
         return
     graphic_data = element.find(f".//{_a('graphicData')}")
     if graphic_data is not None:

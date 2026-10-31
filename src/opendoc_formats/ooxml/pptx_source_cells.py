@@ -11,6 +11,8 @@ from lxml import etree
 
 from opendoc_formats.ooxml.pptx_source_xml import SourceRoots
 from opendoc_formats.ooxml.pptx_table_grid import merge_origins as _origins
+from opendoc_formats.ooxml.pptx_text_slots import matched_slots, paragraph_slots
+from opendoc_formats.ooxml.table_grid import native_grid
 from opendoc_formats.support.cancellation import cancellable_items
 
 A = '{http://schemas.openxmlformats.org/drawingml/2006/main}'
@@ -32,27 +34,6 @@ class CellBinding:
 
 
 
-def _slots(paragraph: Any, model: od.Paragraph) -> list[Any] | None:
-    slots = []
-    for child in cancellable_items(paragraph):
-        if child.tag in {A+'pPr', A+'endParaRPr'}:
-            continue
-        if child.tag == A+'br':
-            slots.append(None)
-        elif child.tag == A+'r' and len(child.findall(A+'t')) == 1:
-            text = child.find(A+'t')
-            if text.text or child.find(A+'rPr/'+A+'hlinkClick') is not None:
-                slots.append(text)
-        else:
-            return None
-    if len(slots) != len(model.content) or any(not isinstance(run, od.TextRun) for run in model.content):
-        return None
-    if any(node is None and (run.text != '\n' or run.properties.get('pptx_break') != 'line')
-           for node, run in zip(slots, model.content, strict=True)):
-        return None
-    return slots
-
-
 def _empty_slot(paragraph: Any, model: od.Paragraph) -> bool:
     if any(child.tag not in {A+'pPr', A+'endParaRPr'} for child in paragraph):
         return False
@@ -68,7 +49,7 @@ def _empty_slot(paragraph: Any, model: od.Paragraph) -> bool:
     return False
 
 
-def cell_bindings(document: od.DocumentModel, roots: SourceRoots) -> list[CellBinding]:
+def cell_bindings(document: od.DocumentModel, roots: SourceRoots, *, fields: bool = False) -> list[CellBinding]:
     graph = document.package
     if graph is None or graph.format != 'pptx':
         return []
@@ -99,13 +80,26 @@ def cell_bindings(document: od.DocumentModel, roots: SourceRoots) -> list[CellBi
             rows = native.findall(A+'tr')
             if origins is None or len(rows) != len(model.rows):
                 continue
-            if any(len(row.findall(A+'tc')) != len(model_row.cells) for row, model_row in zip(rows, model.rows, strict=True)):
+            layout = model.properties.get('opendoc_formats.pptx_table_grid', {}).get('layout')
+            if layout == 'physical-unverified':
                 continue
+            if layout == 'logical-origins':
+                _, placements = native_grid(model, limits=roots.limits)
+                if {(r, c) for r, c, _ in placements} != origins:
+                    continue
+                columns = {id(cell): c for _, c, cell in placements}
+            else:
+                if any(len(row.findall(A+'tc')) != len(model_row.cells)
+                       for row, model_row in zip(rows, model.rows, strict=True)):
+                    continue
+                columns = {id(cell): ci for row in model.rows for ci, cell in enumerate(row.cells)}
             for ri, (row, model_row) in enumerate(cancellable_items(zip(rows, model.rows, strict=True))):
-                cells = zip(row.findall(A+'tc'), model_row.cells, strict=True)
-                for ci, (cell, model_cell) in enumerate(cancellable_items(cells)):
+                native_cells = row.findall(A+'tc')
+                for logical_ci, model_cell in enumerate(cancellable_items(model_row.cells)):
+                    ci = columns[id(model_cell)]
                     if (ri, ci) not in origins or model_cell.properties.get(CELL_KEY) != {'row': ri, 'column': ci}:
                         continue
+                    cell = native_cells[ci]
                     paragraphs = cell.findall(A+'txBody/'+A+'p')
                     if len(paragraphs) != len(model_cell.blocks):
                         continue
@@ -113,11 +107,12 @@ def cell_bindings(document: od.DocumentModel, roots: SourceRoots) -> list[CellBi
                     for pi, (paragraph, model_paragraph) in enumerate(cancellable_items(pairs)):
                         if not isinstance(model_paragraph, od.Paragraph):
                             continue
-                        path = f'sections[{si}].blocks[{bi}].rows[{ri}].cells[{ci}].blocks[{pi}]'
+                        path = f'sections[{si}].blocks[{bi}].rows[{ri}].cells[{logical_ci}].blocks[{pi}]'
                         if _empty_slot(paragraph, model_paragraph):
                             result.append(CellBinding(part, path, model_paragraph, None, paragraph))
                             continue
-                        slots = _slots(paragraph, model_paragraph)
+                        native_slots = paragraph_slots(paragraph, fields=fields)
+                        slots = matched_slots(native_slots, model_paragraph.content) if native_slots is not None else None
                         if slots is not None:
                             result.extend(CellBinding(part, f'{path}.content[{index}]', model_paragraph, index, node)
                                           for index, node in enumerate(slots) if node is not None)

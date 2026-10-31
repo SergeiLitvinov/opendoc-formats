@@ -38,6 +38,8 @@ class AnatomyLimits:
     max_xml_depth: int = 128
     max_xml_name_chars: int = 2048
     max_xml_characters: int = 32 * 1024 * 1024
+    max_pdf_tokens: int = 200_000
+    max_pdf_depth: int = 64
 
     def __post_init__(self) -> None:
         for definition in fields(self):
@@ -450,11 +452,13 @@ def _sfnt_items(data: bytes, limits: AnatomyLimits, capture: bool,
 def inspect_binary(source: Source, *, container: str | None = None, limits: AnatomyLimits = AnatomyLimits(),
                    parse_xml: bool = True, capture: bool = False, sfnt_checksums: bool = False,
                    sfnt_structure: bool = False,
+                   pdf_source: bool = False,
                    sfnt_face_index: int | None = None,
                    cancelled: Callable[[], bool] | None = None) -> BinarySnapshot:
     """Inspect content without executing macros, following external links or decoding PDF streams."""
     if (not isinstance(limits, AnatomyLimits) or type(parse_xml) is not bool
-            or type(capture) is not bool or type(sfnt_checksums) is not bool or type(sfnt_structure) is not bool):
+            or type(capture) is not bool or type(sfnt_checksums) is not bool
+            or type(sfnt_structure) is not bool or type(pdf_source) is not bool):
         raise TypeError('Expected AnatomyLimits and boolean inspection flags')
     if sfnt_face_index is not None:
         positive_int(sfnt_face_index, 'sfnt_face_index', zero=True)
@@ -479,6 +483,8 @@ def inspect_binary(source: Source, *, container: str | None = None, limits: Anat
             raise ValueError('sfnt_face_index requires the sfnt container profile')
         if sfnt_structure and container != 'sfnt':
             raise ValueError('sfnt_structure requires the sfnt container profile')
+        if pdf_source and container != 'pdf':
+            raise ValueError('pdf_source requires the pdf container profile')
         try:
             if container == 'zip':
                 items, details, opc, epub = _zip_items(data, limits, parse_xml, capture)
@@ -491,7 +497,12 @@ def inspect_binary(source: Source, *, container: str | None = None, limits: Anat
                 items, details = _sfnt_items(data, limits, capture, sfnt_checksums, sfnt_face_index, sfnt_structure)
                 opc, epub = None, None
             else:
-                items, details = _pdf_items(data, limits, capture)
+                if pdf_source:
+                    from opendoc_formats.native.pdf_revisions import inspect_pdf_source
+
+                    items, details = inspect_pdf_source(data, limits, capture)
+                else:
+                    items, details = _pdf_items(data, limits, capture)
                 opc = None
                 epub = None
         except ResourceLimitError:

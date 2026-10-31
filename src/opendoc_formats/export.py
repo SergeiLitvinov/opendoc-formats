@@ -82,6 +82,7 @@ class ExporterSpec:
     requirements: tuple[str, ...] = ()
     validator: OutputValidator | None = None
     supports_text_layouts: bool = False
+    supports_image_source_rects: bool = False
 
     def __post_init__(self) -> None:
         if not isinstance(self.id, str) or not self.id or not callable(self.writer) or not self.extensions:
@@ -99,6 +100,8 @@ class ExporterSpec:
             raise ValueError("validator must be callable")
         if type(self.supports_text_layouts) is not bool:
             raise ValueError('supports_text_layouts must be bool')
+        if type(self.supports_image_source_rects) is not bool:
+            raise ValueError('supports_image_source_rects must be bool')
 
 
 class ExporterRegistry:
@@ -152,6 +155,20 @@ class ExporterRegistry:
             return limit_failure(error)
         if errors:
             return fail("export.invalid-model", "; ".join(errors))
+        if not exporter.supports_image_source_rects:
+            from opendoc_model import Image, walk_model
+
+            # Presence only: older Model keeps the future carrier opaque.
+            # Its schema, interpretation and codec belong to Model.
+            try:
+                for reference in walk_model(document, limits=options.document_limits):
+                    if (isinstance(reference.node, Image)
+                            and 'opendoc.image-source-rect' in reference.node.properties):
+                        return fail('export.image-source-rect',
+                                    'Target does not project the stored image source rectangle',
+                                    reference.path + '.properties[opendoc.image-source-rect]')
+            except ArtifactLimitError as error:
+                return limit_failure(error)
         try:
             integration = get_integration(document, limits=options.document_limits)
         except ArtifactLimitError as error:
@@ -393,7 +410,8 @@ def default_exporter_registry() -> ExporterRegistry:
                 _validator(identifier),
             )
         )
-    registry.register(ExporterSpec("json", (".json",), _json, validator=_validator("json"), supports_text_layouts=True))
+    registry.register(ExporterSpec("json", (".json",), _json, validator=_validator("json"),
+                                   supports_text_layouts=True, supports_image_source_rects=True))
     return registry
 
 

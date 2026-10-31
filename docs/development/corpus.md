@@ -1404,3 +1404,169 @@ opaque records; unsupported styles/objects и некорректные scope hin
 соседние отдельные scopes и отличия italic correction между itshape и textit.
 `tools/package_smoke.py` подтверждает маршрут установленного базового wheel
 без Office и дополнительных зависимостей.
+
+
+## Логическая сетка объединённых PPTX-таблиц
+
+`tests/writers/test_pptx_logical_grid.py` проверяет собственную таблицу 5×4:
+горизонтальное и прямоугольное объединения, полностью перекрытую строку,
+соседние ячейки, неравные ширины и явную границу физического продолжения.
+Два JSON/PPTX rebuild цикла сохраняют логические origins/spans и физическое
+оформление. DOCX получает четыре grid columns, `gridSpan`/`vMerge` и ширины;
+HTML — ячейки без дубликатов и правильные `rowspan`/`colspan`.
+
+Проверяются source edits после горизонтальных/вертикальных объединений,
+совместимость с физическими v3 snapshots и отказ от guessed bindings при
+неподтверждённых merge flags или скрытом continuation text. Без правок source
+profile сохраняет все payload даже такого неподтверждённого исходника.
+После смены span/владельца оформление продолжения не переносится на чужую ячейку;
+выдаётся явный LOSS. Бюджет общей сетки проверяется до публикации результата.
+
+`tools/pptx_cells_powerpoint_acceptance.ps1` проверяет source edits после импорта
+в логическую сетку на собственном merged/styled/empty примере. Независимые правки
+PowerPoint 16 дают одинаковые RGB pixels при 108 dpi в MuPDF и Poppler;
+вставленный текст сохраняет 23 pt, исходник неизменен. Это конечный source-профиль;
+полное совпадение layout/themes при rebuild не заявляется.
+Доказательства и границы: [pptx-logical-grid-evidence.json](pptx-logical-grid-evidence.json).
+
+
+## Нативные размеры таблиц PPTX
+
+`tests/writers/test_pptx_source_table_grid.py` проверяет bindings v4: изменение
+только Box с пропорциональной сеткой, явное перераспределение points/twips,
+согласованное изменение Box и размеров, два JSON/PPTX цикла и общую DOM-проекцию
+с правкой текста. Канонический slide XML сравнивается с независимо изменёнными
+колонками/строками `python-pptx`; остальные ZIP payload остаются точными.
+Дробное изменение на один EMU распределяется без расхождения итоговых сумм.
+Отрицательные проверки охватывают несовпадающие суммы, нулевые/неконечные размеры,
+разногласие points/twips, поворот, суб-EMU сетку, изменение числа колонок,
+неподтверждённый исходный extent, прежние bindings и отмену до публикации.
+
+`tools/pptx_table_grid_powerpoint_acceptance.ps1` независимо изменяет собственную
+таблицу 5×4 в PowerPoint 16: общий размер 600×360 pt и перераспределение внутри
+500×300 pt. В обоих случаях сетка/рамка совпадают в EMU, RGB pages при 108 dpi
+попиксельно совпадают в MuPDF и Poppler; исходник не изменён. Результаты осмотрены.
+Это проверка двух конечных source-сценариев, не всех вариантов автоподбора текста,
+минимальной высоты, групповой нормализации и диаграмм.
+
+`tools/pptx_package_smoke.py` проверяет resize и cell edits вместе в установленном
+PPTX-only wheel без DOCX/PDF/fontTools extras, затем выполняет rebuild повторно
+импортированного результата. Подробности: [pptx-table-grid-evidence.json](pptx-table-grid-evidence.json).
+
+
+## Нативная рамка диаграмм PPTX
+
+`tests/writers/test_pptx_source_chart_frame.py` проверяет bindings v5 на собственных
+column, scatter, pie, 3D и manual-layout диаграммах. Два JSON/PPTX цикла меняют
+рамку слайда; chart XML, встроенная XLSX, связи, темы и соседние части сохраняются
+побайтно. Slide XML сравнивается с независимой правкой рамки через python-pptx.
+Проверяются прежние bindings v2/v3/v4, отказ при правке данных/title/rotation,
+неподтверждённые связи/content type/root/URI, XML node budget и отмена до изменения
+геометрии. Эти проверки не выдают opaque содержимое за полную семантическую модель.
+
+`tools/pptx_chart_frame_powerpoint_acceptance.ps1` независимо меняет рамку
+собственных column/manual-layout/3D диаграмм в PowerPoint 16 до 570×340 pt,
+сдвигая её на 10×5 pt. Исходники открываются read-only с отключёнными макросами;
+скрипт закрывает только собственные decks/app и ждёт завершения своего процесса.
+При 108 dpi страницы попиксельно совпадают в MuPDF и Poppler для всех трёх сцен.
+Оба manual-layout/3D результата осмотрены; исходник неизменен, библиотека меняет
+только `ppt/slides/slide1.xml`.
+
+Установленный PPTX-only wheel проверяет chart resize одновременно с текстом,
+таблицей и её размером без DOCX/PDF/fontTools extras. Границы и hashes:
+[pptx-chart-frame-evidence.json](pptx-chart-frame-evidence.json).
+
+
+## Нативная обрезка изображений PPTX
+
+`tests/writers/test_pptx_source_crop.py` проверяет bindings v6: установка/изменение/
+снятие `ImageCrop`, PNG с альфой, SVG с PNG companion, изображение в группе,
+два JSON/PPTX цикла и одновременное изменение рамки. Native media payload,
+неизменённые части, blip effects и XML-структура сохраняются; slide XML сравнивается
+с независимой правкой python-pptx. Проверяются старые bindings v2–v5, tile/nonzero
+fillRect/unknown attributes/linked ambiguity, percent lexemes и explicit zero
+fillRect, отказ при полном удалении изображения из-за native округления и отмена.
+
+Собственный native negative/outside srcRect сохраняется opaque с located
+диагностикой вместо исключения при импорте, проходит официальный JSON и исходный
+source export; guessed semantic crop edit отказывается. Контракт общего DTO —
+[C-IMAGE-RECT-01](image-source-rectangle-contract.md), а native XML и правила
+проекции принадлежат Formats.
+
+`tools/pptx_crop_powerpoint_acceptance.ps1` независимо выполняет crop PNG/SVG
+в PowerPoint 16, сохраняет фиксированную рамку и выводит оба результата в PDF.
+В обоих renderers (MuPDF/Poppler) при 108 dpi все RGB pixels совпадают;
+оригинальные PNG/SVG SHA256 не меняются. Raster/SVG картинки осмотрены.
+Native `-Stage outset` подтверждает source rectangle с отрицательной границей;
+это отдельный неподключённый общий контракт, а не принятый semantic crop.
+Доказательства и границы: [pptx-crop-evidence.json](pptx-crop-evidence.json).
+
+Установленный PPTX-only wheel проверяет crop одновременно с текстом, таблицей,
+её grid resize и chart frame без DOCX/PDF/fontTools extras.
+
+
+## Текст PPTX рядом с полями и разрывами
+
+`tests/writers/test_pptx_structured_text.py` проверяет bindings v7 для фигур,
+фигур в группе и таблиц: обычные runs до/после line break и `a:fld`, ссылки,
+оформление, пустой paragraph, непустой/пустой cached field text и два JSON/PPTX
+цикла. Slide XML сравнивается с независимой правкой python-pptx; исходные
+field/break nodes и остальные payload остаются точными. Protected cache/style,
+разрыв/его роль, перестановка runs, неизвестный native child и отмена не получают
+скрытой правки; snapshots v1/v3/v6 сохраняют прежний scope.
+
+`tools/pptx_structured_text_powerpoint_acceptance.ps1` независимо меняет только
+обычный текст рядом с полем номера слайда и разрывом в textbox и table cell.
+PowerPoint 16 открывает исходник read-only с отключёнными макросами; исходник не
+меняется. При 108 dpi RGB pages попиксельно совпадают в MuPDF и Poppler;
+результат textbox осмотрен. Native field остаётся полем, не обычным текстом.
+Это finite source acceptance, не поддержка редактирования/пересчёта полей в Model.
+
+В установленном PPTX-only wheel общий сценарий проверяет обычные правки вокруг
+field/break одновременно с таблицей, chart frame и image crop, без DOCX/PDF
+extras и без fontTools. Доказательства: [pptx-structured-text-evidence.json](pptx-structured-text-evidence.json).
+
+
+## C-IMAGE-RECT-01: независимая потребительская приёмка
+
+`tools/image_rect_consumer.py` запускается с `-I` в отдельной среде с wheel,
+собранным из неизменённой копии Model draft. Основная среда и dependency pin
+не заменяются. Публичные getter/setter/codec проверяются на собственном native
+PowerPoint signed viewport: два JSON-цикла, detached unknown fields, атомарная
+квота, конфликт с ImageCrop, миграция и сохранение extras/Box/resource bytes.
+
+Prototype writer существует только внутри consumer-скрипта и принимает одну
+собственную картинку; все посторонние изменения Model отказываются. Он переводит
+общие координаты в native srcRect и сохраняет остальные ZIP payload. Независимая
+правка PowerPoint CropLeft=-24pt и prototype дают одинаковые RGB pixels при
+108 dpi в MuPDF/Poppler. Изменяется только slide1.xml; результат осмотрен.
+Это не подключённый production exporter и не утверждение о выпуске Model.
+
+`tests/test_image_source_rect_export.py` проверяет предотвращение молчаливой
+потери нового/непрозрачного carrier старым registry для HTML/DOCX/PPTX/PDF/EPUB/
+TeX/TXT, сохранение публичным JSON и явное объявление custom writer capability.
+Доказательства: [image-source-rect-consumer-evidence.json](image-source-rect-consumer-evidence.json).
+
+
+## Унаследованные placeholders PPTX
+
+`tests/writers/test_pptx_source_placeholders.py` проверяет bindings v8: полную
+рамку из layout или master, исходный поворот 0/17°, изменение позиции/размера/
+поворота и текста, два JSON/PPTX цикла, неизменность всех layout/master/theme
+payload и отсутствие frame materialization при одной текстовой правке.
+Старые v2/v7 не получают новые геометрические правки; неоднозначный idx,
+partial local/layout frame, XML budget и отмена не обходят защиту назначения.
+
+Native PowerPoint 16 показывает для собственного partial local frame с одним
+`a:off` фактические width=0/height=0. Reader не подставляет вместо этого размеры
+макета: исходная форма сохраняется opaque с located диагностикой.
+`tools/pptx_placeholder_powerpoint_acceptance.ps1` независимо меняет конечную
+рамку (54,125,580,310 pt, rotation 9/26°) и текст. При повороте позиция задаётся
+последней, поскольку native resize сохраняет центр повёрнутой формы.
+Для layout/master и обоих углов RGB pages при 108 dpi попиксельно совпадают
+в MuPDF/Poppler. Поворачиваемый master-case осмотрен; исходники неизменны.
+
+Установленный PPTX-only wheel проверяет второй слайд с inherited placeholder
+вместе с text/field/break, table grid, chart frame и crop первого слайда.
+Изменяются только два slide XML; все остальные payload остаются исходными.
+Доказательства и границы: [pptx-placeholder-evidence.json](pptx-placeholder-evidence.json).

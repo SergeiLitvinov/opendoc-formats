@@ -11,8 +11,11 @@ from lxml import etree
 
 from opendoc_formats.errors import InvalidDocumentError, ResourceLimitError, UnsupportedDocumentError
 from opendoc_formats.native.opc import part_name
+from opendoc_formats.ooxml.pptx_crop import bind_image_crop, project_image_crop
 from opendoc_formats.ooxml.pptx_source_cells import apply_cell_text, cell_bindings
+from opendoc_formats.ooxml.pptx_source_chart_frame import chart_frame
 from opendoc_formats.ooxml.pptx_source_geometry import geometry_bindings, project_geometry
+from opendoc_formats.ooxml.pptx_source_table_grid import bind_table_grid, project_table_grid
 from opendoc_formats.ooxml.pptx_source_text import KEY, source_bindings, source_digest
 from opendoc_formats.ooxml.pptx_source_xml import SourceRoots
 from opendoc_formats.support.cancellation import cancellable_items, checkpoint
@@ -26,12 +29,15 @@ def write_source_text(
     binding = document.metadata.get(KEY)
     graph = document.package
     if (graph is None or graph.format != 'pptx' or not isinstance(binding, dict)
-            or type(binding.get('version')) is not int or binding['version'] not in {1, 2, 3}):
+            or type(binding.get('version')) is not int or binding['version'] not in {1, 2, 3, 4, 5, 6, 7, 8}):
         report.add(od.IssueSeverity.ERROR, 'pptx.source-binding', 'Source PPTX with current text bindings required', 'package')
         return report
     try:
         fresh = source_digest(document, limits=limits, geometry=binding['version'] >= 2,
-                              tables=binding['version'] >= 3) == binding.get('digest')
+                              tables=binding['version'] >= 3, table_geometry=binding['version'] >= 4,
+                              image_crops=binding['version'] >= 6,
+                              structured_text=binding['version'] >= 7,
+                              placeholder_geometry=binding['version'] >= 8) == binding.get('digest')
     except od.ArtifactLimitError:
         raise
     except ResourceLimitError as error:
@@ -53,7 +59,10 @@ def write_source_text(
     source_roots = SourceRoots(limits)
     geometry_edits = 0
     cell_text_edits = 0
-    for si, bi, ri, part, node in source_bindings(document, source_roots):
+    table_grid_edits = 0
+    chart_frame_edits = 0
+    image_crop_edits = 0
+    for si, bi, ri, part, node in source_bindings(document, source_roots, structured=binding['version'] >= 7):
         checkpoint()
         text = document.sections[si].blocks[bi].content[ri].text
         if text == (node.text or ''):
@@ -68,7 +77,7 @@ def write_source_text(
             return report
         roots[part] = node.getroottree()
     if binding['version'] >= 3:
-        for cell in cell_bindings(document, source_roots):
+        for cell in cell_bindings(document, source_roots, fields=binding['version'] >= 7):
             checkpoint()
             if not cell.paragraph.content:
                 continue
@@ -88,16 +97,33 @@ def write_source_text(
                 roots[cell.part] = cell.node.getroottree()
                 cell_text_edits += 1
     if binding['version'] >= 2:
-        for native in geometry_bindings(document, source_roots):
+        for native in geometry_bindings(document, source_roots, placeholders=binding['version'] >= 8):
             try:
-                moved = project_geometry(native, document.sections[native.section].blocks[native.block].box)
+                block = document.sections[native.section].blocks[native.block]
+                crop = bind_image_crop(native, block, document) if binding['version'] >= 6 else None
+                grid = bind_table_grid(native, block) if binding['version'] >= 4 else None
+                resize = (block.box.width, block.box.height) != (native.original.width, native.original.height)
+                chart = binding['version'] >= 5 and resize and chart_frame(native, document, source_roots)
+                checkpoint()
+                moved = project_geometry(native, block.box, frame_resize=grid is not None or chart)
+                resized = project_table_grid(grid) if grid is not None else False
+                cropped = project_image_crop(crop) if crop is not None else False
+            except ResourceLimitError as error:
+                report.add(od.IssueSeverity.ERROR, 'pptx.source-xml-limit', str(error), native.part)
+                return report
+            except (InvalidDocumentError, UnsupportedDocumentError) as error:
+                report.add(od.IssueSeverity.ERROR, 'pptx.source-geometry', str(error), native.part)
+                return report
             except ValueError as error:
                 report.add(od.IssueSeverity.ERROR, 'pptx.source-geometry', str(error),
                            f'sections[{native.section}].blocks[{native.block}].box')
                 return report
-            if moved:
+            if moved or resized or cropped:
                 roots[native.part] = native.shape.getroottree()
-                geometry_edits += 1
+                geometry_edits += int(moved)
+                table_grid_edits += int(resized)
+                chart_frame_edits += int(chart and moved)
+                image_crop_edits += int(cropped)
     signed = (any(name.lower().startswith('/_xmlsignatures/')
                   or part.media_type.lower().startswith('application/vnd.openxmlformats-package.digital-signature')
                   for name, part in graph.parts.items())
@@ -130,6 +156,9 @@ def write_source_text(
     report.metrics['changed_parts'] = sorted(changed)
     report.metrics['geometry_edits'] = geometry_edits
     report.metrics['cell_text_edits'] = cell_text_edits
+    report.metrics['table_grid_edits'] = table_grid_edits
+    report.metrics['chart_frame_edits'] = chart_frame_edits
+    report.metrics['image_crop_edits'] = image_crop_edits
     if geometry_edits:
         report.metrics['geometry_precision'] = {'max_slide_error_emu': 1, 'max_angle_error_degrees': 1/120000}
     return report

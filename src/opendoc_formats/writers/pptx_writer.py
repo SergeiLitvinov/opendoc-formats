@@ -101,7 +101,7 @@ def _write_pptx_model(
             geometry = tuple(Pt(value) for value in (box.x, box.y, max(minimum, box.width), max(minimum, box.height)))
             block_location = f"{location}.blocks[{number}]"
             previous_count = len(slide.shapes)
-            _write_block(slide, block, document, geometry, report, block_location)
+            _write_block(slide, block, document, geometry, report, block_location, limits=limits)
             if len(slide.shapes) > previous_count:
                 shape = slide.shapes[-1]
                 apply_transform(shape, block, report, block_location)
@@ -145,9 +145,10 @@ def _write_block(
     geometry: tuple[int, int, int, int],
     report: od.ConversionReport,
     location: str,
+    *, limits: DocumentLimits | None = None,
 ) -> None:
     if isinstance(block, Table):
-        write_table(slide, block, geometry, report, location)
+        write_table(slide, block, geometry, report, location, limits=limits)
     elif isinstance(block, Image):
         try:
             write_image(slide, block, document, geometry, report, location)

@@ -57,6 +57,7 @@ def main() -> None:
     parser.add_argument('--sfnt-face-index', type=int, help='Select a zero-based TTC/OTC face; original collection is retained')
     parser.add_argument('--sfnt-structure', action='store_true',
                         help='Audit directory order, search fields, padding and overlaps')
+    parser.add_argument('--pdf-source', action='store_true', help='Inspect physical xref/trailer links without a PDF backend')
     defaults = AnatomyLimits()
     for definition in fields(defaults):
         parser.add_argument('--'+definition.name.replace('_', '-'), type=int, default=getattr(defaults, definition.name))
@@ -64,12 +65,13 @@ def main() -> None:
     limits = AnatomyLimits(**{definition.name: getattr(args, definition.name) for definition in fields(defaults)})
     snapshot = inspect_binary(args.source, container=args.container, parse_xml=not args.opaque_xml,
                               capture=not args.no_payloads, sfnt_checksums=args.sfnt_checksums,
-                              sfnt_face_index=args.sfnt_face_index, sfnt_structure=args.sfnt_structure, limits=limits)
+                              sfnt_face_index=args.sfnt_face_index, sfnt_structure=args.sfnt_structure,
+                              pdf_source=args.pdf_source, limits=limits)
     comparison = None
     if args.compare is not None:
         result = inspect_binary(args.compare, container=args.container, parse_xml=not args.opaque_xml,
                                 sfnt_checksums=args.sfnt_checksums, sfnt_face_index=args.sfnt_face_index,
-                                sfnt_structure=args.sfnt_structure, limits=limits)
+                                sfnt_structure=args.sfnt_structure, pdf_source=args.pdf_source, limits=limits)
         comparison = compare_snapshots(snapshot, result)
     save_dissection(snapshot, args.output, comparison)
     print(f'Dissected {snapshot.container}: {len(snapshot.items)} items; {args.output / "inventory.json"}')

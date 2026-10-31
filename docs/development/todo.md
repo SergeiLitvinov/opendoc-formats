@@ -149,15 +149,25 @@
 ## Приоритет P1: исходная структура PPTX (OF06)
 
 - Расширить source export за принятые текстовые runs и явные Box frames:
-  принять placeholder overrides, перестройку parent frames с сохранением всех
+  Расширить placeholder overrides за однозначные полные layout/master frames:
+  групповые/неоднозначные цепочки и полное редактирование partial frames.
+  Принять перестройку parent frames с сохранением всех
   детей, cases без однозначного обратного размера и полный native precision profile.
-  Добавить endpoints для связанных коннекторов, grid/row geometry при resize
-  таблиц/диаграмм, правки стилей, notes, содержимого изображений и структуры;
-  поддержать fields/разрывы, пустые scopes и изменения run topology.
+  Добавить endpoints для связанных коннекторов, поворот/сложные chart frames,
+  chartEx, редактирование chart data и синхронизацию встроенной книги,
+  поворот таблиц, auto/minimum row heights и полный reflow после resize;
+  правки стилей, notes, содержимого изображений и структуры;
+  Подключить опубликованный Model API C-IMAGE-RECT-01 для signed/outside source
+  rectangles и принять production-проекции;
+  расширить source crop за обычные stretch viewports,
+  включая tile/fill rectangles и неоднозначные SVG/linked/AlternateContent scopes.
+  Поддержать изменение/вставку/удаление fields и разрывов, пустые scopes
+  и изменение run topology.
   Расширить cell edits за принятые text slots и один plain run в пустом абзаце:
   принять новые paragraph/run структуры, сложные native defaults и полный reflow.
-  Нормализовать физические merge continuations PPTX в логическую сетку Model
-  для межформатных маршрутов с сохранением исходных cell bindings.
+  Расширить логическую проекцию за проверенные прямоугольные merge-топологии:
+  принять явную политику для hidden continuation content и повреждённых flags,
+  не угадывая структуру и не теряя физические данные.
   Сохранять ZIP storage metadata и принять полный профиль подписей.
   Восстанавливать сохранённый original package и связи для остальных изменений;
   моделировать редактируемую иерархию групп,

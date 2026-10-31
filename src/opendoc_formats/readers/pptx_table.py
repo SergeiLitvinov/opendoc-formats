@@ -8,6 +8,7 @@ from typing import Any
 import opendoc_model as od
 from opendoc_model.document_model import Paragraph, Table, TableCell, TableRow
 
+from opendoc_formats.ooxml.pptx_table_grid import merge_origins
 from opendoc_formats.readers.pptx_paragraph import frame_metadata, paragraph_metadata
 from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 
@@ -55,6 +56,44 @@ def read_table(
     grid = element.find(A + "tblGrid")
     if grid is not None:
         properties["column_widths_pt"] = [float(column.get("w", "0")) / 12700 for column in cancellable_items(grid)]
+        if all(width > 0 for width in properties['column_widths_pt']):
+            properties['grid_widths_twips'] = [max(1, round(width * 20)) for width in properties['column_widths_pt']]
+    origins = merge_origins(element)
+    hidden = origins is not None and any(
+        (ri, ci) not in origins and any(
+            not isinstance(run, od.TextRun) or run.text or run.link
+            for block in cell.blocks if isinstance(block, Paragraph) for run in block.content
+        ) for ri, row in enumerate(rows) for ci, cell in enumerate(row.cells)
+    )
+    if origins is None or hidden:
+        properties['opendoc_formats.pptx_table_grid'] = {
+            'version': 1, 'layout': 'physical-unverified',
+            'reason': 'hidden-continuation-content' if hidden else 'unproved-merge-topology',
+        }
+    else:
+        owners = {}
+        for ri, ci in cancellable_items(sorted(origins)):
+            cell = rows[ri].cells[ci]
+            for y in range(ri, ri + cell.row_span):
+                for x in range(ci, ci + cell.column_span):
+                    checkpoint()
+                    owners[y, x] = ri, ci
+        continuations = []
+        for ri, row in enumerate(cancellable_items(rows)):
+            logical = []
+            for ci, cell in enumerate(cancellable_items(row.cells)):
+                if (ri, ci) in origins:
+                    logical.append(cell)
+                else:
+                    owner = owners[ri, ci]
+                    continuations.append({
+                        'row': ri, 'column': ci, 'owner_row': owner[0], 'owner_column': owner[1],
+                        'properties': dict(cell.properties),
+                    })
+            row.cells = logical
+        properties['opendoc_formats.pptx_table_grid'] = {'version': 1, 'layout': 'logical-origins'}
+        if continuations:
+            properties['opendoc_formats.pptx_continuations'] = continuations
     return Table(rows, box=box, properties=properties)
 
 

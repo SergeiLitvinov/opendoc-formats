@@ -9,6 +9,7 @@ from typing import Any
 import opendoc_model as od
 from opendoc_model.units import EMU_PER_POINT, ooxml_angle_to_degrees
 
+from opendoc_formats.ooxml.pptx_placeholders import inherited_source_frame
 from opendoc_formats.ooxml.pptx_source_xml import SourceRoots
 from opendoc_formats.ooxml.pptx_transforms import _apply_transform, _group_child_transform, _Transform
 from opendoc_formats.support.cancellation import cancellable_items, checkpoint
@@ -26,9 +27,12 @@ class GeometryBinding:
     xfrm: Any
     parent: _Transform
     original: od.Box
+    override: bool = False
 
 
-def geometry_bindings(document: od.DocumentModel, roots: SourceRoots | None = None) -> list[GeometryBinding]:
+def geometry_bindings(
+    document: od.DocumentModel, roots: SourceRoots | None = None, *, placeholders: bool = False,
+) -> list[GeometryBinding]:
     graph = document.package
     if graph is None or graph.format != 'pptx':
         return []
@@ -53,8 +57,12 @@ def geometry_bindings(document: od.DocumentModel, roots: SourceRoots | None = No
                 continue
             shape = shapes[0]
             xfrm = shape.find(P+'xfrm') if shape.tag == P+'graphicFrame' else shape.find(P+'spPr/'+A+'xfrm')
+            override = False
+            if xfrm is None and placeholders:
+                xfrm = inherited_source_frame(shape, part, graph, roots)
+                override = xfrm is not None
             if xfrm is None or xfrm.find(A+'off') is None or xfrm.find(A+'ext') is None:
-                continue  # inherited placeholder frames require a separate native override policy
+                continue
             parent, valid = _Transform(), True
             for group in reversed(list(shape.iterancestors(P+'grpSp'))):
                 checkpoint()
@@ -91,11 +99,11 @@ def geometry_bindings(document: od.DocumentModel, roots: SourceRoots | None = No
             if key in seen:
                 raise ValueError('Repeated native geometry owner')
             seen.add(key)
-            result.append(GeometryBinding(si, bi, part, shape, xfrm, parent, original))
+            result.append(GeometryBinding(si, bi, part, shape, xfrm, parent, original, override))
     return result
 
 
-def project_geometry(binding: GeometryBinding, target: od.Box) -> bool:
+def project_geometry(binding: GeometryBinding, target: od.Box, *, frame_resize: bool = False) -> bool:
     """Set native off/ext/rot at native integer precision; untouched frames remain byte-equivalent."""
     original = binding.original
     fields = ('x', 'y', 'width', 'height', 'rotation')
@@ -107,7 +115,7 @@ def project_geometry(binding: GeometryBinding, target: od.Box) -> bool:
         raise ValueError('Connected connector geometry requires an explicit endpoint projection')
     if binding.shape.tag == P+'graphicFrame' and any(
         not math.isclose(getattr(target, name), getattr(original, name), abs_tol=1e-9, rel_tol=0)
-        for name in ('width', 'height', 'rotation')
+        for name in (('rotation',) if frame_resize else ('width', 'height', 'rotation'))
     ):
         raise ValueError('GraphicFrame resizing requires native table/chart geometry projection; translation only')
     matrix = binding.parent.matrix
@@ -153,4 +161,6 @@ def project_geometry(binding: GeometryBinding, target: od.Box) -> bool:
         if abs(rotation) > 2_147_483_647:
             raise ValueError('Native rotation exceeds the accepted integer-angle profile')
         binding.xfrm.set('rot', str(rotation))
+    if binding.override:
+        binding.shape.find(P+'spPr').insert(0, binding.xfrm)
     return True

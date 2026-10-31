@@ -13,6 +13,18 @@
 
 ## Доступные контракты
 
+### C-IMAGE-RECT-01: исходный прямоугольник изображения вне bounds
+
+Статус: Model реализует [контракт](image-source-rectangle-contract.md) в рабочей
+копии; изолированный consumer-набор API/JSON/лимитов и native prototype пройден.
+Основной pin не менялся, подключение опубликованного API ещё требуется.
+PowerPoint сохраняет signed srcRect,
+который текущий ImageCrop не представляет. Formats сохраняет native attributes
+как opaque и выдаёт located диагностику; парсинг и проекция остаются в Formats.
+Draft предоставляет общий optional source rectangle, официальный codec/лимиты
+и явную миграцию ImageCrop. [Потребительские доказательства](image-source-rect-consumer-evidence.json)
+не означают полного принятия всех production writers или выпуска Model.
+
 ### C-TEXT-LAYOUT-01/02: позиции глифов, семантический текст и пакетная запись
 
 Статус: контракты включены в официальный Model 0.19.0; пройдена конечная

@@ -10,6 +10,7 @@ import opendoc_model as od
 
 from opendoc_formats.errors import InvalidDocumentError
 from opendoc_formats.ooxml.pptx_source_xml import SourceRoots
+from opendoc_formats.ooxml.pptx_text_slots import TextSlot, matched_slots, paragraph_slots
 from opendoc_formats.support.cancellation import cancellable_items, checkpoint
 
 KEY = 'opendoc_formats.pptx_source_text'
@@ -19,6 +20,7 @@ P = '{http://schemas.openxmlformats.org/presentationml/2006/main}'
 
 def source_bindings(
     document: od.DocumentModel, roots: SourceRoots | None = None,
+    *, structured: bool = False,
 ) -> list[tuple[int, int, int, str, Any]]:
     """Bind only uniquely identified text shapes with exact, simple native run topology."""
     graph = document.package
@@ -46,21 +48,17 @@ def source_bindings(
             if len(shapes) != 1:
                 continue
             paragraphs = shapes[0].findall(P+'txBody/'+A+'p')
-            slots, supported = [], True
+            native_slots, supported = [], True
             for pi, paragraph in enumerate(cancellable_items(paragraphs)):
-                for child in cancellable_items(paragraph):
-                    if child.tag in {A+'pPr', A+'endParaRPr'}:
-                        continue
-                    if child.tag != A+'r' or len(child.findall(A+'t')) != 1:
-                        supported = False
-                        break
-                    text = child.find(A+'t')
-                    if text.text or child.find(A+'rPr/'+A+'hlinkClick') is not None:
-                        slots.append(text)
+                parsed = paragraph_slots(paragraph, breaks=structured, fields=structured)
+                if parsed is None:
+                    supported = False
+                    break
+                native_slots.extend(parsed)
                 if pi < len(paragraphs)-1:
-                    slots.append(None)  # Model-only paragraph separator cannot be edited through a:t
-            if (not supported or len(slots) != len(block.content)
-                    or any(not isinstance(run, od.TextRun) for run in block.content)):
+                    native_slots.append(TextSlot(literal='\n' if structured else None))
+            slots = matched_slots(native_slots, block.content) if supported else None
+            if slots is None:
                 continue
             for ri, node in enumerate(slots):
                 if node is None:
@@ -75,24 +73,40 @@ def source_bindings(
 
 def source_digest(
     document: od.DocumentModel, *, limits: od.DocumentLimits | None = None, geometry: bool = True, tables: bool = True,
+    table_geometry: bool = False,
+    image_crops: bool = False,
+    structured_text: bool = False,
+    placeholder_geometry: bool = False,
 ) -> str:
     # Normalize through the official Model codec before hashing. Mask only the
     # text slots the native route can project; every other edit invalidates it.
     clone = deepcopy(document)
     clone.metadata.pop(KEY, None)
     roots = SourceRoots(limits)
-    for si, bi, ri, _part, _node in source_bindings(clone, roots):
+    for si, bi, ri, _part, _node in source_bindings(clone, roots, structured=structured_text):
         checkpoint()
         clone.sections[si].blocks[bi].content[ri].text = ''
     if geometry:
         from opendoc_formats.ooxml.pptx_source_geometry import geometry_bindings
 
-        for binding in geometry_bindings(clone, roots):
+        for binding in geometry_bindings(clone, roots, placeholders=placeholder_geometry):
+            if image_crops:
+                from opendoc_formats.ooxml.pptx_crop import bind_image_crop
+
+                crop = bind_image_crop(binding, clone.sections[binding.section].blocks[binding.block], clone)
+                if crop is not None:
+                    crop.mask()
+            if table_geometry:
+                from opendoc_formats.ooxml.pptx_source_table_grid import bind_table_grid
+
+                grid = bind_table_grid(binding, clone.sections[binding.section].blocks[binding.block])
+                if grid is not None:
+                    grid.mask()
             clone.sections[binding.section].blocks[binding.block].box = binding.original
     if tables:
         from opendoc_formats.ooxml.pptx_source_cells import cell_bindings
 
-        for cell in cell_bindings(clone, roots):
+        for cell in cell_bindings(clone, roots, fields=structured_text):
             if cell.index is None:
                 cell.paragraph.content = []
             else:
@@ -102,12 +116,14 @@ def source_digest(
 
 
 def remember_source_text(document: od.DocumentModel, *, limits: od.DocumentLimits | None = None) -> None:
-    bindings = source_bindings(document, SourceRoots(limits))
+    bindings = source_bindings(document, SourceRoots(limits), structured=True)
     if any(document.sections[si].blocks[bi].content[ri].text != (node.text or '') for si, bi, ri, _part, node in bindings):
         raise InvalidDocumentError('Imported PPTX source text does not match its native binding')
     from opendoc_formats.ooxml.pptx_source_cells import cell_bindings
 
-    if any(cell.text() != (cell.node.text or '') for cell in cell_bindings(document, SourceRoots(limits))
+    if any(cell.text() != (cell.node.text or '') for cell in cell_bindings(document, SourceRoots(limits), fields=True)
            if cell.index is not None):
         raise InvalidDocumentError('Imported PPTX cell text does not match its native binding')
-    document.metadata[KEY] = {'version': 3, 'digest': source_digest(document, limits=limits)}
+    document.metadata[KEY] = {'version': 8, 'digest': source_digest(
+        document, limits=limits, table_geometry=True, image_crops=True, structured_text=True, placeholder_geometry=True,
+    )}

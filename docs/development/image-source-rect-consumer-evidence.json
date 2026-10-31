@@ -1,0 +1,126 @@
+{
+  "scope": "Isolated draft C-IMAGE-RECT-01 public API and finite native prototype; production Model pin unchanged",
+  "model_candidate": {
+    "model_source_tree_sha256": "146a0af5ca7a0d4474794bea3c70923388a5960bb8e6c9b2eb83347b24f4337e",
+    "files": 52,
+    "published": false,
+    "source_untouched": true,
+    "version": "0.19.0 unpublished working-copy candidate",
+    "wheel_sha256": "c59ba90b6fd9b8fa2ce6f0f9cb7c60a049186190f9821cbabaf99aa914e61815"
+  },
+  "formats_candidate": {
+    "version": "0.42.0 working copy",
+    "wheel_sha256": "b07ff23cd879c309c6e759711921dfc38d5877287953a50b675aeb5fd38c1a68"
+  },
+  "consumer": {
+    "candidate_only": true,
+    "production_api_adopted": false,
+    "json_cycles": 2,
+    "unknown_fields_detached": true,
+    "selected_quota_atomic": true,
+    "crop_conflict_checked": true,
+    "setter_migration_checked": true,
+    "production_guard_checked": true,
+    "changed_parts": [
+      "ppt/slides/slide1.xml"
+    ],
+    "target": {
+      "consumer_probe": {
+        "nested": [
+          1,
+          2
+        ]
+      },
+      "left": -0.26667,
+      "top": 0.26667,
+      "right": 0.86667,
+      "bottom": 0.86667
+    },
+    "input_model_unchanged": true,
+    "resources_unchanged": true,
+    "box_unchanged": true
+  },
+  "native": {
+    "application": "Microsoft PowerPoint 16.0",
+    "dpi": 108,
+    "image_inspected": true,
+    "fixture": "tests.writers.test_pptx_source_crop.own_picture",
+    "reference": "tools/pptx_crop_powerpoint_acceptance.ps1 -Stage outset -OutsetLeftPt -24",
+    "results": {
+      "mupdf": {
+        "dimensions": [
+          1080,
+          810
+        ],
+        "all_pixels_equal": true,
+        "decoded_rgb_sha256": "81b9637e4747f1f6690f2c673e54eecf7130225bb90f595a5e5048044663570c"
+      },
+      "poppler": {
+        "dimensions": [
+          1080,
+          810
+        ],
+        "all_pixels_equal": true,
+        "decoded_rgb_sha256": "dc73f8d4d431ce19559ff0d7ff4df477d4c8741c11dc502b0e18d5d2ec977ba1"
+      }
+    }
+  },
+  "reproduction": {
+    "script": "tools/image_rect_consumer.py",
+    "mode": "-I in separate candidate environment",
+    "source": "Native own outset at CropLeft=-12pt",
+    "target": "source rect (-.26667,.26667,.86667,.86667)",
+    "model_source": "Unmodified read-only copy of C:/project/opendoc/src; builds inside Formats workspace"
+  },
+  "production_fix": {
+    "before": "HTML succeeded with no source-rect issue while dropping its semantics",
+    "after": "Default-false ExporterSpec.supports_image_source_rects refuses before backend/output mutation; JSON retains opaque/known carrier",
+    "schema_ownership": "Guard detects presence only; no Model codec copied into Formats"
+  },
+  "checks": {
+    "guard_test_file": "tests/test_image_source_rect_export.py",
+    "initial_guard_and_text_layout_cases_passed": 37,
+    "production_api_adopted": false,
+    "full_project_run": false,
+    "regression_command": "python -m pytest tests/test_api.py tests/test_full_contract.py tests/test_import_limits.py tests/test_image_source_rect_export.py tests/test_text_layout_export.py tests/writers/test_web_tex_export_cancellation.py tests/writers/test_office_export_cancellation.py -q --tb=short",
+    "regression_passed": 171,
+    "regression_seconds": 211.03,
+    "ruff": "passed",
+    "configured_strict_mypy": "41 files passed",
+    "boundary_audit_modules": 232,
+    "docs": "generated and strict build passed",
+    "reviewed_license_inventory": "unchanged lockfile matches inventory",
+    "production_release_archives": "0.42.0 wheel/sdist metadata, licenses, resources and required modules verified",
+    "production_minimal_pptx_smoke": {
+      "passed": true,
+      "python": "3.12.16",
+      "script": "tools/pptx_package_smoke.py",
+      "model": "published release opendoc-model==0.19.0",
+      "absent": [
+        "fontTools",
+        "docx",
+        "pymupdf",
+        "pypdf",
+        "bs4"
+      ],
+      "installed": [
+        "opendoc-formats==0.42.0",
+        "opendoc-model==0.19.0",
+        "python-pptx==1.0.2",
+        "lxml==6.1.3",
+        "Pillow==12.3.0",
+        "typing-extensions==4.16.0",
+        "xlsxwriter==3.3.1"
+      ],
+      "inventory_scope": "Reviewed uv.lock unchanged; smoke additionally resolves xlsxwriter 3.3.1, lock pins 3.3.0"
+    },
+    "main_environment_confirmed": "Model 0.19.0, ImageSourceRect absent; pin and main environment unchanged",
+    "model_agent_notified": true
+  },
+  "limits": [
+    "Only a consumer prototype projects the candidate DTO; no built-in production writer claims support",
+    "Published opendoc-model==0.19.0 and main environment remain unchanged",
+    "Finite native acceptance on own raster signed viewport, not all Model/native combinations",
+    "No Model release, commit, push, Pages deployment or dependency change requested/performed"
+  ]
+}

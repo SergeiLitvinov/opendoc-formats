@@ -62,6 +62,10 @@ class PptxDiagnostics:
         }
         for node in slide._element.iter():
             checkpoint()
+            if node.tag == A+'fld':
+                self.record('pptx.field', 'cached-field-text',
+                            'Only cached field text is projected; native field remains opaque in source package',
+                            node, state=PreservationState.OPAQUE)
             if node.tag in features:
                 self.record(*features[node.tag], node)
 
