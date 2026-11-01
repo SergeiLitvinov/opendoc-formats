@@ -1,0 +1,491 @@
+{
+  "scope": "Bounded single ASCIIHexDecode/ASCII85Decode source xref/ObjStm; no filter chains or renderer adoption",
+  "specifications": [
+    "https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/pdfreference1.2.pdf#page=50",
+    "https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/pdfreference1.2.pdf#page=51"
+  ],
+  "runtime": {
+    "opendoc-formats": "0.42.0",
+    "opendoc-model": "0.19.0",
+    "pymupdf": "1.28.2",
+    "pypdf": "6.19.0"
+  },
+  "tests": {
+    "ascii_cases": 119,
+    "pdf_anatomy_regressions": 704
+  },
+  "fixture_producer": "Own byte-level PDF with independent bytes.hex/base64.a85encode forward encodings",
+  "comparisons": [
+    {
+      "filter": "ASCIIHexDecode",
+      "kind": "xref",
+      "whitespace_hex": "",
+      "trailing_encoded_bytes": 0,
+      "source_sha256": "37b7792aa08167ddf03a6eb916cf6c711a788486d042da4f76de6921f8c9b1dc",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "payload_sha256": "d3d36fd4727acfc107195348ffb44c6e3aea9f41fcd7f168c8eded67e4b72af6",
+      "encoded_data_end": 517,
+      "encoded_end": 517,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "pypdf_warnings": []
+    },
+    {
+      "filter": "ASCIIHexDecode",
+      "kind": "xref",
+      "whitespace_hex": "",
+      "trailing_encoded_bytes": 8,
+      "source_sha256": "3713f56b33b311f941fe55ad40f746f0ee53f89fb3b2c8727e8dcfcb8b1e19ea",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "payload_sha256": "8b38d4f901a47e95598123ca5a84cafeafa4311d1950d2a01115f7143ace62ea",
+      "encoded_data_end": 518,
+      "encoded_end": 526,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "pypdf_warnings": []
+    },
+    {
+      "filter": "ASCIIHexDecode",
+      "kind": "xref",
+      "whitespace_hex": "20090d0a0c",
+      "trailing_encoded_bytes": 0,
+      "source_sha256": "c54bedddaecb88b9848c36a8f4094bdab2e282215644b868f7c246fcbb9f28d6",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "payload_sha256": "7dbfebb9143f9fef262d5ff75b3a5dcaed31470dcacf2f2c0275a6571d3e2f66",
+      "encoded_data_end": 1003,
+      "encoded_end": 1003,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "pypdf_warnings": []
+    },
+    {
+      "filter": "ASCIIHexDecode",
+      "kind": "xref",
+      "whitespace_hex": "20090d0a0c",
+      "trailing_encoded_bytes": 8,
+      "source_sha256": "62181a6e82a0a4c4a20dd7903095a7963af7f8d13eb44c4d43c871bc07f464e3",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "payload_sha256": "009b3bfd77af75211f6e5abe3c90e9aa4868177f566a61a2c587bd006efb8aad",
+      "encoded_data_end": 1003,
+      "encoded_end": 1011,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "pypdf_warnings": []
+    },
+    {
+      "filter": "ASCIIHexDecode",
+      "kind": "xref",
+      "whitespace_hex": "00",
+      "trailing_encoded_bytes": 0,
+      "source_sha256": "edec017cc09a4e47b9ffde2d38043330cf2bfa19af0dceea6599461440d874a4",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "payload_sha256": "d39146936c88d63b980fde21649eb00f34b6c470784b7392e4fc6ebf34952994",
+      "encoded_data_end": 615,
+      "encoded_end": 615,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": false,
+      "pypdf_error": {
+        "type": "PdfReadError",
+        "message": "Trailer cannot be read: Invalid hexadecimal character in ASCIIHexDecode stream: Non-hexadecimal digit found"
+      },
+      "pypdf_warnings": []
+    },
+    {
+      "filter": "ASCIIHexDecode",
+      "kind": "xref",
+      "whitespace_hex": "00",
+      "trailing_encoded_bytes": 8,
+      "source_sha256": "9274b56e2ae8f74d2ff912ee5f3b13b9c100c799737ac5b02e18f674f083a2f1",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "payload_sha256": "8bc19ee2d221d17a6ecd583d2c53aa239c6ca5683134e592ec2d6de97bc400d4",
+      "encoded_data_end": 615,
+      "encoded_end": 623,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": false,
+      "pypdf_error": {
+        "type": "PdfReadError",
+        "message": "Trailer cannot be read: Invalid hexadecimal character in ASCIIHexDecode stream: Non-hexadecimal digit found"
+      },
+      "pypdf_warnings": []
+    },
+    {
+      "filter": "ASCIIHexDecode",
+      "kind": "ObjStm",
+      "whitespace_hex": "",
+      "trailing_encoded_bytes": 0,
+      "source_sha256": "698ebc46843e84bf9ea6cd63d1e63fa74a54b10cf2113f489c21f5ab7bb6657a",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "payload_sha256": "f09e45c3850af9ea7318c9448f82bcdf7fe839b0e841d246b9a6cf2cfad36a52",
+      "encoded_data_end": 439,
+      "encoded_end": 439,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "pypdf_warnings": []
+    },
+    {
+      "filter": "ASCIIHexDecode",
+      "kind": "ObjStm",
+      "whitespace_hex": "",
+      "trailing_encoded_bytes": 8,
+      "source_sha256": "676d7aa7bb01d90509448c8167d0c617c4070de6ed9417870c0443a597362627",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "payload_sha256": "05c78c7866074f35791c50966af0035a761a345c303ab94ace7af46eee100a1d",
+      "encoded_data_end": 439,
+      "encoded_end": 447,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "pypdf_warnings": []
+    },
+    {
+      "filter": "ASCIIHexDecode",
+      "kind": "ObjStm",
+      "whitespace_hex": "20090d0a0c",
+      "trailing_encoded_bytes": 0,
+      "source_sha256": "c0fe7e06633f461241c3bec29586783d425d06009ddfbf2ed16eddbcec446ef7",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "payload_sha256": "6349bd4d06bd72a69e9058cb1b56e5a6197cc83b9400e8b1c0a21ab0af1c119e",
+      "encoded_data_end": 1264,
+      "encoded_end": 1264,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "pypdf_warnings": []
+    },
+    {
+      "filter": "ASCIIHexDecode",
+      "kind": "ObjStm",
+      "whitespace_hex": "20090d0a0c",
+      "trailing_encoded_bytes": 8,
+      "source_sha256": "c58a44411e182f968e623b40b275af815908500a58e4df5a60b3420e059e0177",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "payload_sha256": "a110f2a560df996d14d4ab8e8a485fe461851f673d1fecc7a065d82009372d95",
+      "encoded_data_end": 1265,
+      "encoded_end": 1273,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "pypdf_warnings": []
+    },
+    {
+      "filter": "ASCIIHexDecode",
+      "kind": "ObjStm",
+      "whitespace_hex": "00",
+      "trailing_encoded_bytes": 0,
+      "source_sha256": "9de6e6187790615fb37b23af85a57bcd5f55a8f868abaefa50d2d7b73e022c25",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "payload_sha256": "842aa030d797173fff09c486085024f0334f541c7b6cc647050c6663e4391536",
+      "encoded_data_end": 604,
+      "encoded_end": 604,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": false,
+      "pypdf_error": {
+        "type": "PdfStreamError",
+        "message": "Invalid hexadecimal character in ASCIIHexDecode stream: Non-hexadecimal digit found"
+      },
+      "pypdf_warnings": []
+    },
+    {
+      "filter": "ASCIIHexDecode",
+      "kind": "ObjStm",
+      "whitespace_hex": "00",
+      "trailing_encoded_bytes": 8,
+      "source_sha256": "761119a044f966b0ee8632387dc6c9fad31516f6440d0e93782c7df95e77f7ac",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "payload_sha256": "f58ad358903a540049a22af3dac587fe1463e593ec7ee6cdd3e9892a4d68ff74",
+      "encoded_data_end": 604,
+      "encoded_end": 612,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": false,
+      "pypdf_error": {
+        "type": "PdfStreamError",
+        "message": "Invalid hexadecimal character in ASCIIHexDecode stream: Non-hexadecimal digit found"
+      },
+      "pypdf_warnings": []
+    },
+    {
+      "filter": "ASCII85Decode",
+      "kind": "xref",
+      "whitespace_hex": "",
+      "trailing_encoded_bytes": 0,
+      "source_sha256": "4d399c3b95bea2bfee575ec5cda61eda745c15f18670e6f14e106b822d69c04c",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "payload_sha256": "3e8b55f70c876c471c9c2e32e3f1bf5a51f22e2f79716dc7e020a7ebf3d1fc85",
+      "encoded_data_end": 477,
+      "encoded_end": 477,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "pypdf_warnings": []
+    },
+    {
+      "filter": "ASCII85Decode",
+      "kind": "xref",
+      "whitespace_hex": "",
+      "trailing_encoded_bytes": 8,
+      "source_sha256": "60da9e1fdc13ff997e8d7cbe81b7e6d027431ea50068aac589d0a7eea53c99ba",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "payload_sha256": "2e7de067958f9b4c127280987e6511cc28db680bd2b75550a780f9abdc22adaa",
+      "encoded_data_end": 477,
+      "encoded_end": 485,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": false,
+      "pypdf_error": {
+        "type": "PdfReadError",
+        "message": "Trailer cannot be read: Non-Ascii85 digit found: ~"
+      },
+      "pypdf_warnings": [
+        "Ignoring missing Ascii85 end marker."
+      ]
+    },
+    {
+      "filter": "ASCII85Decode",
+      "kind": "xref",
+      "whitespace_hex": "20090d0a0c",
+      "trailing_encoded_bytes": 0,
+      "source_sha256": "df8e0c717ee42a25f4043d4f8908cdd95f5ad6fe62fc355ad635e3174de94415",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "payload_sha256": "5175a11a2be6555484c589b97876be0b38d7e21357f29ce0bca9fddcdc43bad2",
+      "encoded_data_end": 763,
+      "encoded_end": 763,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "pypdf_warnings": []
+    },
+    {
+      "filter": "ASCII85Decode",
+      "kind": "xref",
+      "whitespace_hex": "20090d0a0c",
+      "trailing_encoded_bytes": 8,
+      "source_sha256": "18a26ef7a32bebb92f6b979e7243993a8317bb4a29db1dc8cf1fe3ce38e57cf7",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "payload_sha256": "652c24c59e536064ebdf0d661529c725f447929186457c902736cb4f26edbfb3",
+      "encoded_data_end": 763,
+      "encoded_end": 771,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": false,
+      "pypdf_error": {
+        "type": "PdfReadError",
+        "message": "Trailer cannot be read: Non-Ascii85 digit found: ~"
+      },
+      "pypdf_warnings": [
+        "Ignoring missing Ascii85 end marker."
+      ]
+    },
+    {
+      "filter": "ASCII85Decode",
+      "kind": "xref",
+      "whitespace_hex": "00",
+      "trailing_encoded_bytes": 0,
+      "source_sha256": "59e1a771346adf77d57b1a6ec8d748fd6d8c10f34a67e7ee5c1f9539b120be4e",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "payload_sha256": "7a6600a74ea86f3ca79a09eed7aa012e59ba5c4027982ffff499ac1b6823cb71",
+      "encoded_data_end": 535,
+      "encoded_end": 535,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "pypdf_warnings": []
+    },
+    {
+      "filter": "ASCII85Decode",
+      "kind": "xref",
+      "whitespace_hex": "00",
+      "trailing_encoded_bytes": 8,
+      "source_sha256": "3eb41403acd1150404b769d07539229ce4194f0a851a722851561570031db804",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "payload_sha256": "9533f9ba05a89fee0c6e12d134b97278dac84824c4c33b5b625dc4947b528075",
+      "encoded_data_end": 535,
+      "encoded_end": 543,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": false,
+      "pypdf_error": {
+        "type": "PdfReadError",
+        "message": "Trailer cannot be read: Non-Ascii85 digit found: ~"
+      },
+      "pypdf_warnings": [
+        "Ignoring missing Ascii85 end marker."
+      ]
+    },
+    {
+      "filter": "ASCII85Decode",
+      "kind": "ObjStm",
+      "whitespace_hex": "",
+      "trailing_encoded_bytes": 0,
+      "source_sha256": "78d07193a813502cb42fb6fa594d5e7dd036a1b6966b99aac239aa8274b2752b",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "payload_sha256": "76d668e20ecf616e18964dc75933c9716840fbd007b74f38bf5408da086b3c4f",
+      "encoded_data_end": 377,
+      "encoded_end": 377,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "pypdf_warnings": []
+    },
+    {
+      "filter": "ASCII85Decode",
+      "kind": "ObjStm",
+      "whitespace_hex": "",
+      "trailing_encoded_bytes": 8,
+      "source_sha256": "c175ab7bb053e842f96e4561ed57dd83fbc06912f1b6c1a95ddfd6f38ba8ba48",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "payload_sha256": "f9ad7c61c105ebd7027e9835aaa05aaeb0511848865336ca7c466433deceed4b",
+      "encoded_data_end": 377,
+      "encoded_end": 385,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": false,
+      "pypdf_error": {
+        "type": "ValueError",
+        "message": "Non-Ascii85 digit found: ~"
+      },
+      "pypdf_warnings": [
+        "Ignoring missing Ascii85 end marker."
+      ]
+    },
+    {
+      "filter": "ASCII85Decode",
+      "kind": "ObjStm",
+      "whitespace_hex": "20090d0a0c",
+      "trailing_encoded_bytes": 0,
+      "source_sha256": "5a08780decc67665494c8e87eabc5c98c67c087e4e16852965b192211d06e99b",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "payload_sha256": "4c6edee0ef4a85e0f6c7e75eff8ada2841898c94f3edf5022f9e322c763f52ba",
+      "encoded_data_end": 892,
+      "encoded_end": 892,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "pypdf_warnings": []
+    },
+    {
+      "filter": "ASCII85Decode",
+      "kind": "ObjStm",
+      "whitespace_hex": "20090d0a0c",
+      "trailing_encoded_bytes": 8,
+      "source_sha256": "9b3e687f5247a186e71879f0cd90d4eb64027bae9f44aa4c5c25190fdd1eb26b",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "payload_sha256": "7768c74b6eeb095d62ab3b073e4e2f32e89c5571a9ce024f13e46520d1bd90be",
+      "encoded_data_end": 892,
+      "encoded_end": 900,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": false,
+      "pypdf_error": {
+        "type": "ValueError",
+        "message": "Non-Ascii85 digit found: ~"
+      },
+      "pypdf_warnings": [
+        "Ignoring missing Ascii85 end marker."
+      ]
+    },
+    {
+      "filter": "ASCII85Decode",
+      "kind": "ObjStm",
+      "whitespace_hex": "00",
+      "trailing_encoded_bytes": 0,
+      "source_sha256": "0a537fa73bbae496784aa6c02780e59c9fde24fed798771757c217ab734b4ffa",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "payload_sha256": "1ae576641b49bbf97a9f7b1f6184f8c845bec513b9069de46c93c0463811c4f3",
+      "encoded_data_end": 480,
+      "encoded_end": 480,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "pypdf_warnings": []
+    },
+    {
+      "filter": "ASCII85Decode",
+      "kind": "ObjStm",
+      "whitespace_hex": "00",
+      "trailing_encoded_bytes": 8,
+      "source_sha256": "4b8ce90c2768c13e6fade50eb6a7965f5c858f023c955e4811cfe93f32afddc3",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "payload_sha256": "de21f4e74cc514344e171f9905617883f156a0125e399ebc2f89b53189375068",
+      "encoded_data_end": 480,
+      "encoded_end": 488,
+      "native_full_bytes_equal": true,
+      "mupdf_full_bytes_equal": true,
+      "mupdf_is_repaired": false,
+      "pypdf_full_bytes_equal": false,
+      "pypdf_error": {
+        "type": "ValueError",
+        "message": "Non-Ascii85 digit found: ~"
+      },
+      "pypdf_warnings": [
+        "Ignoring missing Ascii85 end marker."
+      ]
+    }
+  ],
+  "full_pdf_conformance_proven": false,
+  "summary": {
+    "native_full_bytes_equal": 24,
+    "mupdf_full_bytes_equal": 24,
+    "pypdf_full_bytes_equal": 14
+  },
+  "limits": [
+    "pre-append output quota",
+    "xref decoded quota before decoder",
+    "unknown-length ObjStm z expansion bounded",
+    "input-scanning cancellation even for whitespace",
+    "malformed digit/group/overflow/EOD refusal",
+    "atomic CLI late failure"
+  ],
+  "not_proven": [
+    "filter chains",
+    "LZW and other filters",
+    "indirect Length",
+    "arbitrary PDF compatibility",
+    "object ownership or active body resolution"
+  ]
+}

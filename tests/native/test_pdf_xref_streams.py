@@ -114,7 +114,7 @@ def test_single_filter_array_and_explicit_no_prediction():
     (b'', b'[1 4 2]', b'/Index [0 8]', None, InvalidDocumentError),
     (b'', b'[1 4 2]', b'/Index [1 0]', None, InvalidDocumentError),
     (b'', b'[1 4 2]', b'/Index [0]', None, InvalidDocumentError),
-    (b'/DecodeParms << /Predictor 2 /Columns 7 >>', b'[1 4 2]', b'', None, UnsupportedDocumentError),
+    (b'/DecodeParms << /Predictor 3 /Columns 7 >>', b'[1 4 2]', b'', None, UnsupportedDocumentError),
     (b'/F (external)', b'[1 4 2]', b'', None, UnsupportedDocumentError),
     (b'', b'[1 4 2]', b'', b'too short', InvalidDocumentError),
     (b'', b'[1 4 2]', b'', b'\0'*1000000, InvalidDocumentError),

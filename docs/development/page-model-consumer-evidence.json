@@ -1,0 +1,200 @@
+{
+  "scope": "Isolated unpublished C-PAGE-DEFAULTS-01 API/codec and finite DOCX source-mapping prototype",
+  "model_candidate": {
+    "version": "0.19.0",
+    "source_tree_sha256": "f885ff8395d6e5a085cbb8bd52190c9d02ddeb796059fa35ec21b8d067750792",
+    "files": 53,
+    "wheel_sha256": "6fbc88f4c007602b2e4f574b0ec36b4d6b7ed7d96ee1486a671b6778728f4e0e",
+    "published": false,
+    "original_tree_sha256_after": "f885ff8395d6e5a085cbb8bd52190c9d02ddeb796059fa35ec21b8d067750792",
+    "source_untouched": true
+  },
+  "formats_wheel_sha256": "df68a5b332541d1aa9f7f923704af92eceee7e2ca320724631328c5aaf19f23a",
+  "api_checks": [
+    "legacy getter and two official JSON cycles do not add tracking",
+    "partial source, zero, unknown and based computed values survive two official cycles",
+    "same-number assignment stays unknown; explicit same-number acceptance changes certainty",
+    "direct edits detach effective stale states; serialization and partial batches refuse atomically",
+    "stale history, deleting estimate and explicitly resolving before removal remain distinct",
+    "DTO, field, envelope and projection unknown fields survive without getter/codec aliases",
+    "all six missing snapshots, unknown version and opaque carriers refuse without repairs",
+    "contradictory projections and incomplete envelopes refuse without inferring defaults",
+    "invalid certainty/value/basis, bool/nonfinite/negative/zero sizes and consuming margins refuse",
+    "selection and node/byte/depth quotas cover getter/setter/accept/invalidate/codec atomically"
+  ],
+  "source_prototype": [
+    {
+      "name": "missing-size",
+      "source_sha256": "59C79D58D4AE5C05F3516AD3CB12A4DDD246BC23668DF628BF19CBCCA98F34EE",
+      "states": {
+        "source": 4,
+        "unknown": 2
+      },
+      "source_and_unknown_json_cycles": 2,
+      "native_measured_computed_json_cycles": 2,
+      "native_omission_binding_unchanged": true
+    },
+    {
+      "name": "empty-size",
+      "source_sha256": "6E717A2D89A3553531DC429FA6B7688C6FFD004B9147518A071416C2B83400D4",
+      "states": {
+        "source": 4,
+        "unknown": 2
+      },
+      "source_and_unknown_json_cycles": 2,
+      "native_measured_computed_json_cycles": 2,
+      "native_omission_binding_unchanged": true
+    },
+    {
+      "name": "width-only",
+      "source_sha256": "BAA0BB99DD6C0A713432C151B01DC5AA4C9D022DB599E6E464D966B6D5FE819F",
+      "states": {
+        "source": 5,
+        "unknown": 1
+      },
+      "source_and_unknown_json_cycles": 2,
+      "native_measured_computed_json_cycles": 2,
+      "native_omission_binding_unchanged": true
+    },
+    {
+      "name": "height-only",
+      "source_sha256": "A6B0CAEE7B9F816B001CDBE7AE9CEADCE16C217A4B5D96B463DC6C2848B866BD",
+      "states": {
+        "source": 5,
+        "unknown": 1
+      },
+      "source_and_unknown_json_cycles": 2,
+      "native_measured_computed_json_cycles": 2,
+      "native_omission_binding_unchanged": true
+    },
+    {
+      "name": "landscape-only",
+      "source_sha256": "870AC68102D88B47D9919F624B234090EEBB58F21A3A549FE30AFB920EA68716",
+      "states": {
+        "source": 4,
+        "unknown": 2
+      },
+      "source_and_unknown_json_cycles": 2,
+      "native_measured_computed_json_cycles": 2,
+      "native_omission_binding_unchanged": true
+    },
+    {
+      "name": "explicit-landscape",
+      "source_sha256": "9CE2551D94ADF0B2E050D2E37D603DDDB46498D99A5DA762084C77EB32BE3A61",
+      "states": {
+        "source": 6,
+        "unknown": 0
+      },
+      "source_and_unknown_json_cycles": 2,
+      "native_measured_computed_json_cycles": 2,
+      "native_omission_binding_unchanged": true
+    },
+    {
+      "name": "empty-section",
+      "source_sha256": "9B86195A09C92F7EFB695A6F8C0436397CAC3DE1DCE46D8DC0C9CD90BFBB7287",
+      "states": {
+        "source": 0,
+        "unknown": 6
+      },
+      "source_and_unknown_json_cycles": 2,
+      "native_measured_computed_json_cycles": 2,
+      "native_omission_binding_unchanged": true
+    },
+    {
+      "name": "missing-margins",
+      "source_sha256": "A2C8B6DEC10933D97C2458CA77E05A8F701D874B934F446BC35CAFB593F84C13",
+      "states": {
+        "source": 2,
+        "unknown": 4
+      },
+      "source_and_unknown_json_cycles": 2,
+      "native_measured_computed_json_cycles": 2,
+      "native_omission_binding_unchanged": true
+    },
+    {
+      "name": "empty-margins",
+      "source_sha256": "55D5E6ACE150B4DC087E2BF0D2F0A2DE0F70E05598215A1D8190546D34268F55",
+      "states": {
+        "source": 2,
+        "unknown": 4
+      },
+      "source_and_unknown_json_cycles": 2,
+      "native_measured_computed_json_cycles": 2,
+      "native_omission_binding_unchanged": true
+    },
+    {
+      "name": "partial-margins",
+      "source_sha256": "277585B1C84F6F5F1C97461E8E169A330EBE204BF09B94CB42BBB98E7670E5B1",
+      "states": {
+        "source": 3,
+        "unknown": 3
+      },
+      "source_and_unknown_json_cycles": 2,
+      "native_measured_computed_json_cycles": 2,
+      "native_omission_binding_unchanged": true
+    },
+    {
+      "name": "explicit-a4",
+      "source_sha256": "1252FF246D07422F0438DD7A90D378B260BE80C57108162EB093FB78EDB8BFD6",
+      "states": {
+        "source": 6,
+        "unknown": 0
+      },
+      "source_and_unknown_json_cycles": 2,
+      "native_measured_computed_json_cycles": 2,
+      "native_omission_binding_unchanged": true
+    },
+    {
+      "name": "missing-section",
+      "source_sha256": "7D39E8C2502BDF0EEBF7D6C4FCEF9E4A2ED9BF3A3049CCE3EAE8332E63B59908",
+      "states": {
+        "source": 0,
+        "unknown": 6
+      },
+      "source_and_unknown_json_cycles": 2,
+      "native_measured_computed_json_cycles": 2,
+      "native_omission_binding_unchanged": true
+    },
+    {
+      "name": "a4-then-missing",
+      "source_sha256": "D1CAE17C0DBED5A040558ED76E527D0619EA4379B50A4287001F35D630394440",
+      "states": {
+        "source": 10,
+        "unknown": 2
+      },
+      "source_and_unknown_json_cycles": 2,
+      "native_measured_computed_json_cycles": 2,
+      "native_omission_binding_unchanged": true
+    },
+    {
+      "name": "missing-then-a4",
+      "source_sha256": "E2595D8B1A1D09B165A957BB30DA4038E88E1F2E23C7EB2AB2DC11610F37D9A2",
+      "states": {
+        "source": 10,
+        "unknown": 2
+      },
+      "source_and_unknown_json_cycles": 2,
+      "native_measured_computed_json_cycles": 2,
+      "native_omission_binding_unchanged": true
+    },
+    {
+      "name": "a4-then-implicit",
+      "source_sha256": "EBA7992AB6EA4706E459B16764514B2D12D00082DE6426CEDA2446D51FB35C1B",
+      "states": {
+        "source": 6,
+        "unknown": 6
+      },
+      "source_and_unknown_json_cycles": 2,
+      "native_measured_computed_json_cycles": 2,
+      "native_omission_binding_unchanged": true
+    }
+  ],
+  "production_pin_changed": false,
+  "production_api_adopted": false,
+  "not_proven": [
+    "production renderer/writer adoption",
+    "same-number acceptance materialization in DOCX",
+    "external environment freshness",
+    "arbitrary format compatibility"
+  ]
+}

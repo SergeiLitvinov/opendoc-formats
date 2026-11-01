@@ -82,7 +82,8 @@
   подключить вложенный разбор к Anatomy
   с общим бюджетом. Разбирать остальные форматы шрифтов и медиа с контролем
   смещений, размеров и неизвестных полей; не исполнять объекты.
-- Для PDF расширить исходную xref-инспекцию на TIFF Predictor 2, остальные фильтры,
+- Для PDF расширить исходную xref-инспекцию на непринятые фильтры и параметры
+  (включая LZW),
   indirect Length; ObjStm — на indirect N/First/Length, остальные filter/parameter
   профили, nonzero container generations и историческое повторное использование
   номера под другим Type. Разрешать Extends и каждый type-2 occurrence по его
@@ -124,17 +125,15 @@
 - Расширить принятую visible-text проекцию `w:t` на field caches, revisions/opaque
   wrappers и root scopes header/footer/notes; подтвердить контекст при replay raw XML.
   Не выдавать исходный текст native snapshots за нормализованный видимый текст.
-- Завершить визуальную приёмку sparse DOCX после сохранения отсутствующих
-  docDefaults и single-w:t профиля Unicode-пробелов/буквального TAB. Повторить
-  два цикла на 19 оригиналах, сохраняя отдельные стандартные и PDF/A-превью Word.
-  Учитывать невстроенный Arial исходного стандартного PDF, не скрывая расхождения
-  масками, удалением FONT references или отключением embedding.
-  Расширить профиль на смешанные текстовые узлы и другие story contexts;
+- Расширить принятый whitespace/defaults/settings профиль на смешанные
+  текстовые узлы и другие story contexts;
   отдельно принять пустые/частичные docDefaults и правку существующих defaults.
-- Разрешать отсутствующие native page settings явно: у независимого DOCX без
-  `pgSz` импорт подставляет A4, а проверенный Word показывает Letter. Не считать
-  defaults Model доказательством исходной геометрии; согласовать профиль defaults,
-  unknown diagnostics и нативную/межформатную приёмку.
+- Подключить [C-PAGE-DEFAULTS-01](page-geometry-contract.md) после опубликованного
+  API Model и consumer-проверки: общая исходная неопределённость и явное принятие
+  значений, включая то же число, что у placeholder. Принять разрешение geometry
+  среды и межформатный рендер; native omission replay не считать общей семантикой.
+- Расширить page geometry приёмку на другие environments и неохваченные section
+  profiles: mirror/gutter placement, columns/page borders и их взаимодействия.
 - C-FONT-OPAQUE-01: определить и проверить opaque-only font families/variants,
   каскад и пакетные footnotes/endnotes; подтвердить embedding и glyph coverage
   относительно оригинала без удаления FONT references и повышения бюджета LOSS.

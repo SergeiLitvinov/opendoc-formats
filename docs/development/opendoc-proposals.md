@@ -13,6 +13,15 @@
 
 ## Доступные контракты
 
+### C-PAGE-DEFAULTS-01: исходная определённость геометрии страницы
+
+Статус: [контракт](page-geometry-contract.md) реализован в рабочей копии Model;
+неизменённый кандидат прошёл [изолированную consumer-проверку](page-model-consumer-evidence.json).
+Проверены API/codec/квоты и сопоставление 15 исходников с прежними native measurements.
+Production остаётся на опубликованном 0.19.0 без нового API. Formats ещё должен
+подключить общий контракт в reader/writers после выпуска и отдельной нативной приёмки.
+Word defaults и OOXML parsing в Model не переносятся.
+
 ### C-IMAGE-RECT-01: исходный прямоугольник изображения вне bounds
 
 Статус: Model реализует [контракт](image-source-rectangle-contract.md) в рабочей

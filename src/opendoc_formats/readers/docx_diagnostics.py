@@ -126,6 +126,21 @@ def attach_docx_diagnostics(document: Any, model: DocumentModel, source: Path, *
     fragments = _retained_fragments(model)
     graph = model.package
     records: list[PreservationRecord] = []
+    from opendoc_formats.ooxml.page_geometry import unresolved
+
+    for index, section in enumerate(model.sections):
+        checkpoint()
+        missing = unresolved(section)
+        if missing:
+            records.append(PreservationRecord(
+                issue=DiagnosticIssue('docx.page-geometry', IssueSeverity.WARNING,
+                                      'Source omits page declarations; numeric Model values are a projection, '
+                                      'not evidence of source/environment geometry',
+                                      f'{source}!{document.part.partname}#section={index+1}:page-declarations',
+                                      {'unresolved_fields': missing}, 'source-page-unspecified'),
+                state=PreservationState.OPAQUE,
+                provenance=Provenance('docx', str(source), package_part=str(document.part.partname)),
+            ))
 
     def record(feature: str, kept: bool, part: str, pointer: str, object_id: str | None, measurement: dict | None = None) -> None:
         state = PreservationState.OPAQUE if kept else PreservationState.LOST

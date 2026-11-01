@@ -6,7 +6,7 @@ import hashlib
 from typing import TYPE_CHECKING, Any
 
 from opendoc_formats.errors import InvalidDocumentError, ResourceLimitError, UnsupportedDocumentError
-from opendoc_formats.native.pdf_flate import inflate
+from opendoc_formats.native.pdf_stream_decode import decode
 from opendoc_formats.native.pdf_syntax import Name, Parser, Reference, SyntaxBudget
 from opendoc_formats.support.cancellation import checkpoint
 
@@ -65,17 +65,6 @@ def inspect_object_streams(data: bytes, sections: list[dict[str, Any]], limits: 
             raise ResourceLimitError(location+'max_items exceeded by container/members')
         if 'F' in dictionary:
             raise UnsupportedDocumentError(location+'external object streams are not opened')
-        encoding, parameters = dictionary.get('Filter'), dictionary.get('DecodeParms')
-        if isinstance(encoding, list) and len(encoding) == 1:
-            encoding = encoding[0]
-            if isinstance(parameters, list) and len(parameters) == 1:
-                parameters = parameters[0]
-        if encoding is not None and encoding != Name('FlateDecode'):
-            raise UnsupportedDocumentError(location+'object stream filter outside raw/Flate profile')
-        if parameters is not None:
-            if (not isinstance(parameters, dict) or set(parameters)-{'Predictor'}
-                    or type(parameters.get('Predictor', 1)) is not int or parameters.get('Predictor', 1) != 1):
-                raise UnsupportedDocumentError(location+'object stream DecodeParms outside supported profile')
         extends = dictionary.get('Extends')
         if extends is not None and not isinstance(extends, Reference):
             raise InvalidDocumentError(location+'Extends must be an indirect reference')
@@ -92,16 +81,12 @@ def inspect_object_streams(data: bytes, sections: list[dict[str, Any]], limits: 
             raise InvalidDocumentError(location+'Length does not end before endstream/endobj')
         end = closing.pos
         physical = end-offset
-        available = min(limits.max_part_bytes, remaining_bytes-used_bytes-physical)
+        available = remaining_bytes-used_bytes-physical
         if physical > limits.max_part_bytes or available < 0 or start > available:
             raise ResourceLimitError(location+'max_part_bytes/max_total_bytes exceeded')
-        raw = memoryview(data)[encoded_start:encoded_end]
-        if encoding is None:
-            if len(raw) > available:
-                raise ResourceLimitError(location+'raw object stream exceeds byte budget')
-            decoded = bytearray(raw)
-        else:
-            decoded = inflate(raw, available, location)
+        decoded, decode_info = decode(memoryview(data)[encoded_start:encoded_end], dictionary.get('Filter'),
+                                      dictionary.get('DecodeParms'), source_start=encoded_start,
+                                      part_limit=limits.max_part_bytes, byte_limit=available, location=location, budget=budget)
         if start > len(decoded):
             raise InvalidDocumentError(location+'First outside decoded container')
         member_items: list[BinaryItem] = []
@@ -145,15 +130,15 @@ def inspect_object_streams(data: bytes, sections: list[dict[str, Any]], limits: 
         container = memoryview(data)[offset:end]
         details = {'object': number, 'generation': generation, 'offset': offset, 'end': end,
                    'encoded_start': encoded_start, 'encoded_end': encoded_end, 'decoded_bytes': len(decoded),
-                   'first': start, 'members': count, 'filter': 'FlateDecode' if encoding else None,
+                   'first': start, 'members': count,
                    'xref_sections': sorted(source_sections), 'active_resolution': False,
                    'ownership_proven': False, 'extends_resolved': False,
-                   'extends': {'object': extends.object, 'generation': extends.generation} if extends else None}
+                   'extends': {'object': extends.object, 'generation': extends.generation} if extends else None, **decode_info}
         items.append(BinaryItem(f'pdf:source-objstm={offset}', 'pdf-object-stream', len(container),
                                 hashlib.sha256(container).hexdigest(), details=tuple(details.items()),
                                 payload=bytes(container) if capture else None))
         items.extend(member_items)
-        used_bytes += physical+len(decoded)
+        used_bytes += physical+decode_info['decode_work_bytes']
         used_items += count+1
     return tuple(items), {'object_streams_requested': True, 'object_streams_decoded': bool(candidates),
                           'decoded_object_streams': len(candidates), 'object_stream_work_bytes': used_bytes,

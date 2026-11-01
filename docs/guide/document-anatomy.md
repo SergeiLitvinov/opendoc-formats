@@ -579,13 +579,15 @@ snapshot = inspect_binary('source.pdf', pdf_source=True, pdf_decode_xrefs=True, 
 uv run python -m tools.document_anatomy source.pdf --pdf-source --pdf-decode-xrefs --output .opendoc-formats/pdf-source
 ```
 
-Поддержаны прямой `Length`, raw и одиночный `FlateDecode` без предиктора
-(`Predictor=1`) либо с PNG-предиктором (`Predictor=10..15`), `W` с шириной каждого поля 0–8 байт и ненулевой суммой,
+Поддержаны прямой `Length`, raw, одиночный `FlateDecode` без предиктора
+(`Predictor=1`), с TIFF Predictor 2 либо PNG-предиктором (`Predictor=10..15`),
+а также одиночные `RunLengthDecode`, `ASCIIHexDecode`, `ASCII85Decode` без параметров.
+`W` допускает ширину каждого поля 0–8 байт и ненулевую сумму,
 непересекающиеся диапазоны `Index` либо `[0 Size]`. Нулевые ширины получают
 стандартные значения полей. Записи type 0/1 сохраняют generation и free-link/offset;
 type 2 — `object_stream` и `object_stream_index` с generation 0.
 Неизвестный тип остаётся `raw_fields` с `in_use=null`, без выдуманного адреса.
-Правила записей описаны в [ISO 32000-1, 7.5.8](https://opensource.adobe.com/dc-acrobat-sdk-docs/standards/pdfstandards/pdf/PDF32000_2008.pdf).
+Правила записей описаны в [ISO 32000-1, 7.5.8](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf).
 
 Декодированный индекс получает `kind=pdf-xref-stream`. Payload сохраняет исходные
 bytes от заголовка объекта до `endobj`, включая закодированный поток.
@@ -600,18 +602,68 @@ PNG None/Sub/Up/Average/Paeth выбираются по тегу каждой с
 байта и должна делить размер индекса без остатка. Значения по умолчанию — 1/1/8.
 Восстановление выполняется в том же буфере; упакованные компоненты, padding bits
 и многобайтный byte stride сохраняются без обращения к Pillow или PDF-движку.
-Правила строк — в [ISO 32000-1, 7.4.4.4](https://opensource.adobe.com/dc-acrobat-sdk-docs/standards/pdfstandards/pdf/PDF32000_2008.pdf).
+Правила строк — в [ISO 32000-1, 7.4.4.4](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=36).
+
+TIFF Predictor 2 восстанавливает каждую компоненту по предыдущей компоненте
+того же цвета в строке с учётом 1/2/4/8/16 бит. Первое значение каждого цвета
+и padding bits сохраняются; 16-битные значения обрабатываются целиком, включая
+перенос между байтами. Отдельных row tags нет, размер работы равен decoded bytes.
+Восстановление выполняется в том же буфере с отменой внутри длинных строк.
+Правило padding приведено также в [Adobe PDF Reference, 4.8.4](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/pdfreference1.2.pdf#page=54).
+Независимые декодеры не объявляются безусловными эталонами: MuPDF 1.28.2
+обнуляет ненулевой packed padding, pypdf 6.19.0 расходится на части packed/16-bit
+случаев. [Свидетельство](../development/pdf-tiff-evidence.json) сохраняет полные
+побайтные результаты отдельно от совпадения значимых компонент; расхождения не скрываются.
+
+`RunLengthDecode` читает literal runs по 1–128 bytes и повторения по 2–128 bytes;
+128 завершает данные, даже если в физическом Length остались bytes. Байты 128
+внутри literal/repeat payload остаются данными. Расход decoded квоты проверяется
+до каждого добавления, отмена — между ограниченными runs. Нет второй полной
+копии декодированного потока. Пропущенный EOD, неполный run и неверная decoded
+длина дают адресный отказ. `encoded_data_end` — исключительная позиция после EOD,
+`trailing_encoded_bytes` сообщает остаток физического encoded диапазона;
+весь этот диапазон остаётся в source payload и учитывается в byte budget.
+Непустые DecodeParms для RunLengthDecode не принимаются.
+Алгоритм — [ISO 32000-1, 7.4.5](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=37).
+
+`ASCIIHexDecode` принимает обе формы hex digits и дополняет конечный нечётный
+nibble нулём; `>` завершает данные. `ASCII85Decode` принимает полные и частичные
+группы, отдельное `z` для четырёх нулей и окончание `~>`. Переполнение uint32,
+одиночная конечная цифра, `z` внутри группы, недопустимые bytes и отсутствующий
+EOD отвергаются. В обоих фильтрах игнорируются только PDF whitespace, включая
+NUL/form feed; vertical tab не подменяется пробелом. Выход проверяется до append,
+отмена — внутри сканирования, в том числе длинных whitespace runs.
+Позиция EOD и trailing bytes отражаются теми же `encoded_data_end`/
+`trailing_encoded_bytes`; encoded source остаётся неизменным.
+Правила — [Adobe PDF Reference 4.8.1–2](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/pdfreference1.2.pdf#page=50).
+[ASCII evidence](../development/pdf-ascii-evidence.json) сохраняет 24 полных
+сравнения native/MuPDF и фактические результаты pypdf. В проверенном pypdf 6.19.0
+NUL-hex и trailing-ASCII85 дают ошибки, поэтому full-byte agreement с ним — 14/24;
+результаты не исправляются и не объявляются всеобщим conformance.
+
+Поддержаны также цепочки перечисленных фильтров в порядке массива `Filter`.
+`DecodeParms` задаётся согласованным массивом словарей/null; весь план проверяется
+до декодирования. Flate TIFF/PNG работает и на промежуточных стадиях, и в ObjStm.
+`filter_chain` сохраняет порядок, `decode_stages` — размеры, SHA-256 результата
+и работу каждой стадии. `filter` остаётся строкой для одного фильтра и становится
+массивом для цепочки. `input_space=source` обозначает физические координаты первой
+стадии; `stage[n]-output` обозначает координаты внутри результата предыдущей стадии.
+Они не являются смещениями PDF. Каждая стадия расходует общий `max_pdf_tokens`;
+`max_part_bytes` ограничивает каждый промежуточный результат, а `max_total_bytes`
+учитывает физические bytes и сумму выходов всех стадий до удаления PNG-тегов.
+Отмена проверяется внутри декодеров и между стадиями. Неподдержанные фильтры,
+параметры и indirect Length остаются явными отказами.
 
 Размеры и число записей проверяются до распаковки. `max_items` учитывает секции
 и записи, `max_part_bytes` ограничивает физическую секцию и распакованный индекс,
 включая теги PNG-строк до восстановления. `max_total_bytes` суммирует физические
 секции и работу декодирования, включая эти теги. `decoded_bytes`/`decoded_xref_bytes`
 показывают размер готовых записей; `decode_work_bytes`/`xref_decode_work_bytes` —
-размер до удаления PNG-тегов, используемый для квоты.
+сумму выходов стадий до удаления PNG-тегов, используемую для квоты.
 `max_pdf_tokens` и `max_pdf_depth` ограничивают синтаксис и обход ссылок.
 Распаковка выполняется порциями до 64 КиБ с контрольными точками отмены;
 повреждённый zlib, лишние/недостающие decoded bytes и неверные closing keywords
-дают адресный отказ. TIFF Predictor 2, другие фильтры, внешние потоки и indirect Length
+дают адресный отказ. Другие фильтры, внешние потоки и indirect Length
 дают `UnsupportedDocumentError`; dictionary-only режим остаётся доступен.
 
 Это физическая инспекция индекса, а не разрешение активных объектов или проверка
@@ -632,7 +684,8 @@ type 2 ещё не подтверждает наличие и границы в�
 `unresolved_container_numbers`, исходные type-2 occurrences — в
 `compressed_object_references` с xref offset, object number, container и index.
 
-Приняты raw/Flate, прямые неотрицательные `N/First/Length`, generation 0 контейнера,
+Приняты raw/Flate/RunLengthDecode/ASCIIHexDecode/ASCII85Decode,
+прямые неотрицательные `N/First/Length`, generation 0 контейнера,
 директория уникальных положительных object numbers со строго возрастающими
 смещениями от нуля. Проверяется конец потока по Length, ровно N пар до First
 и синтаксис одного объекта в каждом decoded диапазоне. Вложенные stream/obj/endobj
@@ -650,7 +703,7 @@ type 2 ещё не подтверждает наличие и границы в�
 Секции, их записи, контейнеры и члены используют общий `max_items` и
 `max_pdf_tokens/max_pdf_depth`; физические bytes контейнеров и полные decoded
 потоки добавляются к `max_total_bytes`. `max_part_bytes` ограничивает каждый
-контейнер и его распаковку. Неизвестная decoded длина ограничивается внутри Flate,
+контейнер и его распаковку. Неизвестная decoded длина ограничивается внутри каждого decoder,
 отмена проверяется при распаковке, чтении директории и членов. Ошибка не заменяет
 ранее сохранённую dissection; исходный PDF не меняется.
 

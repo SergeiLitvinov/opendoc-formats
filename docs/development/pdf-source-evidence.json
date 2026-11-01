@@ -1,9 +1,9 @@
 {
-  "scope": "Physical PDF classic/hybrid, raw/Flate/PNG xrefs, raw/Flate ObjStm member ranges and effective xref record selection; no object ownership or body resolution",
+  "scope": "Physical PDF classic/hybrid, raw/Flate/TIFF/PNG/RunLength/ASCII xrefs, raw/Flate/TIFF/PNG/RunLength/ASCII and filter pipeline ObjStm ranges and effective xref selection; no ownership/body resolution",
   "platform": "Windows, Python 3.12.16",
   "tests": {
-    "command": "pytest tests/native/test_pdf_xref_state.py tests/native/test_pdf_object_streams.py tests/native/test_pdf_predictors.py tests/native/test_pdf_xref_streams.py tests/native/test_pdf_revisions.py tests/test_anatomy.py -q",
-    "passed": 202
+    "command": "pytest tests/native/test_pdf_filter_pipeline.py tests/native/test_pdf_ascii.py tests/native/test_pdf_runlength.py tests/native/test_pdf_tiff_predictor.py tests/native/test_pdf_predictors.py tests/native/test_pdf_xref_streams.py tests/native/test_pdf_revisions.py tests/native/test_pdf_object_streams.py tests/native/test_pdf_xref_state.py tests/test_anatomy.py -q",
+    "passed": 774
   },
   "independent_reader": "pypdf: page count, compressed metadata, object offsets and object-stream/index agree",
   "fixture": {
@@ -17,7 +17,7 @@
       "opendoc-formats": "0.42.0",
       "opendoc-model": "0.19.0"
     },
-    "wheel_sha256": "a42fe4119075d3cd22d607210ebe86c17eea3797360ca416c9286034a7ffd29e",
+    "wheel_sha256": "211e0778a98f4aeb8f4336fea002f860257a2f2d4237f829d54f976641e750d0",
     "release_artifact": false,
     "isolated_commands_passed": [
       "python -I tools/package_smoke.py",
@@ -38,7 +38,10 @@
     "unknown-length ObjStm Flate output quota",
     "cancellation during Flate/member validation",
     "unchanged CLI destination on late member syntax error",
-    "selected xref records share max_items with physical records and ObjStm members"
+    "selected xref records share max_items with physical records and ObjStm members",
+    "every intermediate filter output charged to total work quota",
+    "per-stage output quota and SHA-256",
+    "aligned DecodeParms and whole-plan validation before decoding"
   ],
   "not_proven": [
     "arbitrary PDF compatibility",
@@ -112,5 +115,8 @@
       "cancellation",
       "CLI source records"
     ]
-  }
+  },
+  "tiff_predictor_evidence": "pdf-tiff-evidence.json",
+  "runlength_evidence": "pdf-runlength-evidence.json",
+  "ascii_evidence": "pdf-ascii-evidence.json"
 }

@@ -5,6 +5,7 @@ import io
 import tempfile
 import zipfile
 from pathlib import Path
+from xml.etree import ElementTree as ET
 
 import opendoc_formats
 from opendoc_formats import read_document, write_document
@@ -48,6 +49,11 @@ def main():
         result = read_document(source)
         assert result.success, result.issues
         model = result.document
+        assert model.metadata['opendoc_formats.docx_settings']['settings_present'] is False
+        assert '__doc_defaults__' not in model.styles
+        assert (model.sections[0].page.width.pt, model.sections[0].page.height.pt) == (612, 792)
+        assert model.sections[0].properties['opendoc_formats.docx_page']['size'] is None
+        assert any(issue.code == 'docx.page-geometry' for issue in result.issues)
         for cycle in (1, 2):
             path = root/f'cycle-{cycle}.json'
             assert write_document(model, path).success
@@ -55,6 +61,13 @@ def main():
             assert result.success, result.issues
             path = root/f'cycle-{cycle}.docx'
             assert write_document(result.document, path).success
+            with zipfile.ZipFile(path) as archive:
+                settings = ET.fromstring(archive.read('word/settings.xml'))
+                styles = ET.fromstring(archive.read('word/styles.xml'))
+                page = ET.fromstring(archive.read('word/document.xml')).find('.//{'+w+'}sectPr')
+            assert len(settings) == 0
+            assert styles.find('{'+w+'}docDefaults') is None
+            assert page is not None and page.find('{'+w+'}pgSz') is None and page.find('{'+w+'}pgMar') is None
             assert read_docx(path).plain == expected
             result = read_document(path)
             assert result.success, result.issues

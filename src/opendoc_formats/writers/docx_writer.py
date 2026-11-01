@@ -21,15 +21,15 @@ from opendoc_model.document_model import (
 from opendoc_model.limits import DocumentLimits
 
 from opendoc_formats.docx_profile import DocxProfile
-from opendoc_formats.errors import OperationCancelledError
+from opendoc_formats.errors import InvalidDocumentError, OperationCancelledError, ResourceLimitError
 from opendoc_formats.fonts import FontResolver
 from opendoc_formats.fonts.docx_embedding import embed_docx_fonts, verify_docx_font_embedding
 from opendoc_formats.ooxml.headings import retain_derived_styles
-from opendoc_formats.ooxml.package import restore_package_graph
+from opendoc_formats.ooxml.package import RELATIONSHIP_TYPE, restore_package_graph
 from opendoc_formats.support.cancellation import cancellable_items, cancellation_scope, checkpoint
 from opendoc_formats.writers.color_preflight import preflight_colors
 from opendoc_formats.writers.docx_drawing_writer import write_image
-from opendoc_formats.writers.docx_section_writer import configure_section, section_start_type
+from opendoc_formats.writers.docx_section_writer import add_section, configure_section, section_start_type
 from opendoc_formats.writers.docx_style_writer import write_styles
 from opendoc_formats.writers.docx_table_writer import write_table
 from opendoc_formats.writers.docx_text_writer import add_paragraph, write_formula, write_paragraph_content
@@ -173,9 +173,13 @@ def _write_validated_docx(
     fit_virtual_tables(document, limits=limits)
     preflight_colors(document, report, target="docx")
     target = Document()
-    from opendoc_formats.ooxml.docx_defaults import restore_absent_defaults
+    from opendoc_formats.ooxml.docx_defaults import restore_absent_defaults, restore_absent_settings
 
     restore_absent_defaults(target, document, report)
+    try:
+        restore_absent_settings(target, document, report, limits=limits)
+    except (InvalidDocumentError, ResourceLimitError, ValueError) as error:
+        report.add(IssueSeverity.ERROR, 'docx.settings', str(error), 'package.settings')
     if not report.success:
         return report
     _write_metadata(target, document.metadata)
@@ -195,9 +199,9 @@ def _write_validated_docx(
         if section_index == 0:
             target_section = target.sections[0]
         else:
-            target_section = target.add_section(section_start_type(source_section, WD_SECTION))
+            target_section = add_section(target, section_start_type(source_section, WD_SECTION), sections[section_index-1])
         configure_section(target_section, source_section, document, report, section_index, counters,
-                          partial(_write_blocks, limits=limits))
+                          partial(_write_blocks, limits=limits), limits=limits)
         _write_blocks(target, source_section.blocks, document, report, f"sections[{section_index}]", counters, limits=limits)
 
     embed_docx_fonts(target, document, report)
@@ -312,6 +316,11 @@ def _restore_package_graph(
         part._opendoc_source_part: part for part in cancellable_items(target.part.package.iter_parts())
         if getattr(part, "_opendoc_source_part", None)
     }
+    from opendoc_formats.ooxml.docx_defaults import SETTINGS_KEY
+
+    settings = graph.related_part(graph.root, RELATIONSHIP_TYPE['settings']) if graph is not None else None
+    if settings is not None and document.metadata.get(SETTINGS_KEY) is not None:
+        source_parts[settings.name] = target.part._settings_part
     relationship_namespace = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
     for part in target.part.package.iter_parts():
         checkpoint()

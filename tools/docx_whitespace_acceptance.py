@@ -63,6 +63,8 @@ def original(name, attributes, text):
 
 
 def verify_native(root, *, pdfa=False):
+    from importlib.metadata import version
+
     import pymupdf
     from PIL import Image, ImageChops
 
@@ -71,9 +73,29 @@ def verify_native(root, *, pdfa=False):
         raise RuntimeError('Optional native visual inspection requires Poppler pdftoppm')
     native = root/('native-pdfa' if pdfa else 'native')
     evidence = json.loads((native/'observations.json').read_text(encoding='utf-8-sig'))
+    manifest = json.loads((root/'manifest.json').read_text(encoding='utf-8'))
+    expected = {suffix for name, _, _ in cases() for suffix in (name, name+'-cycle-1', name+'-cycle-2')}
+    if len(manifest) != len(expected) or {item['name'] for item in manifest} != expected:
+        raise ValueError('Native visual verification requires every original and both --roundtrips cycles')
     by_name = {item['name']: item for item in evidence['observations']}
+    if len(evidence['observations']) != len(expected) or set(by_name) != expected:
+        raise ValueError('Native observations must cover each manifest document exactly once')
+    if any(by_name[item['name']]['file'] != item['file'] for item in manifest):
+        raise ValueError('Native observations disagree with manifest filenames')
+    profile = 'Word PDF/A-1 export' if pdfa else 'Word standard PDF export'
+    if evidence.get('pdf_profile') != profile:
+        raise ValueError('Native export profile disagrees with the requested verification profile')
     raster = root/('poppler-pdfa' if pdfa else 'poppler')
     raster.mkdir(exist_ok=False)
+    fonts = {}
+    for name in by_name:
+        with pymupdf.open(native/(name+'.pdf')) as document:
+            entries = []
+            for font in document[0].get_fonts(full=True):
+                program = document.extract_font(font[0])[3]
+                entries.append({'name': font[3], 'program_bytes': len(program),
+                                'program_sha256': hashlib.sha256(program).hexdigest() if program else None})
+            fonts[name] = entries
     visual = []
     for name, item in by_name.items():
         assert hashlib.sha256((root/item['file']).read_bytes()).hexdigest().upper() == item['sha256']
@@ -108,7 +130,13 @@ def verify_native(root, *, pdfa=False):
     evidence['semantic_accepted'] = True
     evidence['visual_accepted'] = all(row['MuPDF']['identical'] and row['Poppler']['identical'] for row in visual)
     evidence['quality_gate_complete'] = evidence['visual_accepted']
+    evidence['pdf_fonts'] = fonts
+    evidence['runtime'] = {name: version(name) for name in ('opendoc-formats', 'opendoc-model', 'pymupdf', 'pillow')}
+    renderer_info = subprocess.run([renderer, '-v'], check=True, capture_output=True, text=True, timeout=10)
+    evidence['runtime']['poppler'] = renderer_info.stderr.splitlines()[0]
     evidence['visual'] = {'dpi': 108, 'comparisons': visual, 'mask': None}
+    evidence['visual']['identical_by_engine'] = {
+        engine: sum(row[engine]['identical'] for row in visual) for engine in ('MuPDF', 'Poppler')}
     (root/('evidence-pdfa.json' if pdfa else 'evidence.json')).write_text(
         json.dumps(evidence, indent=2, ensure_ascii=False)+'\n', encoding='utf-8')
     print(json.dumps({'native_documents': len(by_name), 'semantic_accepted': True,

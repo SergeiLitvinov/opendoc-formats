@@ -18,8 +18,13 @@ def read_section(
     read_blocks: BlockReader,
     *,
     odd_and_even_pages: bool,
+    section_present: bool = True,
 ) -> Section:
+    from opendoc_formats.ooxml.page_geometry import KEY, source_geometry
+
     properties = _section_properties(source)
+    page = _page_settings(source, section_present=section_present)
+    properties[KEY] = source_geometry(source, page, properties, section_present=section_present)
     properties["odd_and_even_pages_header_footer"] = odd_and_even_pages
     properties["docx_running_parts"] = {
         name: str(container.part.partname)
@@ -31,7 +36,7 @@ def read_section(
     }
     return Section(
         blocks=blocks,
-        page=_page_settings(source),
+        page=page,
         headers=([] if section_index > 0 and source.header.is_linked_to_previous else read_blocks(source.header, model)),
         footers=([] if section_index > 0 and source.footer.is_linked_to_previous else read_blocks(source.footer, model)),
         first_page_headers=_independent_blocks(source.first_page_header, model, read_blocks),
@@ -42,13 +47,13 @@ def read_section(
     )
 
 
-def _page_settings(section: Any) -> PageSettings:
+def _page_settings(section: Any, *, section_present: bool = True) -> PageSettings:
     def points(value: Any, default: float) -> Length:
         return Length(float(value.pt)) if value is not None else Length(default)
 
     return PageSettings(
-        width=points(section.page_width, 595.28),
-        height=points(section.page_height, 841.89),
+        width=points(section.page_width, 612.0 if section_present else 595.28),
+        height=points(section.page_height, 792.0 if section_present else 841.89),
         margin_top=points(section.top_margin, 72.0),
         margin_right=points(section.right_margin, 72.0),
         margin_bottom=points(section.bottom_margin, 72.0),

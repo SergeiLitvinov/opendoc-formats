@@ -39,6 +39,7 @@ RELATIONSHIP_TYPE = {
     "footnotes": f"{_RELATIONSHIP_BASE}/footnotes",
     "numbering": f"{_RELATIONSHIP_BASE}/numbering",
     "styles": f"{_RELATIONSHIP_BASE}/styles",
+    "settings": f"{_RELATIONSHIP_BASE}/settings",
     "theme": f"{_RELATIONSHIP_BASE}/theme",
 }
 

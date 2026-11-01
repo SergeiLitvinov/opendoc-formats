@@ -216,6 +216,19 @@ class ExporterRegistry:
                 return fail("export.invalid-result", "Writer did not return an OpenDoc ConversionReport")
             report = written
             report.output_path = output
+            if identifier not in {'docx', 'json', 'txt'}:
+                from opendoc_formats.ooxml.page_geometry import unresolved
+
+                for section_index, section in enumerate(document.sections):
+                    try:
+                        missing_geometry = unresolved(section)
+                    except ValueError as error:
+                        report.add(IssueSeverity.ERROR, 'docx.page-geometry', str(error), f'sections[{section_index}].page')
+                        continue
+                    if missing_geometry:
+                        report.add(IssueSeverity.LOSS, 'docx.page-geometry',
+                                   'Source page declarations are absent; target uses numeric projection for '
+                                   +', '.join(missing_geometry), f'sections[{section_index}].page')
             if identifier in {'docx', 'html', 'pdf', 'pptx', 'epub', 'txt'}:
                 from opendoc_model import LIST_PROPERTY, Paragraph, walk_model
 

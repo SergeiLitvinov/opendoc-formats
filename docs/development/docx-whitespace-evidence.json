@@ -1,412 +1,1164 @@
 {
-  "version": "16.0",
-  "build": "16.0.17932",
+  "pdf_profile": "Word standard PDF export",
+  "process_id": 30372,
   "observations": [
     {
-      "sha256": "B149A43097CC5F031D8C597570AC7554644084003F4B383F9943B8668793610E",
       "file": "absent.docx",
-      "name": "absent",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "B149A43097CC5F031D8C597570AC7554644084003F4B383F9943B8668793610E",
+      "name": "absent"
     },
     {
-      "sha256": "0E4C65F5DA140C480AA76234EE1F7CF4AA1763B10DBD248558720AE736BA5D0D",
       "file": "absent-cycle-1.docx",
-      "name": "absent-cycle-1",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "EE663001D21AD082A06A0FDA607970D8257ED56E93A44B25BA03C30D286CAF5A",
+      "name": "absent-cycle-1"
     },
     {
-      "sha256": "7C78546123CAD97BE84A139F5F16E2A0E7CC6343C293A21C0F987A7FC38C43B7",
       "file": "absent-cycle-2.docx",
-      "name": "absent-cycle-2",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "73F4988C364E8CBBD4DDB6A55AB6BDAC4669049C8E87E29A67A2A90BF12F1B16",
+      "name": "absent-cycle-2"
     },
     {
-      "sha256": "2B36069DF0DE3D7EA1858F41971524D9859C5EB811C56147D71F92E90572D2C0",
       "file": "explicit-default.docx",
-      "name": "explicit-default",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "2B36069DF0DE3D7EA1858F41971524D9859C5EB811C56147D71F92E90572D2C0",
+      "name": "explicit-default"
     },
     {
-      "sha256": "A8711C62B8A1DE9364D56732E9015232F61F30064C69DC3846E84B643524E86E",
       "file": "explicit-default-cycle-1.docx",
-      "name": "explicit-default-cycle-1",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "E2B556DAEE44B01DF5CFA1139E7FBF6E427F390A5B08065E2EDB0ADB7A75378F",
+      "name": "explicit-default-cycle-1"
     },
     {
-      "sha256": "CA3D0B751B4592C5401039ACE476E58BBB0D6358BD046ED669C439B96051D34C",
       "file": "explicit-default-cycle-2.docx",
-      "name": "explicit-default-cycle-2",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "40B70FE6C2844E5E41D5EB00642385F675F744B187FEEF9AA57A01EFA9F28A20",
+      "name": "explicit-default-cycle-2"
     },
     {
-      "sha256": "A670815BD9566E57D3D0FD77D78A6BF4B1CF97C23051E57A5219E833809CB1AF",
       "file": "explicit-preserve.docx",
-      "name": "explicit-preserve",
+      "text": "L[  A  B  ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[  A  B  ]R\r"
+      "sha256": "A670815BD9566E57D3D0FD77D78A6BF4B1CF97C23051E57A5219E833809CB1AF",
+      "name": "explicit-preserve"
     },
     {
-      "sha256": "4CCA100F81B79FD8FF5EB532B68B3EAF7E91BF7BF950433669E87A538096BD27",
       "file": "explicit-preserve-cycle-1.docx",
-      "name": "explicit-preserve-cycle-1",
+      "text": "L[  A  B  ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[  A  B  ]R\r"
+      "sha256": "9F8266B8859826320BB99ED7E0CDD5B0CA05D0EE4998660E982F21904D043229",
+      "name": "explicit-preserve-cycle-1"
     },
     {
-      "sha256": "FDFD53E9D43F534576EFE2CA788FB6D952D1A57297C2710DB591124D663F51F9",
       "file": "explicit-preserve-cycle-2.docx",
-      "name": "explicit-preserve-cycle-2",
+      "text": "L[  A  B  ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[  A  B  ]R\r"
+      "sha256": "79700BB0D0E8B3FBB499DB9ABA7A41A6B224A279151AA397A875A8AB5D7E767A",
+      "name": "explicit-preserve-cycle-2"
     },
     {
-      "sha256": "EC8FD5D70DED67ECF02EB05714565174D7C0F1C7D1E7A058E67B5EB4BC72B070",
       "file": "run-preserve.docx",
-      "name": "run-preserve",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "EC8FD5D70DED67ECF02EB05714565174D7C0F1C7D1E7A058E67B5EB4BC72B070",
+      "name": "run-preserve"
     },
     {
-      "sha256": "971752F255DF5123B0F94F1CD109D9A1178F05D120E4777DBB126B9A9817EF0F",
       "file": "run-preserve-cycle-1.docx",
-      "name": "run-preserve-cycle-1",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "B1B18D9FF0079721C898BCC915E6D6F069DE56DF8EAFE7E17FEFEEC29E9C5C16",
+      "name": "run-preserve-cycle-1"
     },
     {
-      "sha256": "9C6D91E66FBBFA9097FBF36C26331DA527E350598A8677A95596208DD9C470CB",
       "file": "run-preserve-cycle-2.docx",
-      "name": "run-preserve-cycle-2",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "59F35428FB5366120D055A7F5549031EE849FEE32363A650577E8811701DECA4",
+      "name": "run-preserve-cycle-2"
     },
     {
-      "sha256": "50075754ED74768A6717CA52D00AF19F79EE5627DDD11B16D5568F0CB2A9B673",
       "file": "paragraph-preserve.docx",
-      "name": "paragraph-preserve",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "50075754ED74768A6717CA52D00AF19F79EE5627DDD11B16D5568F0CB2A9B673",
+      "name": "paragraph-preserve"
     },
     {
-      "sha256": "80DE212427051EA26F2E1B221D4FB1047549480960E5840D2C9F6D5628A1F648",
       "file": "paragraph-preserve-cycle-1.docx",
-      "name": "paragraph-preserve-cycle-1",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "8FD629AB069466CFDFE5A944FAEE08499F9673431769D0458BDC4C21DFBB625F",
+      "name": "paragraph-preserve-cycle-1"
     },
     {
-      "sha256": "9EDC250FB391AD64357957280CD32B67B84CCCBFCD8D717397F938D300F82955",
       "file": "paragraph-preserve-cycle-2.docx",
-      "name": "paragraph-preserve-cycle-2",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "55F5D7C7208DE0BA6B862109CC7C05D75F995706EBC4C536F7C6A4BA8D692669",
+      "name": "paragraph-preserve-cycle-2"
     },
     {
-      "sha256": "AF22D43CB5156D1A58436E5EE26305293C0DC1E567FBB387471FDADF50AA34A7",
       "file": "body-preserve.docx",
-      "name": "body-preserve",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "AF22D43CB5156D1A58436E5EE26305293C0DC1E567FBB387471FDADF50AA34A7",
+      "name": "body-preserve"
     },
     {
-      "sha256": "5042356DE27E6C6E4CB8A26AE26081E2959B66CBA4BED3E755F7993882FDE8F2",
       "file": "body-preserve-cycle-1.docx",
-      "name": "body-preserve-cycle-1",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "9D6B571A8EB84377C2848AC71A0FED657B6DC0E571CF52F04440A08C1034AD7D",
+      "name": "body-preserve-cycle-1"
     },
     {
-      "sha256": "668289011ACDC97C8283C463162E8C2B2354DA581053C66E298F59FB2F8EBF15",
       "file": "body-preserve-cycle-2.docx",
-      "name": "body-preserve-cycle-2",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "4D384BD40347A63C2DAB482162B3D85DB6482392E05E13C29B114AEC480597ED",
+      "name": "body-preserve-cycle-2"
     },
     {
-      "sha256": "C142706F80886D0F9EB3019EBA437A615A888471FB96B53A6D6A64CCCAED59D9",
       "file": "document-preserve.docx",
-      "name": "document-preserve",
+      "text": "L[  A  B  ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[  A  B  ]R\r"
+      "sha256": "C142706F80886D0F9EB3019EBA437A615A888471FB96B53A6D6A64CCCAED59D9",
+      "name": "document-preserve"
     },
     {
-      "sha256": "E0D8869A85384792801FC3B7C0C1CE18BCE93D265EDCEF0C6BA47257C7737DC4",
       "file": "document-preserve-cycle-1.docx",
-      "name": "document-preserve-cycle-1",
+      "text": "L[  A  B  ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[  A  B  ]R\r"
+      "sha256": "29949ECB6317A06364800138A52A4F5A42C83961FD07050F738A7A78A60C5048",
+      "name": "document-preserve-cycle-1"
     },
     {
-      "sha256": "B323F020E57ADFD5397063C4399CB7BCD5A7E63B851960D53D148C416E4A5D0B",
       "file": "document-preserve-cycle-2.docx",
-      "name": "document-preserve-cycle-2",
+      "text": "L[  A  B  ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[  A  B  ]R\r"
+      "sha256": "5A42C3091C296DFB67B63C6F8256D364BBC6D226CD22B479FC0D487122688E2F",
+      "name": "document-preserve-cycle-2"
     },
     {
-      "sha256": "48802BAEEAE33D97A5AD421AFECE46A2D7CF0CE42CB5279362ED3844067FB851",
       "file": "paragraph-preserve-text-default.docx",
-      "name": "paragraph-preserve-text-default",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "48802BAEEAE33D97A5AD421AFECE46A2D7CF0CE42CB5279362ED3844067FB851",
+      "name": "paragraph-preserve-text-default"
     },
     {
-      "sha256": "88CBD02653100AA4A0C045EEF0F34DA1B8C98B3C577240824716423949FBDF97",
       "file": "paragraph-preserve-text-default-cycle-1.docx",
-      "name": "paragraph-preserve-text-default-cycle-1",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "B6E5C13F049C2975A2911AB5C8391CBE21EE64370F2BF6951EE4D079767C8BB3",
+      "name": "paragraph-preserve-text-default-cycle-1"
     },
     {
-      "sha256": "E9875B1840A5280C381B02A57E64AEE526118B2BCE0FFD24B836544D3001F0DC",
       "file": "paragraph-preserve-text-default-cycle-2.docx",
-      "name": "paragraph-preserve-text-default-cycle-2",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "C71E0B4FEBE7669B756948FF01D1966F0A5E69AC5391EA775BB3F79DCFF84182",
+      "name": "paragraph-preserve-text-default-cycle-2"
     },
     {
-      "sha256": "E6F117C5F7CF44E56446FF8994F174A481C5BCC8D1B402EE0DE6EC008B35D51E",
       "file": "document-preserve-paragraph-default.docx",
-      "name": "document-preserve-paragraph-default",
+      "text": "L[  A  B  ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[  A  B  ]R\r"
+      "sha256": "E6F117C5F7CF44E56446FF8994F174A481C5BCC8D1B402EE0DE6EC008B35D51E",
+      "name": "document-preserve-paragraph-default"
     },
     {
-      "sha256": "E82E5118D68C0E8AB95FF57C5AF1E24CC3EB86D5EC6C101EB9CF074B14ACE5A0",
       "file": "document-preserve-paragraph-default-cycle-1.docx",
-      "name": "document-preserve-paragraph-default-cycle-1",
+      "text": "L[  A  B  ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[  A  B  ]R\r"
+      "sha256": "E5698B8440F937186B414B3FE0B7A6797CC48AEF427FA0EFB45A3BF97051CD3B",
+      "name": "document-preserve-paragraph-default-cycle-1"
     },
     {
-      "sha256": "DC98FAAA6CA3FC86E61EC24D3901C222C61202F6E506D3238083469308C4B493",
       "file": "document-preserve-paragraph-default-cycle-2.docx",
-      "name": "document-preserve-paragraph-default-cycle-2",
+      "text": "L[  A  B  ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[  A  B  ]R\r"
+      "sha256": "CE1272B12D204964C6884D3FB309EA950B0D2080231F39DF54C0B22D33C41EEC",
+      "name": "document-preserve-paragraph-default-cycle-2"
     },
     {
-      "sha256": "D0B26D9EC3C3C8FEF0CC29418321ADD6324381A59DE459133E68C8015BA9BF10",
       "file": "document-default-text-preserve.docx",
-      "name": "document-default-text-preserve",
+      "text": "L[  A  B  ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[  A  B  ]R\r"
+      "sha256": "D0B26D9EC3C3C8FEF0CC29418321ADD6324381A59DE459133E68C8015BA9BF10",
+      "name": "document-default-text-preserve"
     },
     {
-      "sha256": "C7F7C994C5EF2324F7FACB9652F76622CF75BC8F1D2F53FB5E5186C4E47312DE",
       "file": "document-default-text-preserve-cycle-1.docx",
-      "name": "document-default-text-preserve-cycle-1",
+      "text": "L[  A  B  ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[  A  B  ]R\r"
+      "sha256": "75BCCE40BB499441B0F950B6B9F1D4433AA72BFD5A62CB93DE83292E519564A0",
+      "name": "document-default-text-preserve-cycle-1"
     },
     {
-      "sha256": "6B65433F1C5CAA8BD5F2C830A5EEEA9A5F7B14FEBA2BF14E78B6261DE6BFA416",
       "file": "document-default-text-preserve-cycle-2.docx",
-      "name": "document-default-text-preserve-cycle-2",
+      "text": "L[  A  B  ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[  A  B  ]R\r"
+      "sha256": "7017CBFAA266464D869359AFF6702A37E68F24C38AA837D4CD8B445BDC818905",
+      "name": "document-default-text-preserve-cycle-2"
     },
     {
-      "sha256": "89E6CC0C8A171E8D3095A1336E11609992BD35277E9B7C2AF49C4B1A6976FED9",
       "file": "document-preserve-text-default.docx",
-      "name": "document-preserve-text-default",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "89E6CC0C8A171E8D3095A1336E11609992BD35277E9B7C2AF49C4B1A6976FED9",
+      "name": "document-preserve-text-default"
     },
     {
-      "sha256": "B0DADF8A4C92681FED5DB3FB19AE3767EA705FD60511A24F2785AF6A6A9E5AAA",
       "file": "document-preserve-text-default-cycle-1.docx",
-      "name": "document-preserve-text-default-cycle-1",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "63B1C06333784DE202B2351DD33FB241192B316A69E10AADB717EFCDE8E81C0D",
+      "name": "document-preserve-text-default-cycle-1"
     },
     {
-      "sha256": "600394AD683983458647929213EF68F449B352CF7CD4F0FF8F2E0B1CF8CD120D",
       "file": "document-preserve-text-default-cycle-2.docx",
-      "name": "document-preserve-text-default-cycle-2",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "F8A9956497F92D824709AD8532219839F6A730F3F208292D6EF05BA453391138",
+      "name": "document-preserve-text-default-cycle-2"
     },
     {
-      "sha256": "BFD46F4D226BE09E4BD8F1CC4ABEE91E8083063DA8FD21E3817926AD4D618213",
       "file": "only-spaces.docx",
-      "name": "only-spaces",
+      "text": "L[]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[]R\r"
+      "sha256": "BFD46F4D226BE09E4BD8F1CC4ABEE91E8083063DA8FD21E3817926AD4D618213",
+      "name": "only-spaces"
     },
     {
-      "sha256": "6A812351D5809C5368F70C24CA6DD6C522506D5CC4A2749F9CBDFDC1443E9BCA",
       "file": "only-spaces-cycle-1.docx",
-      "name": "only-spaces-cycle-1",
+      "text": "L[]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[]R\r"
+      "sha256": "8EDCB6911274339F958AF23BEF4BC9D6A00A4238D903B1683A0B9AADF72C0B59",
+      "name": "only-spaces-cycle-1"
     },
     {
-      "sha256": "74789E971E8C449708792EED5A463C72C643B35314EFA1573B6C22E35F283401",
       "file": "only-spaces-cycle-2.docx",
-      "name": "only-spaces-cycle-2",
+      "text": "L[]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[]R\r"
+      "sha256": "6D51771BAF44EBCC0917AABB09CA115FD7AED6D1280F4F172425EA3595A27982",
+      "name": "only-spaces-cycle-2"
     },
     {
-      "sha256": "64454FA4700044F748560B1518ECA67CFD8FD6D38A808B4E80472DE24EC2DA26",
       "file": "only-spaces-preserve.docx",
-      "name": "only-spaces-preserve",
+      "text": "L[   ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[   ]R\r"
+      "sha256": "64454FA4700044F748560B1518ECA67CFD8FD6D38A808B4E80472DE24EC2DA26",
+      "name": "only-spaces-preserve"
     },
     {
-      "sha256": "BDD17D892A0ED25C945C431CFFE2DBFA14034B590258D9CF0159432C9A1864A5",
       "file": "only-spaces-preserve-cycle-1.docx",
-      "name": "only-spaces-preserve-cycle-1",
+      "text": "L[   ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[   ]R\r"
+      "sha256": "53274B043F0146CB6B43360811AADC165F9F68D164E759B04862B4FB35E0A7DB",
+      "name": "only-spaces-preserve-cycle-1"
     },
     {
-      "sha256": "B83F1C35B99C83573FD432EA81B92D903C03A8495F80127B69389D233D522690",
       "file": "only-spaces-preserve-cycle-2.docx",
-      "name": "only-spaces-preserve-cycle-2",
+      "text": "L[   ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[   ]R\r"
+      "sha256": "D61C9456CD6FCE16D0E994C90C531C294B04441E1A48835BED9E0E03868A5D42",
+      "name": "only-spaces-preserve-cycle-2"
     },
     {
-      "sha256": "EE623581C555DE6582296E0D57AA327076F8C607214D9AC38184CEFE49778A19",
       "file": "unicode-spaces.docx",
-      "name": "unicode-spaces",
+      "text": "L[ A ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[ A ]R\r"
+      "sha256": "EE623581C555DE6582296E0D57AA327076F8C607214D9AC38184CEFE49778A19",
+      "name": "unicode-spaces"
     },
     {
-      "sha256": "E1BDC129246934A187C97AE20E9464C8AE05E0A297A8BBE1DFB018E6B6F0A55C",
       "file": "unicode-spaces-cycle-1.docx",
-      "name": "unicode-spaces-cycle-1",
+      "text": "L[ A ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[ A ]R\r"
+      "sha256": "19583432BB872871888F79FB3825962B7871C7E4503AEC884C44BD4E6A39B8F8",
+      "name": "unicode-spaces-cycle-1"
     },
     {
-      "sha256": "0BA08831B891DAD771F3550C45FD0787C22A0CC65D84F7C2F62144248BB63CB9",
       "file": "unicode-spaces-cycle-2.docx",
-      "name": "unicode-spaces-cycle-2",
+      "text": "L[ A ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[ A ]R\r"
+      "sha256": "F4F0DB1C262AA8D1F931B09DB2FAF51F2EB98675083E81021FAD962C15481EFC",
+      "name": "unicode-spaces-cycle-2"
     },
     {
-      "sha256": "7C58C8009681432D541770726BE2603EDD69F80F94AC1B9AF7564CED07E723E2",
       "file": "literal-controls.docx",
-      "name": "literal-controls",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "7C58C8009681432D541770726BE2603EDD69F80F94AC1B9AF7564CED07E723E2",
+      "name": "literal-controls"
     },
     {
-      "sha256": "5B44EA9ABE572532E2E68EE5A2769C6FB7287F24A5232B14925011778C07FA41",
       "file": "literal-controls-cycle-1.docx",
-      "name": "literal-controls-cycle-1",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "59E6708B68E23126BE0987715BAF1F53CE6264651687085CC5FB1FE4892569CE",
+      "name": "literal-controls-cycle-1"
     },
     {
-      "sha256": "AF2A631207BA0B3ADB581416DA0024F8B8D3FF45AD7D479F3425BDF2E7D4FBF0",
       "file": "literal-controls-cycle-2.docx",
-      "name": "literal-controls-cycle-2",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "CAEBB5F66264B7BF6D8756C5D64F90F10A41FCC169A5F37F8955F6D7F19448C0",
+      "name": "literal-controls-cycle-2"
     },
     {
-      "sha256": "AD6F5164CD3AAC901145077AB057B943E4C0F4A015C78A4C056DFFBC173C52D5",
       "file": "literal-controls-preserve.docx",
-      "name": "literal-controls-preserve",
+      "text": "L[  A\t B ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[  A\t B ]R\r"
+      "sha256": "AD6F5164CD3AAC901145077AB057B943E4C0F4A015C78A4C056DFFBC173C52D5",
+      "name": "literal-controls-preserve"
     },
     {
-      "sha256": "4FC4B9FE14A13BD154CF6091A8F27CA1AB1FE51AAD3E630B2498E7156105CF60",
       "file": "literal-controls-preserve-cycle-1.docx",
-      "name": "literal-controls-preserve-cycle-1",
+      "text": "L[  A\t B ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[  A\t B ]R\r"
+      "sha256": "DE0ADAC4878ECCF8D9D6A377D510E0E1B547D9956ADCA6955A4FBD18373E507C",
+      "name": "literal-controls-preserve-cycle-1"
     },
     {
-      "sha256": "89BAA865E65D7EBE7939A9A0E76003EB538C4EB7332C236ED9F593C69CC33D32",
       "file": "literal-controls-preserve-cycle-2.docx",
-      "name": "literal-controls-preserve-cycle-2",
+      "text": "L[  A\t B ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[  A\t B ]R\r"
+      "sha256": "57F449A86BFF7CDA363A2D2144BFD970CDD531F1655CA3C078AE0851720D4F5C",
+      "name": "literal-controls-preserve-cycle-2"
     },
     {
-      "sha256": "9A8DD41A8C7F21B418C6D1057C08FDA85CEC5D3EF969F9878A3FCBB048134C60",
       "file": "character-references.docx",
-      "name": "character-references",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "9A8DD41A8C7F21B418C6D1057C08FDA85CEC5D3EF969F9878A3FCBB048134C60",
+      "name": "character-references"
     },
     {
-      "sha256": "E21982F58B24F73024CDC382CC58B74245D6E3AD26185A45AB08A5E132DDB6D0",
       "file": "character-references-cycle-1.docx",
-      "name": "character-references-cycle-1",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "2876EC94BAFA7A0C03C341CF8291523C8DBB50C0352227A9064924E07E2ABC39",
+      "name": "character-references-cycle-1"
     },
     {
-      "sha256": "D7A32C0AA7A611E9F68F51C9386B492A27AA0F0456ACE3288891BABF877CC53E",
       "file": "character-references-cycle-2.docx",
-      "name": "character-references-cycle-2",
+      "text": "L[A  B]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[A  B]R\r"
+      "sha256": "909B4A10DF9AFD66CAFBB881F8295A97E81E0304A6A4EA298236A3BA7ABF74CF",
+      "name": "character-references-cycle-2"
     },
     {
-      "sha256": "5CEFA9BCBB907B5937B140AAAE7156923ECC90107730976CA444A77859823172",
       "file": "character-references-preserve.docx",
-      "name": "character-references-preserve",
+      "text": "L[  A\t B ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[  A\t B ]R\r"
+      "sha256": "5CEFA9BCBB907B5937B140AAAE7156923ECC90107730976CA444A77859823172",
+      "name": "character-references-preserve"
     },
     {
-      "sha256": "42ACE3CAD8D2A6D256FDA85172DEB58AC2FE42A30195F8CBF2637FEDE72A9AAC",
       "file": "character-references-preserve-cycle-1.docx",
-      "name": "character-references-preserve-cycle-1",
+      "text": "L[  A\t B ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[  A\t B ]R\r"
+      "sha256": "93605FB9810CA4458A236D08C66F414B8B37A19BB880A45D6E79E5923206DC82",
+      "name": "character-references-preserve-cycle-1"
     },
     {
-      "sha256": "B3F90FB37BF51DCCCE42BCD30231F599A8B5E25B214762AA265C419A00A48738",
       "file": "character-references-preserve-cycle-2.docx",
-      "name": "character-references-preserve-cycle-2",
+      "text": "L[  A\t B ]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[  A\t B ]R\r"
+      "sha256": "60ECB057E86ECA1F80EF2C605F002593DE73587A51FE83D66EBB77B7275867E2",
+      "name": "character-references-preserve-cycle-2"
     },
     {
-      "sha256": "9A3393B140B2E2329C72E554BE7B51B42A29551346A7C06E0958B982105EF1F9",
       "file": "hyperlink-boundary.docx",
-      "name": "hyperlink-boundary",
+      "text": "L[AfterLink]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[AfterLink]R\r"
+      "sha256": "9A3393B140B2E2329C72E554BE7B51B42A29551346A7C06E0958B982105EF1F9",
+      "name": "hyperlink-boundary"
     },
     {
-      "sha256": "33AB7D9D4CF717752C3CCC900935DDDD1DAEBB1BBEE82D4B99F03742996D888C",
       "file": "hyperlink-boundary-cycle-1.docx",
-      "name": "hyperlink-boundary-cycle-1",
+      "text": "L[AfterLink]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[AfterLink]R\r"
+      "sha256": "C8CB99FEC7CCF989B1959016CBDDA2E6B2E40D962D49D4634A79F99579428FAC",
+      "name": "hyperlink-boundary-cycle-1"
     },
     {
-      "sha256": "6FB7E1A060A9D81D873FF01D34CFA5F10A108CC0CA16FCE02E74C4A03881CF99",
       "file": "hyperlink-boundary-cycle-2.docx",
-      "name": "hyperlink-boundary-cycle-2",
+      "text": "L[AfterLink]R\r",
+      "compatibility_mode": 12,
       "pages": 1,
-      "text": "L[AfterLink]R\r"
+      "sha256": "5341A1E6FFA4A09BB48E042B689F8B2E5351F84CCD4492AE7D829AC4D55FD393",
+      "name": "hyperlink-boundary-cycle-2"
     }
   ],
-  "distinct_owned_process": true,
+  "version": "16.0",
+  "build": "16.0.17932",
   "program": "Microsoft Word",
+  "distinct_owned_process": true,
   "semantic_accepted": true,
-  "visual_accepted": false,
-  "quality_gate_complete": false,
+  "visual_accepted": true,
+  "quality_gate_complete": true,
+  "pdf_fonts": {
+    "absent": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Aptos",
+        "program_bytes": 19840,
+        "program_sha256": "89cb78b72afd79e8f860ff65c02ae7c7636a57ca8ac472a8f1d90be82d6b968a"
+      }
+    ],
+    "absent-cycle-1": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "absent-cycle-2": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "explicit-default": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Aptos",
+        "program_bytes": 19840,
+        "program_sha256": "89cb78b72afd79e8f860ff65c02ae7c7636a57ca8ac472a8f1d90be82d6b968a"
+      }
+    ],
+    "explicit-default-cycle-1": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "explicit-default-cycle-2": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "explicit-preserve": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Aptos",
+        "program_bytes": 19840,
+        "program_sha256": "89cb78b72afd79e8f860ff65c02ae7c7636a57ca8ac472a8f1d90be82d6b968a"
+      }
+    ],
+    "explicit-preserve-cycle-1": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "explicit-preserve-cycle-2": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "run-preserve": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Aptos",
+        "program_bytes": 19840,
+        "program_sha256": "89cb78b72afd79e8f860ff65c02ae7c7636a57ca8ac472a8f1d90be82d6b968a"
+      }
+    ],
+    "run-preserve-cycle-1": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "run-preserve-cycle-2": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "paragraph-preserve": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Aptos",
+        "program_bytes": 19840,
+        "program_sha256": "89cb78b72afd79e8f860ff65c02ae7c7636a57ca8ac472a8f1d90be82d6b968a"
+      }
+    ],
+    "paragraph-preserve-cycle-1": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "paragraph-preserve-cycle-2": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "body-preserve": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Aptos",
+        "program_bytes": 19840,
+        "program_sha256": "89cb78b72afd79e8f860ff65c02ae7c7636a57ca8ac472a8f1d90be82d6b968a"
+      }
+    ],
+    "body-preserve-cycle-1": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "body-preserve-cycle-2": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "document-preserve": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Aptos",
+        "program_bytes": 19840,
+        "program_sha256": "89cb78b72afd79e8f860ff65c02ae7c7636a57ca8ac472a8f1d90be82d6b968a"
+      }
+    ],
+    "document-preserve-cycle-1": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "document-preserve-cycle-2": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "paragraph-preserve-text-default": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Aptos",
+        "program_bytes": 19840,
+        "program_sha256": "89cb78b72afd79e8f860ff65c02ae7c7636a57ca8ac472a8f1d90be82d6b968a"
+      }
+    ],
+    "paragraph-preserve-text-default-cycle-1": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "paragraph-preserve-text-default-cycle-2": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "document-preserve-paragraph-default": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Aptos",
+        "program_bytes": 19840,
+        "program_sha256": "89cb78b72afd79e8f860ff65c02ae7c7636a57ca8ac472a8f1d90be82d6b968a"
+      }
+    ],
+    "document-preserve-paragraph-default-cycle-1": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "document-preserve-paragraph-default-cycle-2": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "document-default-text-preserve": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Aptos",
+        "program_bytes": 19840,
+        "program_sha256": "89cb78b72afd79e8f860ff65c02ae7c7636a57ca8ac472a8f1d90be82d6b968a"
+      }
+    ],
+    "document-default-text-preserve-cycle-1": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "document-default-text-preserve-cycle-2": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "document-preserve-text-default": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Aptos",
+        "program_bytes": 19840,
+        "program_sha256": "89cb78b72afd79e8f860ff65c02ae7c7636a57ca8ac472a8f1d90be82d6b968a"
+      }
+    ],
+    "document-preserve-text-default-cycle-1": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "document-preserve-text-default-cycle-2": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "only-spaces": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Aptos",
+        "program_bytes": 19840,
+        "program_sha256": "89cb78b72afd79e8f860ff65c02ae7c7636a57ca8ac472a8f1d90be82d6b968a"
+      }
+    ],
+    "only-spaces-cycle-1": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "only-spaces-cycle-2": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "only-spaces-preserve": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Aptos",
+        "program_bytes": 19840,
+        "program_sha256": "89cb78b72afd79e8f860ff65c02ae7c7636a57ca8ac472a8f1d90be82d6b968a"
+      }
+    ],
+    "only-spaces-preserve-cycle-1": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "only-spaces-preserve-cycle-2": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "unicode-spaces": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Aptos",
+        "program_bytes": 19840,
+        "program_sha256": "89cb78b72afd79e8f860ff65c02ae7c7636a57ca8ac472a8f1d90be82d6b968a"
+      }
+    ],
+    "unicode-spaces-cycle-1": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "unicode-spaces-cycle-2": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "literal-controls": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Aptos",
+        "program_bytes": 19840,
+        "program_sha256": "89cb78b72afd79e8f860ff65c02ae7c7636a57ca8ac472a8f1d90be82d6b968a"
+      }
+    ],
+    "literal-controls-cycle-1": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "literal-controls-cycle-2": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "literal-controls-preserve": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Aptos",
+        "program_bytes": 19840,
+        "program_sha256": "89cb78b72afd79e8f860ff65c02ae7c7636a57ca8ac472a8f1d90be82d6b968a"
+      }
+    ],
+    "literal-controls-preserve-cycle-1": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "literal-controls-preserve-cycle-2": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "character-references": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Aptos",
+        "program_bytes": 19840,
+        "program_sha256": "89cb78b72afd79e8f860ff65c02ae7c7636a57ca8ac472a8f1d90be82d6b968a"
+      }
+    ],
+    "character-references-cycle-1": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "character-references-cycle-2": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "character-references-preserve": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Aptos",
+        "program_bytes": 19840,
+        "program_sha256": "89cb78b72afd79e8f860ff65c02ae7c7636a57ca8ac472a8f1d90be82d6b968a"
+      }
+    ],
+    "character-references-preserve-cycle-1": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "character-references-preserve-cycle-2": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "hyperlink-boundary": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Aptos",
+        "program_bytes": 19840,
+        "program_sha256": "89cb78b72afd79e8f860ff65c02ae7c7636a57ca8ac472a8f1d90be82d6b968a"
+      }
+    ],
+    "hyperlink-boundary-cycle-1": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ],
+    "hyperlink-boundary-cycle-2": [
+      {
+        "name": "ArialMT",
+        "program_bytes": 0,
+        "program_sha256": null
+      },
+      {
+        "name": "BCDEEE+Cambria",
+        "program_bytes": 81056,
+        "program_sha256": "fe0e4e13dce330a15ed37df01b446f9c8a83c6313afe11e328fce37531103c14"
+      }
+    ]
+  },
+  "runtime": {
+    "opendoc-formats": "0.42.0",
+    "opendoc-model": "0.19.0",
+    "pymupdf": "1.28.2",
+    "pillow": "12.3.0",
+    "poppler": "pdftoppm version 26.07.0"
+  },
   "visual": {
     "dpi": 108,
     "comparisons": [
@@ -415,22 +1167,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -438,22 +1180,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -461,22 +1193,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -484,22 +1206,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -507,22 +1219,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            195,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            195,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -530,22 +1232,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            195,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            195,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -553,22 +1245,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -576,22 +1258,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -599,22 +1271,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -622,22 +1284,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -645,22 +1297,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -668,22 +1310,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -691,22 +1323,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            195,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            195,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -714,22 +1336,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            195,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            195,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -737,22 +1349,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -760,22 +1362,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -783,22 +1375,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            195,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            195,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -806,22 +1388,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            195,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            195,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -829,22 +1401,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            195,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            195,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -852,22 +1414,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            195,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            195,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -875,22 +1427,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -898,22 +1440,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -973,22 +1505,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            127,
-            111,
-            176,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            127,
-            111,
-            176,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -996,22 +1518,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            127,
-            111,
-            176,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            127,
-            111,
-            176,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -1019,22 +1531,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -1042,22 +1544,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -1065,22 +1557,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            202,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            202,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -1088,22 +1570,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            202,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            202,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -1111,22 +1583,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -1134,22 +1596,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            145,
-            111,
-            175,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -1157,22 +1609,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            202,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            202,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -1180,22 +1622,12 @@
         "text_equal": true,
         "pages_equal": true,
         "MuPDF": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            202,
-            129
-          ]
+          "identical": true,
+          "difference_bbox": null
         },
         "Poppler": {
-          "identical": false,
-          "difference_bbox": [
-            132,
-            111,
-            202,
-            128
-          ]
+          "identical": true,
+          "difference_bbox": null
         }
       },
       {
@@ -1225,90 +1657,10 @@
         }
       }
     ],
-    "mask": null
-  },
-  "scope": "Word-observed ordinary w:t/hyperlink semantic projection; raw native snapshot strings are retained",
-  "owned_process_exit_confirmed": true,
-  "source_originals": 19,
-  "public_json_docx_cycles_per_original": 2,
-  "targeted_tests": {
-    "command": "pytest tests/readers/test_docx_whitespace.py -q",
-    "passed": 25
-  },
-  "model_changed": false,
-  "visual_defect": {
-    "status": "open",
-    "cause": "not established",
-    "controlled_compatibility_probe": [
-      {
-        "name": "source",
-        "compatibility_mode": 12,
-        "body_width_points": 44.124,
-        "source_sha256": "B149A43097CC5F031D8C597570AC7554644084003F4B383F9943B8668793610E"
-      },
-      {
-        "name": "converted",
-        "compatibility_mode": 14,
-        "body_width_points": 44.724,
-        "source_sha256": "0E4C65F5DA140C480AA76234EE1F7CF4AA1763B10DBD248558720AE736BA5D0D"
-      },
-      {
-        "name": "compatibility-12",
-        "compatibility_mode": 12,
-        "body_width_points": 44.724,
-        "source_sha256": "21AB3FC80BA5C61D63EF9B901A276C05F70F20FC63980C8EB5C78476D02B6729"
-      },
-      {
-        "name": "compatibility-14",
-        "compatibility_mode": 14,
-        "body_width_points": 44.724,
-        "source_sha256": "0FDD5DEA395EEA112AF3F3A98C2B6E9A0B9CCE3032347BC19041F53A82C61E48"
-      },
-      {
-        "name": "compatibility-15",
-        "compatibility_mode": 15,
-        "body_width_points": 44.724,
-        "source_sha256": "933EA38BB387E1E0758F524746C6B1B13A322CED9B0CF65DAA1C9622DB6620B8"
-      }
-    ]
-  },
-  "regressions": {
-    "docx": {
-      "command": "pytest tests/readers tests/writers tests/test_anatomy.py -q -k docx",
-      "passed": 539,
-      "deselected": 1602
-    },
-    "export": {
-      "command": "pytest tests/test_font_color_preflight.py tests/test_image_source_rect_export.py tests/test_text_layout_export.py -q",
-      "passed": 40
+    "mask": null,
+    "identical_by_engine": {
+      "MuPDF": 38,
+      "Poppler": 38
     }
-  },
-  "installed_profile": {
-    "packages": {
-      "lxml": "6.1.3",
-      "opendoc-formats": "0.42.0",
-      "opendoc-model": "0.19.0",
-      "python-docx": "1.2.0",
-      "typing_extensions": "4.16.0"
-    },
-    "command": "python -I tools/docx_whitespace_smoke.py",
-    "passed": true,
-    "absent": [
-      "fontTools",
-      "pypdf",
-      "pymupdf",
-      "fitz",
-      "PIL",
-      "bs4"
-    ],
-    "wheel_sha256": "209c589fde345fcb8bb916fba63816d12f5338795a271ab7156dc2c4bfe97b0e",
-    "lock_sha256": "5f1d1422b7869a45829e9f4a992a9517608f64a073ffe6c2376496e019518381",
-    "release_artifact": false
-  },
-  "font_color_preflight": {
-    "fixed": "resolve styles in their original owning document instead of a resource-free style-only context",
-    "font_references_and_programs_preserved": true,
-    "real_missing_resource_still_rejected": true,
-    "validation_weakened": false
   }
 }

@@ -1,0 +1,256 @@
+{
+  "scope": "Bounded parameterless RunLength source xref/ObjStm, not PDF rendering or active body resolution",
+  "specification": "https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=37",
+  "runtime": {
+    "opendoc-formats": "0.42.0",
+    "opendoc-model": "0.19.0",
+    "pymupdf": "1.28.2",
+    "pypdf": "6.19.0"
+  },
+  "tests": {
+    "runlength_cases": 297,
+    "pdf_anatomy_regressions": 585,
+    "all_control_bytes": 256
+  },
+  "independent_fixture_producer": "Own byte-level PDF and forward grouped/literal-only encoder, no Formats/PDF writer",
+  "comparisons": [
+    {
+      "kind": "xref",
+      "literal_only": false,
+      "trailing_encoded_bytes": 0,
+      "source_sha256": "446d71b2754f037495096e8d058c0eed8165ffa8bfc1319938f3a95f928ecbbd",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "payload_sha256": "217fb20b49d07766ea89e49012f1c83b2fa3b563adb24e98904925f5d1d11fcc",
+      "encoded_start": 419,
+      "encoded_data_end": 474,
+      "encoded_end": 474,
+      "decoded_bytes": 49,
+      "mupdf_full_bytes_equal": true,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_strict": true,
+      "pypdf_warnings": [],
+      "mupdf_is_repaired": false
+    },
+    {
+      "kind": "xref",
+      "literal_only": false,
+      "trailing_encoded_bytes": 1,
+      "source_sha256": "6fd72c7e8f211670aaaafb93df104ad970b972468242f5db5f6db7a433176c86",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "payload_sha256": "9036a458464b01935374120d04e0ceaa9ec19cc3193ac095381cecd96f0a9cde",
+      "encoded_start": 419,
+      "encoded_data_end": 474,
+      "encoded_end": 475,
+      "decoded_bytes": 49,
+      "mupdf_full_bytes_equal": true,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_strict": true,
+      "pypdf_warnings": [
+        "Found trailing newline in stream data, check if output is OK"
+      ],
+      "mupdf_is_repaired": false
+    },
+    {
+      "kind": "xref",
+      "literal_only": false,
+      "trailing_encoded_bytes": 10,
+      "source_sha256": "00e2b7f9195042efdb3377e001c3fc87b412d2abb98a5827a0aa8d681cb9a759",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "payload_sha256": "b50e48e38cf0f650ab397c2d68d452d44b9e5948e0b604b7be575c94ff8ae2bc",
+      "encoded_start": 419,
+      "encoded_data_end": 474,
+      "encoded_end": 484,
+      "decoded_bytes": 49,
+      "mupdf_full_bytes_equal": true,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_strict": true,
+      "pypdf_warnings": [
+        "Early EOD in RunLengthDecode, check if output is OK"
+      ],
+      "mupdf_is_repaired": false
+    },
+    {
+      "kind": "xref",
+      "literal_only": true,
+      "trailing_encoded_bytes": 0,
+      "source_sha256": "8ec5e7867ccc484155b1c5649c022da5c20647b3a2767fc9e6cf8b9b5bfc92aa",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "payload_sha256": "148bf9548823f0af57cdd4c915b7a432358d4ac21c7b4649c2ca335f2b88a5b4",
+      "encoded_start": 419,
+      "encoded_data_end": 470,
+      "encoded_end": 470,
+      "decoded_bytes": 49,
+      "mupdf_full_bytes_equal": true,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_strict": true,
+      "pypdf_warnings": [],
+      "mupdf_is_repaired": false
+    },
+    {
+      "kind": "xref",
+      "literal_only": true,
+      "trailing_encoded_bytes": 1,
+      "source_sha256": "c3b04c8edb2615f1efd9c312f517bef25dfa4f5912501b359eaa78a361570676",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "payload_sha256": "6e5f15090377381b2a72caa364c93809b232358a0ed649ccd67065d5909e2ee6",
+      "encoded_start": 419,
+      "encoded_data_end": 470,
+      "encoded_end": 471,
+      "decoded_bytes": 49,
+      "mupdf_full_bytes_equal": true,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_strict": true,
+      "pypdf_warnings": [
+        "Found trailing newline in stream data, check if output is OK"
+      ],
+      "mupdf_is_repaired": false
+    },
+    {
+      "kind": "xref",
+      "literal_only": true,
+      "trailing_encoded_bytes": 10,
+      "source_sha256": "6666ebc38b97832d790aee34c715acc64f8147000d02f3c287e0248ccfa94018",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "payload_sha256": "b6f9fdd5deddccc25dfb1f0dfc356371add1c2b56ec408ceaf91e00baf558a94",
+      "encoded_start": 419,
+      "encoded_data_end": 470,
+      "encoded_end": 480,
+      "decoded_bytes": 49,
+      "mupdf_full_bytes_equal": true,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_strict": true,
+      "pypdf_warnings": [
+        "Early EOD in RunLengthDecode, check if output is OK"
+      ],
+      "mupdf_is_repaired": false
+    },
+    {
+      "kind": "ObjStm",
+      "literal_only": false,
+      "trailing_encoded_bytes": 0,
+      "source_sha256": "cb383c93ca52b8acc671c7f079a92f2578c4c12fdb2ec75dfd9bcbdb09be955a",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "payload_sha256": "6f818e39616771a228ab4537600f257bc04b489db1b13ed31c32a1097f551f68",
+      "encoded_start": 273,
+      "encoded_data_end": 430,
+      "encoded_end": 430,
+      "decoded_bytes": 83,
+      "mupdf_full_bytes_equal": true,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_strict": true,
+      "pypdf_warnings": [],
+      "mupdf_is_repaired": false
+    },
+    {
+      "kind": "ObjStm",
+      "literal_only": false,
+      "trailing_encoded_bytes": 1,
+      "source_sha256": "c5908502853c91082dffbf60e1f755c40f8ccab75c9b2c568b23b50bfefa3b6e",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "payload_sha256": "59138edee5f413fe77cda913e40600b3c11b35cc4d32d003e35470b92f81023e",
+      "encoded_start": 273,
+      "encoded_data_end": 430,
+      "encoded_end": 431,
+      "decoded_bytes": 83,
+      "mupdf_full_bytes_equal": true,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_strict": true,
+      "pypdf_warnings": [
+        "Found trailing newline in stream data, check if output is OK"
+      ],
+      "mupdf_is_repaired": false
+    },
+    {
+      "kind": "ObjStm",
+      "literal_only": false,
+      "trailing_encoded_bytes": 10,
+      "source_sha256": "20b03f00e618565d0b781d0ccf14b54c4bdb05df2222208dee1672e77542747c",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "payload_sha256": "674cf74d2fa7a3759daa8d54325936fbc1b338c8de58e42e484b5b12b82a0b93",
+      "encoded_start": 273,
+      "encoded_data_end": 430,
+      "encoded_end": 440,
+      "decoded_bytes": 83,
+      "mupdf_full_bytes_equal": true,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_strict": true,
+      "pypdf_warnings": [
+        "Early EOD in RunLengthDecode, check if output is OK"
+      ],
+      "mupdf_is_repaired": false
+    },
+    {
+      "kind": "ObjStm",
+      "literal_only": true,
+      "trailing_encoded_bytes": 0,
+      "source_sha256": "50ca3f096475e1db6542ae4ff972d22757e9b890073770198e56986bc32d29b4",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "payload_sha256": "6477f5e52de49009d732ce5d2e7ca7176188a6d61461f2187ce8536eb1ba9e25",
+      "encoded_start": 272,
+      "encoded_data_end": 357,
+      "encoded_end": 357,
+      "decoded_bytes": 83,
+      "mupdf_full_bytes_equal": true,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_strict": true,
+      "pypdf_warnings": [],
+      "mupdf_is_repaired": false
+    },
+    {
+      "kind": "ObjStm",
+      "literal_only": true,
+      "trailing_encoded_bytes": 1,
+      "source_sha256": "fc7900a9ce88e75e06482a62e54a859c662e3e77c20f4137794279ee346cc270",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "payload_sha256": "acb91c952decece3e0b69947d9318b72cdb914cd947649f1512019910725dc1c",
+      "encoded_start": 272,
+      "encoded_data_end": 357,
+      "encoded_end": 358,
+      "decoded_bytes": 83,
+      "mupdf_full_bytes_equal": true,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_strict": true,
+      "pypdf_warnings": [
+        "Found trailing newline in stream data, check if output is OK"
+      ],
+      "mupdf_is_repaired": false
+    },
+    {
+      "kind": "ObjStm",
+      "literal_only": true,
+      "trailing_encoded_bytes": 10,
+      "source_sha256": "ca6c65b9e4ae62fae2535351b31241b0e1e29304f27f9d906d917c8b1d20ca63",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "payload_sha256": "93eaa6259d3a34fa194287d1888454fbbe52dee7575046e83b76b5eb3e27b72b",
+      "encoded_start": 272,
+      "encoded_data_end": 357,
+      "encoded_end": 367,
+      "decoded_bytes": 83,
+      "mupdf_full_bytes_equal": true,
+      "pypdf_full_bytes_equal": true,
+      "pypdf_strict": true,
+      "pypdf_warnings": [
+        "Early EOD in RunLengthDecode, check if output is OK"
+      ],
+      "mupdf_is_repaired": false
+    }
+  ],
+  "all_full_bytes_equal": true,
+  "limits": [
+    "quota before append",
+    "xref declared decoded size before decoder",
+    "unknown ObjStm expansion bounded",
+    "run-level cancellation",
+    "exact physical/decoded boundary",
+    "missing EOD/truncated run/length mismatch refusal",
+    "CLI destination unchanged on late EOD error"
+  ],
+  "not_proven": [
+    "filter chains",
+    "other compression filters",
+    "indirect Length",
+    "active body/ownership resolution",
+    "arbitrary PDF rendering compatibility"
+  ],
+  "full_pdf_conformance_proven": false
+}

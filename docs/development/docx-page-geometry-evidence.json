@@ -1,0 +1,1676 @@
+{
+  "process_id": 3732,
+  "program": "Microsoft Word",
+  "build": "16.0.17932",
+  "version": "16.0",
+  "distinct_owned_process": true,
+  "observations": [
+    {
+      "name": "missing-size",
+      "pages": 1,
+      "file": "missing-size.docx",
+      "sha256": "59C79D58D4AE5C05F3516AD3CB12A4DDD246BC23668DF628BF19CBCCA98F34EE",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "missing-size-cycle-1",
+      "pages": 1,
+      "file": "missing-size-cycle-1.docx",
+      "sha256": "E5D0DE1642A38A93990E715F2F98042A7CA54F5E6370FE1D1EA4064ECAC6973F",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "missing-size-cycle-2",
+      "pages": 1,
+      "file": "missing-size-cycle-2.docx",
+      "sha256": "8F8BE5A52F45B07A215D4087A364BAAB9EEE9D31AB295C23206BBA365425C108",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "empty-size",
+      "pages": 1,
+      "file": "empty-size.docx",
+      "sha256": "6E717A2D89A3553531DC429FA6B7688C6FFD004B9147518A071416C2B83400D4",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "empty-size-cycle-1",
+      "pages": 1,
+      "file": "empty-size-cycle-1.docx",
+      "sha256": "CB15036E3F306D872EE7CB63B21F222F2CA827B22D15159A40CB3038AABE1BF9",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "empty-size-cycle-2",
+      "pages": 1,
+      "file": "empty-size-cycle-2.docx",
+      "sha256": "46BC6166A91DB69E4743BC999E0007E5BC7C72ED3E3D65EC817C48DA41FEEDEE",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "width-only",
+      "pages": 1,
+      "file": "width-only.docx",
+      "sha256": "BAA0BB99DD6C0A713432C151B01DC5AA4C9D022DB599E6E464D966B6D5FE819F",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 560.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "width-only-cycle-1",
+      "pages": 1,
+      "file": "width-only-cycle-1.docx",
+      "sha256": "E7DE4322443779C2F804F93DA0FAC5182317351B8E6341F9F84693F2766866E9",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 560.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "width-only-cycle-2",
+      "pages": 1,
+      "file": "width-only-cycle-2.docx",
+      "sha256": "AED620A8DAB57CB364C2C865640E4EAE3EAF6B66A0C7E49421E0C3C75F01CD29",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 560.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "height-only",
+      "pages": 1,
+      "file": "height-only.docx",
+      "sha256": "A6B0CAEE7B9F816B001CDBE7AE9CEADCE16C217A4B5D96B463DC6C2848B866BD",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 720.0,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "height-only-cycle-1",
+      "pages": 1,
+      "file": "height-only-cycle-1.docx",
+      "sha256": "A7D58DF8477A5C58B5E6850DBA9DAF1B240FD92E396F0718D0B36301256C67A9",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 720.0,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "height-only-cycle-2",
+      "pages": 1,
+      "file": "height-only-cycle-2.docx",
+      "sha256": "EED77A8296AF721D75F37657B1782D00AA1F3FB21112D2C5B9BE4A728DD04245",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 720.0,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "landscape-only",
+      "pages": 1,
+      "file": "landscape-only.docx",
+      "sha256": "870AC68102D88B47D9919F624B234090EEBB58F21A3A549FE30AFB920EA68716",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 1,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "landscape-only-cycle-1",
+      "pages": 1,
+      "file": "landscape-only-cycle-1.docx",
+      "sha256": "50FB9DE19F1072C12CDF9092A788EAC0C7EB528DF40034CFC683078410A1B3B8",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 1,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "landscape-only-cycle-2",
+      "pages": 1,
+      "file": "landscape-only-cycle-2.docx",
+      "sha256": "211B89DF6C17A690ECD8B3BB5D9D83367A1B10AE3F11146FC9A332CEA176AEF8",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 1,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "explicit-landscape",
+      "pages": 1,
+      "file": "explicit-landscape.docx",
+      "sha256": "9CE2551D94ADF0B2E050D2E37D603DDDB46498D99A5DA762084C77EB32BE3A61",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 792.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 612.0,
+          "orientation": 1,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "explicit-landscape-cycle-1",
+      "pages": 1,
+      "file": "explicit-landscape-cycle-1.docx",
+      "sha256": "F9A3245A53D039D36E79618249392417A12FA030C57CA17B48C6A474151D553C",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 792.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 612.0,
+          "orientation": 1,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "explicit-landscape-cycle-2",
+      "pages": 1,
+      "file": "explicit-landscape-cycle-2.docx",
+      "sha256": "04ABB10B729E21FCA1723F76CB282292DF2001E6376F966D110CE9B0903A1C0B",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 792.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 612.0,
+          "orientation": 1,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "empty-section",
+      "pages": 1,
+      "file": "empty-section.docx",
+      "sha256": "9B86195A09C92F7EFB695A6F8C0436397CAC3DE1DCE46D8DC0C9CD90BFBB7287",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 56.70000076293945,
+          "right": 42.5,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 56.70000076293945,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 85.05000305175781
+        }
+      ]
+    },
+    {
+      "name": "empty-section-cycle-1",
+      "pages": 1,
+      "file": "empty-section-cycle-1.docx",
+      "sha256": "9816E418E4555755072763F2DA307F8427B68C21730482DDF519F47F379921C9",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 56.70000076293945,
+          "right": 42.5,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 56.70000076293945,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 85.05000305175781
+        }
+      ]
+    },
+    {
+      "name": "empty-section-cycle-2",
+      "pages": 1,
+      "file": "empty-section-cycle-2.docx",
+      "sha256": "EA32DEBA40FCB10ACB0BAD44DBB96ACE6AA8C5FA2D41C93E1B165BD250DA838A",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 56.70000076293945,
+          "right": 42.5,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 56.70000076293945,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 85.05000305175781
+        }
+      ]
+    },
+    {
+      "name": "missing-margins",
+      "pages": 1,
+      "file": "missing-margins.docx",
+      "sha256": "A2C8B6DEC10933D97C2458CA77E05A8F701D874B934F446BC35CAFB593F84C13",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 56.70000076293945,
+          "right": 42.5,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 56.70000076293945,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 85.05000305175781
+        }
+      ]
+    },
+    {
+      "name": "missing-margins-cycle-1",
+      "pages": 1,
+      "file": "missing-margins-cycle-1.docx",
+      "sha256": "6E2D40D452CD0240B69781F6433E1B1E79C5E18B9DCE305C359FFD4E7CAA0EFA",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 56.70000076293945,
+          "right": 42.5,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 56.70000076293945,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 85.05000305175781
+        }
+      ]
+    },
+    {
+      "name": "missing-margins-cycle-2",
+      "pages": 1,
+      "file": "missing-margins-cycle-2.docx",
+      "sha256": "DE36995F2F2640799B35CD451124A701D611F1EF7B6A196715A92FDF5BBA5E19",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 56.70000076293945,
+          "right": 42.5,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 56.70000076293945,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 85.05000305175781
+        }
+      ]
+    },
+    {
+      "name": "empty-margins",
+      "pages": 1,
+      "file": "empty-margins.docx",
+      "sha256": "55D5E6ACE150B4DC087E2BF0D2F0A2DE0F70E05598215A1D8190546D34268F55",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 56.70000076293945,
+          "right": 42.5,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 56.70000076293945,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 85.05000305175781
+        }
+      ]
+    },
+    {
+      "name": "empty-margins-cycle-1",
+      "pages": 1,
+      "file": "empty-margins-cycle-1.docx",
+      "sha256": "FE4876F9C374772AB32AE2127DC2ACB6294C85DF0A9E3AC5342583F48DB947E7",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 56.70000076293945,
+          "right": 42.5,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 56.70000076293945,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 85.05000305175781
+        }
+      ]
+    },
+    {
+      "name": "empty-margins-cycle-2",
+      "pages": 1,
+      "file": "empty-margins-cycle-2.docx",
+      "sha256": "27450C8BB8B32CCF0559E1F8B0E277DC29A2C25127EA90F40FBCC402921C56B0",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 56.70000076293945,
+          "right": 42.5,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 56.70000076293945,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 85.05000305175781
+        }
+      ]
+    },
+    {
+      "name": "partial-margins",
+      "pages": 1,
+      "file": "partial-margins.docx",
+      "sha256": "277585B1C84F6F5F1C97461E8E169A330EBE204BF09B94CB42BBB98E7670E5B1",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 56.70000076293945,
+          "right": 42.5,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 56.70000076293945,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "partial-margins-cycle-1",
+      "pages": 1,
+      "file": "partial-margins-cycle-1.docx",
+      "sha256": "AA5ECA6825FF8B655EA4AE8049FEC7CCD12D65EDED67DD5A4AB93550E0C28D11",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 56.70000076293945,
+          "right": 42.5,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 56.70000076293945,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "partial-margins-cycle-2",
+      "pages": 1,
+      "file": "partial-margins-cycle-2.docx",
+      "sha256": "90D33CF0D86371ACEEF7C5164033D54DED778B870F0C46B1CD9333B944EA6F14",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 56.70000076293945,
+          "right": 42.5,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 56.70000076293945,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "explicit-a4",
+      "pages": 1,
+      "file": "explicit-a4.docx",
+      "sha256": "1252FF246D07422F0438DD7A90D378B260BE80C57108162EB093FB78EDB8BFD6",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 595.2999877929688,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 841.9000244140625,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "explicit-a4-cycle-1",
+      "pages": 1,
+      "file": "explicit-a4-cycle-1.docx",
+      "sha256": "4A5C2C0B04C0C7E8BF370AB228E2DA7D876C5E3765746B0BB8AD204E5C7618E1",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 595.2999877929688,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 841.9000244140625,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "explicit-a4-cycle-2",
+      "pages": 1,
+      "file": "explicit-a4-cycle-2.docx",
+      "sha256": "EB8A2495B013316F1D17776BFFB9EA61FB1ADF30EB723B8A32128CEC9C6F194A",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 595.2999877929688,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 841.9000244140625,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "missing-section",
+      "pages": 1,
+      "file": "missing-section.docx",
+      "sha256": "7D39E8C2502BDF0EEBF7D6C4FCEF9E4A2ED9BF3A3049CCE3EAE8332E63B59908",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 595.2999877929688,
+          "bottom": 56.70000076293945,
+          "right": 42.5,
+          "footer": 35.400001525878906,
+          "height": 841.9000244140625,
+          "orientation": 0,
+          "top": 56.70000076293945,
+          "header": 35.400001525878906,
+          "gutter": 0.0,
+          "left": 85.05000305175781
+        }
+      ]
+    },
+    {
+      "name": "missing-section-cycle-1",
+      "pages": 1,
+      "file": "missing-section-cycle-1.docx",
+      "sha256": "AB65115C1D030F9E152497F2163B0D4B43D935EE46391760938C32FD72439AFA",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 595.2999877929688,
+          "bottom": 56.70000076293945,
+          "right": 42.5,
+          "footer": 35.400001525878906,
+          "height": 841.9000244140625,
+          "orientation": 0,
+          "top": 56.70000076293945,
+          "header": 35.400001525878906,
+          "gutter": 0.0,
+          "left": 85.05000305175781
+        }
+      ]
+    },
+    {
+      "name": "missing-section-cycle-2",
+      "pages": 1,
+      "file": "missing-section-cycle-2.docx",
+      "sha256": "4AF250C18B5D71C7AFE6FB8BFFC768A0511F14127D209D2AA01010A13396F815",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 595.2999877929688,
+          "bottom": 56.70000076293945,
+          "right": 42.5,
+          "footer": 35.400001525878906,
+          "height": 841.9000244140625,
+          "orientation": 0,
+          "top": 56.70000076293945,
+          "header": 35.400001525878906,
+          "gutter": 0.0,
+          "left": 85.05000305175781
+        }
+      ]
+    },
+    {
+      "name": "a4-then-missing",
+      "pages": 2,
+      "file": "a4-then-missing.docx",
+      "sha256": "D1CAE17C0DBED5A040558ED76E527D0619EA4379B50A4287001F35D630394440",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\fSection 2. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 595.2999877929688,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 841.9000244140625,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        },
+        {
+          "width": 612.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "a4-then-missing-cycle-1",
+      "pages": 2,
+      "file": "a4-then-missing-cycle-1.docx",
+      "sha256": "7405462E14A75906C594335A41AA491C0B0EF8D9378A586EC4845196169C9C82",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\fSection 2. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 595.2999877929688,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 841.9000244140625,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        },
+        {
+          "width": 612.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "a4-then-missing-cycle-2",
+      "pages": 2,
+      "file": "a4-then-missing-cycle-2.docx",
+      "sha256": "653891387D5C72A68A60FC6C0420DCF85A9F0ADE7942CD236474A8C2E598ACE1",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\fSection 2. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 595.2999877929688,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 841.9000244140625,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        },
+        {
+          "width": 612.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "missing-then-a4",
+      "pages": 2,
+      "file": "missing-then-a4.docx",
+      "sha256": "E2595D8B1A1D09B165A957BB30DA4038E88E1F2E23C7EB2AB2DC11610F37D9A2",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\fSection 2. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        },
+        {
+          "width": 595.2999877929688,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 841.9000244140625,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "missing-then-a4-cycle-1",
+      "pages": 2,
+      "file": "missing-then-a4-cycle-1.docx",
+      "sha256": "7A61C0F63BFC91353737D442F59EF755B8D7FEA36EC94B3DEC474BAF68476394",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\fSection 2. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        },
+        {
+          "width": 595.2999877929688,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 841.9000244140625,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "missing-then-a4-cycle-2",
+      "pages": 2,
+      "file": "missing-then-a4-cycle-2.docx",
+      "sha256": "78413BFFF4EF6999F9BEE2E8BA10262763A363CFC36A05DE96C9CA1EA2BC2651",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\fSection 2. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 612.0,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 792.0,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        },
+        {
+          "width": 595.2999877929688,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 841.9000244140625,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        }
+      ]
+    },
+    {
+      "name": "a4-then-implicit",
+      "pages": 2,
+      "file": "a4-then-implicit.docx",
+      "sha256": "EBA7992AB6EA4706E459B16764514B2D12D00082DE6426CEDA2446D51FB35C1B",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\fSection 2. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 595.2999877929688,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 841.9000244140625,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        },
+        {
+          "width": 595.2999877929688,
+          "bottom": 56.70000076293945,
+          "right": 42.5,
+          "footer": 35.400001525878906,
+          "height": 841.9000244140625,
+          "orientation": 0,
+          "top": 56.70000076293945,
+          "header": 35.400001525878906,
+          "gutter": 0.0,
+          "left": 85.05000305175781
+        }
+      ]
+    },
+    {
+      "name": "a4-then-implicit-cycle-1",
+      "pages": 2,
+      "file": "a4-then-implicit-cycle-1.docx",
+      "sha256": "732284F239FAEA628D9DE422990F189D6505EB7A7B98CAD45255C6C29D12B9E6",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\fSection 2. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 595.2999877929688,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 841.9000244140625,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        },
+        {
+          "width": 595.2999877929688,
+          "bottom": 56.70000076293945,
+          "right": 42.5,
+          "footer": 35.400001525878906,
+          "height": 841.9000244140625,
+          "orientation": 0,
+          "top": 56.70000076293945,
+          "header": 35.400001525878906,
+          "gutter": 0.0,
+          "left": 85.05000305175781
+        }
+      ]
+    },
+    {
+      "name": "a4-then-implicit-cycle-2",
+      "pages": 2,
+      "file": "a4-then-implicit-cycle-2.docx",
+      "sha256": "AD9A3CD760876199D1066B64A70A2BC0426FE5E3EB94D7D120C90ED43F91C6C5",
+      "text": "Section 1. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\fSection 2. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping. Page geometry: size and margins determine line wrapping.\r",
+      "compatibility_mode": 12,
+      "page_geometry": [
+        {
+          "width": 595.2999877929688,
+          "bottom": 72.0,
+          "right": 72.0,
+          "footer": 36.0,
+          "height": 841.9000244140625,
+          "orientation": 0,
+          "top": 72.0,
+          "header": 36.0,
+          "gutter": 0.0,
+          "left": 72.0
+        },
+        {
+          "width": 595.2999877929688,
+          "bottom": 56.70000076293945,
+          "right": 42.5,
+          "footer": 35.400001525878906,
+          "height": 841.9000244140625,
+          "orientation": 0,
+          "top": 56.70000076293945,
+          "header": 35.400001525878906,
+          "gutter": 0.0,
+          "left": 85.05000305175781
+        }
+      ]
+    }
+  ],
+  "pdf_profile": "Word PDF/A-1 export",
+  "semantic_accepted": true,
+  "visual_accepted": true,
+  "quality_gate_complete": true,
+  "visual": {
+    "dpi": 108,
+    "mask": null,
+    "comparisons": [
+      {
+        "name": "missing-size-cycle-1",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "missing-size-cycle-2",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "empty-size-cycle-1",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "empty-size-cycle-2",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "width-only-cycle-1",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "width-only-cycle-2",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "height-only-cycle-1",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "height-only-cycle-2",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "landscape-only-cycle-1",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "landscape-only-cycle-2",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "explicit-landscape-cycle-1",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "explicit-landscape-cycle-2",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "empty-section-cycle-1",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "empty-section-cycle-2",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "missing-margins-cycle-1",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "missing-margins-cycle-2",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "empty-margins-cycle-1",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "empty-margins-cycle-2",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "partial-margins-cycle-1",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "partial-margins-cycle-2",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "explicit-a4-cycle-1",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "explicit-a4-cycle-2",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "missing-section-cycle-1",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "missing-section-cycle-2",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null
+          ]
+        }
+      },
+      {
+        "name": "a4-then-missing-cycle-1",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null,
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null,
+            null
+          ]
+        }
+      },
+      {
+        "name": "a4-then-missing-cycle-2",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null,
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null,
+            null
+          ]
+        }
+      },
+      {
+        "name": "missing-then-a4-cycle-1",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null,
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null,
+            null
+          ]
+        }
+      },
+      {
+        "name": "missing-then-a4-cycle-2",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null,
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null,
+            null
+          ]
+        }
+      },
+      {
+        "name": "a4-then-implicit-cycle-1",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null,
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null,
+            null
+          ]
+        }
+      },
+      {
+        "name": "a4-then-implicit-cycle-2",
+        "text_equal": true,
+        "pages_equal": true,
+        "geometry_equal": true,
+        "MuPDF": {
+          "identical": true,
+          "difference_bboxes": [
+            null,
+            null
+          ]
+        },
+        "Poppler": {
+          "identical": true,
+          "difference_bboxes": [
+            null,
+            null
+          ]
+        }
+      }
+    ]
+  },
+  "runtime": {
+    "opendoc-formats": "0.42.0",
+    "opendoc-model": "0.19.0",
+    "pymupdf": "1.28.2",
+    "pillow": "12.3.0",
+    "poppler": "pdftoppm version 26.07.0"
+  }
+}

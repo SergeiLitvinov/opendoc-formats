@@ -1,5 +1,6 @@
 """Installed base wheel: physical PDF xref inspection without any PDF engine."""
 
+import base64
 import importlib.util
 import zlib
 from pathlib import Path
@@ -84,7 +85,106 @@ def main():
     assert effective[6]['offset'] == container_offset and effective[0]['state'] == 'free'
     assert dict(inventory.details)['xref_record_selection_complete']
     assert not dict(inventory.details)['object_resolution_complete']
-    print('Installed base PDF source: effective classic/PNG xrefs and Flate ObjStm; no PDF/image backends')
+    # A TIFF-predicted index uses complete 16-bit components, not byte differences.
+    tiff_offset = len(source)
+    raw = b''.join(b'\x01'+value.to_bytes(5, 'big')+b'\0\0' for value in (xref, tiff_offset))
+    differences = bytearray()
+    for start in range(0, len(raw), 8):
+        samples = [int.from_bytes(raw[start+column:start+column+2], 'big') for column in range(0, 8, 2)]
+        for value in samples[:1]+[(right-left) % 65536 for right, left in zip(samples[1:], samples[:-1])]:
+            differences.extend(value.to_bytes(2, 'big'))
+    encoded = zlib.compress(differences)
+    source += (b'10 0 obj\n<< /Type /XRef /Size 11 /Root 1 0 R /W [1 5 2] /Index [9 2] '
+               +f'/Prev {xref} /Length {len(encoded)} /Filter /FlateDecode '.encode()
+               +b'/DecodeParms << /Predictor 2 /BitsPerComponent 16 /Columns 4 >> >>\nstream\n'+encoded
+               +b'\nendstream\nendobj\nstartxref\n'+str(tiff_offset).encode()+b'\n%%EOF\n')
+    result = inspect_binary(source, pdf_source=True, pdf_decode_xrefs=True, pdf_resolve_xrefs=True,
+                            pdf_object_streams=True, capture=True)
+    item = result.items[0]
+    details = dict(item.details)
+    assert details['predictor'] == 2 and details['decode_work_bytes'] == len(raw)
+    assert item.payload == source[tiff_offset:details['end']]
+    effective = {record['object']: record for record in dict(result.details)['effective_xref_entries']}
+    assert effective[9]['offset'] == xref and effective[10]['offset'] == tiff_offset
+    assert effective[7]['object_stream'] == 6 and len(effective) == 11
+    # Both an object container and the next xref use parameterless RunLength.
+    rle_container = len(source)
+    title = b'<< /Title (Own RunLength ObjStm) >>'
+    content = b'12 0 '+title
+    encoded = bytes([len(content)-1])+content+b'\x80'
+    source += (b'11 0 obj\n<< /Type /ObjStm /N 1 /First 5 /Filter /RunLengthDecode '
+               +f'/Length {len(encoded)} >>\nstream\n'.encode()+encoded+b'\nendstream\nendobj\n')
+    rle_xref = len(source)
+    records = [(1, rle_container, 0), (2, 11, 0), (1, rle_xref, 0)]
+    raw = b''.join(bytes([kind])+value.to_bytes(4, 'big')+index.to_bytes(2, 'big') for kind, value, index in records)
+    encoded = bytes([len(raw)-1])+raw+b'\x80'
+    source += (b'13 0 obj\n<< /Type /XRef /Size 14 /Root 1 0 R /Info 12 0 R /W [1 4 2] /Index [11 3] '
+               +f'/Prev {tiff_offset} /Length {len(encoded)} /Filter /RunLengthDecode >>\nstream\n'.encode()+encoded
+               +b'\nendstream\nendobj\nstartxref\n'+str(rle_xref).encode()+b'\n%%EOF\n')
+    result = inspect_binary(source, pdf_source=True, pdf_decode_xrefs=True, pdf_resolve_xrefs=True,
+                            pdf_object_streams=True, capture=True)
+    details = dict(result.items[0].details)
+    assert details['filter'] == 'RunLengthDecode' and details['trailing_encoded_bytes'] == 0
+    assert result.items[0].payload == source[rle_xref:details['end']]
+    member = next(item for item in result.items if item.kind == 'pdf-compressed-object' and dict(item.details)['object'] == 12)
+    assert member.payload == title
+    effective = {record['object']: record for record in dict(result.details)['effective_xref_entries']}
+    assert effective[11]['offset'] == rle_container and effective[12]['object_stream'] == 11
+    assert effective[13]['offset'] == rle_xref and len(effective) == 14
+    ascii_container = len(source)
+    title = b'<< /Title (Own ASCII ObjStm) >>'
+    content = b'15 0 '+title
+    encoded = content.hex().encode()+b'>'
+    source += (b'14 0 obj\n<< /Type /ObjStm /N 1 /First 5 /Filter /ASCIIHexDecode '
+               +f'/Length {len(encoded)} >>\nstream\n'.encode()+encoded+b'\nendstream\nendobj\n')
+    ascii_xref = len(source)
+    records = [(1, ascii_container, 0), (2, 14, 0), (1, ascii_xref, 0)]
+    raw = b''.join(bytes([kind])+value.to_bytes(4, 'big')+index.to_bytes(2, 'big') for kind, value, index in records)
+    encoded = base64.a85encode(raw)+b'~>'
+    source += (b'16 0 obj\n<< /Type /XRef /Size 17 /Root 1 0 R /Info 15 0 R /W [1 4 2] /Index [14 3] '
+               +f'/Prev {rle_xref} /Length {len(encoded)} /Filter /ASCII85Decode >>\nstream\n'.encode()+encoded
+               +b'\nendstream\nendobj\nstartxref\n'+str(ascii_xref).encode()+b'\n%%EOF\n')
+    result = inspect_binary(source, pdf_source=True, pdf_decode_xrefs=True, pdf_resolve_xrefs=True,
+                            pdf_object_streams=True, capture=True)
+    details = dict(result.items[0].details)
+    assert details['filter'] == 'ASCII85Decode' and details['trailing_encoded_bytes'] == 0
+    assert result.items[0].payload == source[ascii_xref:details['end']]
+    member = next(item for item in result.items if item.kind == 'pdf-compressed-object' and dict(item.details)['object'] == 15)
+    assert member.payload == title
+    effective = {record['object']: record for record in dict(result.details)['effective_xref_entries']}
+    assert effective[14]['offset'] == ascii_container and effective[15]['object_stream'] == 14
+    assert effective[16]['offset'] == ascii_xref and len(effective) == 17
+    chain_container = len(source)
+    title = b'<< /Title (Own pipeline ObjStm) >>'
+    content = b'18 0 '+title
+    predicted = b''.join(b'\0'+bytes([value]) for value in content)
+    compressed = zlib.compress(predicted)
+    encoded = base64.a85encode(compressed)+b'~>'
+    source += (b'17 0 obj\n<< /Type /ObjStm /N 1 /First 5 /Filter [/ASCII85Decode /FlateDecode] '
+               +b'/DecodeParms [null << /Predictor 12 /Columns 1 >>] '
+               +f'/Length {len(encoded)} >>\nstream\n'.encode()+encoded+b'\nendstream\nendobj\n')
+    chain_xref = len(source)
+    records = [(1, chain_container, 0), (2, 17, 0), (1, chain_xref, 0)]
+    raw = b''.join(bytes([kind])+value.to_bytes(4, 'big')+index.to_bytes(2, 'big') for kind, value, index in records)
+    predicted = b''.join(b'\0'+raw[start:start+7] for start in range(0, len(raw), 7))
+    compressed = zlib.compress(predicted)
+    encoded = compressed.hex().encode()+b'>'
+    source += (b'19 0 obj\n<< /Type /XRef /Size 20 /Root 1 0 R /Info 18 0 R /W [1 4 2] /Index [17 3] '
+               +b'/Filter [/ASCIIHexDecode /FlateDecode] /DecodeParms [null << /Predictor 12 /Columns 7 >>] '
+               +f'/Prev {ascii_xref} /Length {len(encoded)} >>\nstream\n'.encode()+encoded
+               +b'\nendstream\nendobj\nstartxref\n'+str(chain_xref).encode()+b'\n%%EOF\n')
+    result = inspect_binary(source, pdf_source=True, pdf_decode_xrefs=True, pdf_resolve_xrefs=True,
+                            pdf_object_streams=True, capture=True)
+    details = dict(result.items[0].details)
+    assert details['filter_chain'] == ['ASCIIHexDecode', 'FlateDecode']
+    assert details['decode_work_bytes'] == len(compressed)+len(predicted)
+    assert result.items[0].payload == source[chain_xref:details['end']]
+    member = next(item for item in result.items if item.kind == 'pdf-compressed-object' and dict(item.details)['object'] == 18)
+    assert member.payload == title
+    effective = {record['object']: record for record in dict(result.details)['effective_xref_entries']}
+    assert effective[17]['offset'] == chain_container and effective[18]['object_stream'] == 17
+    assert effective[19]['offset'] == chain_xref and len(effective) == 20
+    print('Installed base PDF source: raw, Flate/TIFF/PNG, RunLength, ASCII and pipelines; no PDF/image backends')
 
 
 if __name__ == '__main__':

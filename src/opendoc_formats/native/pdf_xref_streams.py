@@ -5,9 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 from opendoc_formats.errors import InvalidDocumentError, ResourceLimitError, UnsupportedDocumentError
-from opendoc_formats.native.pdf_flate import inflate
-from opendoc_formats.native.pdf_predictors import layout, undo_png
-from opendoc_formats.native.pdf_syntax import Name, Parser, SyntaxBudget
+from opendoc_formats.native.pdf_stream_decode import decode
+from opendoc_formats.native.pdf_syntax import Parser, SyntaxBudget
 from opendoc_formats.support.cancellation import checkpoint
 
 
@@ -58,39 +57,12 @@ def decode_xref(data: bytes, start: int, dictionary: dict[str, Any], *, part_lim
         raise invalid('xref stream Length outside source')
     if 'F' in dictionary:
         raise UnsupportedDocumentError(location+'external xref streams are not opened')
-    encoding = dictionary.get('Filter')
-    parameters = dictionary.get('DecodeParms')
-    if isinstance(encoding, list):
-        if len(encoding) != 1:
-            raise UnsupportedDocumentError(location+'xref filter chains outside supported profile')
-        encoding = encoding[0]
-        if isinstance(parameters, list) and len(parameters) == 1:
-            parameters = parameters[0]
-    if encoding is not None and encoding != Name('FlateDecode'):
-        raise UnsupportedDocumentError(location+'xref filter outside raw/FlateDecode profile')
-    if parameters is not None:
-        if not isinstance(parameters, dict):
-            raise UnsupportedDocumentError(location+'xref DecodeParms must be a direct dictionary or null')
-        if any(key not in {'Predictor', 'Colors', 'BitsPerComponent', 'Columns', 'EarlyChange'} for key in parameters):
-            raise UnsupportedDocumentError(location+'unknown xref decoding parameter')
-    predictor, row_bytes, stride, inflated_size = layout(parameters or {}, expected, location)
-    if predictor != 1 and encoding is None:
-        raise UnsupportedDocumentError(location+'PNG predictor requires FlateDecode')
-    if inflated_size > part_limit or length+inflated_size > byte_limit:
-        raise ResourceLimitError(location+'PNG row tags exceed max_part_bytes/max_total_bytes')
-    raw = memoryview(data)[start:end]
-    if encoding is None:
-        if length != expected:
-            raise invalid('raw xref length disagrees with W/Index')
-        decoded: bytes | memoryview = raw
-    else:
-        output = inflate(raw, inflated_size, location, expected=inflated_size)
-        if predictor != 1:
-            undo_png(output, row_bytes, stride, location)
-        decoded = memoryview(output)
     parser = Parser(data, end, part_limit, budget)
     if parser.take().value != b'endstream' or parser.take().value != b'endobj':
         raise invalid('xref Length does not end before endstream/endobj')
+    decoded, decode_info = decode(memoryview(data)[start:end], dictionary.get('Filter'), dictionary.get('DecodeParms'),
+                                  source_start=start, part_limit=part_limit, byte_limit=byte_limit-(parser.pos-start),
+                                  expected=expected, location=location, budget=budget)
     entries: list[dict[str, Any]] = []
     cursor = 0
     for first, stop in ranges:
@@ -119,6 +91,4 @@ def decode_xref(data: bytes, start: int, dictionary: dict[str, Any], *, part_lim
                 entry.update(in_use=None, raw_fields=fields)
             entries.append(entry)
     return entries, parser.pos, {'encoded_start': start, 'encoded_end': end, 'decoded_bytes': expected,
-                                'decode_work_bytes': inflated_size, 'predictor': predictor,
-                                'filter': 'FlateDecode' if encoding else None,
-                                'record_widths': widths, 'index': index}
+                                'record_widths': widths, 'index': index, **decode_info}

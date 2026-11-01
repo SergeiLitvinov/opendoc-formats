@@ -8,6 +8,7 @@ from typing import Any
 from opendoc_model.diagnostics import ConversionReport
 from opendoc_model.document_model import Block, DocumentModel, Section
 
+from opendoc_formats.errors import InvalidDocumentError, ResourceLimitError
 from opendoc_formats.support.cancellation import checkpoint
 
 BlockWriter = Callable[
@@ -21,6 +22,28 @@ def section_start_type(source: Section, section_enum: Any) -> Any:
     return getattr(section_enum, start_type, section_enum.NEW_PAGE)
 
 
+def add_section(target: Any, start_type: Any, previous: Section) -> Any:
+    """Keep a source paragraph section break on that paragraph, without adding a blank one."""
+    from opendoc_formats.ooxml.page_geometry import KEY, W
+
+    checkpoint()
+    body = target.element.body
+    before = body.sectPr.getprevious() if body.sectPr is not None else (body[-1] if len(body) else None)
+    result = target.add_section(start_type)
+    state = previous.properties.get(KEY)
+    if not isinstance(state, dict) or not state.get('break_on_paragraph') or before is None or before.tag != W+'p':
+        return result
+    added = result._sectPr.getprevious()
+    if (added is None or added is before or added.tag != W+'p' or len(added) != 1
+            or added.pPr is None or len(added.pPr) != 1 or added.pPr.sectPr is None):
+        return result
+    owner = before.get_or_add_pPr()
+    if owner.sectPr is None:
+        owner._insert_sectPr(added.pPr.sectPr)
+        body.remove(added)
+    return result
+
+
 def configure_section(
     target: Any,
     source: Section,
@@ -29,9 +52,18 @@ def configure_section(
     section_index: int,
     counters: dict[str, int],
     write_blocks: BlockWriter,
+    *, limits: Any = None,
 ) -> None:
     _apply_page_settings(target, source)
     _write_header_footer(target, source, document, report, section_index, counters, write_blocks)
+    from opendoc_model import IssueSeverity
+
+    from opendoc_formats.ooxml.page_geometry import restore_geometry
+
+    try:
+        restore_geometry(target, source, limits=limits)
+    except (InvalidDocumentError, ResourceLimitError, ValueError) as error:
+        report.add(IssueSeverity.ERROR, 'docx.page-geometry', str(error), f'sections[{section_index}].page')
 
 
 def _apply_page_settings(target: Any, source: Section) -> None:

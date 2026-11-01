@@ -128,9 +128,10 @@ def _read_docx_model(
     # Lazy styles/settings/core-properties access can create parts that were never in the source graph.
     native_loaded_parts = tuple(str(part.partname) for part in cancellable_items(document.part.package.iter_parts()))
     from opendoc_formats.ooxml.docx_defaults import KEY as DEFAULTS_KEY
-    from opendoc_formats.ooxml.docx_defaults import source_defaults
+    from opendoc_formats.ooxml.docx_defaults import SETTINGS_KEY, source_defaults, source_settings
 
     defaults_state = source_defaults(document)
+    settings_state = source_settings(document)
     model = DocumentModel(
         mode=mode,
         source_format=DocFormat.DOCX.value,
@@ -138,6 +139,7 @@ def _read_docx_model(
     )
     model.package = _load_docx_package_graph(document)
     model.metadata[DEFAULTS_KEY] = defaults_state
+    model.metadata[SETTINGS_KEY] = settings_state
     checkpoint()
     from opendoc_formats.readers.docx_fonts import read_embedded_fonts
 
@@ -169,6 +171,11 @@ def _read_docx_model(
 
     if len(section_blocks) > 1 and not section_blocks[-1]:
         section_blocks.pop()
+    implicit_final_section = document.element.body.sectPr is None
+    if implicit_final_section:
+        # Only the in-memory navigation context is created. The source omission
+        # is recorded and restored; source bytes are never changed.
+        document.element.body.get_or_add_sectPr()
     for index, blocks in enumerate(section_blocks):
         checkpoint()
         source_section = document.sections[min(index, len(document.sections) - 1)]
@@ -180,6 +187,7 @@ def _read_docx_model(
                 index,
                 _container_blocks,
                 odd_and_even_pages=bool(document.settings.odd_and_even_pages_header_footer),
+                section_present=not (implicit_final_section and index == len(section_blocks)-1),
             )
         )
     from opendoc_formats.readers.docx_fonts import attach_font_references
@@ -282,6 +290,7 @@ def _load_docx_package_graph(document: Any) -> PackageGraph | None:
         for node in cancellable_items(document.element.iter("{urn:schemas-microsoft-com:vml}imagedata"))
     }
     recursive = {
+        RELATIONSHIP_TYPE["settings"],
         RELATIONSHIP_TYPE["footnotes"],
         RELATIONSHIP_TYPE["endnotes"],
         RELATIONSHIP_TYPE["comments"],

@@ -113,7 +113,7 @@ def test_bad_directories_syntax_and_encoded_lengths_refuse(changes):
 
 @pytest.mark.parametrize('damage', ['indirect', 'filter', 'predictor', 'external', 'encryption'])
 def test_unsupported_profiles_do_not_execute_or_guess(damage):
-    extra = {'filter': b'/Unused 1', 'predictor': b'/DecodeParms << /Predictor 12 >>',
+    extra = {'filter': b'/Unused 1', 'predictor': b'/DecodeParms << /Predictor 3 >>',
              'external': b'/F (outside.pdf)', 'indirect': b'', 'encryption': b''}[damage]
     data, _, locations = custom_stream_pdf(extra=extra)
     offset = locations[4]

@@ -1,4 +1,4 @@
-param([Parameter(Mandatory=$true)][string]$FixtureRoot, [switch]$PdfA)
+param([Parameter(Mandatory=$true)][string]$FixtureRoot, [switch]$PdfA, [switch]$PageGeometry)
 $ErrorActionPreference = 'Stop'
 if (-not ('DocxWhitespaceNative' -as [type])) {
     Add-Type @'
@@ -15,6 +15,7 @@ $outputPath = Join-Path $fixturePath $(if ($PdfA) { 'native-pdfa' } else { 'nati
 if (Test-Path -LiteralPath $outputPath) { throw 'Native output already exists' }
 $previousWordIds = @(Get-Process WINWORD -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id)
 $word = $null; $documents = $null; $document = $null; $range = $null; $window = $null
+$nativeSections = $null; $nativeSection = $null; $pageSetup = $null
 $ownedWord = $false; $wordProcess = $null; $results = @()
 try {
     $word = New-Object -ComObject Word.Application
@@ -48,13 +49,31 @@ try {
         $range = $document.Content
         $text = [string]$range.Text
         [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($range); $range = $null
+        $geometry = @()
+        if ($PageGeometry) {
+            $nativeSections = $document.Sections
+            for ($sectionIndex = 1; $sectionIndex -le $nativeSections.Count; $sectionIndex++) {
+                $nativeSection = $nativeSections.Item($sectionIndex)
+                $pageSetup = $nativeSection.PageSetup
+                $geometry += @{width=[double]$pageSetup.PageWidth; height=[double]$pageSetup.PageHeight;
+                               top=[double]$pageSetup.TopMargin; right=[double]$pageSetup.RightMargin;
+                               bottom=[double]$pageSetup.BottomMargin; left=[double]$pageSetup.LeftMargin;
+                               header=[double]$pageSetup.HeaderDistance; footer=[double]$pageSetup.FooterDistance;
+                               gutter=[double]$pageSetup.Gutter; orientation=[int]$pageSetup.Orientation}
+                [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($pageSetup); $pageSetup = $null
+                [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($nativeSection); $nativeSection = $null
+            }
+            [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($nativeSections); $nativeSections = $null
+        }
         if ($PdfA) {
             $document.ExportAsFixedFormat($pdf, 17, $false, 0, 0, 1, 1, 0, $false, $false, 0, $true, $true, $true)
         } else {
             $document.ExportAsFixedFormat($pdf, 17)
         }
-        $results += @{name=$case.name; file=$case.file; sha256=$hash; text=$text;
-                      compatibility_mode=[int]$document.CompatibilityMode; pages=[int]$document.ComputeStatistics(2)}
+        $observation = @{name=$case.name; file=$case.file; sha256=$hash; text=$text;
+                         compatibility_mode=[int]$document.CompatibilityMode; pages=[int]$document.ComputeStatistics(2)}
+        if ($PageGeometry) { $observation.page_geometry = $geometry }
+        $results += $observation
         $document.Close(0)
         [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($document); $document = $null
         if ((Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -ne $hash) { throw 'Read-only source changed' }
@@ -65,6 +84,9 @@ try {
         Set-Content -LiteralPath (Join-Path $outputPath 'observations.json') -Encoding UTF8
 }
 finally {
+    if ($null -ne $pageSetup) { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($pageSetup) }
+    if ($null -ne $nativeSection) { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($nativeSection) }
+    if ($null -ne $nativeSections) { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($nativeSections) }
     if ($null -ne $window) { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($window) }
     if ($null -ne $range) { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($range) }
     if ($null -ne $document) {

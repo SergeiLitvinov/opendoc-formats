@@ -13,22 +13,67 @@ JSON/DOCX цикла и TXT. Проверены table-only input, явные con
 SingleUse instance, проверяет PID через native window каждого read-only документа,
 не использует существующие Word-процессы, отключает macros и ожидает выход своего
 экземпляра. `--verify-native` проверяет SHA, фактический текст/страницы и сравнивает
-Word PDF в MuPDF и Poppler при 108 dpi. Word 16.0.17932 подтверждает весь текст,
-но 32 из 38 pixel comparisons различаются: visual acceptance остаётся false.
-Это не игнорируется и не объявляется lossless по совпадению текста.
-[Свидетельство](docx-whitespace-evidence.json) содержит исходные SHA и измерения
-до исправления docDefaults; это базовая оценка, а не приёмка текущего writer.
+Word PDF в MuPDF и Poppler при 108 dpi. Word 16.0.17932 подтверждает весь текст
+и страницы; 38 из 38 сравнений совпадают в обоих движках без масок, отдельно
+для стандартных PDF и `-PdfA`/`--pdfa` превью. Это опция экспорта Word,
+а не заявление о полной PDF/A-валидации. Проверяющий код требует все 19 оригиналов
+и оба цикла без пропусков/дубликатов и не смешивает профили превью.
+[Стандартное свидетельство](docx-whitespace-evidence.json) и
+[PDF/A-свидетельство](docx-whitespace-evidence-pdfa.json) содержат исходные SHA,
+фактические тексты/страницы, результаты каждого сравнения, версии и PDF font programs.
+Шрифтовые программы в доказательства не включаются: сохраняются только размеры и SHA.
 `test_docx_defaults.py` отдельно проверяет отсутствие styles/docDefaults,
 объявленные настройки, новые пользовательские defaults, два цикла, отмену,
-неверные профили и XML-бюджет. Single-w:t тесты проверяют сохранение Unicode/TAB,
+неверные профили и XML-бюджет. Settings-тесты проверяют физическое отсутствие
+и пустые/явные объявления, QName namespaces, связанные payload, приоритет чётных
+колонтитулов, DTD/бюджет/неверный root и неизменность Model/назначения.
+Single-w:t тесты проверяют сохранение Unicode/TAB,
 приоритет явной правки текста и диагностику неподдерживаемой версии carrier.
-Полная повторная визуальная приёмка текущего writer остаётся открытой.
+Приёмка ограничена перечисленными случаями; смешанные узлы и другие story scopes
+остаются в TODO.
 
 `tools/docx_whitespace_smoke.py` проверяет установленный DOCX-only wheel без
 fontTools, Pillow и PDF-движков; Model остаётся опубликованным `opendoc-model`.
 `test_font_color_preflight.py` проверяет корректный FONT-контекст для direct/inherited
 стилей при TXT-экспорте, неизменность ссылок/программ и отказ без замены назначения
 для действительно отсутствующего ресурса. Это не ослабление Model-валидации.
+
+## Исходные объявления страницы DOCX
+
+`tools.docx_page_acceptance` собирает 15 XML/ZIP originals с отсутствующим/пустым
+`pgSz`, частичными размерами, landscape, отсутствующими/частичными margins,
+пустым или отсутствующим конечным `sectPr` и несколькими секциями.
+`--roundtrips` выполняет два публичных JSON/DOCX цикла.
+`tools/docx_whitespace_word_acceptance.ps1 -PageGeometry -PdfA` измеряет каждую
+секцию собственного read-only Word instance и создаёт PDF/A-превью.
+`--verify-native` требует все 45 записей и исходные bytes/SHA, сверяет фактический
+Word text, PageSetup и страницы, сравнивает все страницы без масок в MuPDF/Poppler
+при 108 dpi. [Свидетельство](docx-page-geometry-evidence.json) принимает 30/30
+сравнений по семантике и обоим растрам.
+
+`--edits --roundtrips` отдельно читает независимый вход, изменяет числовые поля
+Model и сравнивает оба цикла с вручную заданным XML-эталоном. Приняты width,
+height, left margin и материализация размеров при отсутствии `sectPr`:
+12 native документов, 8/8 сравнений. [Свидетельство правок](docx-page-edits-evidence.json)
+содержит SHA входов, edits в points, исходные Word measurements и runtime versions.
+Эталоны не создаёт конвертер библиотеки. Текст разрыва секции проверяется буквально:
+дополнительный paragraph break не скрывается нормализацией.
+
+`test_docx_page_geometry.py` проверяет native omissions, число абзацев/секций,
+два цикла, неизменность Model/входа, правки, unknown projections в PDF/TXT,
+DTD/root/version/node-budget отказы, отмену внутри XML и явный отказ duplicate
+declarations. Форматная привязка сохраняет исходные пропуски, но не превращает
+placeholder в доказанное значение среды. Общая неизвестность требует
+[контракта Model](page-geometry-contract.md); нативная приёмка других environments
+и прочих section settings остаётся открытой.
+
+`tools/page_model_consumer.py` запускается только в отдельной среде с неопубликованным
+кандидатом Model: установленное дерево 53 файлов побайтно совпадает с переданным SHA.
+Десять независимых API/codec/budget групп и 15 source prototypes проходят без
+изменения основной среды. Source/unknown состояния и computed из прежних Word
+measurements выдерживают два официальных JSON-цикла, source omissions не меняются.
+[Consumer evidence](page-model-consumer-evidence.json) содержит wheel/source SHA
+и явно отделяет prototype от производственного подключения и новой нативной приёмки.
 
 ## Исходные PDF xref streams
 
@@ -67,11 +112,39 @@ xref records; pypdf разрешает вложенный объект отде�
 8/16-битных и RGB/RGBA строках. Проверяются положительные геометрические поля,
 полнота строк, неизвестные теги, tag-byte quota до zlib, общий бюджет и отмена
 внутри восстановления. Pillow/pypdf участвуют только в независимых проверках.
+`test_pdf_tiff_predictor.py` принимает Flate TIFF Predictor 2: 60 combinations
+1/2/4/8/16 bits, 1/3/4 colors, четыре длины строки, ручные byte vectors с переносами
+и ненулевым padding, девять настоящих xref layouts, строгие квоты до zlib, отмену
+внутри длинной строки и CLI late refusal.
+Собственный decoder сохраняет все bytes в 60/60 комбинациях; MuPDF подтверждает
+значимые компоненты 60/60 и полные bytes 39/60, pypdf — полные bytes 24/60.
+Это разные результаты: [полное свидетельство](pdf-tiff-evidence.json) сохраняет
+SHA и расхождения padding/packed/16-bit без переписывания внешнего вывода.
+`test_pdf_runlength.py` проверяет все 256 control bytes, literal/repeat boundaries,
+EOD как данные внутри runs и как delimiter, trailing encoded spans, точные xref/ObjStm
+payload и metadata, одиночный filter array/null params, отказы для параметров,
+неизвестную decoded длину/expansion quota, отмену и сохранение CLI назначения.
+MuPDF открывает независимые originals без repair и вместе со strict pypdf побайтно
+подтверждает decoded streams. Для trailing data pypdf выдаёт предупреждения;
+они сохраняются в evidence и не выдаются за подтверждение полного conformance.
+Совокупный PDF/Anatomy набор включает 774 теста. [RunLength evidence](pdf-runlength-evidence.json)
+содержит версии, исходные SHA и точные границы проверки.
+`test_pdf_ascii.py` покрывает самостоятельные ASCIIHex/ASCII85: все остатки групп,
+odd nibble, zero shorthand, upper uint32, PDF whitespace, строгий отказ vertical tab,
+malformed/EOD/overflow, quotas, отмену без output allocation, complete PDF/xref/ObjStm,
+single filter arrays/null parameters и CLI atomic refusal. Независимый forward
+encoder — stdlib bytes.hex/base64.a85encode. MuPDF побайтно подтверждает 24/24
+source combinations без repair, pypdf — 14/24; его реальные ошибки/предупреждения
+сохранены в [ASCII evidence](pdf-ascii-evidence.json). `test_pdf_filter_pipeline.py` добавляет 70 проверок: 60 полных originals для десяти
+цепочек, трёх Flate predictor-профилей и xref/ObjStm; MuPDF и pypdf подтверждают
+точные decoded bytes. Проверяются SHA/размер каждой стадии, общая и промежуточная
+квоты, согласованность параметров, отмена и атомарный отказ CLI на поздней стадии.
 Это проверка структуры индекса, а не приёмка визуального PDF roundtrip или
 семантического соответствия произвольных объектов.
 
 `tools/pdf_source_smoke.py` запускается из установленного базового wheel через
-изолированный Python, проверяет точные payload, PNG-Up/Flate xref stream, Flate ObjStm
+изолированный Python, проверяет точные payload, PNG-Up и 16-bit TIFF/Flate xref streams,
+RunLength/ASCII xref/ObjStm, Flate ObjStm и цепочки ASCII → Flate/PNG
 и effective xref records;
 pypdf/pdfplumber/PyMuPDF отсутствуют. Основной Model — опубликованный
 `opendoc-model==0.19.0`, без замены его рабочей копией.
