@@ -214,7 +214,11 @@ def test_source_declared_defaults_are_not_removed(tmp_path):
 
 @pytest.mark.parametrize('style_id', ['__doc_defaults__', 'user-defaults'])
 @pytest.mark.parametrize('styles_part', [False, True])
-def test_explicit_user_default_declaration_overrides_original_absence(tmp_path, style_id, styles_part):
+def test_explicit_user_default_declaration_overrides_original_absence(tmp_path, monkeypatch, style_id, styles_part):
+    from opendoc_formats.fonts import FontResolver
+
+    # Test declaration replay, independently of installed Arial/substitute families.
+    monkeypatch.setattr(FontResolver, "system", classmethod(lambda cls: cls()))
     source = tmp_path/'source.docx'
     source.write_bytes(source_with_styles() if styles_part else original('absent', {}, '  A  B  '))
     model = read_document(source).document

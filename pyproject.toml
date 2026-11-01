@@ -112,6 +112,7 @@ files = [
     "src/opendoc_formats/native/pdf_runlength.py",
     "src/opendoc_formats/native/pdf_byte_filters.py",
     "src/opendoc_formats/native/pdf_stream_decode.py",
+    "src/opendoc_formats/native/pdf_lzw.py",
     "src/opendoc_formats/native/pdf_object_streams.py",
     "src/opendoc_formats/native/pdf_xref_state.py",
     "src/opendoc_formats/native/pdf_placements.py",

@@ -115,7 +115,7 @@ def test_aggregate_work_and_intermediate_limits_include_every_stage():
     ([Name('ASCII85Decode'), Name('FlateDecode')], [None], InvalidDocumentError),
     ([Name('ASCII85Decode'), Name('FlateDecode')], {}, UnsupportedDocumentError),
     ([Name('ASCII85Decode'), Name('FlateDecode')], [None, 3], UnsupportedDocumentError),
-    ([Name('ASCII85Decode'), Name('LZWDecode')], None, UnsupportedDocumentError),
+    ([Name('ASCII85Decode'), Name('UnknownDecode')], None, UnsupportedDocumentError),
     ([Name('ASCII85Decode'), None], None, UnsupportedDocumentError),
     ([Name('ASCII85Decode'), Name('FlateDecode')], [{'Predictor': 1}, None], UnsupportedDocumentError),
 ])

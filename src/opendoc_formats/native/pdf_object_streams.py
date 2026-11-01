@@ -14,6 +14,30 @@ if TYPE_CHECKING:
     from opendoc_formats.anatomy import AnatomyLimits, BinaryItem
 
 
+def _candidate_end(data: bytes, parser: Parser, value: Any, location: str) -> tuple[int, dict[str, int]]:
+    """Bound an ordinary candidate without decoding or searching its stream bytes."""
+    token = parser.take()
+    if token.value == b'endobj':
+        return parser.pos, {}
+    if token.value != b'stream' or not isinstance(value, dict):
+        raise InvalidDocumentError(location+'expected endobj or dictionary stream')
+    length = value.get('Length')
+    if type(length) is not int or length < 0:
+        raise UnsupportedDocumentError(location+'ordinary candidate requires direct nonnegative Length')
+    if data[parser.pos:parser.pos+1] not in (b'\r', b'\n'):
+        raise InvalidDocumentError(location+'missing stream line ending')
+    start = parser.pos+(2 if data[parser.pos:parser.pos+2] == b'\r\n' else 1)
+    end = start+length
+    if end > len(data):
+        raise InvalidDocumentError(location+'candidate Length outside source')
+    if end > parser.end:
+        raise ResourceLimitError(location+'max_part_bytes exceeded by ordinary candidate')
+    closing = Parser(data, end, parser.end-end, parser.budget)
+    if closing.take().value != b'endstream' or closing.take().value != b'endobj':
+        raise InvalidDocumentError(location+'candidate Length does not end before endstream/endobj')
+    return closing.pos, {'encoded_start': start, 'encoded_end': end}
+
+
 def inspect_object_streams(data: bytes, sections: list[dict[str, Any]], limits: AnatomyLimits, capture: bool,
                            budget: SyntaxBudget, remaining_items: int,
                            remaining_bytes: int) -> tuple[tuple[BinaryItem, ...], dict[str, Any]]:
@@ -39,10 +63,13 @@ def inspect_object_streams(data: bytes, sections: list[dict[str, Any]], limits: 
                 key = (entry['object'], entry['generation'], entry['offset_or_next_free'])
                 candidates.setdefault(key, set()).add(section['offset'])
     items: list[BinaryItem] = []
-    used_bytes, used_items = 0, 0
+    used_bytes, used_items, decoded_count, non_containers = 0, 0, 0, 0
+    decoded_numbers: set[int] = set()
     for (number, generation, offset), source_sections in sorted(candidates.items()):
         checkpoint()
         location = f'pdf:source-objstm={offset}: '
+        if used_items >= remaining_items:
+            raise ResourceLimitError(location+'max_items exceeded by candidate')
         if not 0 <= offset < len(data):
             raise InvalidDocumentError(location+'container offset outside source')
         parser = Parser(data, offset, limits.max_part_bytes, budget)
@@ -50,11 +77,29 @@ def inspect_object_streams(data: bytes, sections: list[dict[str, Any]], limits: 
         if (first.start != offset or first.value != number or parser.take('integer').value != generation
                 or parser.take().value != b'obj'):
             raise InvalidDocumentError(location+'xref container header mismatch')
-        if generation != 0:
-            raise UnsupportedDocumentError(location+'nonzero container generation outside supported profile')
+        syntax_kind = parser.peek().kind
         dictionary = parser.value()
         if not isinstance(dictionary, dict) or dictionary.get('Type') != Name('ObjStm'):
-            raise UnsupportedDocumentError(location+'historical candidate is not an ObjStm container')
+            end, stream_range = _candidate_end(data, parser, dictionary, location)
+            physical = end-offset
+            if physical > limits.max_part_bytes or used_bytes+physical > remaining_bytes:
+                raise ResourceLimitError(location+'max_part_bytes/max_total_bytes exceeded by ordinary candidate')
+            payload = memoryview(data)[offset:end]
+            declared_type = dictionary.get('Type') if isinstance(dictionary, dict) else None
+            candidate_details = {'object': number, 'generation': generation, 'offset': offset, 'end': end,
+                       'syntax_kind': syntax_kind, 'candidate_status': 'not-object-stream',
+                       'declared_type': declared_type.value if isinstance(declared_type, Name) else None,
+                       'xref_sections': sorted(source_sections), 'active_resolution': False,
+                       'ownership_proven': False, **stream_range}
+            items.append(BinaryItem(f'pdf:source-objstm={offset}', 'pdf-non-object-stream-candidate', physical,
+                                    hashlib.sha256(payload).hexdigest(), details=tuple(candidate_details.items()),
+                                    payload=bytes(payload) if capture else None))
+            used_bytes += physical
+            used_items += 1
+            non_containers += 1
+            continue
+        if generation != 0:
+            raise UnsupportedDocumentError(location+'nonzero container generation outside supported profile')
         def integer(key: str) -> int:
             value = dictionary.get(key)
             if type(value) is not int or value < 0:
@@ -140,8 +185,11 @@ def inspect_object_streams(data: bytes, sections: list[dict[str, Any]], limits: 
         items.extend(member_items)
         used_bytes += physical+decode_info['decode_work_bytes']
         used_items += count+1
-    return tuple(items), {'object_streams_requested': True, 'object_streams_decoded': bool(candidates),
-                          'decoded_object_streams': len(candidates), 'object_stream_work_bytes': used_bytes,
+        decoded_count += 1
+        decoded_numbers.add(number)
+    return tuple(items), {'object_streams_requested': True, 'object_streams_decoded': bool(decoded_count),
+                          'decoded_object_streams': decoded_count, 'non_object_stream_candidates': non_containers,
+                          'object_stream_work_bytes': used_bytes,
                           'compressed_object_references': references,
-                          'unresolved_container_numbers': sorted(wanted-{number for number, _, _ in candidates}),
+                          'unresolved_container_numbers': sorted(wanted-decoded_numbers),
                           'object_stream_reference_links_assessed': False}

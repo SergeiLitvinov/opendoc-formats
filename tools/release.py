@@ -44,6 +44,7 @@ REQUIRED = {
     "opendoc_formats/native/pdf_runlength.py",
     "opendoc_formats/native/pdf_byte_filters.py",
     "opendoc_formats/native/pdf_stream_decode.py",
+    "opendoc_formats/native/pdf_lzw.py",
     "opendoc_formats/native/pdf_object_streams.py",
     "opendoc_formats/native/pdf_xref_state.py",
     "opendoc_formats/ooxml/docx_whitespace.py",

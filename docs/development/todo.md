@@ -83,10 +83,8 @@
   с общим бюджетом. Разбирать остальные форматы шрифтов и медиа с контролем
   смещений, размеров и неизвестных полей; не исполнять объекты.
 - Для PDF расширить исходную xref-инспекцию на непринятые фильтры и параметры
-  (включая LZW),
-  indirect Length; ObjStm — на indirect N/First/Length, остальные filter/parameter
-  профили, nonzero container generations и историческое повторное использование
-  номера под другим Type. Разрешать Extends и каждый type-2 occurrence по его
+  за пределами Flate/LZW/RunLength/ASCII-профиля, indirect Length; ObjStm — на indirect N/First/Length, остальные filter/parameter
+  профили и nonzero container generations. Разрешать Extends и каждый type-2 occurrence по его
   ревизии, а не считать совпадение номера контейнера доказанной связью. Подтвердить границы
   и принадлежность объектов, разрешение bodies по выбранным xref-записям с проверкой
   reference generations и классификацию incremental

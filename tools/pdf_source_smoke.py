@@ -184,7 +184,43 @@ def main():
     effective = {record['object']: record for record in dict(result.details)['effective_xref_entries']}
     assert effective[17]['offset'] == chain_container and effective[18]['object_stream'] == 17
     assert effective[19]['offset'] == chain_xref and len(effective) == 20
-    print('Installed base PDF source: raw, Flate/TIFF/PNG, RunLength, ASCII and pipelines; no PDF/image backends')
+    # Small literal-only LZW streams use nine-bit words; no third-party encoder.
+    previous = chain_xref
+    for number, early in [(20, 0), (21, 1)]:
+        offset = len(source)
+        raw = b'\x01'+offset.to_bytes(4, 'big')+b'\0\0'
+        predicted = b'\0'+raw
+        bits = ''.join(format(value, '09b') for value in [256, *predicted, 257])
+        bits += '0'*(-len(bits) % 8)
+        encoded = int(bits, 2).to_bytes(len(bits)//8, 'big')+b'kept after EOD'
+        source += (f'{number} 0 obj\n<< /Type /XRef /Size {number+1} /Root 1 0 R /W [1 4 2] '.encode()
+                   +f'/Index [{number} 1] /Prev {previous} /Filter /LZWDecode '.encode()
+                   +f'/DecodeParms << /EarlyChange {early} /Predictor 12 /Columns 7 >> '.encode()
+                   +f'/Length {len(encoded)} >>\nstream\n'.encode()+encoded
+                   +b'\nendstream\nendobj\nstartxref\n'+str(offset).encode()+b'\n%%EOF\n')
+        result = inspect_binary(source, pdf_source=True, pdf_decode_xrefs=True, capture=True)
+        item = result.items[0]
+        details = dict(item.details)
+        assert item.payload == source[offset:details['end']]
+        assert details['filter'] == 'LZWDecode' and details['decode_work_bytes'] == len(predicted)
+        assert details['trailing_encoded_bytes'] == len(b'kept after EOD')
+        assert details['entries'][0]['offset_or_next_free'] == offset
+        previous = offset
+    # A former ObjStm number becomes an ordinary object in a newer revision.
+    ordinary_offset = len(source)
+    ordinary = b'17 1 obj\n<< /Type /Example /Value (new ordinary object) >>\nendobj'
+    source += ordinary+b'\n'
+    xref = len(source)
+    source += (f'xref\n17 2\n{ordinary_offset:010} 00001 n \n0000000000 00001 f \ntrailer\n'.encode()
+               +f'<< /Size 22 /Root 1 0 R /Info null /Prev {previous} >>\nstartxref\n{xref}\n%%EOF\n'.encode())
+    result = inspect_binary(source, pdf_source=True, pdf_decode_xrefs=True, pdf_object_streams=True, capture=True)
+    candidate = next(item for item in result.items if item.kind == 'pdf-non-object-stream-candidate')
+    details = dict(candidate.details)
+    assert candidate.payload == ordinary and details['generation'] == 1
+    assert details['candidate_status'] == 'not-object-stream' and not details['active_resolution']
+    assert dict(result.details)['non_object_stream_candidates'] == 1
+    assert any(item.kind == 'pdf-object-stream' and dict(item.details)['offset'] == chain_container for item in result.items)
+    print('Installed base PDF source: raw, Flate/TIFF/PNG, RunLength, ASCII, LZW and pipelines; no PDF/image backends')
 
 
 if __name__ == '__main__':

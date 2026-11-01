@@ -641,6 +641,20 @@ NUL/form feed; vertical tab не подменяется пробелом. Вых
 NUL-hex и trailing-ASCII85 дают ошибки, поэтому full-byte agreement с ним — 14/24;
 результаты не исправляются и не объявляются всеобщим conformance.
 
+`LZWDecode` использует собственную таблицу до 4096 записей с prefix links,
+без хранения отдельной растущей копии каждой фразы. Приняты MSB-first коды
+9–12 бит, `EarlyChange=0/1` (по умолчанию 1), clear-table, EOD и специальная
+ссылка на следующую создаваемую фразу. Заполненная таблица требует clear-table
+или EOD. Квота проверяется до восстановления каждой фразы; отмена — между
+кодами и внутри длинных prefix chains. EOD может завершаться внутри байта:
+`encoded_data_end` указывает конец содержащего его байта, padding и последующие
+bytes остаются в исходном payload. TIFF/PNG-предикторы и цепочки используют те же
+общие бюджеты. Полный произвольный PDF этим не поддерживается.
+Правила — [Adobe PDF Reference, 4.8.3](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/pdfreference1.2.pdf#page=52).
+[Побайтное свидетельство](../development/pdf-lzw-evidence.json) содержит 58 originals:
+Formats/MuPDF совпадают во всех; pypdf 6.19.0 — в 35. Он не применяет LZW PNG
+predictor и расходится на длинных EarlyChange=0 потоках; ошибки и SHA сохранены.
+
 Поддержаны также цепочки перечисленных фильтров в порядке массива `Filter`.
 `DecodeParms` задаётся согласованным массивом словарей/null; весь план проверяется
 до декодирования. Flate TIFF/PNG работает и на промежуточных стадиях, и в ObjStm.
@@ -684,7 +698,7 @@ type 2 ещё не подтверждает наличие и границы в�
 `unresolved_container_numbers`, исходные type-2 occurrences — в
 `compressed_object_references` с xref offset, object number, container и index.
 
-Приняты raw/Flate/RunLengthDecode/ASCIIHexDecode/ASCII85Decode,
+Приняты raw/Flate/LZW/RunLengthDecode/ASCIIHexDecode/ASCII85Decode,
 прямые неотрицательные `N/First/Length`, generation 0 контейнера,
 директория уникальных положительных object numbers со строго возрастающими
 смещениями от нуля. Проверяется конец потока по Length, ровно N пар до First
@@ -707,8 +721,18 @@ type 2 ещё не подтверждает наличие и границы в�
 отмена проверяется при распаковке, чтении директории и членов. Ошибка не заменяет
 ранее сохранённую dissection; исходный PDF не меняется.
 
-Шифрование, indirect N/First/Length, другие фильтры/параметры, ненулевые поколения
-и исторический кандидат с другим Type дают `UnsupportedDocumentError`.
+Повторное использование номера под другой Type не превращает новый объект в ObjStm.
+Обычный кандидат сохраняется как `pdf-non-object-stream-candidate` с исходными bytes,
+generation, syntax kind, declared Type и адресами xref-секций. Для его stream требуется
+прямой неотрицательный Length; raw bytes сохраняются без запуска фильтра или поиска
+слов endstream/endobj внутри данных. Он расходует общие квоты, но не увеличивает
+`decoded_object_streams`. `non_object_stream_candidates` сообщает отдельное число;
+`unresolved_container_numbers` учитывает только действительно декодированные ObjStm.
+Это классификация физических кандидатов; каждая историческая type-2 ссылка ещё
+не привязана к собственной редакции. [Приёмка](../development/pdf-object-reuse-evidence.json).
+
+Шифрование, indirect N/First/Length, другие фильтры/параметры и ненулевые поколения
+настоящего ObjStm дают `UnsupportedDocumentError`.
 `Extends` сохраняется как инертная ссылка, не обходится. `object_streams_decoded`
 означает, что разобран хотя бы один кандидат; `decoded_object_streams` сообщает число.
 `ownership_proven=false`, `active_resolution=false`,

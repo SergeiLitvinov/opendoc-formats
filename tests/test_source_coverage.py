@@ -76,9 +76,14 @@ def test_epub_table_math_are_semantic_but_nonlinear_content_is_lost(tmp_path):
     assert copied.success and "TableOnly" in str(copied.document) and "NonlinearOnly" not in str(copied.document)
 
 
-def test_pptx_import_does_not_preserve_original_package(tmp_path):
+def test_pptx_transition_is_preserved_opaquely_only_in_source_export(tmp_path):
+    from zipfile import ZipFile
+
+    from opendoc_model import document_from_json, document_to_json
     from pptx import Presentation
     from pptx.oxml.xmlchemy import OxmlElement
+
+    from opendoc_formats import ExportOptions, PptxProfile
 
     presentation = Presentation()
     slide = presentation.slides.add_slide(presentation.slide_layouts[6])
@@ -88,7 +93,18 @@ def test_pptx_import_does_not_preserve_original_package(tmp_path):
     source = tmp_path / "transition.pptx"
     presentation.save(source)
     document = read_pptx_model(source)
-    assert document.package is None
+
+    assert document.package is not None
+    with ZipFile(source) as archive:
+        slide_bytes = archive.read('ppt/slides/slide1.xml')
+    assert document.package.parts['/ppt/slides/slide1.xml'].data == slide_bytes
+    document = document_from_json(document_to_json(document))
+    retained = tmp_path/'source-output.pptx'
+    source_report = write_document(document, retained, options=ExportOptions(pptx_profile=PptxProfile(layout='source')))
+    assert source_report.success and not source_report.lossless, source_report.issues
+    with ZipFile(retained) as archive:
+        assert archive.read('ppt/slides/slide1.xml') == slide_bytes
+    assert Presentation(retained).slides[0]._element.xpath('./p:transition/p:fade')
     assert "transition" not in document.sections[0].properties
     result = read_document(source)
     assert result.success and not result.lossless and not result.assessment_complete

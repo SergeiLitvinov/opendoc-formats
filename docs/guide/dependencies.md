@@ -9,10 +9,10 @@ pdfminer, Pillow или lxml. Лицензия PyMuPDF — AGPL-3.0 либо к�
 
 Для [физической PDF-инспекции](document-anatomy.md#исходные-pdf-секции-и-xref-streams-без-движка)
 через `pdf_source=True` PDF extra не нужен: classic xref и ограниченные
-raw/Flate/RunLength/ASCIIHex/ASCII85 xref streams (Flate с TIFF 2/PNG 10–15)
+raw/Flate/LZW/RunLength/ASCIIHex/ASCII85 xref streams (Flate с TIFF 2/PNG 10–15)
 и ObjStm читает собственный код Formats (MIT).
 Цепочки этих фильтров и Flate TIFF/PNG в ObjStm также не требуют PDF/image зависимостей.
-Flate использует stdlib `zlib`; RunLength и ASCII — собственные ограниченные decoders.
+Flate использует stdlib `zlib`; LZW, RunLength и ASCII — собственные ограниченные decoders.
 Это не текстовый reader или рендер;
 лицензии и назначение перечисленных PDF-движков сохраняются для их маршрутов.
 

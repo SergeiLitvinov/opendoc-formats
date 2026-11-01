@@ -133,7 +133,7 @@ def test_encoded_boundaries_and_zlib_corruption_are_not_repaired(damage):
     data, _, _ = own_stream_pdf()
     error = InvalidDocumentError
     if damage == 'filter':
-        data = data.replace(b'/FlateDecode', b'/LZWDecode')
+        data = data.replace(b'/FlateDecode', b'/UnsupportedDecode')
         error = UnsupportedDocumentError
     elif damage == 'indirect-length':
         data, offsets, _ = own_stream_pdf()

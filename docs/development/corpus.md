@@ -127,7 +127,7 @@ payload и metadata, одиночный filter array/null params, отказы �
 MuPDF открывает независимые originals без repair и вместе со strict pypdf побайтно
 подтверждает decoded streams. Для trailing data pypdf выдаёт предупреждения;
 они сохраняются в evidence и не выдаются за подтверждение полного conformance.
-Совокупный PDF/Anatomy набор включает 774 теста. [RunLength evidence](pdf-runlength-evidence.json)
+Совокупный PDF/Anatomy набор включает 886 тестов. [RunLength evidence](pdf-runlength-evidence.json)
 содержит версии, исходные SHA и точные границы проверки.
 `test_pdf_ascii.py` покрывает самостоятельные ASCIIHex/ASCII85: все остатки групп,
 odd nibble, zero shorthand, upper uint32, PDF whitespace, строгий отказ vertical tab,
@@ -139,12 +139,27 @@ source combinations без repair, pypdf — 14/24; его реальные ош
 цепочек, трёх Flate predictor-профилей и xref/ObjStm; MuPDF и pypdf подтверждают
 точные decoded bytes. Проверяются SHA/размер каждой стадии, общая и промежуточная
 квоты, согласованность параметров, отмена и атомарный отказ CLI на поздней стадии.
+`test_pdf_lzw.py` добавляет 84 проверки: оба EarlyChange, все переходы 9–12 бит,
+заполнение и сброс таблицы, special next-code, ручной MSB-вектор, EOD/padding/trailing,
+повреждения, квоты до расширения фразы, отмена и атомарность CLI. Полные xref/ObjStm
+проверены с TIFF/PNG и ASCII85 → LZW. Forward encoder, явные code vectors и полные
+source SHA независимы от production decoder. [Свидетельство](pdf-lzw-evidence.json)
+сохраняет реальные результаты MuPDF/pypdf, включая 23 расхождения pypdf.
+
+`test_pdf_object_reuse.py` проверяет 18 originals с несколькими xref-секциями:
+обычные dictionary/string/integer/null/array и stream с неизвестным фильтром
+вместо ObjStm, разные поколения, точные старые/новые payload. pypdf/MuPDF независимо
+читают активную запись и исходный raw stream; ремонт MuPDF не используется.
+Отдельно проверяются неверные header/Length/closing, indirect Length, лишние tokens,
+общие границы items/bytes, отмена и атомарный CLI. Всего 28 новых проверок;
+[свидетельство](pdf-object-reuse-evidence.json) не объявляет active/body resolution.
+
 Это проверка структуры индекса, а не приёмка визуального PDF roundtrip или
 семантического соответствия произвольных объектов.
 
 `tools/pdf_source_smoke.py` запускается из установленного базового wheel через
 изолированный Python, проверяет точные payload, PNG-Up и 16-bit TIFF/Flate xref streams,
-RunLength/ASCII xref/ObjStm, Flate ObjStm и цепочки ASCII → Flate/PNG
+RunLength/ASCII xref/ObjStm, Flate ObjStm, LZW/PNG с обоими EarlyChange и цепочки ASCII → Flate/PNG
 и effective xref records;
 pypdf/pdfplumber/PyMuPDF отсутствуют. Основной Model — опубликованный
 `opendoc-model==0.19.0`, без замены его рабочей копией.

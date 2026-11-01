@@ -8,6 +8,7 @@ from typing import Any
 from opendoc_formats.errors import InvalidDocumentError, ResourceLimitError, UnsupportedDocumentError
 from opendoc_formats.native.pdf_byte_filters import BYTE_DECODERS
 from opendoc_formats.native.pdf_flate import inflate
+from opendoc_formats.native.pdf_lzw import unpack as unpack_lzw
 from opendoc_formats.native.pdf_predictors import layout, shape, undo_png, undo_tiff
 from opendoc_formats.native.pdf_syntax import Name, SyntaxBudget
 from opendoc_formats.support.cancellation import checkpoint
@@ -32,8 +33,8 @@ def _plan(encoding: Any, parameters: Any, location: str, budget: SyntaxBudget) -
         budget.tokens += 1
         if budget.tokens > budget.maximum:
             raise ResourceLimitError(location+'max_pdf_tokens exceeded by filter stages')
-        if not isinstance(name, Name) or name.value not in ('FlateDecode', *BYTE_DECODERS):
-            raise UnsupportedDocumentError(location+f'filter[{index}] outside Flate/RunLength/ASCII profile')
+        if not isinstance(name, Name) or name.value not in ('FlateDecode', 'LZWDecode', *BYTE_DECODERS):
+            raise UnsupportedDocumentError(location+f'filter[{index}] outside Flate/LZW/RunLength/ASCII profile')
         options = parameters[index] if isinstance(parameters, list) else parameters
         if options is None:
             options = {}
@@ -44,8 +45,12 @@ def _plan(encoding: Any, parameters: Any, location: str, budget: SyntaxBudget) -
                 raise UnsupportedDocumentError(location+name.value+' has no supported decoding parameters')
         else:
             if set(options)-{'Predictor', 'Colors', 'BitsPerComponent', 'Columns', 'EarlyChange'}:
-                raise UnsupportedDocumentError(location+'unknown Flate decoding parameter')
+                raise UnsupportedDocumentError(location+'unknown Flate/LZW decoding parameter')
             shape(options, location+f'filter[{index}]: ')
+            if name.value == 'LZWDecode':
+                early = options.get('EarlyChange', 1)
+                if type(early) is not int or early not in (0, 1):
+                    raise InvalidDocumentError(location+'LZW EarlyChange must be 0 or 1')
         result.append((name.value, options))
     return result
 
@@ -62,7 +67,7 @@ def decode(raw: memoryview, encoding: Any, parameters: Any, *, source_start: int
         return bytearray(raw), {'filter': None, 'filter_chain': [], 'decode_stages': [],
                                 'decode_work_bytes': len(raw), 'predictor': 1}
     final_work = expected
-    if expected is not None and plan[-1][0] == 'FlateDecode':
+    if expected is not None and plan[-1][0] in ('FlateDecode', 'LZWDecode'):
         final_work = layout(plan[-1][1], expected, location)[3]
     if final_work is not None and (final_work > part_limit or final_work > byte_limit):
         raise ResourceLimitError(location+'decoded stream/PNG row tags exceed max_part_bytes/max_total_bytes')
@@ -80,17 +85,21 @@ def decode(raw: memoryview, encoding: Any, parameters: Any, *, source_start: int
         maximum = min(part_limit, byte_limit-work-reserved)
         if maximum < 0:
             raise ResourceLimitError(here+'no remaining intermediate decoded byte budget')
-        predictor, row_bytes, stride = shape(options, here) if name == 'FlateDecode' else (1, 1, 1)
+        predictor, row_bytes, stride = shape(options, here) if name in ('FlateDecode', 'LZWDecode') else (1, 1, 1)
         before_prediction = exact
-        if exact is not None and name == 'FlateDecode':
+        if exact is not None and name in ('FlateDecode', 'LZWDecode'):
             before_prediction = layout(options, exact, here)[3]
         if before_prediction is not None and before_prediction > maximum:
             raise ResourceLimitError(here+'decoded stream/PNG row tags exceed byte budget')
         consumed = len(current)
         if name == 'FlateDecode':
             output = inflate(current, maximum, here, expected=before_prediction)
+        elif name == 'LZWDecode':
+            output, consumed = unpack_lzw(current, maximum, here, expected=before_prediction,
+                                          early_change=options.get('EarlyChange', 1))
         else:
             output, consumed = BYTE_DECODERS[name](current, maximum, here, expected=exact)
+        if name != 'FlateDecode':
             if index == 0:
                 first_eod = {'encoded_data_end': source_start+consumed, 'trailing_encoded_bytes': len(current)-consumed}
         stage_work = len(output)
