@@ -19,9 +19,10 @@ from opendoc_model import (
 from opendoc_model.diagnostics import IssueSeverity
 
 from opendoc_formats.anatomy import AnatomyLimits, BinarySnapshot, inspect_binary
-from opendoc_formats.errors import InvalidDocumentError
+from opendoc_formats.errors import InvalidDocumentError, ResourceLimitError
 from opendoc_formats.native.opc import part_name
 from opendoc_formats.support.cancellation import cancellable_items, checkpoint
+from opendoc_formats.support.io import ArchiveLimitError
 
 OFFICE_DOCUMENT = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument'
 
@@ -32,11 +33,20 @@ def capture_pptx_package(source: bytes, *, limits: DocumentLimits | None = None)
     if budget.max_bytes == 0 or budget.max_embedded_bytes == 0:
         quota = 'bytes' if budget.max_bytes == 0 else 'embedded_bytes'
         raise ArtifactLimitError('PPTX source package exceeds byte budget', path='package', quota=quota, maximum=0)
-    snapshot = inspect_binary(source, container='zip', capture=True, limits=AnatomyLimits(
-        max_input_bytes=budget.max_bytes, max_items=budget.max_nodes, max_part_bytes=budget.max_embedded_bytes,
-        max_total_bytes=budget.max_embedded_bytes, max_xml_nodes=budget.max_nodes, max_xml_depth=budget.max_depth,
-        max_xml_name_chars=budget.max_bytes, max_xml_characters=budget.max_bytes,
-    ))
+    try:
+        snapshot = inspect_binary(source, container='zip', capture=True, limits=AnatomyLimits(
+            max_input_bytes=budget.max_bytes, max_items=budget.max_nodes, max_part_bytes=budget.max_embedded_bytes,
+            max_total_bytes=budget.max_embedded_bytes, max_xml_nodes=budget.max_nodes, max_xml_depth=budget.max_depth,
+            max_xml_name_chars=budget.max_bytes, max_xml_characters=budget.max_bytes,
+        ))
+    except ArchiveLimitError as error:
+        quota = {'entries': 'nodes', 'uncompressed bytes': 'embedded_bytes'}.get(error.quota, error.quota)
+        raise ArtifactLimitError(str(error), path='package'+('/'+error.path if error.path else ''),
+                                 quota=quota, maximum=error.maximum) from error
+    except ResourceLimitError as error:
+        # Native XML/OPC limits may have no structured fields; preserve the refusal
+        # without guessing a Model quota from the human-readable error text.
+        raise ArtifactLimitError(str(error), path='package') from error
     audit = snapshot.opc
     if audit is None:
         raise InvalidDocumentError('PPTX has no physical OPC inventory')

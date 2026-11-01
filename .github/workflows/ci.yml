@@ -49,7 +49,6 @@ jobs:
           curl --fail --location --connect-timeout 15 --max-time 180 https://github.com/w3c/epubcheck/releases/download/v5.4.0/epubcheck-5.4.0.zip --output .opendoc-formats/epubcheck.zip
           uv run --frozen python -m tools.epubcheck --archive .opendoc-formats/epubcheck.zip
   packages:
-    needs: contracts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

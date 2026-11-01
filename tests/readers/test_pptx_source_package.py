@@ -231,3 +231,26 @@ def test_projection_and_inventory_use_same_captured_bytes(tmp_path, monkeypatch)
     assert calls == [True] and 'Own source text' in str(model)
     with zipfile.ZipFile(io.BytesIO(original)) as archive:
         assert model.package.parts['/ppt/slides/slide1.xml'].data == archive.read('ppt/slides/slide1.xml')
+
+
+@pytest.mark.parametrize('maximum', [1, 10])
+def test_source_entry_limit_is_a_located_model_refusal(tmp_path, monkeypatch, maximum):
+    import pptx
+
+    from opendoc_formats import ImportOptions
+
+    source = own_pptx(tmp_path)
+    before = source.read_bytes()
+    def forbidden(*args, **kwargs):
+        pytest.fail('PPTX engine must not open after the source entry quota fails')
+    monkeypatch.setattr(pptx, 'Presentation', forbidden)
+    budget = replace(DocumentLimits(), max_nodes=maximum)
+    with pytest.raises(ArtifactLimitError) as caught:
+        read_pptx_model(source, limits=budget)
+    assert caught.value.quota == 'nodes' and caught.value.maximum == maximum
+    assert caught.value.path == 'package'
+    refused = read_document(source, options=ImportOptions(document_limits=budget))
+    assert not refused.success
+    issue = next(issue for issue in refused.issues if issue.reason == 'document-limit')
+    assert issue.measurement['maximum'] == maximum and issue.measurement['quota'] == 'nodes'
+    assert source.read_bytes() == before

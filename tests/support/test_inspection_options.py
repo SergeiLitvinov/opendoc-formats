@@ -85,13 +85,21 @@ def test_native_scope_is_retained_with_options(tmp_path, suffix):
     assert source.read_bytes() == before
 
 
-@pytest.mark.parametrize('suffix', ['.docx', '.txt'])
+@pytest.mark.parametrize('suffix', ['.docx', '.txt', '.pptx'])
 def test_model_readers_use_selected_budget_and_keep_scope(tmp_path, suffix):
     source = tmp_path / ('own' + suffix)
     if suffix == '.docx':
         from docx import Document
         native = Document()
         native.add_paragraph('Own source')
+        native.save(source)
+    elif suffix == '.pptx':
+        from pptx import Presentation
+        from pptx.util import Inches
+
+        native = Presentation()
+        slide = native.slides.add_slide(native.slide_layouts[6])
+        slide.shapes.add_textbox(Inches(1), Inches(1), Inches(2), Inches(1)).text = 'Own source'
         native.save(source)
     else:
         source.write_text('Own source', encoding='utf-8')
