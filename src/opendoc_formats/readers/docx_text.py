@@ -6,6 +6,7 @@ from typing import Any
 
 from opendoc_model.document_model import DocumentModel, Formula, FormulaFormat, Image, Paragraph, TextRun
 
+from opendoc_formats.ooxml.docx_whitespace import TEXT_KEY, run_text, source_text_profile
 from opendoc_formats.ooxml.headings import import_heading
 from opendoc_formats.readers.docx_drawing import read_run_images, read_run_vml_colors
 from opendoc_formats.readers.docx_notes import append_note_references
@@ -145,14 +146,18 @@ def _append_run_content(
         return
     style = read_run_style(run, paragraph, model)
     vml_colors, vml_xml = read_run_vml_colors(run)
-    if run.text:
+    text = run_text(run._r)
+    if text:
         properties = {"hyperlink_anchor": anchor} if anchor else {}
+        text_profile = source_text_profile(run._r, text)
+        if text_profile is not None:
+            properties[TEXT_KEY] = text_profile
         if vml_colors:
             properties.update({"vml_colors": vml_colors, "vml_xml": vml_xml})
         from opendoc_formats.ooxml.run_position import import_run_position
 
         import_run_position(run, style.properties)
-        content.append(TextRun(run.text, style=style, link=link, properties=properties))
+        content.append(TextRun(text, style=style, link=link, properties=properties))
     elif vml_colors:
         content.append(TextRun("", style=style, properties={"vml_colors": vml_colors, "vml_xml": vml_xml}))
     append_note_references(content, run, style)

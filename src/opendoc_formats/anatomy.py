@@ -452,16 +452,25 @@ def _sfnt_items(data: bytes, limits: AnatomyLimits, capture: bool,
 def inspect_binary(source: Source, *, container: str | None = None, limits: AnatomyLimits = AnatomyLimits(),
                    parse_xml: bool = True, capture: bool = False, sfnt_checksums: bool = False,
                    sfnt_structure: bool = False,
-                   pdf_source: bool = False,
+                   pdf_source: bool = False, pdf_decode_xrefs: bool = False, pdf_object_streams: bool = False,
+                   pdf_resolve_xrefs: bool = False,
                    sfnt_face_index: int | None = None,
                    cancelled: Callable[[], bool] | None = None) -> BinarySnapshot:
-    """Inspect content without executing macros, following external links or decoding PDF streams."""
+    """Inspect inert native content, optionally decoding PDF xrefs and physical ObjStm members; never page execution."""
     if (not isinstance(limits, AnatomyLimits) or type(parse_xml) is not bool
             or type(capture) is not bool or type(sfnt_checksums) is not bool
-            or type(sfnt_structure) is not bool or type(pdf_source) is not bool):
+            or type(sfnt_structure) is not bool or type(pdf_source) is not bool
+            or type(pdf_decode_xrefs) is not bool or type(pdf_object_streams) is not bool
+            or type(pdf_resolve_xrefs) is not bool):
         raise TypeError('Expected AnatomyLimits and boolean inspection flags')
     if sfnt_face_index is not None:
         positive_int(sfnt_face_index, 'sfnt_face_index', zero=True)
+    if pdf_decode_xrefs and not pdf_source:
+        raise ValueError('pdf_decode_xrefs requires pdf_source=True')
+    if pdf_object_streams and not pdf_decode_xrefs:
+        raise ValueError('pdf_object_streams requires pdf_decode_xrefs=True')
+    if pdf_resolve_xrefs and not pdf_decode_xrefs:
+        raise ValueError('pdf_resolve_xrefs requires pdf_decode_xrefs=True')
     if container not in (None, 'zip', 'pdf', 'cfbf', 'sfnt'):
         raise ValueError('Binary inspection supports container=zip, pdf, cfbf or sfnt')
     with cancellation_scope(cancelled, 'Binary inspection', inherit=True):
@@ -500,7 +509,8 @@ def inspect_binary(source: Source, *, container: str | None = None, limits: Anat
                 if pdf_source:
                     from opendoc_formats.native.pdf_revisions import inspect_pdf_source
 
-                    items, details = inspect_pdf_source(data, limits, capture)
+                    items, details = inspect_pdf_source(data, limits, capture, decode_streams=pdf_decode_xrefs,
+                                                       object_streams=pdf_object_streams, resolve_records=pdf_resolve_xrefs)
                 else:
                     items, details = _pdf_items(data, limits, capture)
                 opc = None

@@ -7,6 +7,12 @@ pdfminer, Pillow или lxml. Лицензия PyMuPDF — AGPL-3.0 либо к�
 для отдельного permissive text-only маршрута остаётся `pdf-text` с BSD-3-Clause pypdf.
 Таблица ниже перечисляет все альтернативные профили, а не обязательную общую установку.
 
+Для [физической PDF-инспекции](document-anatomy.md#исходные-pdf-секции-и-xref-streams-без-движка)
+через `pdf_source=True` PDF extra не нужен: classic xref и ограниченные raw/Flate
+xref streams и ограниченный raw/Flate ObjStm читает собственный код Formats (MIT),
+распаковка использует stdlib `zlib`. Это не текстовый reader или рендер;
+лицензии и назначение перечисленных PDF-движков сохраняются для их маршрутов.
+
 Для чтения снимков и транзакционной правки исходного DOCX через `DocxPackage`
 достаточно `docx-native`: собственный ZIP/XML-слой использует только lxml.
 python-docx, Pillow, fontTools и PDF-движки не устанавливаются. Это тот же native API,

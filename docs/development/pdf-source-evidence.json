@@ -1,0 +1,116 @@
+{
+  "scope": "Physical PDF classic/hybrid, raw/Flate/PNG xrefs, raw/Flate ObjStm member ranges and effective xref record selection; no object ownership or body resolution",
+  "platform": "Windows, Python 3.12.16",
+  "tests": {
+    "command": "pytest tests/native/test_pdf_xref_state.py tests/native/test_pdf_object_streams.py tests/native/test_pdf_predictors.py tests/native/test_pdf_xref_streams.py tests/native/test_pdf_revisions.py tests/test_anatomy.py -q",
+    "passed": 202
+  },
+  "independent_reader": "pypdf: page count, compressed metadata, object offsets and object-stream/index agree",
+  "fixture": {
+    "producer": "Own byte-level fixture, not a Formats or PDF writer",
+    "sha256": "6ca11205ae720476e3ae1c89bdb31a069d9e489594c6c2aef9084069cb5e05b2",
+    "xref_entries": 7,
+    "payload_sha256": "e7d9a2a5e0565d4d8abb570695b05e612ed3c8260a18f39076047f23141733e0"
+  },
+  "installed_base": {
+    "packages": {
+      "opendoc-formats": "0.42.0",
+      "opendoc-model": "0.19.0"
+    },
+    "wheel_sha256": "a42fe4119075d3cd22d607210ebe86c17eea3797360ca416c9286034a7ffd29e",
+    "release_artifact": false,
+    "isolated_commands_passed": [
+      "python -I tools/package_smoke.py",
+      "python -I tools/pdf_source_smoke.py"
+    ],
+    "pdf_backends_present": false,
+    "image_backends_present": false
+  },
+  "limits": [
+    "declared count/byte quotas before zlib",
+    "multi-chunk Flate with bounded output",
+    "read-only inspection and unchanged source bytes",
+    "cooperative cancellation",
+    "PNG tag quotas before zlib",
+    "in-place predictor reconstruction and cancellation",
+    "exact combined physical/decoded budget boundary",
+    "shared xref/ObjStm item, token and byte budgets",
+    "unknown-length ObjStm Flate output quota",
+    "cancellation during Flate/member validation",
+    "unchanged CLI destination on late member syntax error",
+    "selected xref records share max_items with physical records and ObjStm members"
+  ],
+  "not_proven": [
+    "arbitrary PDF compatibility",
+    "object ownership",
+    "active object resolution",
+    "visual roundtrip",
+    "all filter/predictor profiles",
+    "all historical type-2 occurrence links",
+    "encrypted/indirect or other unsupported ObjStm profiles",
+    "Extends resolution"
+  ],
+  "independent_prediction": "pypdf checks all declared PNG predictors on full PDFs; Pillow checks all five row algorithms on packed 1/2/4-bit, 8/16-bit and RGB/RGBA PNGs",
+  "png_fixture": {
+    "sha256": "f286a4aadfe48c6bca6a082a1d1e1bc6846690c88116934b401e432e6df564b2",
+    "payload_sha256": "11d39bfaf6f250f977179b3757cb5be356717b21a7bdd8e874dd27b5f55fc963",
+    "decoded_bytes": 49,
+    "decode_work_bytes": 56
+  },
+  "object_stream_fixture": {
+    "producer": "Own byte-level source, not a Formats writer",
+    "sha256": "0f01007891e4c2b4e63adcc2e8c69bc5fb7f7254629a916a0534b5cd91fe2810",
+    "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+    "container_sha256": "f8fe92a3b17ebd27dbaa8c99ce8192c6654eb2a3b6a411fa4cda63208f340feb",
+    "member_sha256": [
+      "b264d82fcbb92b6fdfcb135dca2cf6afe7994e943dfb9b41ed5dc3dc30106345",
+      "084c799cd551dd1d8d5c5f9a5d593b2e931f5e36122ee5c793c1d08a19839cc0",
+      "04aeb90d4d02f787c6e1d176c21892f6bedc7787c8d938c7f8440c52769ccdd4",
+      "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+    ],
+    "external_checks": "pypdf: page, metadata, integer, array and null; independent MuPDF-produced original: all container/index pairs checked by pypdf",
+    "ownership_proven": false,
+    "active_resolution": false,
+    "reference_links_assessed": false
+  },
+  "xref_state_fixture": {
+    "producer": "Own byte-level hybrid source; hidden metadata independently resolved by pypdf",
+    "sha256": "eea0d5e6cd9f791ccef735faa1a548fb604c4211f2a7eaa2f0040028e6ec522d",
+    "selected_records": 10,
+    "search_order": [
+      {
+        "xref_offset": 1252,
+        "primary_xref_offset": 1252,
+        "role": "primary",
+        "ignored_prev": null
+      },
+      {
+        "xref_offset": 1143,
+        "primary_xref_offset": 1252,
+        "role": "hybrid-supplement",
+        "ignored_prev": null
+      },
+      {
+        "xref_offset": 762,
+        "primary_xref_offset": 762,
+        "role": "primary",
+        "ignored_prev": null
+      }
+    ],
+    "record_selection_complete": true,
+    "object_resolution_complete": false,
+    "independent_checks": [
+      "pypdf: generation reuse and free tombstone",
+      "pypdf: hybrid metadata before older free entry",
+      "MuPDF: current table before conflicting hybrid entry"
+    ],
+    "structural_checks": [
+      "future type shadows old body as null",
+      "forward Prev links",
+      "repeated primary/hybrid roles",
+      "aggregate item quota",
+      "cancellation",
+      "CLI source records"
+    ]
+  }
+}

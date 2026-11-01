@@ -42,8 +42,12 @@ class SyntaxBudget:
 
 
 class Parser:
-    def __init__(self, data: bytes, start: int, window: int, budget: SyntaxBudget) -> None:
+    def __init__(self, data: bytes | bytearray, start: int, window: int, budget: SyntaxBudget, *,
+                 stop: int | None = None) -> None:
         self.data, self.pos, self.end = data, start, min(len(data), start+window)
+        self.stop = stop
+        if stop is not None:
+            self.end = min(self.end, stop)
         self.budget = budget
         self.buffer: list[Token] = []
 
@@ -52,6 +56,8 @@ class Parser:
 
     def bounded(self) -> None:
         if self.pos >= self.end:
+            if self.end == self.stop:
+                self.error('unexpected end of bounded object')
             if self.end < len(self.data):
                 raise ResourceLimitError(f'pdf:byte={self.pos}: max_part_bytes exceeded')
             self.error('unexpected end of source syntax')
@@ -70,9 +76,11 @@ class Parser:
         if self.budget.tokens > self.budget.maximum:
             raise ResourceLimitError(f'pdf:byte={self.pos}: max_pdf_tokens exceeded')
         self.skip()
+        if self.pos == self.end == self.stop:
+            return Token('eof', None, self.pos, self.pos)
         self.bounded()
         start, value = self.pos, self.data[self.pos]
-        pair = self.data[self.pos:self.pos+2]
+        pair = self.data[self.pos:min(self.end, self.pos+2)]
         if pair in (b'<<', b'>>'):
             self.pos += 2
             return Token(pair.decode(), None, start, self.pos)
@@ -90,7 +98,7 @@ class Parser:
                 self.pos += 1
                 if char == 92:
                     self.bounded()
-                    if self.data[self.pos:self.pos+2] == b'\r\n':
+                    if self.data[self.pos:min(self.end, self.pos+2)] == b'\r\n':
                         self.pos += 2
                     else:
                         self.pos += 1
@@ -122,9 +130,9 @@ class Parser:
             if (self.pos-start) % 4096 == 0:
                 checkpoint()
             self.pos += 1
-        if self.pos == self.end and self.end < len(self.data):
+        if self.pos == self.end and self.end < len(self.data) and self.end != self.stop:
             raise ResourceLimitError(f'pdf:byte={self.pos}: max_part_bytes exceeded')
-        word = self.data[word_start:self.pos]
+        word = bytes(self.data[word_start:self.pos])
         if name:
             if re.search(rb'#(?![0-9a-fA-F]{2})', word):
                 self.error('invalid PDF name escape')

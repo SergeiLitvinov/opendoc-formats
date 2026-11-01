@@ -173,6 +173,11 @@ def _write_validated_docx(
     fit_virtual_tables(document, limits=limits)
     preflight_colors(document, report, target="docx")
     target = Document()
+    from opendoc_formats.ooxml.docx_defaults import restore_absent_defaults
+
+    restore_absent_defaults(target, document, report)
+    if not report.success:
+        return report
     _write_metadata(target, document.metadata)
     _restore_document_protection(target, document.metadata, report)
     write_styles(target, document.styles, report, limits=limits)
@@ -329,13 +334,15 @@ def _restore_package_graph(
             report.add(IssueSeverity.ERROR, "package-graph", "Opaque OOXML relationships require their source package graph")
         return None
     try:
+        from opendoc_formats.ooxml.docx_defaults import created_defaults
         from opendoc_formats.ooxml.layout import retain_layout_styles
         from opendoc_formats.ooxml.orphans import relocate_root, reserve_orphan_names
 
         if opaque:
             relocate_root(target.part, graph.root)
+        retained = retain_derived_styles(target.part, graph, copy_defaults=created_defaults(document), limits=limits)
         native_parts = restore_package_graph(
-            target.part, retain_layout_styles(retain_derived_styles(target.part, graph), document.styles, report, limits=limits),
+            target.part, retain_layout_styles(retained, document.styles, report, limits=limits),
             protected_roots=getattr(target.part, "_opendoc_opaque_roots", ()),
             source_parts=source_parts,
         )

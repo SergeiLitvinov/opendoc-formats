@@ -53,15 +53,16 @@ changes = compare_snapshots(original, result)
 | XML-часть | QName с URI namespace, позиция узла, byte offsets событий, атрибуты, SHA-256 собственного текста и его длина; неизвестные namespaces сохраняются |
 | Связи OOXML | Исходные XML-узлы `.rels`, в том числе Id, Type, Target, TargetMode; внешние адреса не загружаются |
 | Неизвестная бинарная часть | Исходные распакованные bytes, размер и SHA-256; вложения и макросы не запускаются |
-| PDF | Активные xref slots, нормализованное представление словаря, закодированный поток без декодирования, trailer, число страниц и признак ремонта backend |
+| PDF | Активные объекты через backend либо физические xref-секции и записи raw/Flate streams собственным разбором |
 | CFBF/OLE container | Исходные секторы, FAT/DIFAT/miniFAT, directory objects, логические потоки и их byte ranges; содержимое OLE не активируется |
 | TTF/OTF sfnt | Исходная программа целиком, directory records, смещения/размеры таблиц, объявленные checksums и SHA-256 payload; по `sfnt_checksums=True` — проверка сумм |
 
 `capture=True` возвращает payload в памяти; обычный снимок хранит инвентарь.
 `BinarySnapshot.to_dict()` — диагностический формат Formats, отдельный от JSON
 документа OpenDoc. Пакет общей модели и её codec не меняются.
-ZIP/XML, CFBF и sfnt-инспекция используют стандартную библиотеку Python. PDF-инспекция использует
-существующий профиль `pdf` и его [лицензионные условия](dependencies.md).
+ZIP/XML, CFBF, sfnt и исходная PDF-инспекция используют стандартную библиотеку Python.
+Активные PDF-объекты по умолчанию читаются через профиль `pdf` с его
+[лицензионными условиями](dependencies.md).
 
 ## Выгрузка частей и сравнение
 
@@ -550,10 +551,155 @@ Query (включая пустой `?`) и закодированные разд
 Открытие ZIP/PDF, отдельное чтение, хеширование и вызов PDF backend неделимы;
 проверка размера результата native call не является жёсткой квотой памяти декодера.
 
-PDF-словарь представляет активный объект после обработки backend, а не исходный
+В PDF-режиме по умолчанию словарь представляет активный объект после обработки backend, а не исходный
 диапазон байтов файла. Исторические revisions, поколения и различие free/null
 slots этим профилем не восстанавливаются. Закодированные потоки не декодируются.
 `repaired=true` явно показывает вмешательство backend при открытии.
+
+### Исходные PDF-секции и xref streams без движка
+
+`inspect_binary(source, pdf_source=True, capture=True)` читает физические секции,
+достижимые через завершающий `startxref`, ссылки `Prev` и hybrid `XRefStm`.
+Classic xref сохраняет object number, generation, free/in-use, смещение либо номер
+следующего свободного объекта и диапазон записи. `object_header_matches` проверяет
+только буквальный заголовок: совпадение внутри строки или потока не доказывает
+принадлежность объекта. Циклы и неоднозначные словари отвергаются без ремонта.
+
+По умолчанию xref stream остаётся словарём: payload заканчивается на `>>`,
+`kind=pdf-xref-stream-dictionary`, `stream_entries_decoded=false`.
+Для ограниченного декодирования индекса добавьте `pdf_decode_xrefs=True`:
+
+```python
+from opendoc_formats.anatomy import inspect_binary
+
+snapshot = inspect_binary('source.pdf', pdf_source=True, pdf_decode_xrefs=True, capture=True)
+```
+
+```powershell
+uv run python -m tools.document_anatomy source.pdf --pdf-source --pdf-decode-xrefs --output .opendoc-formats/pdf-source
+```
+
+Поддержаны прямой `Length`, raw и одиночный `FlateDecode` без предиктора
+(`Predictor=1`) либо с PNG-предиктором (`Predictor=10..15`), `W` с шириной каждого поля 0–8 байт и ненулевой суммой,
+непересекающиеся диапазоны `Index` либо `[0 Size]`. Нулевые ширины получают
+стандартные значения полей. Записи type 0/1 сохраняют generation и free-link/offset;
+type 2 — `object_stream` и `object_stream_index` с generation 0.
+Неизвестный тип остаётся `raw_fields` с `in_use=null`, без выдуманного адреса.
+Правила записей описаны в [ISO 32000-1, 7.5.8](https://opensource.adobe.com/dc-acrobat-sdk-docs/standards/pdfstandards/pdf/PDF32000_2008.pdf).
+
+Декодированный индекс получает `kind=pdf-xref-stream`. Payload сохраняет исходные
+bytes от заголовка объекта до `endobj`, включая закодированный поток.
+`encoded_start/end` — физический диапазон потока; `decoded_start/end` у записей —
+позиции внутри распакованного индекса, а не смещения исходного PDF.
+`decoded_bytes`, `record_widths`, `index`, `filter` показывают принятый профиль.
+Режим сравнения должен быть одинаковым для двух файлов.
+
+PNG None/Sub/Up/Average/Paeth выбираются по тегу каждой строки, независимо от
+конкретного значения словарного Predictor 10–15. Поддержаны положительные прямые
+`Colors`/`Columns` и `BitsPerComponent=1/2/4/8/16`; строка округляется до целого
+байта и должна делить размер индекса без остатка. Значения по умолчанию — 1/1/8.
+Восстановление выполняется в том же буфере; упакованные компоненты, padding bits
+и многобайтный byte stride сохраняются без обращения к Pillow или PDF-движку.
+Правила строк — в [ISO 32000-1, 7.4.4.4](https://opensource.adobe.com/dc-acrobat-sdk-docs/standards/pdfstandards/pdf/PDF32000_2008.pdf).
+
+Размеры и число записей проверяются до распаковки. `max_items` учитывает секции
+и записи, `max_part_bytes` ограничивает физическую секцию и распакованный индекс,
+включая теги PNG-строк до восстановления. `max_total_bytes` суммирует физические
+секции и работу декодирования, включая эти теги. `decoded_bytes`/`decoded_xref_bytes`
+показывают размер готовых записей; `decode_work_bytes`/`xref_decode_work_bytes` —
+размер до удаления PNG-тегов, используемый для квоты.
+`max_pdf_tokens` и `max_pdf_depth` ограничивают синтаксис и обход ссылок.
+Распаковка выполняется порциями до 64 КиБ с контрольными точками отмены;
+повреждённый zlib, лишние/недостающие decoded bytes и неверные closing keywords
+дают адресный отказ. TIFF Predictor 2, другие фильтры, внешние потоки и indirect Length
+дают `UnsupportedDocumentError`; dictionary-only режим остаётся доступен.
+
+Это физическая инспекция индекса, а не разрешение активных объектов или проверка
+всего PDF. По умолчанию содержимое object streams не декодируется;
+type 2 ещё не подтверждает наличие и границы вложенного объекта.
+`assessment_complete=false`, `object_streams_decoded=false`. Наличие `Prev`
+не доказывает число редакторских ревизий: linearized/hybrid PDF требуют отдельной
+классификации. Движки текстового извлечения и отображения этим профилем не заменены.
+
+### Содержимое object streams
+
+Дополнительный `pdf_object_streams=True` требует обоих флагов `pdf_source=True`
+и `pdf_decode_xrefs=True`. CLI использует `--pdf-object-streams` вместе с ними.
+Инспектор собирает номера контейнеров из всех физических type-2 записей,
+затем разбирает все их прямые xref-кандидаты в просмотренных секциях.
+Исторические версии одного контейнера сохраняются отдельно по source offset:
+выбор активной версии не выполняется. Отсутствующие кандидаты перечислены в
+`unresolved_container_numbers`, исходные type-2 occurrences — в
+`compressed_object_references` с xref offset, object number, container и index.
+
+Приняты raw/Flate, прямые неотрицательные `N/First/Length`, generation 0 контейнера,
+директория уникальных положительных object numbers со строго возрастающими
+смещениями от нуля. Проверяется конец потока по Length, ровно N пар до First
+и синтаксис одного объекта в каждом decoded диапазоне. Вложенные stream/obj/endobj
+не принимаются. Правила контейнера описаны в
+[ISO 32000-1, 7.5.7](https://opensource.adobe.com/dc-acrobat-sdk-docs/standards/pdfstandards/pdf/PDF32000_2008.pdf).
+
+`kind=pdf-object-stream` сохраняет физические bytes от заголовка до `endobj`.
+`kind=pdf-compressed-object` сохраняет исходный decoded диапазон без пересборки,
+включая завершающий пробельный промежуток. В адресе `pdf:source-objstm=…/index=…/object=…`
+указаны физическое смещение контейнера и внутренние index/object. Поля
+`decoded_start/end` относятся к декодированному контейнеру, `source_byte_range=null`:
+для Flate они не являются диапазоном байтов PDF. Строки остаются в payload;
+проверка их синтаксиса не выдаётся за Unicode/семантический импорт.
+
+Секции, их записи, контейнеры и члены используют общий `max_items` и
+`max_pdf_tokens/max_pdf_depth`; физические bytes контейнеров и полные decoded
+потоки добавляются к `max_total_bytes`. `max_part_bytes` ограничивает каждый
+контейнер и его распаковку. Неизвестная decoded длина ограничивается внутри Flate,
+отмена проверяется при распаковке, чтении директории и членов. Ошибка не заменяет
+ранее сохранённую dissection; исходный PDF не меняется.
+
+Шифрование, indirect N/First/Length, другие фильтры/параметры, ненулевые поколения
+и исторический кандидат с другим Type дают `UnsupportedDocumentError`.
+`Extends` сохраняется как инертная ссылка, не обходится. `object_streams_decoded`
+означает, что разобран хотя бы один кандидат; `decoded_object_streams` сообщает число.
+`ownership_proven=false`, `active_resolution=false`,
+`object_stream_reference_links_assessed=false` и `assessment_complete=false`:
+локальная директория не доказывает владение исходным диапазоном, соответствие
+каждой исторической ссылки и активное состояние объекта. Page content не исполняется;
+семантические readers и их движки этим режимом не подменяются.
+
+### Выбор действующих записей xref
+
+`pdf_resolve_xrefs=True` требует `pdf_source=True` и `pdf_decode_xrefs=True`;
+CLI — `--pdf-source --pdf-decode-xrefs --pdf-resolve-xrefs`.
+Содержимое объектов для этого режима читать не требуется.
+Выбор начинается от terminal startxref: сначала записи текущей classic-таблицы,
+затем её XRefStm, затем Prev основной секции. Для stream-only секции берутся её
+записи и её Prev. Совпавшие object numbers больше не заменяются: free/tombstone
+подавляет старый body, новая generation подавляет прежнюю, а неизвестный будущий
+тип сохраняется как `unknown-null`, без возврата к более старому объекту.
+Приоритет текущей таблицы над её дополнением и дополнения над предыдущей
+секцией следует [ISO 32000-1, 7.5.8.4](https://opensource.adobe.com/dc-acrobat-sdk-docs/standards/pdfstandards/pdf/PDF32000_2008.pdf).
+
+`snapshot.details.effective_xref_entries` содержит выбранные записи по object number:
+`state=free/uncompressed/compressed/unknown-null`, generation, native offset/free-link
+либо пару container/index. `xref_offset` указывает физическую секцию;
+`primary_xref_offset` — секцию, к которой принадлежит hybrid-дополнение.
+`record_range.space=source` адресует bytes classic-записи в PDF,
+`space=decoded-xref` — bytes записи внутри декодированного xref stream.
+Исходные секции и их payload не заменяются итоговой таблицей.
+
+`xref_search_order` показывает порядок поиска, роли primary/hybrid-supplement и
+`search_index`. Prev hybrid-дополнения не обходится в этой роли: поле `ignored_prev`
+показывает сохранённый указатель. Если секция также встречается в основной цепочке,
+её Prev обходится в основной роли. Forward Prev допускается, как и в linearized
+профилях; порядок поиска не является хронологией редактирования или доказательством
+полной linearized-совместимости. Cycles отвергаются, непроверенные nested hybrid
+профили не подменяются эвристикой.
+
+Выбранные записи дополнительно учитываются в общем `max_items`, отмена проверяется
+внутри выбора. `xref_record_selection_complete=true` относится только к приоритету
+записей в просмотренной цепочке. `object_resolution_complete=false`,
+`object_resolved=false`, `ownership_proven=false` и `assessment_complete=false`:
+указатель ещё не доказывает владение body, соответствие запрошенной reference generation,
+наличие вложенного объекта или semantic mapping. Для каждого исторического type-2
+occurrence и произвольной ссылки разрешение остаётся отдельной работой.
 
 ## Независимые оригиналы и нативная приёмка
 
@@ -618,7 +764,8 @@ Word, Poppler, PyMuPDF и Pillow нужны для этой дополнител
 в базовый профиль библиотеки. Это конечный fixture-контракт, а не заявление о
 полной поддержке OOXML, всех вложений или семантических правок.
 
-Этот же sparse оригинал выявляет открытые расхождения rich reader с Word:
-default/preserve whitespace и геометрию при отсутствующем `pgSz`.
-Они перечислены в [TODO](../development/todo.md); приёмка нативной пакетной
-правки не закрывает семантическую интерпретацию таких свойств.
+В этом sparse оригинале `After ` + hyperlink `Link` импортируется как `AfterLink`
+по принятой Word-проекции обычного w:t; native snapshot сохраняет исходные пробелы.
+Геометрия при отсутствующем `pgSz`, непроверенные whitespace scopes и отображение
+sparse defaults остаются в [TODO](../development/todo.md); приёмка нативной пакетной
+правки не закрывает эти семантические и визуальные свойства.

@@ -26,6 +26,7 @@ from opendoc_model import (
 )
 
 from opendoc_formats.ooxml.borders import native_only
+from opendoc_formats.ooxml.docx_whitespace import SPACE
 from opendoc_formats.ooxml.layout import native_layout_supported
 from opendoc_formats.ooxml.orphans import retained_original
 from opendoc_formats.ooxml.paragraph_flow import native_flow_supported
@@ -53,6 +54,11 @@ _XML_KEYS = {"docx_raw_inline_xml", "docx_raw_block_xml", "field_xml", "vml_xml"
 
 
 def _feature(node: Any) -> str | None:
+    if isinstance(node.tag, str) and node.tag.startswith(W) and node.get(SPACE) not in (None, 'default', 'preserve'):
+        return 'text-whitespace'
+    if (node.getparent() is None and node.tag in {W+name for name in ('hdr', 'ftr', 'footnotes', 'endnotes', 'comments')}
+            and node.get(SPACE) is not None):
+        return 'text-whitespace'
     if node.tag in {W + 'txbxContent', V + 'textbox'}:
         from opendoc_formats.ooxml.positioned_text import native_positioned_content_supported
 

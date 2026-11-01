@@ -163,7 +163,11 @@ def write_paragraph_content(
             elif item.properties.get("field_instruction") is not None:
                 _write_simple_field(paragraph, item)
             else:
-                run = paragraph.add_run(item.text)
+                from opendoc_formats.ooxml.docx_whitespace import write_text_profile
+
+                run = paragraph.add_run()
+                if not write_text_profile(run, item.text, item.properties, report, item_location):
+                    run.text = item.text
                 character_style = (item.style.properties.base_style_id if 'base_style_id' in item.style.properties
                                    else item.style.properties.get('docx_character_style_id'))
                 if character_style:

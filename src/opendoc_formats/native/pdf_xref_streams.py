@@ -1,0 +1,124 @@
+"""Bounded, opt-in decoding of physical PDF xref records, never object streams."""
+
+from __future__ import annotations
+
+from typing import Any
+
+from opendoc_formats.errors import InvalidDocumentError, ResourceLimitError, UnsupportedDocumentError
+from opendoc_formats.native.pdf_flate import inflate
+from opendoc_formats.native.pdf_predictors import layout, undo_png
+from opendoc_formats.native.pdf_syntax import Name, Parser, SyntaxBudget
+from opendoc_formats.support.cancellation import checkpoint
+
+
+def decode_xref(data: bytes, start: int, dictionary: dict[str, Any], *, part_limit: int,
+                byte_limit: int, item_limit: int, budget: SyntaxBudget) -> tuple[list[dict[str, Any]], int, dict[str, Any]]:
+    """Return records, physical endobj end and stream evidence. All fields are direct."""
+    location = f'pdf:byte={start}: '
+
+    def invalid(message: str) -> InvalidDocumentError:
+        return InvalidDocumentError(location+message)
+
+    size, widths, index, length = (dictionary.get(key) for key in ('Size', 'W', 'Index', 'Length'))
+    if type(size) is not int or size <= 0:
+        raise invalid('xref Size must be a positive direct integer')
+    if (not isinstance(widths, list) or len(widths) != 3
+            or any(type(value) is not int or value < 0 for value in widths)):
+        raise invalid('xref W must contain three nonnegative direct integers')
+    if max(widths) > 8 or sum(widths) == 0:
+        raise UnsupportedDocumentError(location+'xref field widths outside the 1..24-byte record profile')
+    if index is None and 'Index' not in dictionary:
+        index = [0, size]
+    if (not isinstance(index, list) or not index or len(index) % 2
+            or any(type(value) is not int or value < 0 for value in index)):
+        raise invalid('xref Index must contain direct nonnegative start/count pairs')
+    ranges: list[tuple[int, int]] = []
+    amount = 0
+    for position in range(0, len(index), 2):
+        checkpoint()
+        first, count = index[position:position+2]
+        if not count or first+count > size:
+            raise invalid('xref Index range outside Size or empty')
+        ranges.append((first, first+count))
+        amount += count
+        if amount > item_limit:
+            raise ResourceLimitError(location+'max_items exceeded by xref stream records')
+    ordered = sorted(ranges)
+    if any(left[1] > right[0] for left, right in zip(ordered, ordered[1:])):
+        raise invalid('overlapping xref Index ranges')
+    expected = amount*sum(widths)
+    if expected > part_limit or expected > byte_limit:
+        raise ResourceLimitError(location+'decoded xref exceeds max_part_bytes/max_total_bytes')
+    if type(length) is not int or length < 0:
+        raise UnsupportedDocumentError(location+'xref decoding requires a direct nonnegative Length')
+    if length > part_limit or length+expected > byte_limit:
+        raise ResourceLimitError(location+'encoded/decoded xref exceeds byte budget')
+    end = start+length
+    if end > len(data):
+        raise invalid('xref stream Length outside source')
+    if 'F' in dictionary:
+        raise UnsupportedDocumentError(location+'external xref streams are not opened')
+    encoding = dictionary.get('Filter')
+    parameters = dictionary.get('DecodeParms')
+    if isinstance(encoding, list):
+        if len(encoding) != 1:
+            raise UnsupportedDocumentError(location+'xref filter chains outside supported profile')
+        encoding = encoding[0]
+        if isinstance(parameters, list) and len(parameters) == 1:
+            parameters = parameters[0]
+    if encoding is not None and encoding != Name('FlateDecode'):
+        raise UnsupportedDocumentError(location+'xref filter outside raw/FlateDecode profile')
+    if parameters is not None:
+        if not isinstance(parameters, dict):
+            raise UnsupportedDocumentError(location+'xref DecodeParms must be a direct dictionary or null')
+        if any(key not in {'Predictor', 'Colors', 'BitsPerComponent', 'Columns', 'EarlyChange'} for key in parameters):
+            raise UnsupportedDocumentError(location+'unknown xref decoding parameter')
+    predictor, row_bytes, stride, inflated_size = layout(parameters or {}, expected, location)
+    if predictor != 1 and encoding is None:
+        raise UnsupportedDocumentError(location+'PNG predictor requires FlateDecode')
+    if inflated_size > part_limit or length+inflated_size > byte_limit:
+        raise ResourceLimitError(location+'PNG row tags exceed max_part_bytes/max_total_bytes')
+    raw = memoryview(data)[start:end]
+    if encoding is None:
+        if length != expected:
+            raise invalid('raw xref length disagrees with W/Index')
+        decoded: bytes | memoryview = raw
+    else:
+        output = inflate(raw, inflated_size, location, expected=inflated_size)
+        if predictor != 1:
+            undo_png(output, row_bytes, stride, location)
+        decoded = memoryview(output)
+    parser = Parser(data, end, part_limit, budget)
+    if parser.take().value != b'endstream' or parser.take().value != b'endobj':
+        raise invalid('xref Length does not end before endstream/endobj')
+    entries: list[dict[str, Any]] = []
+    cursor = 0
+    for first, stop in ranges:
+        for number in range(first, stop):
+            checkpoint()
+            record_start = cursor
+            fields = []
+            for width in widths:
+                fields.append(int.from_bytes(decoded[cursor:cursor+width], 'big'))
+                cursor += width
+            kind, target, generation = fields
+            if widths[0] == 0:
+                kind = 1
+            entry: dict[str, Any] = {'object': number, 'entry_type': kind,
+                                     'decoded_start': record_start, 'decoded_end': cursor}
+            if kind in (0, 1):
+                if generation > 65535:
+                    raise invalid('xref generation exceeds 65535')
+                entry.update(generation=generation, offset_or_next_free=target, in_use=kind == 1)
+            elif kind == 2:
+                if target == 0 or target >= size:
+                    raise invalid('compressed object stream number outside Size')
+                entry.update(generation=0, in_use=True, object_stream=target, object_stream_index=generation)
+            else:
+                # Future types are retained, never reinterpreted as byte offsets.
+                entry.update(in_use=None, raw_fields=fields)
+            entries.append(entry)
+    return entries, parser.pos, {'encoded_start': start, 'encoded_end': end, 'decoded_bytes': expected,
+                                'decode_work_bytes': inflated_size, 'predictor': predictor,
+                                'filter': 'FlateDecode' if encoding else None,
+                                'record_widths': widths, 'index': index}

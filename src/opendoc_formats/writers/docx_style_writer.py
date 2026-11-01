@@ -48,10 +48,10 @@ def write_styles(
                        'Common line spacing requires a paragraph style or document defaults in this Word profile',
                        f'styles[{style_id}]')
             continue
-        if properties.style_type == "document-default":
-            from opendoc_formats.ooxml.word_color import apply_color, default_color_owner
+        if properties.style_type == "document-default" or style_id == '__doc_defaults__':
+            from opendoc_formats.ooxml.word_color import default_color_owner
 
-            apply_color(default_color_owner(target.styles.element), source)
+            _apply_default_font(default_color_owner(target.styles.element), source)
             from opendoc_formats.ooxml.spacing import default_spacing_owner, export_spacing
 
             export_spacing(properties, default_spacing_owner(target.styles.element), report, 'styles[__doc_defaults__]',
@@ -161,6 +161,30 @@ def apply_font_style(font: Any, style: TextStyle) -> None:
     font.superscript = style.superscript
     font.subscript = style.subscript
     apply_color(font._element.get_or_add_rPr(), style)
+
+
+def _apply_default_font(owner: Any, style: TextStyle) -> None:
+    from copy import deepcopy
+
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+    from docx.text.font import Font
+
+    temporary = OxmlElement('w:r')
+    temporary.append(deepcopy(owner))
+    apply_font_style(Font(temporary), style)
+    result = temporary.rPr
+    fonts = result.find(qn('w:rFonts'))
+    if fonts is not None and style.font_family and not style.properties.get('font_theme'):
+        for name in ('asciiTheme', 'hAnsiTheme', 'eastAsiaTheme', 'cstheme', 'csTheme'):
+            fonts.attrib.pop(qn('w:'+name), None)
+    if style.language:
+        language = result.find(qn('w:lang'))
+        if language is None:
+            language = OxmlElement('w:lang')
+            result.append(language)
+        language.set(qn('w:val'), style.language)
+    owner.getparent().replace(owner, result)
 
 
 def _apply_style_language(style: Any, language_code: str | None) -> None:

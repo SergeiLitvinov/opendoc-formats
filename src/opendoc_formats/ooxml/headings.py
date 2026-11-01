@@ -94,8 +94,9 @@ def export_heading(paragraph: Paragraph, native: Any) -> None:
     properties.append(node)
 
 
-def retain_derived_styles(part: Any, graph: PackageGraph) -> PackageGraph:
-    """Keep new role styles when restoring the original opaque styles part."""
+def retain_derived_styles(part: Any, graph: PackageGraph, *, copy_defaults: bool = False,
+                          limits: Any = None) -> PackageGraph:
+    """Keep new role styles and requested defaults when restoring the source styles part."""
     from copy import deepcopy
     from dataclasses import replace
 
@@ -106,9 +107,33 @@ def retain_derived_styles(part: Any, graph: PackageGraph) -> PackageGraph:
 
     created = getattr(part, "_opendoc_heading_styles", {})
     source = graph.related_part(graph.root, RELATIONSHIP_TYPE["styles"])
-    if not created or source is None:
+    if (not created and not copy_defaults) or source is None:
         return graph
+    if copy_defaults:
+        from opendoc_model import ArtifactLimitError, DocumentLimits
+
+        from opendoc_formats.anatomy import AnatomyLimits, _Budget, _xml_nodes
+
+        budget = limits or DocumentLimits()
+        maximum = min(AnatomyLimits().max_part_bytes, budget.max_bytes)
+        if not isinstance(source.data, bytes):
+            raise ValueError('Source styles require inline XML bytes')
+        if len(source.data) > maximum:
+            raise ArtifactLimitError('Source styles exceed XML byte budget', path=source.name,
+                                     quota='bytes', maximum=maximum)
+        xml_limits = AnatomyLimits(max_part_bytes=maximum, max_xml_nodes=budget.max_nodes,
+                                   max_xml_depth=budget.max_depth, max_xml_characters=budget.max_bytes)
+        _xml_nodes(source.data, source.name, _Budget(xml_limits), count_markup=True)
     styles = parse_xml(source.data)
+    if copy_defaults:
+        from docx.oxml.ns import qn
+
+        if styles.find(qn('w:docDefaults')) is not None:
+            raise ValueError('Source styles no longer match the absent docDefaults profile')
+        defaults = part.styles.element.find(qn('w:docDefaults'))
+        if defaults is None:
+            raise ValueError('New document defaults were not projected into the native styles part')
+        styles.insert(0, deepcopy(defaults))
     for style in created.values():
         checkpoint()
         styles.append(deepcopy(style.element))

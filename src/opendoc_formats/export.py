@@ -246,7 +246,6 @@ class ExporterRegistry:
                     walk_model,
                 )
 
-                color_context = DocumentModel(styles=document.styles)
                 inherited_colors: dict[str | None, Any] = {}
                 from opendoc_formats.ooxml.paragraph_flow import FIELDS, unresolved_flow
                 from opendoc_formats.ooxml.paragraph_indent import ATTRIBUTES, unresolved_indent
@@ -284,7 +283,7 @@ class ExporterRegistry:
                         for style_identifier in identifiers:
                             if style_identifier not in inherited_colors:
                                 inherited_colors[style_identifier] = resolve_style(
-                                    color_context, style_identifier, limits=options.document_limits,
+                                    document, style_identifier, limits=options.document_limits,
                                 ).color
                         paragraph_color = inherited_colors[reference.node.style_id]
                         for index, run in enumerate(reference.node.content):

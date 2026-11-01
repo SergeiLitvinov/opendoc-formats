@@ -1,5 +1,83 @@
 # Document quality corpus
 
+## Видимый текст DOCX
+
+`test_docx_whitespace.py` покрывает 19 Word-derived вариантов `xml:space`, Unicode
+пробелы, literal/character-reference controls, hyperlink boundary, два public
+JSON/DOCX цикла и TXT. Проверены table-only input, явные control tags, исходные
+строки DocxPackage, адресная диагностика unknown modes и отмена в обоих readers.
+Исходники собираются из XML/ZIP, а не конвертером библиотеки.
+
+`tools.docx_whitespace_acceptance --roundtrips` готовит 57 документов;
+`tools/docx_whitespace_word_acceptance.ps1` создаёт собственный скрытый Word
+SingleUse instance, проверяет PID через native window каждого read-only документа,
+не использует существующие Word-процессы, отключает macros и ожидает выход своего
+экземпляра. `--verify-native` проверяет SHA, фактический текст/страницы и сравнивает
+Word PDF в MuPDF и Poppler при 108 dpi. Word 16.0.17932 подтверждает весь текст,
+но 32 из 38 pixel comparisons различаются: visual acceptance остаётся false.
+Это не игнорируется и не объявляется lossless по совпадению текста.
+[Свидетельство](docx-whitespace-evidence.json) содержит исходные SHA и измерения
+до исправления docDefaults; это базовая оценка, а не приёмка текущего writer.
+`test_docx_defaults.py` отдельно проверяет отсутствие styles/docDefaults,
+объявленные настройки, новые пользовательские defaults, два цикла, отмену,
+неверные профили и XML-бюджет. Single-w:t тесты проверяют сохранение Unicode/TAB,
+приоритет явной правки текста и диагностику неподдерживаемой версии carrier.
+Полная повторная визуальная приёмка текущего writer остаётся открытой.
+
+`tools/docx_whitespace_smoke.py` проверяет установленный DOCX-only wheel без
+fontTools, Pillow и PDF-движков; Model остаётся опубликованным `opendoc-model`.
+`test_font_color_preflight.py` проверяет корректный FONT-контекст для direct/inherited
+стилей при TXT-экспорте, неизменность ссылок/программ и отказ без замены назначения
+для действительно отсутствующего ресурса. Это не ослабление Model-валидации.
+
+## Исходные PDF xref streams
+
+`test_pdf_xref_state.py` проверяет generation reuse, free tombstones, future null
+records, table/hybrid/Prev precedence и forward pointers. pypdf подтверждает
+повторное использование поколения, удаление и hidden hybrid metadata; MuPDF —
+приоритет текущей classic-записи над конфликтующей hybrid-записью.
+Отдельные структурные fixtures проверяют повторную primary/hybrid роль и forward
+Prev без заявления о полном linearized conformance. CLI сохраняет исходные parts
+и отчёт effective records; квота учитывает выбранные записи вместе с xref/ObjStm,
+отмена действует внутри выбора. Разрешение body/ownership и каждой исторической
+ссылки этой проверкой не принимается.
+
+`test_pdf_object_streams.py` принимает raw/Flate ObjStm, уникальную директорию,
+First/N и точные decoded ranges; pypdf подтверждает metadata, скаляр, массив,
+null и object-stream/index на оригиналах, собранных из bytes. Отдельный оригинал
+создаёт MuPDF с настоящими object streams и текстом страницы; pypdf подтверждает
+его страницы, текст и все локальные пары container/index. Reader Formats его не создаёт.
+Проверены две исторические версии контейнера, отсутствующий кандидат, инертный
+Extends, повреждённая директория/синтаксис, чрезмерная распаковка неизвестной длины,
+общие квоты и отмена. CLI сохраняет decoded payload и адреса, не заменяет прежнюю
+dissection при позднем отказе. Это локальная физическая проверка; активное
+разрешение, ownership и полная связь ревизий не объявляются реализованными.
+
+`tests/native/test_pdf_revisions.py` и `test_pdf_xref_streams.py` проверяют
+физические classic/stream/hybrid индексы, Prev, поколения и исходные диапазоны.
+Собственный бинарный оригинал содержит страницу и metadata внутри ObjStm;
+независимый pypdf подтверждает число страниц, metadata, прямые смещения и пару
+object-stream/index. Без `pdf_object_streams=True` Formats декодирует только
+xref records; pypdf разрешает вложенный объект отдельно и не становится
+зависимостью базового профиля.
+Проверены raw/Flate, sparse Index, нулевые W, неизвестные будущие типы,
+повреждения/превышение длины zlib, фильтры вне профиля, лимиты и отмена.
+`test_pdf_predictors.py` сверяет Predictor 10–15 с pypdf на полном PDF,
+а None/Sub/Up/Average/Paeth — с PNG-декодером Pillow на упакованных 1/2/4-битных,
+8/16-битных и RGB/RGBA строках. Проверяются положительные геометрические поля,
+полнота строк, неизвестные теги, tag-byte quota до zlib, общий бюджет и отмена
+внутри восстановления. Pillow/pypdf участвуют только в независимых проверках.
+Это проверка структуры индекса, а не приёмка визуального PDF roundtrip или
+семантического соответствия произвольных объектов.
+
+`tools/pdf_source_smoke.py` запускается из установленного базового wheel через
+изолированный Python, проверяет точные payload, PNG-Up/Flate xref stream, Flate ObjStm
+и effective xref records;
+pypdf/pdfplumber/PyMuPDF отсутствуют. Основной Model — опубликованный
+`opendoc-model==0.19.0`, без замены его рабочей копией.
+Версии, SHA-256 и границы проверки записаны в
+[свидетельстве PDF-source профиля](pdf-source-evidence.json).
+
 ## Захват PDF TextLayout
 
 `tests/readers/test_pdf_text_layout.py`: 29 проверок режима

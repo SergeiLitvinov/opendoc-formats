@@ -14,7 +14,9 @@ if TYPE_CHECKING:
     from opendoc_formats.anatomy import AnatomyLimits, BinaryItem
 
 
-def inspect_pdf_source(data: bytes, limits: AnatomyLimits, capture: bool) -> tuple[tuple[BinaryItem, ...], dict[str, Any]]:
+def inspect_pdf_source(data: bytes, limits: AnatomyLimits, capture: bool, *,
+                       decode_streams: bool = False, object_streams: bool = False, resolve_records: bool = False
+                       ) -> tuple[tuple[BinaryItem, ...], dict[str, Any]]:
     from opendoc_formats.anatomy import BinaryItem
 
     header = re.search(rb'%PDF-[12]\.[0-9]', data[:1024])
@@ -37,9 +39,10 @@ def inspect_pdf_source(data: bytes, limits: AnatomyLimits, capture: bool) -> tup
         raise InvalidDocumentError('pdf:source: startxref outside source')
     startxref = offset
     pending: list[tuple[int, tuple[int, ...], bool]] = [(offset, (), False)]
-    seen: dict[int, str] = {}
+    seen: dict[int, dict[str, Any]] = {}
+    expanded_primary: set[int] = set()
     items, sections = [], []
-    total, count = 0, 0
+    total, count, decoded_total, decode_work_total = 0, 0, 0, 0
 
     def integer(dictionary: dict[str, Any], key: str, optional: bool = False) -> int | None:
         value = dictionary.get(key)
@@ -59,14 +62,19 @@ def inspect_pdf_source(data: bytes, limits: AnatomyLimits, capture: bool) -> tup
         if not 0 <= offset < len(data):
             raise InvalidDocumentError(f'pdf:byte={offset}: xref link outside source')
         if offset in seen:
-            if hybrid and seen[offset] != 'stream':
+            if hybrid and seen[offset]['kind'] != 'stream':
                 raise InvalidDocumentError(f'pdf:byte={offset}: XRefStm does not target a stream')
+            if not hybrid and offset not in expanded_primary:
+                expanded_primary.add(offset)
+                if seen[offset]['prev'] is not None:
+                    pending.append((seen[offset]['prev'], (*ancestors, offset), False))
             continue
         parser = Parser(data, offset, limits.max_part_bytes, budget)
         first = parser.take()
         if first.start != offset:
             raise InvalidDocumentError(f'pdf:byte={offset}: xref pointer does not point to a token')
-        entries = []
+        entries: list[dict[str, Any]] = []
+        stream_details: dict[str, Any] = {}
         stream = first.kind == 'integer'
         if stream:
             object_number = first.value
@@ -84,6 +92,20 @@ def inspect_pdf_source(data: bytes, limits: AnatomyLimits, capture: bool) -> tup
                 raise InvalidDocumentError(f'pdf:byte={parser.pos}: stream keyword must end its line')
             end = dictionary_end
             kind = 'pdf-xref-stream-dictionary'
+            if decode_streams:
+                from opendoc_formats.native.pdf_xref_streams import decode_xref
+
+                stream_start = parser.pos+(2 if data[parser.pos:parser.pos+2] == b'\r\n' else 1)
+                entries, end, stream_details = decode_xref(
+                    data, stream_start, dictionary, part_limit=limits.max_part_bytes,
+                    byte_limit=limits.max_total_bytes-total-decode_work_total-(stream_start-offset),
+                    item_limit=limits.max_items-count-1, budget=budget)
+                if end-offset > limits.max_part_bytes:
+                    raise ResourceLimitError(f'pdf:byte={offset}: max_part_bytes exceeded by xref stream')
+                count += len(entries)
+                decoded_total += stream_details['decoded_bytes']
+                decode_work_total += stream_details['decode_work_bytes']
+                kind = 'pdf-xref-stream'
         else:
             if first.value != b'xref' or hybrid:
                 raise InvalidDocumentError(f'pdf:byte={offset}: expected classic xref section')
@@ -128,30 +150,50 @@ def inspect_pdf_source(data: bytes, limits: AnatomyLimits, capture: bool) -> tup
         supplement = integer(dictionary, 'XRefStm', optional=True)
         count += 1
         total += end-offset
-        if count > limits.max_items or total > limits.max_total_bytes:
+        if count > limits.max_items or total+decode_work_total > limits.max_total_bytes:
             raise ResourceLimitError(f'pdf:byte={offset}: max_items/max_total_bytes exceeded')
         section = {'offset': offset, 'end': end, 'kind': 'stream' if stream else 'table', 'size': size,
                    'prev': previous, 'xref_stream': supplement, 'hybrid_supplement': hybrid,
                    'dictionary_start': dictionary_start, 'dictionary_end': dictionary_end,
-                   'stream_entries_decoded': False if stream else None, 'entries': entries,
-                   'encrypted_declared': 'Encrypt' in dictionary}
+                   'stream_entries_decoded': decode_streams if stream else None, 'entries': entries,
+                   'encrypted_declared': 'Encrypt' in dictionary, **stream_details}
         raw = memoryview(data)[offset:end]
         items.append(BinaryItem(f'pdf:source-xref={offset}', kind, len(raw), hashlib.sha256(raw).hexdigest(),
                                 details=tuple(section.items()), payload=bytes(raw) if capture else None))
         sections.append(section)
-        seen[offset] = 'stream' if stream else 'table'
+        seen[offset] = section
         path = (*ancestors, offset)
         if previous is not None and not hybrid:
             pending.append((previous, path, False))
+        if not hybrid:
+            expanded_primary.add(offset)
         if supplement is not None:
             pending.append((supplement, path, True))
+    resolution: dict[str, Any] = {'xref_resolution_requested': False}
+    if resolve_records:
+        from opendoc_formats.native.pdf_xref_state import resolve_xrefs
+
+        resolution = resolve_xrefs(sections, startxref, limits.max_items-count)
+        count += len(resolution['effective_xref_entries'])
+    object_details: dict[str, Any] = {'object_streams_requested': False, 'object_streams_decoded': False}
+    if object_streams:
+        from opendoc_formats.native.pdf_object_streams import inspect_object_streams
+
+        additional, object_details = inspect_object_streams(
+            data, sections, limits, capture, budget, limits.max_items-count,
+            limits.max_total_bytes-total-decode_work_total)
+        items.extend(additional)
     return tuple(items), {'representation': 'physical-xref-sections-and-source-dictionaries',
                           'header_offset': header.start(), 'header': header[0].decode('ascii'),
                           'startxref': startxref, 'terminal_eof_offset': eof,
-                          'xref_sections': len(sections), 'classic_entries': count-len(sections),
+                          'xref_sections': len(sections),
+                          'classic_entries': sum(len(section['entries']) for section in sections if section['kind'] == 'table'),
+                          'decoded_xref_bytes': decoded_total,
+                          'xref_decode_work_bytes': decode_work_total,
                           'has_xref_streams': any(section['kind'] == 'stream' for section in sections),
                           'backend_used': False, 'assessment_complete': False,
-                          'object_streams_decoded': False,
-                          'limitations': ['No stream decoding, object boundary proof or active/semantic resolution',
+                          **object_details,
+                          **resolution,
+                          'limitations': ['No object ownership proof or active/semantic resolution',
                                           'Lexical object header match does not prove object ownership',
                                           'Xref sections alone do not identify revisions in linearized/hybrid files']}

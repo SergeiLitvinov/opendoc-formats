@@ -58,6 +58,12 @@ def main() -> None:
     parser.add_argument('--sfnt-structure', action='store_true',
                         help='Audit directory order, search fields, padding and overlaps')
     parser.add_argument('--pdf-source', action='store_true', help='Inspect physical xref/trailer links without a PDF backend')
+    parser.add_argument('--pdf-decode-xrefs', action='store_true',
+                        help='With --pdf-source, decode bounded raw/Flate xref records')
+    parser.add_argument('--pdf-object-streams', action='store_true',
+                        help='With --pdf-source --pdf-decode-xrefs, inspect physical ObjStm candidates and members')
+    parser.add_argument('--pdf-resolve-xrefs', action='store_true',
+                        help='With --pdf-source --pdf-decode-xrefs, select xref records by table/hybrid/Prev precedence')
     defaults = AnatomyLimits()
     for definition in fields(defaults):
         parser.add_argument('--'+definition.name.replace('_', '-'), type=int, default=getattr(defaults, definition.name))
@@ -66,12 +72,15 @@ def main() -> None:
     snapshot = inspect_binary(args.source, container=args.container, parse_xml=not args.opaque_xml,
                               capture=not args.no_payloads, sfnt_checksums=args.sfnt_checksums,
                               sfnt_face_index=args.sfnt_face_index, sfnt_structure=args.sfnt_structure,
-                              pdf_source=args.pdf_source, limits=limits)
+                              pdf_source=args.pdf_source, pdf_decode_xrefs=args.pdf_decode_xrefs,
+                              pdf_object_streams=args.pdf_object_streams, pdf_resolve_xrefs=args.pdf_resolve_xrefs, limits=limits)
     comparison = None
     if args.compare is not None:
         result = inspect_binary(args.compare, container=args.container, parse_xml=not args.opaque_xml,
                                 sfnt_checksums=args.sfnt_checksums, sfnt_face_index=args.sfnt_face_index,
-                                sfnt_structure=args.sfnt_structure, pdf_source=args.pdf_source, limits=limits)
+                                sfnt_structure=args.sfnt_structure, pdf_source=args.pdf_source,
+                                pdf_decode_xrefs=args.pdf_decode_xrefs, pdf_object_streams=args.pdf_object_streams,
+                                pdf_resolve_xrefs=args.pdf_resolve_xrefs, limits=limits)
         comparison = compare_snapshots(snapshot, result)
     save_dissection(snapshot, args.output, comparison)
     print(f'Dissected {snapshot.container}: {len(snapshot.items)} items; {args.output / "inventory.json"}')

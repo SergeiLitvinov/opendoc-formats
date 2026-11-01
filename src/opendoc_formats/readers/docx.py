@@ -49,6 +49,8 @@ def read_docx(path: Union[str, Path], *, include_tables: bool = True, cancelled:
 def _read_docx(path: Union[str, Path], *, include_tables: bool) -> Text:
     from docx import Document  # type: ignore[import-not-found]
 
+    from opendoc_formats.ooxml.docx_whitespace import paragraph_text
+
     p = Path(path)
     if not p.is_file():
         raise FileNotFoundError(p)
@@ -62,7 +64,7 @@ def _read_docx(path: Union[str, Path], *, include_tables: bool) -> Text:
 
     for para in doc.paragraphs:
         checkpoint()
-        t = para.text
+        t = paragraph_text(para)
         blocks.append(Block(type=BlockType.PARAGRAPH, text=t))
         if t:
             plain.append(t)
@@ -70,7 +72,8 @@ def _read_docx(path: Union[str, Path], *, include_tables: bool) -> Text:
     if include_tables:
         for tbl in doc.tables:
             checkpoint()
-            rows = [[cell.text for cell in cancellable_items(row.cells)] for row in cancellable_items(tbl.rows)]
+            rows = [['\n'.join(paragraph_text(paragraph) for paragraph in cancellable_items(cell.paragraphs))
+                     for cell in cancellable_items(row.cells)] for row in cancellable_items(tbl.rows)]
             tables.append(Table(rows=rows))
             for row in rows:
                 checkpoint()
@@ -124,12 +127,17 @@ def _read_docx_model(
     checkpoint()
     # Lazy styles/settings/core-properties access can create parts that were never in the source graph.
     native_loaded_parts = tuple(str(part.partname) for part in cancellable_items(document.part.package.iter_parts()))
+    from opendoc_formats.ooxml.docx_defaults import KEY as DEFAULTS_KEY
+    from opendoc_formats.ooxml.docx_defaults import source_defaults
+
+    defaults_state = source_defaults(document)
     model = DocumentModel(
         mode=mode,
         source_format=DocFormat.DOCX.value,
         metadata=_document_metadata(document, source),
     )
     model.package = _load_docx_package_graph(document)
+    model.metadata[DEFAULTS_KEY] = defaults_state
     checkpoint()
     from opendoc_formats.readers.docx_fonts import read_embedded_fonts
 
@@ -139,7 +147,7 @@ def _read_docx_model(
     checkpoint()
     model.styles = read_document_styles(document, model)
     checkpoint()
-    document_defaults = read_document_defaults(document, model)
+    document_defaults = read_document_defaults(document, model) if defaults_state['doc_defaults_present'] else None
     if document_defaults is not None:
         model.styles["__doc_defaults__"] = document_defaults
         for style in model.styles.values():
