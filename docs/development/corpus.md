@@ -1,0 +1,2252 @@
+# Document quality corpus
+
+## Закреплённый SDK
+
+Formats 0.1.0 использует Model 0.1.0. Его публичные API, точный wheel SHA,
+исходники, JSON и квоты проверены в [consumer evidence](model-api-acceptance.json).
+Ниже сохранены точные исходные SHA и окружения отдельных проверок;
+версия в свидетельстве относится к его снимку. Наличие записи корпуса не
+означает полной нативной приёмки произвольного формата.
+
+## Косвенные ссылки внутри PDF ObjStm
+
+`tests/native/test_pdf_member_references.py` проверяет точные decoded ranges/SHA,
+raw/Flate, capture/non-capture, отсутствие ложных ссылок из строк/hex/имён/comments,
+free/missing/unknown targets и поколения direct/compressed объявлений.
+Incremental originals сохраняют старые observations и выбирают новый target
+в текущем контексте. pypdf независимо читает собственный metadata fixture.
+Проверяются точные общие квоты items/tokens и отмена без изменения source bytes.
+`tools/pdf_source_smoke.py` повторяет декларации ссылок в установленном базовом
+wheel без PDF/image engines. Совпавшее объявление не считается разрешением тела.
+
+## Известные связи DOCX и Custom XML
+
+`tests/support/test_ooxml_package.py` проверяет общий обход shared parts без
+повторных дочерних рёбер и replay совпадающих bound relationships без alias.
+`tests/writers/test_docx_source_grid.py` проверяет уникальность ZIP members и
+несколько циклов служебного grid snapshot, включая неоднозначные source bindings.
+
+`tests/readers/test_docx_relationship_profiles.py` содержит 18 проверок: Custom XML,
+altChunk и chart при владельцах document/settings/package, внешние targets,
+полные URI типов и `diagramDrawing`. Оценка различает сохранённое ребро с
+неизменённым payload и потерю; JSON сохраняет адрес и measurement. Экспорт
+проверяет наличие/отсутствие именно исходной целевой части и её связи.
+Отдельный исходный content control с `w:dataBinding` проходит два JSON/DOCX-цикла:
+данные, свойства Custom XML и `storeItemID` сохраняются. Источник не меняется.
+Это конечная нативная opaque-приёмка, без семантики XPath, обновления bound text
+или доказательства поддержки всех известных backend типов.
+`tools/docx_flow_smoke.py --minimal` проверяет данные и props через два JSON/DOCX-цикла
+в установленном wheel с официальным `opendoc-model` и только DOCX-зависимостями,
+без fontTools, Pillow и PDF-движков.
+
+## Идентичность якорей EPUB
+
+`tests/readers/test_epub_anchor_identity.py` содержит 62 проверки: colliding Unicode
+paragraph/table IDs, forward links, коллизии глав из-за slash/space/hyphen и границы
+chapter/fragment, вложенные и пустые inline targets с общим `Anchor` Model,
+включая абзацы в ячейках и отсутствие повторного якоря корневого абзаца,
+literal percent path без повторного decode, OPF root и archive-root ссылки. Два JSON-цикла сохраняют разные
+цели; HTMLParser независимо проверяет уникальность output IDs и наличие targets
+для MathML/SVG/PNG в inline, блочных и cell-позициях. Сохраняются типы,
+порядок и payload объектов, источник не меняется.
+Одинаковые локальные root ID MathML разных глав не создают дублирующих HTML ID;
+исходные root ID сохраняются в payload Model. Отдельные проверки HTML writer
+проверяют escaping общих media ID и сохранение цели при formula fallback.
+Экспорт не меняет Model. Реестр проверяется на точную
+границу, отмену и принудительно совпавший hash; полный импорт не переклассифицирует
+anchor quota в ошибку URI. `tools/package_smoke.py --epub`
+проверяет colliding Unicode, пустые inline и MathML/SVG targets через JSON/HTML
+в установленном EPUB-профиле.
+Это конечная source-identity приёмка секций/абзацев/таблиц и принятых inline owners, без общего C-MAP-01
+для arbitrary owners, duplicate IDs или произвольного split/merge.
+
+## Привязки XHTML URI в EPUB
+
+`tests/readers/test_epub_uri_binding.py` содержит 15 проверок protocol-relative
+authority, UTF-8 fragments, literal percent без повторного decode и ошибочных
+URI. Оригиналы содержат настоящие U+FFFD PNG/CSS/XHTML ресурсы с корректными
+manifest URI; `%FF`/overlong UTF-8 в XHTML не заимствуют их данные или стиль.
+Проверяются реальные anchor IDs, видимый текст/alt, CSS color, сохранённые resource
+bytes, JSON/Text assessments, точные attribute addresses и отмена после URI-отказа.
+Нормативно допустимый U+FFFD остаётся доступным ресурсом. Query/encoded-separator
+и полная межконтекстная URI-нормализация этим набором не подтверждаются.
+`tools/package_smoke.py --epub` повторяет external authority, literal percent
+и неразрешимый UTF-8 URI в установленном wheel с действующим EPUB extra.
+
+## Поля заголовка CFBF
+
+`tests/native/test_cfbf_header_fields.py` содержит 26 проверок v3/v4: header CLSID,
+reserved bytes, первый/последний byte padding v4, minor version и ненулевой
+transaction signature. Проверяются точные ranges, MUST/SHOULD и их сочетание,
+неизменённые sector bytes и logical payload, JSON и отмена. Некорректные byte order,
+mini shift, directory count v3 и cutoff сохраняют прежний строгий отказ.
+`tools/package_smoke.py` повторяет обязательные и рекомендованные поля в base wheel
+с одним `opendoc-model`; это не полный аудит header/DIFAT или transactions.
+
+## Поля каталога CFBF
+
+`tests/native/test_cfbf_fields.py` содержит 58 проверок v3/v4 на literal mutations:
+запрещённые символы после surrogate pair с точным byte range, embedded NUL,
+root name, CLSID/times stream, storage start/size, root creation time и все
+поля unused slots. SHOULD stream state bits и совместимые v3 high DWORD
+отделены от MUST; пользовательские storage/root fields не обнуляются.
+Проверяются неизменённый физический inventory и logical payload, JSON, лимит
+findings, отмена и отсутствие optional imports. `tools/package_smoke.py` повторяет
+MUST/SHOULD/unused-slot случаи в установленном base wheel с одним `opendoc-model`.
+Это конечный аудит полей, без активации CLSID/OLE и без полной storage-tree приёмки.
+
+## Нативные пределы таблиц и XML EPUB
+
+`tests/readers/test_epub_parser_limits.py` содержит 11 проверок: общий выбранный
+cell budget между таблицами и главами, выбранная глубина таблиц, отдельный профиль
+10 000 cells per table и точные XML-пороги depth 128/nodes 100 000. Источник
+сохраняется при раннем отказе; штатный импорт повторяется с обычным бюджетом.
+`tests/readers/test_epub_structure.py` проверяет, что превышение table/wrapper nesting
+даёт `import.document-limit` с quota/maximum, а прямой вызов — `ArtifactLimitError`.
+XML profile limits имеют отдельный тип `ResourceLimitError`/code `resource-limit`.
+Наблюдаемая element factory подтверждает, что сверхлимитный элемент не создаётся;
+отмена останавливает построение до следующего узла. UTF-8/UTF-16 namespaces,
+атрибуты, mixed text/tails и external DTD сравниваются с обычным ElementTree.
+Установленный `tools/package_smoke.py` читает нативный EPUB package в base-среде
+только с Formats и официальным `opendoc-model`, без BeautifulSoup и сторонних XML-библиотек.
+Это проверки нативной структуры, без утверждения о жёсткой границе памяти XML-парсера.
+
+## Лимит накопления EPUB-диагностики
+
+`tests/readers/test_epub_diagnostic_limits.py` содержит пять проверок: точная граница
+в 10 000 и две записи, отказ без добавления следующей записи,
+передача DocumentLimits в прямой и зарегистрированный reader, location/quota/maximum,
+неизменность источника и повторный импорт. Attach наследует выбранный SDK budget;
+его поздний отказ не меняет Model. Отмена проверяется перед staging quota и не
+переклассифицируется в превышение лимита. Этот guard ограничивает накопление records,
+а не всю работу EPUB/XML/BeautifulSoup или полную структуру ledger.
+
+## Непереносимые интерактивные объекты EPUB
+
+`tests/readers/test_epub_interactive_diagnostics.py` содержит 24 проверки:
+iframe/embed, form и десять видов controls/subcontrols, вложенные формы/выбор,
+атрибуты checked/selected/disabled/readonly, отдельные адреса элементов без ID
+и отмена между объектами. Проверяются feature/reason/severity/state, package-part
+и source ID, исходные значения выбранных атрибутов, неизменность файла и JSON
+транспорт. Декодированные значения атрибутов не объявляются исходными XHTML bytes.
+Обработчики на body и дочерних элементах имеют отдельные адреса `/@attribute`,
+Unicode/entity значения и JSON/Text witnesses. Отмена проверяется и между
+атрибутами одного элемента. Script links оценивают потерю поведения, сохраняя URI
+как данные; case/entity spelling проверяется отдельно от обычных HTTPS/mailto.
+Интерактивная семантика имеет состояние lost; она не заменяется обычным текстом
+без диагностики. Полный XHTML/CSS-инвентарь остаётся отдельной задачей.
+
+## Текущие косвенные PDF stream parameters
+
+`tests/native/test_pdf_current_parameters.py` содержит 25 проверок для `N`, `First`
+и `Length`: унаследованные и заменённые равные scalar-объекты, изменение значений,
+free/unknown/compressed records, поколения, несовпадающие headers, неверные bodies
+и отмена. SHA и диапазоны текущих witnesses проверяются по literal originals;
+pypdf strict независимо принимает валидные варианты. Успешное и отвергнутое чтение
+имеют точные aggregate item/byte/token boundaries; один байт или item меньше даёт
+явный отказ с правильным именем квоты. Delimiter witness учитывается отдельно от
+hash range scalar object. `tools/package_smoke.py` проверяет scalar-only обновления
+на установленном wheel с одним `opendoc-model`, включая запрет stale member binding.
+Исторические observations не заменяются текущими; различающиеся параметры пока
+не разрешают новую интерпретацию или общий ownership/body resolution.
+Исторический Extends и повторный текущий обход того же физического контейнера
+проверяются отдельно: текущий `Length` не подмешивается в исторический decode.
+
+## Текущие унаследованные PDF compressed users
+
+`tests/native/test_pdf_current_object_links.py` содержит 17 проверок текущей
+xref-проекции: контейнер заменён без новой type-2 записи, free/unknown/ordinary/
+compressed/nonzero контейнеры, перекрытие user, indirect parameters вне текущего
+контекста, hybrid priority, точные aggregate item/token boundaries и отмена.
+Оригиналы собираются из literal bytes/xref records; pypdf strict независимо
+подтверждает новое значение наследованного объекта. Проверяются SHA/ranges,
+независимость historical/current reports, JSON и отсутствие optional imports.
+`tools/package_smoke.py` повторяет замену контейнера для установленного wheel
+с одним `opendoc-model`, без PDF/image/XML engines. Это конечная xref-проекция,
+без доказательства ownership, общего body resolution или lossless конвертации.
+
+## Физические связи непрозрачной DOCX closure
+
+`tests/test_opc_orphans.py` проверяет попредметную диагностику четырёх связей:
+binary, image с fragment, external и обратного циклического ребра. Принимаются
+UTF-8/UTF-16 `.rels`, чужой одноимённый XML-элемент, comments/PI и точные XML-пути;
+проверяются source owner, ID/type/target, resolved part и отсутствие ложного
+binding для external. Два JSON/экспорт цикла сохраняют исходные байты `.rels`;
+свежий импорт выходного файла повторяет инвентарь. Отдельно проверяются общий
+порог четырёх записей и отказ при трёх через две relationship parts. Связь доступной
+backend части, попавшей в физическую closure, получает одну opaque оценку вместо
+противоречивых lost/opaque записей. Это не полная URI- или semantic-приёмка OPC.
+
+## Неизвестные DOCX relationships
+
+`tests/readers/test_docx_diagnostics.py` проверяет пятнадцать комбинаций трёх собственных
+типов связей и пяти контекстов: document, settings, external, package и package-external. Типы с чужими URI
+и окончаниями `comments`/`oleObject` не получают семантику Office. Проверяются
+точные источник, ID, тип, цель и external, состояния lost/opaque, JSON round-trip,
+экспорт сохранённого payload и ребра настроек, отсутствие потерянного payload
+в выходном пакете и неизменность исходника. Внешний адрес — инертный `.invalid`.
+Отдельная проверка одного payload с одинаковыми ID и типом у двух владельцев
+подтверждает независимые оценки: сохранённое ребро settings не доказывает
+сохранение package-root связи. Корневая диагностика адресует `/_rels/.rels`.
+Отмена между корневыми связями сохраняет исходник и прежний integration ledger;
+следующий вызов вне отменённого scope завершается штатно.
+Это конечный профиль доступных backend связей; полный физический инвентарь
+и общая диагностика непереносимых объектов остаются отдельными требованиями.
+
+## Rich outline label: изолированный consumer
+
+`tools/outline_label_consumer.py` проверяет неизменённый SDK wheel и все 54 файла
+его manifest в установленной копии. Среда содержит только Model, без Formats и engines.
+Шесть сценариев охватывают styled/math/empty/absent labels, независимые body и label
+walks, FONT/link/style refs, unknown fields, explicit edits/removal, десять invalid
+profiles и восемь точных paired-transport/setter quota boundaries.
+Merge использует явную политику keep_last; extract сохраняет label dependencies.
+[Свидетельство](outline-label-consumer-evidence.json) связывает результат с wheel
+и source consumer SHA. Opaque FONT здесь не проходит font-program validation.
+Это конечная приёмка DTO/API; TeX native экспорт, TOC/running heads и consumer-подключение
+опубликованной версии остаются отдельными задачами.
+
+## Границы optional TeX arguments
+
+`tests/readers/test_tex_optional_arguments.py` содержит 13 проверок: braces с `]`,
+bare `[`, nested styled/math source, empty title, escaped braces и комментарий с
+ложным delimiter. Body heading/text и полный opaque argument span сохраняются
+через два JSON-цикла, Unicode/BOM/CRLF и raw source bytes не нормализуются.
+Unclosed/unbalanced/deep scopes дают явные отказы, отмена внутри сканирования
+сохраняет источник и восстанавливает scope для следующего импорта.
+Выбранный TeX reader/writer/support набор — 235 passed.
+
+`test_tex_optional_acceptance.py` отдельно компилирует пять собственных argument
+cases тремя проходами pdflatex с TOC и проверяет visible body и literal `[` в PDF.
+Это независимое подтверждение корректности исходного TeX, не proof нативного
+short-title export: styled outline label требует общего контракта Model.
+
+## Общий work budget source PDF/xref
+
+`tests/native/test_pdf_xref_work_budget.py` содержит шесть проверок classic,
+xref stream, incremental и hybrid originals. Бюджет, достаточный только для source
+syntax, не разрешает дополнительный обход индекса; точная добавочная квота за
+primary contexts и все просмотренные записи проходит, на один ниже — отказ.
+Результат большого и точного бюджета совпадает, включая generation/free/priority
+и прежние неподтверждённые ownership flags. Проверены сохранность источника,
+прежней CLI dissection и отсутствие стороннего PDF/image backend.
+Полный выбранный native PDF/Anatomy набор — 1422 passed.
+Проверка бюджета не засчитывается как body resolution или доказательство владения объектом.
+
+## Исходные PNG transparency/color declarations
+
+`tests/test_anatomy_png_metadata.py` добавляет 41 проверку tRNS/gAMA/sRGB/pHYs:
+raw/effective transparency samples для depths 1/2/4/8/16, полные 16-bit keys,
+palette alpha и opaque remainder, source gamma/intent/density integers,
+unknown units без придуманного DPI, корректный порядок и пообъектные duplicate findings.
+Непринятые ancillary fields сохраняются как raw chunks, без молчаливой нормализации.
+Четыре независимых Pillow originals подтверждают gray/RGB/16-bit keys, palette alpha,
+gamma и физическую плотность; pixel/profile decoder не импортируется самим inspector.
+Проверены отсутствие ICC decompression и отмена внутри metadata pass с восстановлением scope.
+Словарный transport не меняет вложенные source observations/unknown fields при правке результата.
+Полный Anatomy-корпус — 459 проверок; установленный базовый wheel проверяет
+declarations в PNG и ZIP → PNG без image engines. Полная интерпретация цвета,
+профильная precedence, пиксели и все ancillary constraints остаются вне этой приёмки.
+
+## Физические PNG chunks
+
+`tests/test_anatomy_png.py` добавляет 73 проверки: точные source bytes/ranges/SHA,
+CRC, все принятые IHDR depth/color/interlace declarations, PLTE/core order,
+усечение/overflow/trailing, неизвестные chunks и непроверенные animation metadata.
+Пять независимых Pillow originals RGB/RGBA/L/P/I;16 подтверждают header dimensions
+и сохранность bytes. Dummy IDAT отдельно доказывает границу: inspector не объявляет
+pixel stream проверенным. Точные item/part/input/total quotas, aggregate tree budget,
+повторные PNG occurrences, запрет optional engines/decompression, поздняя отмена
+и безопасный CLI проверены отдельно.
+Базовый installed wheel проверяет полный PNG и ZIP → PNG без image engines.
+Это физический инвентарь; полная PNG conformance, pixel decoding и преобразование
+цвета не засчитываются по одному CRC.
+
+## Стандартная TeX-иерархия book/report
+
+`tests/writers/test_latex_chapters.py` добавляет 13 проверок: уровни Heading 1–6,
+различие chapter/section, literal class, starred/numbered команды, inline math,
+authoritative role edits/removal, source hints, два JSON/TeX цикла и импорт без Office.
+Malformed/non-string class metadata не превращается в исполняемый путь.
+Затронутый TeX reader/writer/support корпус — 222 проверки.
+
+`test_latex_chapter_acceptance.py` использует четыре независимых book/report originals
+и два отдельно заданных эталона правки общей роли. Три прохода pdflatex с TOC harness
+для каждого исходника/результата проверяют running headings и пустые страницы book.
+Два цикла каждого случая дают 42 точных полных страницы в MuPDF и 42 в Poppler
+при 108 dpi, без масок/допуска и image objects.
+[Свидетельство](latex-chapters-evidence.json) связывает исходники/результаты с SHA
+и AST реализации (без зависимости от комментариев/номеров строк).
+Профиль фиксированной преамбулы не подтверждает произвольные class options,
+part/front/back matter или другие `.cls`; эти задачи остаются в TODO.
+
+## Общий бюджет PDF glyph capture
+
+`tests/readers/test_pdf_layout_budget.py` содержит девять проверок на независимом
+wire PDF с нативно добавленными Page dictionaries и общей FONT/content программой.
+Точные совокупные span/glyph/metadata quotas проходят, уменьшение на один отказывает;
+квота metadata source styles также не сбрасывается между страницами.
+Один native FONT buffer копируется один раз на три страницы, затем кэш очищается
+при ещё открытом PDF. Другой документ, изменённый лимит и закрытый scope отвергаются.
+Проверены отмена до source-style decode, очистка font handles, поздний отказ
+в production capture до Model batch, неизменность входа и два JSON-цикла всех
+page-local occurrences. Связанный glyph/layout/consumer/export набор — 106 проверок;
+это не приёмка writer или внутренней памяти стороннего decoder.
+Установленный wheel с одним extra `pdf` проверен на четырёх исходных страницах,
+двух JSON-циклах и межстраничном отказе native span quota. Изолированная среда
+содержала только Formats, официальный Model 0.19.0 и PyMuPDF 1.28.2;
+fontTools, pypdf, pdf2docx и офисные библиотеки для этого capture не требуются.
+
+## Ole10Native envelope
+
+`tests/test_anatomy_ole_native.py` добавляет 22 проверки MS-OLEDS 2.3.6 на
+независимых wire originals: пустой/бинарный/ZIP NativeData, точный size prefix,
+source ranges/SHA, полное восстановление header+data, усечение/overflow/trailing,
+точные input/part/item/byte quotas и позднюю отмену без изменения исходника.
+Именованный поток независимого CFBF mini-chain проходит через отдельный envelope
+к вложенному ZIP. Повторные occurrences и все уровни используют общий бюджет;
+неподходящее имя и неизвестный application prefix не запускают эвристический поиск.
+Проверены расположенный отказ в CLI, безопасное сохранение обеих частей и отсутствие
+optional engines.
+Установленный базовый wheel проверяет named CFBF → Ole10Native → ZIP через package smoke.
+[Границы профиля](../guide/document-anatomy.md#обёртка-ole10native) явно отделяют
+нормативную обёртку от непринятого внутреннего Package и семантики приложения.
+
+## Вложенные ZIP/CFBF контейнеры
+
+`tests/test_anatomy_tree.py` содержит 27 проверок независимых wire originals:
+ZIP → CFBF → miniFAT/FAT ZIP, точные payload и scoped locators, одинаковые bytes
+в разных occurrences, storage aliases без повторного обхода, пустые ZIP,
+непрозрачный XML и неизвестные wrappers. Проверены точные общие item/byte budgets,
+глубина/число контейнеров, входной/part/ratio budget, вложенная CRC-ошибка,
+повреждённая сигнатура, отмена до чтения и после child, восстановление scope,
+неизменность исходника, буквальное сравнение, безопасные имена CLI и rollback записи.
+Запрет импорта сторонних Office/PDF/font/OLE engines подтверждает собственный маршрут;
+стандартный zipfile отдельно проверяет CRC и payload вложенных оригиналов.
+Профиль дерева содержит 27 проверок. Package smoke проверяет ZIP → CFBF → ZIP
+на установленном базовом wheel без optional engines. [Границы профиля](../guide/document-anatomy.md#дерево-вложенных-zip-и-olecfbf)
+не включают семантику OLE или нативную правку объекта в приложении.
+
+## TeX multicolumn
+
+`tests/readers/test_tex_multicolumn.py` содержит 29 проверок: горизонтальные
+column_span, literal cell alignment/vertical rules (включая multicolumn 1),
+пустые/Unicode/math/script ячейки, два source/Model/JSON/TeX цикла, авторитетную
+span/text-правку и снятие override. Проверены новые объединения из общего Model
+с наследованием внешних линий, повреждённые/future/исполняемые declarations,
+неподдержанные исходные scopes и ограничение логической ширины каждой строки
+до построения header или попытки DOCX bridge.
+
+[Нативное свидетельство](latex-multicolumn-evidence.json) использует четыре
+независимых originals и самостоятельный reference span/text-правки. Два цикла
+каждого случая дают 10 точных сравнений полных страниц в MuPDF и Poppler
+при 108 dpi, без масок, допуска и raster objects. Существующего column_span Model
+достаточно; новое TeX parsing/layout правило не переносится в SDK.
+
+## Нативные TeX-таблицы
+
+`tests/writers/test_latex_tables.py` содержит 14 проверок: прямоугольные ячейки,
+inline math, выделения/индексы, escaping, пустые ячейки, списки до/после таблицы,
+JSON, неизменность Model, отмена и выбранные лимиты. Неподдержанные объединения,
+геометрия/свойства, несколько абзацев, nested tables и display math не проходят
+новый маршрут. Общие проверки scripts подтверждают отказ от bridge за профилем.
+Связанный TeX/text-корпус readers, writers и cancellation: 460 проверок проходят.
+
+[Нативное свидетельство](latex-table-evidence.json) фиксирует собственный hand-written
+tabular original и два JSON-экспорта: pdflatex без shell escape, полная страница,
+108 dpi, точные сравнения MuPDF и Poppler без масок и raster objects.
+`tools/package_smoke.py` повторяет простой table/math/empty-cell профиль
+установленного базового wheel без docx/lxml/Pillow/fontTools/PDF engines.
+Это отдельная приёмка writer. `tests/readers/test_tex_tables.py` добавляет 32 проверки
+source tabular: четыре независимых originals, два полных source/Model/JSON/TeX цикла,
+layout l/c/r/vertical/horizontal rules, trailing break, Unicode spans с CR/LF,
+формулы/индексы/пустые ячейки, авторитетную правку текста и согласованность carrier.
+Проверены неподдержанные scopes, malformed input, предельная глубина, отмена,
+max_nodes work limit и отказ от повреждённых/огромных/исполняемых layout declarations.
+Четыре originals компилируются pdflatex с отключённым shell escape; исходные страницы
+совпадают после обоих полных циклов. [Source-свидетельство](latex-tabular-source-evidence.json).
+
+## Текстовый EPUB
+
+`tests/readers/test_epub_compound_source.py` проверяет семь source-only случаев:
+точные XHTML bytes с BOM/CRLF/entities, один ресурс для нескольких объектов,
+различные физические главы, manifest resource collision, отсутствие ложного opaque
+claim без payload, два JSON цикла, импорт без других engines, отмену и точную
+границу общего embedded budget. EPUB/legacy/source/cancellation набор — 139 тестов.
+Compound source остаётся opaque; новый общий flow DTO здесь не имитируется.
+Установленный wheel с extra `epub` проверен через `tools/package_smoke.py --epub`:
+только официальный Model 0.19.0, BeautifulSoup и его малые транзитивные зависимости;
+source bytes и JSON сохраняются без lxml/Office/PDF/font engines.
+
+`tests/readers/test_epub_text.py` проверяет независимый ZIP/OPF/XHTML original:
+manifest и spine в разном порядке, navigation, nonlinear и manifest-only главы,
+inline-пробелы, заголовок, вложенный список, таблицу, image alt, script и audio.
+Проверены адреса потерь и два Model/JSON цикла, выбранный Model budget,
+отмена после импорта перед проекцией, неизменность исходника и запрет импортов
+Pillow/fontTools/tinycss2/lxml/PDF/Office engines. Совместно с EPUB readers/writer,
+общими text adapters, source coverage и web cancellation проходят 132 теста.
+Проверки подтверждают текстовую структуру и диагностику; визуальная эквивалентность
+произвольного EPUB и исчерпывающий инвентарь XHTML/CSS этим не заявляются.
+
+## Видимый текст DOCX
+
+`test_docx_whitespace.py` покрывает 19 Word-derived вариантов `xml:space`, Unicode
+пробелы, literal/character-reference controls, hyperlink boundary, два public
+JSON/DOCX цикла и TXT. Проверены table-only input, явные control tags, исходные
+строки DocxPackage, адресная диагностика unknown modes и отмена в обоих readers.
+Исходники собираются из XML/ZIP, а не конвертером библиотеки.
+
+`tools.docx_whitespace_acceptance --roundtrips` готовит 57 документов;
+`tools/docx_whitespace_word_acceptance.ps1` создаёт собственный скрытый Word
+SingleUse instance, проверяет PID через native window каждого read-only документа,
+не использует существующие Word-процессы, отключает macros и ожидает выход своего
+экземпляра. `--verify-native` проверяет SHA, фактический текст/страницы и сравнивает
+Word PDF в MuPDF и Poppler при 108 dpi. Word 16.0.17932 подтверждает весь текст
+и страницы; 38 из 38 сравнений совпадают в обоих движках без масок, отдельно
+для стандартных PDF и `-PdfA`/`--pdfa` превью. Это опция экспорта Word,
+а не заявление о полной PDF/A-валидации. Проверяющий код требует все 19 оригиналов
+и оба цикла без пропусков/дубликатов и не смешивает профили превью.
+[Стандартное свидетельство](docx-whitespace-evidence.json) и
+[PDF/A-свидетельство](docx-whitespace-evidence-pdfa.json) содержат исходные SHA,
+фактические тексты/страницы, результаты каждого сравнения, версии и PDF font programs.
+Шрифтовые программы в доказательства не включаются: сохраняются только размеры и SHA.
+`test_docx_defaults.py` отдельно проверяет отсутствие styles/docDefaults,
+объявленные настройки, новые пользовательские defaults, два цикла, отмену,
+неверные профили и XML-бюджет. Settings-тесты проверяют физическое отсутствие
+и пустые/явные объявления, QName namespaces, связанные payload, приоритет чётных
+колонтитулов, DTD/бюджет/неверный root и неизменность Model/назначения.
+Шесть compatibility-регрессий охватывают отсутствие режима и значения 14/15,
+два цикла с обычной таблицей 2×2, правку текста и явное добавление чётных колонтитулов;
+весь исходный settings XML сравнивается после удаления только явно добавленного флага.
+`tools.docx_compatibility_acceptance prepare ROOT` создаёт два независимых originals
+через python-docx и четыре результата циклов. Опция `--references DIR` использует
+только явно заданные собственные `own-mode-14.docx`/`own-mode-15.docx`.
+`tools/docx_whitespace_word_acceptance.ps1 -FixtureRoot ROOT` выполняет read-only
+Word-приёмку; `tools.docx_compatibility_acceptance check ROOT --output EVIDENCE`
+проверяет фактические режимы, тексты, страницы, SHA, settings и полные изображения
+в MuPDF и Poppler. [Нативное свидетельство](docx-compatibility-evidence.json):
+Word 16.0.17932, шесть документов, четыре точных сравнения в каждом движке,
+108 dpi, без масок и допуска. Оно не заменяет C-DOCX-05 для остальных таблиц.
+Single-w:t тесты проверяют сохранение Unicode/TAB,
+приоритет явной правки текста и диагностику неподдерживаемой версии carrier.
+Приёмка ограничена перечисленными случаями; смешанные узлы и другие story scopes
+остаются в TODO.
+
+`tools/docx_whitespace_smoke.py` проверяет установленный DOCX-only wheel без
+fontTools, Pillow и PDF-движков; Model остаётся опубликованным `opendoc-model`.
+`test_font_color_preflight.py` проверяет корректный FONT-контекст для direct/inherited
+стилей при TXT-экспорте, неизменность ссылок/программ и отказ без замены назначения
+для действительно отсутствующего ресурса. Это не ослабление Model-валидации.
+
+## Исходные объявления страницы DOCX
+
+`tools.docx_page_acceptance` собирает 15 XML/ZIP originals с отсутствующим/пустым
+`pgSz`, частичными размерами, landscape, отсутствующими/частичными margins,
+пустым или отсутствующим конечным `sectPr` и несколькими секциями.
+`--roundtrips` выполняет два публичных JSON/DOCX цикла.
+`tools/docx_whitespace_word_acceptance.ps1 -PageGeometry -PdfA` измеряет каждую
+секцию собственного read-only Word instance и создаёт PDF/A-превью.
+`--verify-native` требует все 45 записей и исходные bytes/SHA, сверяет фактический
+Word text, PageSetup и страницы, сравнивает все страницы без масок в MuPDF/Poppler
+при 108 dpi. [Свидетельство](docx-page-geometry-evidence.json) принимает 30/30
+сравнений по семантике и обоим растрам.
+
+`--edits --roundtrips` отдельно читает независимый вход, изменяет числовые поля
+Model и сравнивает оба цикла с вручную заданным XML-эталоном. Приняты width,
+height, left margin и материализация размеров при отсутствии `sectPr`:
+12 native документов, 8/8 сравнений. [Свидетельство правок](docx-page-edits-evidence.json)
+содержит SHA входов, edits в points, исходные Word measurements и runtime versions.
+Эталоны не создаёт конвертер библиотеки. Текст разрыва секции проверяется буквально:
+дополнительный paragraph break не скрывается нормализацией.
+
+`test_docx_page_geometry.py` проверяет native omissions, число абзацев/секций,
+два цикла, неизменность Model/входа, правки, unknown projections в PDF/TXT,
+DTD/root/version/node-budget отказы, отмену внутри XML и явный отказ duplicate
+declarations. Форматная привязка сохраняет исходные пропуски, но не превращает
+placeholder в доказанное значение среды. Общая неизвестность требует
+[контракта Model](page-geometry-contract.md); нативная приёмка других environments
+и прочих section settings остаётся открытой.
+
+`tools/page_model_consumer.py` запускается только в отдельной среде с неопубликованным
+кандидатом Model: установленное дерево 53 файлов побайтно совпадает с переданным SHA.
+Десять независимых API/codec/budget групп и 15 source prototypes проходят без
+изменения основной среды. Source/unknown состояния и computed из прежних Word
+measurements выдерживают два официальных JSON-цикла, source omissions не меняются.
+[Consumer evidence](page-model-consumer-evidence.json) содержит wheel/source SHA
+и явно отделяет prototype от производственного подключения и новой нативной приёмки.
+
+## Потребительская приёмка составных групп потока
+
+`tools/block_group_consumer.py` принимает только отдельный кандидат Model,
+сверяя SHA wheel и всех 54 установленных исходных файлов с manifest.
+Среда содержит один `opendoc-model`, без Formats и форматных движков.
+Восемь независимых сценариев охватывают quote/compound item/table/nested list,
+два JSON-цикла, отдельные anchors и ссылки, неизвестные поля без aliasing,
+правку ячейки, merge/extract/removal, повторные occurrences и пустые scopes.
+Неверные owners и структуры отказывают явно; selected node/depth/byte quotas
+проверены на точной границе и на один ниже.
+[Свидетельство](block-group-consumer-evidence.json) связывает результат с wheel
+и кодом consumer. Этот изолированный снимок проверен с опубликованным Model 0.19.0.
+Проверка общего API не заменяет EPUB/HTML parsing, CSS, source mapping и браузерную приёмку.
+
+## Исходные PDF xref streams
+
+`test_pdf_xref_state.py` проверяет generation reuse, free tombstones, future null
+records, table/hybrid/Prev precedence и forward pointers. pypdf подтверждает
+повторное использование поколения, удаление и hidden hybrid metadata; MuPDF —
+приоритет текущей classic-записи над конфликтующей hybrid-записью.
+Отдельные структурные fixtures проверяют повторную primary/hybrid роль и forward
+Prev без заявления о полном linearized conformance. CLI сохраняет исходные parts
+и отчёт effective records; квота учитывает выбранные записи вместе с xref/ObjStm,
+отмена действует внутри выбора. Разрешение body/ownership и каждой исторической
+ссылки этой проверкой не принимается.
+
+`test_pdf_object_streams.py` принимает raw/Flate ObjStm, уникальную директорию,
+First/N и точные decoded ranges; pypdf подтверждает metadata, скаляр, массив,
+null и object-stream/index на оригиналах, собранных из bytes. Отдельный оригинал
+создаёт MuPDF с настоящими object streams и текстом страницы; pypdf подтверждает
+его страницы, текст и все локальные пары container/index. Reader Formats его не создаёт.
+Проверены две исторические версии контейнера, отсутствующий кандидат, инертный
+Extends, повреждённая директория/синтаксис, чрезмерная распаковка неизвестной длины,
+общие квоты и отмена. CLI сохраняет decoded payload и адреса, не заменяет прежнюю
+dissection при позднем отказе. Это локальная физическая проверка; активное
+разрешение, ownership и полная связь ревизий не объявляются реализованными.
+
+`test_pdf_source_integers.py` добавляет 39 проверок косвенных N/First/Length:
+несжатые scalar bodies, reference/header generations 0/2, разные исторические
+контексты объявления кандидата, Prev и hybrid primary precedence, повторное
+использование ObjStm-номера обычным stream, неверные типы/значения/заголовки,
+free/unknown/compressed records, квоты, отмена, отсутствие PDF/image engines и CLI.
+Восемь независимых byte-built originals подтверждены pypdf и MuPDF без repair;
+[свидетельство](pdf-source-integer-evidence.json) содержит SHA originals, скалярные
+диапазоны и выбранные records. Весь нативный PDF/dissection набор — 969 тестов.
+`tools/pdf_source_smoke.py` проверяет тот же профиль установленного базового wheel
+только с официальным `opendoc-model`; проверка архивов требует новый модуль в wheel/sdist.
+Это конечные исходные наблюдения, не полное разрешение ссылок или владения диапазонами.
+
+`tests/native/test_pdf_revisions.py` и `test_pdf_xref_streams.py` проверяют
+физические classic/stream/hybrid индексы, Prev, поколения и исходные диапазоны.
+Собственный бинарный оригинал содержит страницу и metadata внутри ObjStm;
+независимый pypdf подтверждает число страниц, metadata, прямые смещения и пару
+object-stream/index. Без `pdf_object_streams=True` Formats декодирует только
+xref records; pypdf разрешает вложенный объект отдельно и не становится
+зависимостью базового профиля.
+Проверены raw/Flate, sparse Index, нулевые W, неизвестные будущие типы,
+повреждения/превышение длины zlib, фильтры вне профиля, лимиты и отмена.
+`test_pdf_predictors.py` сверяет Predictor 10–15 с pypdf на полном PDF,
+а None/Sub/Up/Average/Paeth — с PNG-декодером Pillow на упакованных 1/2/4-битных,
+8/16-битных и RGB/RGBA строках. Проверяются положительные геометрические поля,
+полнота строк, неизвестные теги, tag-byte quota до zlib, общий бюджет и отмена
+внутри восстановления. Pillow/pypdf участвуют только в независимых проверках.
+`test_pdf_tiff_predictor.py` принимает Flate TIFF Predictor 2: 60 combinations
+1/2/4/8/16 bits, 1/3/4 colors, четыре длины строки, ручные byte vectors с переносами
+и ненулевым padding, девять настоящих xref layouts, строгие квоты до zlib, отмену
+внутри длинной строки и CLI late refusal.
+Собственный decoder сохраняет все bytes в 60/60 комбинациях; MuPDF подтверждает
+значимые компоненты 60/60 и полные bytes 39/60, pypdf — полные bytes 24/60.
+Это разные результаты: [полное свидетельство](pdf-tiff-evidence.json) сохраняет
+SHA и расхождения padding/packed/16-bit без переписывания внешнего вывода.
+`test_pdf_runlength.py` проверяет все 256 control bytes, literal/repeat boundaries,
+EOD как данные внутри runs и как delimiter, trailing encoded spans, точные xref/ObjStm
+payload и metadata, одиночный filter array/null params, отказы для параметров,
+неизвестную decoded длину/expansion quota, отмену и сохранение CLI назначения.
+MuPDF открывает независимые originals без repair и вместе со strict pypdf побайтно
+подтверждает decoded streams. Для trailing data pypdf выдаёт предупреждения;
+они сохраняются в evidence и не выдаются за подтверждение полного conformance.
+Совокупный PDF/Anatomy набор включает 886 тестов. [RunLength evidence](pdf-runlength-evidence.json)
+содержит версии, исходные SHA и точные границы проверки.
+`test_pdf_ascii.py` покрывает самостоятельные ASCIIHex/ASCII85: все остатки групп,
+odd nibble, zero shorthand, upper uint32, PDF whitespace, строгий отказ vertical tab,
+malformed/EOD/overflow, quotas, отмену без output allocation, complete PDF/xref/ObjStm,
+single filter arrays/null parameters и CLI atomic refusal. Независимый forward
+encoder — stdlib bytes.hex/base64.a85encode. MuPDF побайтно подтверждает 24/24
+source combinations без repair, pypdf — 14/24; его реальные ошибки/предупреждения
+сохранены в [ASCII evidence](pdf-ascii-evidence.json). `test_pdf_filter_pipeline.py` добавляет 70 проверок: 60 полных originals для десяти
+цепочек, трёх Flate predictor-профилей и xref/ObjStm; MuPDF и pypdf подтверждают
+точные decoded bytes. Проверяются SHA/размер каждой стадии, общая и промежуточная
+квоты, согласованность параметров, отмена и атомарный отказ CLI на поздней стадии.
+`test_pdf_lzw.py` добавляет 84 проверки: оба EarlyChange, все переходы 9–12 бит,
+заполнение и сброс таблицы, special next-code, ручной MSB-вектор, EOD/padding/trailing,
+повреждения, квоты до расширения фразы, отмена и атомарность CLI. Полные xref/ObjStm
+проверены с TIFF/PNG и ASCII85 → LZW. Forward encoder, явные code vectors и полные
+source SHA независимы от production decoder. [Свидетельство](pdf-lzw-evidence.json)
+сохраняет реальные результаты MuPDF/pypdf, включая 23 расхождения pypdf.
+
+`test_pdf_object_reuse.py` проверяет 18 originals с несколькими xref-секциями:
+обычные dictionary/string/integer/null/array и stream с неизвестным фильтром
+вместо ObjStm, разные поколения, точные старые/новые payload. pypdf/MuPDF независимо
+читают активную запись и исходный raw stream; ремонт MuPDF не используется.
+Отдельно проверяются неверные header/Length/closing, indirect Length, лишние tokens,
+общие границы items/bytes, отмена и атомарный CLI. Всего 28 новых проверок;
+[свидетельство](pdf-object-reuse-evidence.json) не объявляет active/body resolution.
+
+Это проверка структуры индекса, а не приёмка визуального PDF roundtrip или
+семантического соответствия произвольных объектов.
+
+`tools/pdf_source_smoke.py` запускается из установленного базового wheel через
+изолированный Python, проверяет точные payload, PNG-Up и 16-bit TIFF/Flate xref streams,
+RunLength/ASCII xref/ObjStm, Flate ObjStm, LZW/PNG с обоими EarlyChange и цепочки ASCII → Flate/PNG
+и effective xref records;
+pypdf/pdfplumber/PyMuPDF отсутствуют. Основной Model — опубликованный
+`opendoc-model==0.19.0`, без замены его рабочей копией.
+Версии, SHA-256 и границы проверки записаны в
+[свидетельстве PDF-source профиля](pdf-source-evidence.json).
+
+## Захват PDF TextLayout
+
+`tests/readers/test_pdf_text_layout.py`: 29 проверок режима
+`ImportOptions(pdf_text_layouts=True)` и прямого reader. Проверены точные native
+матрицы, отдельные fill/stroke/clip/ignore occurrences, source FONT/face, два
+JSON-цикла, crop/rotation и отсутствие выдуманного page frame для UserUnit.
+Sentinel не становится физическим глифом; исходный PDF сохраняется и даёт
+прежний render после JSON. Неизвестные face/program и дубликаты остаются unknown.
+Source/native/Model budgets и поздняя отмена не меняют исходную модель.
+Повторный захват не дублирует pages, layouts, source snapshot или диагностику.
+Проверены JSON transport и отказ неподдержанного writer без замены целевого файла.
+
+`tests/readers/test_pdf_layout_bindings.py`: ещё 20 проверок точного logical mapping:
+однозначный Unicode/origin/style/FONT, `fi` 2:1, snapshot v2, два JSON-цикла,
+stale после правки и неизвестность при несовпадении или неоднозначности.
+Повторный захват сохраняет anchors/ranges, extra и сторонние occurrences;
+отмена после verify=True не меняет исходную модель. Оба capture модуля — 49 passed.
+
+Совместно с PDF font binding/native placements/Model contracts/export guards,
+API, PDF writer и отменой импорта — 221 passed. В установленном `pdf` extra только с PyMuPDF
+публичный режим сохраняет TTF post-2/post-3 и OTF/CFF через два JSON-цикла без
+fontTools/Office/HTML/Pillow. CI использует расширенный
+`tools/pdf_ligature_smoke.py`: проверены verified logical clusters/ranges,
+сохранение FONT payload, snapshot v2 и stale после изменения стиля.
+Эти связи не подтверждают полный paint/visibility state или native writer projection.
+[Хеши и границы](pdf-text-layout-capture-evidence.json).
+
+## Общий gate экспорта и физического препарирования
+
+Общий набор для защиты glyph layout при экспорте и аудита CFBF: 2304 passed,
+3 skipped. Единственное предупреждение — намеренный duplicate ZIP fixture.
+Дополнения sfnt приняты отдельно после сбора общего набора: 203 проверки
+Anatomy/sfnt, включая 26 native sfnt и 13 общего API/CLI. Это не повторный полный
+прогон всех writer на изменённом sfnt-профиле. Установленный актуальный базовый
+wheel прошёл package smoke; все его Python-файлы совпадают с исходниками и
+установленными файлами, дополнительных font/PDF движков в окружении нет.
+SHA и границы проверки — в [машинном свидетельстве](binary-inspection-evidence.json).
+
+## Привязки шрифтов PDF
+
+Рабочая PDF font binding проверяется `tests/readers/test_pdf_font_bindings.py`:
+43 проверки режимов рисования, поворота, Unicode continuation, точного font digest,
+дубликатов, ограничений и отмены внутри native font copy. Сравниваются привязки
+и пиксели до/после; отсутствующий backend не заменяется подбором по имени.
+Static OTF/CFF связывается по точным bytes внутренней таблицы, а два контейнера
+с одинаковой CFF, variable/CFF2 профили не угадываются. Полный затронутый набор
+PDF/native/Model/DOCX и установленный минимальный PDF-профиль описаны
+в [свидетельстве привязок](pdf-font-binding-evidence.json).
+`tools/pdf_ligature_smoke.py` проверяет не только экспорт, но и повторный импорт
+с JSON: TTF post-2/post-3 и OTF сохраняют исходную программу в явной FontReference
+без fontTools/Office/Pillow и других PDF-движков.
+
+## Контрольные суммы standalone sfnt
+
+
+`tests/test_sfnt_checksums.py`: 27 проверок таблиц и `head.checkSumAdjustment`.
+Собственные TTF/OTTO wrappers сравниваются с независимым `fontTools.calcChecksum`
+для длин 0/1/2/3/4/7 и границ 64 KiB. Реальный собственный шрифт проходит аудит
+без импорта fontTools. Повреждения payload, directory checksum, adjustment,
+padding и trailing bytes различаются без исправления исходника. Проверены
+отсутствие/усечение `head`, бюджеты и отмена внутри большой таблицы.
+Совместно с sfnt inventory и Anatomy — 66 passed. Это конечный checksum-аудит,
+а не полная проверка структуры шрифта или отображения.
+Общий API принимает явный `sfnt_checksums=True`; CLI — `--sfnt-checksums`.
+Дополнительно проверены opt-in/default, снимок с/без payload, строгий тип флага,
+отказ для другого контейнера, прежние общие квоты, CLI comparison и отмена внутри
+аудита с восстановлением scope. Прямой sfnt/Anatomy набор: 79 passed.
+Общий набор Anatomy для ZIP/XML, OPC, EPUB, PDF, CFBF и sfnt: 243 passed.
+Базовый установленный wheel проверяет checksum API без fontTools;
+исходники, wheel и установленные Python-файлы совпадают. SHA и границы — в
+[свидетельстве checksum-аудита](sfnt-checksum-evidence.json).
+
+## Структурный аудит sfnt
+
+`tests/test_sfnt_structure.py`: 21 проверка каталога, пробелов tags, search fields,
+ненулевого/усечённого padding, общих и вложенных ranges, zero-length таблиц,
+явного TTC face, quotas findings, поздней отмены, строгих options и CLI comparison.
+Здоровые собственные таблицы и реальный шрифт проходят аудит без импорта fontTools;
+unknown trailer сохраняется opaque, исходные bytes не меняются. При nested overlaps
+проверяется представитель пересечения, а не обещание полного попарного графа.
+Общий Anatomy/sfnt/TTC набор — 355 passed. Установленный base wheel только с
+`opendoc-model` проверяет healthy и повреждённый padding через native/common API.
+Хеши и границы — в [свидетельстве структуры](sfnt-structure-evidence.json).
+
+## Ограниченное переиспользование subsets
+
+`tests/test_font_subset_cache.py` и `tests/test_font_subset_cancellation.py`:
+29 проверок точных bytes/символов/настроек, сохранения всех name notices, смены
+программы и параметров, no-subsetting, LRU/byte/entry bounds, неизвестных options,
+ошибки, rollback отменённой вставки и отмены на hit. Сохраняются прежние публичные
+DOCX гарантии отмены и назначения. Потоковый доступ к кэшу проверен отдельно.
+Холодный и повторный DOCX exports совпали по embedded fonts, font table и body XML;
+PDF — по программам, тексту и MuPDF-пикселям. Повторный запрос дал ноль вызовов
+subsetter, исходная Model не менялась. Отдельный установленный `fonts` extra
+проверяет те же bytes/notices и повторное использование без document engines.
+CI использует `tools/package_smoke.py --fonts`; запуск workflow не выполнялся.
+Остальные шрифтовые профили и внутренняя память движка этим не сертифицируются.
+Хеши и границы — в [свидетельстве кэша](font-subset-cache-evidence.json).
+
+## Отмена сокращения шрифтов
+
+`tests/test_font_subset_cancellation.py`: 15 проверок. Отмена после populate,
+subset, save и close, в том числе вместе с ошибкой движка, завершается явным
+`OperationCancelledError`; открытый шрифт закрывается. Обычный отказ сохраняет
+полную исходную программу. Ранний сигнал не допускает чтение файла; пути без
+сокращения не импортируют fontTools. Прямой и публичный DOCX writer проверены
+с реальным сокращением собственного шрифта: отмена сохраняет входную модель,
+исходный шрифт и прежний файл назначения, временный результат удаляется.
+Настройки сокращения и сохранения лицензионных уведомлений не меняются.
+Это контроль границ сторонних вызовов, а не прерывание их внутренних циклов.
+Совместный прогон с отменой Office export, сложным PDF/DOCX, opaque fonts
+и PDF Unicode: 76 passed. SHA и область приёмки — в
+[свидетельстве отмены](font-subset-cancellation-evidence.json).
+
+## Совместимость с OpenDoc Model 0.19.0
+
+Официальный wheel и MIT LICENSE проверены по SHA-256. Код соответствует принятому
+consumer5 после нормализации переводов строк и исключения номера версии.
+Другие записи lockfile не изменены. 11 проверок TextLayout и 21 проверка защиты
+экспорта проходят с официальным Model; отсутствие API больше не скрывается skip.
+Совокупная регрессионная приёмка на Windows/Python 3.12.13 охватывает все 3149
+актуальных сценариев: 3146 passed, 3 skipped. Результат составлен из общего
+прогона и целевой перепроверки всего модуля PDF mapping (12 passed): отмена
+проверяется по фазе готового результата, отдельно проверены entry/preparation.
+Производственный код между этими проверками не менялся; список testcase IDs
+точно совпал с текущей коллекцией. Пропущены два сценария DjVuLibre и реальный
+POSIX fork, недоступные на этом Windows-хосте. Единственное предупреждение —
+намеренный duplicate ZIP fixture. Все 11 проверок TextLayout входят в общий набор;
+отдельно те же 32 contract/export проверки прошли
+на установленном wheel с точными locked версиями тестовых движков.
+Базовый установленный wheel и минимальный DOCX-профиль без fontTools/PDF/Pillow
+прошли smoke. Повторная сборка из sdist совпадает с wheel по всем payload;
+Python-файлы зафиксированного снимка совпадают с тремя установленными профилями.
+Область приёмки и SHA — в [свидетельстве Model 0.19.0](model-019-acceptance.json).
+Точные статусы команд и сведение актуальных тестов — в
+[регрессионном свидетельстве](regression-evidence.json).
+Расширение конечного glyph reader и проекция в native writers остаются C-PDF-01.
+
+## Физические таблицы шрифтов
+
+`tests/test_native_font_ligatures.py`: 189 проверок конечного GSUB/ToUnicode-профиля.
+Независимые бинарные таблицы GSUB и реальный собственный TrueType с `post` 1/2/3
+сравниваются с прежним `_ligature_map(fontTools)` для lookup 4/7, coverage 1/2,
+алиасов, неоднозначных/неизвестных компонентов и уже кодированного результата.
+Другие post profiles, flags и GSUB 1.1 с FeatureVariations сохраняют fallback. Проверены смещения/индексы,
+лимиты bytes/lookups/повторной работы и отмена в parser и PDF pipeline.
+При поддержанном профиле импорт fontTools запрещён тестом. Реальный Story PDF
+с `fi ti fi` после ремонта ToUnicode и перезагрузки сохраняет извлекаемый текст
+и прежние MuPDF-пиксели. Это сравнение до/после в одном рендерере, не полная
+независимая приёмка произвольных шрифтов или всего PDF.
+Целевой набор GSUB/Unicode/PDF FONT/native face: 211 passed. Установленный базовый
+wheel читает GSUB без fontTools; отдельный установленный PDF-профиль с одним
+PyMuPDF проходит Story/ToUnicode-проверку без fontTools/Pillow/Office/HTML движков.
+CI запускает `python -I tools/pdf_ligature_smoke.py` в свежем установленном `pdf`
+профиле. Собственный `tests/native/data/ligature-post3.ttf` (MIT, 1320 bytes)
+имеет фиксированные timestamps, copyright/license name records и SHA
+`002ab3822db7196c8ba23fa443d5d4e7026301fdee7f89883045d6b4f70528ad`;
+его генератор — `tests.test_native_font_ligatures.program`. Шрифт и gate входят в sdist.
+SHA и границы этой проверки — в [свидетельстве GSUB](font-ligature-evidence.json).
+Смешанные lookup 1/4 и 7→1/4 сравниваются с прежним reader, включая оба SingleSubst
+formats, coverage 1/2, порядок lookups и отрицательный delta modulo 65536.
+Повреждённые offsets/counts/glyph IDs и смешанные типы одного extension lookup
+не дают частичную native mapping. Подстановки не исполняются этим reader.
+Собственный MIT `tests/native/data/ligature-mixed.ttf` (1344 bytes) воспроизводится
+`program(..., table=mixed_gsub(single_substitution(delta=0)))`; glyph outlines,
+copyright и license records принадлежат проекту. Установленный `pdf` gate без
+fontTools проверяет тот же шрифт через public writer, повторный импорт и JSON.
+Текущий целевой набор шрифтов/PDF — 451 проверка; область и SHA описаны в
+[свидетельстве смешанного GSUB](font-mixed-gsub-evidence.json).
+Для post-2 дополнительно проверены повторяющиеся standard/custom имена,
+коллизии с генерируемыми glyph names и пустые legacy names: результат совпадает
+с прежним reader по числовым glyph IDs. Ошибочный numGlyphs и обрезанные Pascal
+strings не дают частичной native mapping; сохранён fallback для engine recovery.
+Собственный MIT `tests/native/data/ligature-post2.ttf` (1340 bytes) воспроизводится
+`tests.test_native_font_ligatures.program(post3=False)`, с фиксированными timestamps
+и copyright/license name records. SHA —
+`fe20d45d0138c607e22dac6526ad414fb37d30b5b10a1185f790003100c85e1e`.
+В установленном `pdf` extra без fontTools публичный writer сохраняет его полную
+программу, извлекаемый текст и пиксели через два JSON-цикла. Текущий post-2 профиль
+и исходные хеши — в [свидетельстве post-2](font-post2-evidence.json).
+
+Собственный MIT `tests/native/data/ligature-post4.ttf` (1336 bytes) воспроизводится
+`test_owned_post4_fixture_is_reproducible`. SHA —
+`335485e769416135ca5e87dee7bee5b96b9be004ff2fbeb8e9e16d558aa3d31a`.
+Проверяются числовая связь cmap/GSUB при повторяющихся printer codes,
+неоднозначность и engine recovery при несовпадающем размере `post`.
+В установленном `pdf` extra без fontTools проверяются полная программа, текст,
+пиксели, повторный импорт и JSON-циклы; отдельные Story-тесты подтверждают,
+что встроенная программа остаётся `post` 4, а исправление ToUnicode не меняет пиксели.
+Границы — в [свидетельстве post-4 GSUB](font-post4-gsub-evidence.json).
+
+`tests/test_native_font_reverse_gsub.py` проверяет соседний GSUB type 8/7→8:
+coverage 1/2, пустые/односторонние/двусторонние контексты, общий storage,
+порядок lookups, числовые glyph IDs и равенство прежнему fontTools reader.
+Импорт fontTools на принятом пути запрещён тестом; проверяются повреждения,
+все усечения собственной таблицы, квота повторных ссылок и отмена внутри coverage.
+Reverse substitution не выполняется и не создаёт Unicode mappings.
+Собственный MIT `tests/native/data/ligature-reverse.ttf` (1368 bytes) воспроизводится
+`test_owned_reverse_fixture_is_reproducible`; SHA-256:
+`e92a9b8819c68d89506ecac9e2bc06d3d616cd17e17ffbe94efc1f5913b76767`.
+Минимальный установленный PDF-профиль проверяет полную программу, текст,
+пиксели, повторный импорт и два JSON-цикла. Реальные Story-тесты для GSUB 1.0/1.1
+и post 1/2/3/4 проверяют исправление ToUnicode без изменения пикселей.
+Результаты — в [свидетельстве type 8](font-reverse-gsub-evidence.json).
+
+`tests/test_native_font_context_gsub.py` проверяет GSUB types 5/6 format 3 и 7→5/6:
+coverage 1/2, общий storage, порядок lookups и SequenceLookupRecords,
+прямые/обёрнутые таблицы, отказы для повреждений и всех усечений собственных
+таблиц. Ссылки на вложенные lookups проверяются без рекурсивного обхода и выполнения;
+общие coverage повторно расходуют бюджет, отмена не попадает в fallback.
+Собственные MIT `ligature-context5.ttf` (1360 bytes) и `ligature-context6.ttf`
+(1384 bytes) воспроизводятся `test_owned_context_fixture_is_reproducible`.
+Их полные программы, текст и пиксели проверяются в установленном PDF extra
+без fontTools через два JSON-цикла; GSUB 1.0/1.1 и post 1/2/3/4 приняты
+также реальными Story PDF с неизменностью пикселей после ToUnicode repair.
+SHA, результаты и границы — в [свидетельстве контекстов](font-context-gsub-evidence.json).
+
+`tests/test_native_font_context_rules.py` проверяет types 5/6 format 1 и 7→5/6:
+числовые glyph IDs, coverage 1/2, NULL/shared RuleSet, повторные правила,
+порядок lookups, граничные длины последовательностей и записи действий.
+Повреждения, все усечения, общий лимит повторных ссылок и отмена проверяются
+без частичного результата. Нативный путь запрещает импорт fontTools и совпадает
+с его прежним reader. Два собственных MIT fixtures `ligature-rules5.ttf`
+(1376 bytes) и `ligature-rules6.ttf` (1392 bytes) воспроизводимы тестом;
+установленный PDF extra проверяет полные программы, текст, пиксели и два
+JSON-цикла без fontTools. Реальные Story PDF охватывают GSUB 1.0/1.1 и post 1/2/3/4.
+Подробности — в [свидетельстве правил](font-context-rules-evidence.json).
+
+`tests/test_native_font_context_classes.py` проверяет types 5/6 format 2,
+extension 7→5/6 и оба ClassDef formats: coverage 1/2, shared definitions,
+class 0, неописанные glyph IDs, class labels за пределами числа глифов,
+порядок lookups и совпадение с прежним fontTools mapping без его импорта.
+Все усечения, повреждённые offsets/counts/IDs, overlap/order диапазонов,
+общая квота и отмена внутри ClassDef проверяются без частичного результата.
+Собственные MIT `ligature-classes5.ttf` (1376 bytes) и `ligature-classes6.ttf`
+(1412 bytes) воспроизводятся тестом. Минимальный установленный PDF-профиль
+проверяет полные программы, текст, пиксели, повторный импорт и два JSON-цикла;
+Story PDF покрывают GSUB 1.0/1.1 и post 1/2/3/4.
+Результаты и SHA — в [свидетельстве классов](font-context-classes-evidence.json).
+
+`tests/writers/test_pdf_resource_fonts.py` проверяет публичный и прямой PDF writer:
+FontReference для standalone TTF/OTF, отсутствие системных шрифтов и subsetting,
+унаследованный стиль, два JSON-цикла, неизменность модели, текста и пикселей,
+идентичность полного font program и отдельных paint bindings для одноимённых fonts.
+Отказы покрывают неверный face, TTC/raw CFF, повреждение, отсутствие glyph coverage,
+права встраивания и подмену встроенных байтов при сохранённых именах. Проверены
+квота до записи font resources, отмена и сохранность существующего целевого файла.
+`tools/pdf_ligature_smoke.py` запускает публичный writer из установленного wheel
+без fontTools/Pillow/Office/HTML и иных PDF-движков. Собственный MIT fixture
+`tests/native/data/own-cff.otf` (904 bytes) воспроизводится функцией
+`tests.writers.test_pdf_resource_fonts.cff_program`: геометрия создана в проекте,
+сторонние glyph data отсутствуют, timestamps и license/name records фиксированы.
+Результаты и границы — в [свидетельстве PDF-шрифтов](pdf-resource-font-evidence.json).
+В целевом наборе прошло 356 шрифтовых/PDF/DOCX проверок, ещё 87 проверок
+охватывают PDF pagination, interactions, page geometry, outlines и raster roundtrip;
+всего 443. Строгая сборка документации, lint, типизация и проверка лицензионного
+инвентаря также проходят. Это целевая приёмка изменения, не повтор полного набора.
+
+Нативный GSUB 1.1 без FeatureVariations проверяется теми же независимыми бинарными
+lookup/coverage fixtures и сравнением с fontTools; импорт engine на принятом пути
+запрещён тестом. Дополнительно проверяются усечённый расширенный заголовок,
+ссылки в его середину, неизвестные версии и fallback для ненулевого
+featureVariationsOffset. Реальный Story PDF для обеих версий после изменения
+ToUnicode и перезагрузки сохраняет текст и прежние пиксели. Целевой набор
+GSUB/Unicode/public PDF FONT export: 106 passed, в том числе 67 проверок GSUB.
+Хеши и границы — в [свидетельстве GSUB 1.1](font-gsub11-evidence.json).
+
+`tests/writers/test_html_resource_fonts.py`: 40 проверок публичного/прямого
+HTML writer, TTF/OTF, face None/0, унаследованных стилей, двух JSON-циклов,
+точных байтов data URI и CSS bindings без импорта fontTools. Проверены
+ошибки программы/face/coverage/прав, сохранность целевого файла, квота до записи
+ресурса и отмена с очисткой. Общий затронутый набор — 358 passed; ещё 70 проверок
+охватывают HTML stages, отмену web/TeX export и семантику таблиц.
+Установленный базовый пакет проходит `python -I tools/html_font_smoke.py`
+без всех необязательных движков; gate подключён к CI перед установкой extras.
+В браузере два одноимённых TTF сохраняют отдельные aliases, загружаются и дают
+ширины лигатур 0.5/0.9 em; собственный OTF/CFF для AB даёт 1.2 em.
+Это проверка выбранных fixtures, не произвольных fonts или исходного shaping.
+Состав и метрики — в [свидетельстве HTML-шрифтов](html-resource-font-evidence.json).
+
+`tests/readers/test_html_fonts.py`: 31 проверка импорта статического data-URI
+font-face, включая два реальных HTML/JSON-цикла, наследование и точные варианты,
+две одноимённые программы с разными text bindings, дедупликацию и отказ от
+неоднозначного/частичного выбора. Проверены неподдержанные descriptors и источники,
+неверный wrapper/base64, budget до декодирования, 1024-rule предел и отмена.
+Неизвестный профиль сохраняет исходный HTML и явные диагностические записи.
+Целевой набор HTML reader/writer/cascade/table/accessibility/cancellation —
+173 passed. `tools/html_profile_smoke.py` проверяет установленный extra `html`
+без fontTools/Office/PDF/Pillow: TTF/OTF программы и FontReference сохраняются
+через два полных цикла. Данные — в [свидетельстве HTML font import](html-font-import-evidence.json).
+
+`tests/test_native_fvar.py`: 21 проверка таблицы fvar, Fixed 16.16, optional
+PostScript name IDs, offsets, arrays, budgets и отмены. Базовые поля resolver
+совпадают с прежним reader без выбора named instance. Совместный шрифтовой
+и PDF/DOCX/Unicode прогон: 186 passed. На 24 системных TTF все базовые поля
+совпали, включая variable Bahnschrift; все 24 прошли без импорта fontTools.
+Произвольные instance coordinates и variation programs этой приёмкой не покрыты.
+Базовый установленный wheel проверяет тот же путь без fontTools; hashes и
+границы сохранены в [свидетельстве fvar](font-fvar-evidence.json).
+
+Минимальный установленный DOCX-профиль принят без fontTools/PDF/Pillow/NumPy:
+direct/public flow API, crop таблицы и source mapping; собственный статический TTF
+побайтно сохранён через два JSON/DOCX-цикла вместе с текстом и FONT references.
+Исходная модель и fixture не меняются. В профиле пять установленных пакетов:
+Formats, Model, python-docx, lxml, typing-extensions. Полный шрифт сохраняется
+вместо subsetting. CI устанавливает только extra `docx` для этой проверки.
+Это конечный asset/profile gate; нативный рендер всех функций Word не заявляется.
+
+`tests/test_native_font_face.py`: 50 проверок native face metadata. Все версии
+OS/2 0–5, embedding/subsetting flags, signed widths и italicAngle сверяются
+с прежним engine reader; импорт fontTools на поддержанном пути запрещён тестом.
+Проверены post 1/2/3, границы Pascal storage, отсутствие permission table и отмена;
+собственный CFF/OTF original покрывает maxp 0.5 без импорта fontTools.
+В 24 системных TTF все поля face совпали; 23 прошли без импорта fontTools,
+variable Bahnschrift сохранил прежний engine-путь.
+Совместный прогон face/cmap/name/baseline и PDF/DOCX/Unicode: 164 passed;
+дополнительная CFF-проверка принята отдельно без изменения runtime source.
+В установленном базовом wheel статический face прочитан без fontTools; SHA и
+границы приёмки записаны в [свидетельстве face](font-face-evidence.json).
+
+`tests/test_native_font_cmap.py`: 68 проверок объявленного Unicode coverage.
+Собственные бинарные subtables сравниваются с fontTools для formats 0/2/4/6/12/13,
+delta/array адресации, нулевых IDs, non-BMP, приоритета и повторных encoding records.
+Resolver сохраняет все поля face и embedding/subsetting flags; native профиль
+запрещает вызов `getBestCmap` тестом. Для 0/6 проверяются весь face без импорта
+fontTools, крайние codepoints, пустой массив, приоритет, нулевые IDs, точный размер,
+выход за BMP, бюджет нулевых entries и отмена внутри массива.
+Неканонический format 6 с лишними данными сохраняет результат engine fallback.
+Legacy fallback, повреждения, work budgets,
+отмена и закрытие font handle проверяются отдельно. На 24 системных TTF весь
+face совпадает с engine-путём, cmap во всех 24 прочитан нативно.
+Вместе с face/fvar/name/baseline, PDF/DOCX complex/model, opaque fonts и PDF Unicode —
+215 passed, включая WOFF/TTC сценарии снимка входа и выбора первого collection face.
+Прямой helper для 0/6 проверен в установленном базовом wheel без fontTools;
+неохваченные профили face сохраняют прежний движок. SHA и границы
+приёмки — в [свидетельстве cmap](font-cmap-evidence.json).
+Для format 2 дополнительно проверены single-/double-byte codes, общие subheaders
+и glyph storage, отрицательный delta, переход в нулевой ID, пустые ranges,
+приоритет Unicode-записей и отказ от повышения legacy-кодировки в Unicode.
+Десять сценариев запрещают импорт fontTools и сравнивают полный FontFace с engine;
+повреждения не дают частичный mapping, повторные/нулевые entries расходуют бюджет,
+отмена прекращает native walk, неканонический key сохраняет engine recovery.
+Общий текущий набор шрифтов/PDF — 475 passed. Установленный base wheel только
+с Model проверяет format 2 и полный resolver через `tools/package_smoke.py`.
+Границы и SHA — в [свидетельстве cmap 2](font-cmap2-evidence.json).
+
+`tests/test_native_font_names.py`: 59 проверок native name selection и fallback.
+Unicode/Windows UTF-16, non-BMP, английский Mac Roman, порядок языковых записей,
+пустые обязательные имена и aliases сравниваются с независимым fontTools reader.
+Name version 1 с language tags и Windows ShiftJIS/GB2312/Big5/EUC-KR/Johab
+совпадают с прежним reader без импорта fontTools; full resolver также проверен.
+Однобайтовые Macintosh и языковые варианты сравниваются по каждому ненулевому
+байту репертуара; ISO ASCII/UTF-16BE/Latin-1 и порядок предпочтений — отдельными
+fixtures. Полный face с Cyrillic/Turkish name records проверяется без импорта
+fontTools. На обычном пути импорт fontTools запрещён тестом. WOFF, неизвестные Mac encodings,
+восстановление нечётного UTF-16 и double encoding сохраняют прежний результат
+движка; повреждённые диапазоны, бюджеты общих строк и отмена проверяются отдельно.
+Исходные bytes и права шрифта этой операцией не переписываются.
+Полный шрифтовой/PDF/DOCX/Unicode прогон для name 0/1 и Windows/Mac/ISO codecs:
+242 passed. Установленный базовый wheel проверяет version 1, ShiftJIS, Mac Cyrillic,
+турецкий Mac Roman и ISO Latin-1
+без fontTools; BCP 47 locale selection и восстановление malformed strings
+нативной поддержкой не объявляются.
+Дополнительный read-only корпус: первые 24 TTF из Windows Fonts в порядке Path
+полностью совпали с прежним выбором имён; все прошли native-путь без fallback.
+В отчёт включены только имена файлов и hashes, программы шрифтов не копируются
+в репозиторий. Проверка относится к извлечению имён, не к полному рендеру.
+Результаты — в [свидетельстве](font-names-evidence.json).
+
+`tests/test_word_font_metrics.py`: 12 проверок baseline helper. Результат native
+TTF-пути совпадает с fontTools на разных unitsPerEm, знаках ascent/descent и lineGap;
+импорт движка на этом пути запрещён тестом. Прежнее поведение WOFF и lazy-чтения
+метрик при повреждённой посторонней таблице сохранено. Отмена выходит исключением,
+без запуска fallback; неизвестные метрики остаются неизвестными.
+Вместе с PDF → DOCX complex/model и opaque-font сценариями — 66 passed.
+Установленный базовый wheel проверяет тот же helper без fontTools; формула
+и права embedding/subsetting не подменяются новым выбором метрик.
+
+`tests/test_sfnt_inspection.py`: 26 проверок конечного standalone sfnt-профиля.
+Собственный TTF сравнивается с независимым fontTools directory reader по всем
+смещениям, размерам, объявленным checksums и исходным bytes таблиц. Дополнительные
+fixtures проверяют `OTTO`, неизвестные tags, повреждения, лимиты и отмену.
+`tests/test_anatomy_sfnt.py`: 13 проверок общего API и CLI — исходные bytes целиком,
+таблицы, границы общего бюджета, отмена внутри parser, сравнение metadata отдельно
+от payload, явный профиль ZIP/sfnt polyglot и отсутствие ложного PDF по маркеру
+внутри программы. Автоматический вложенный обход этой приёмкой не подтверждается.
+Инспектор проверен из установленного wheel в окружении только с Formats и
+официальным Model 0.19.0: исходник модуля совпадает побайтно, fontTools/PyMuPDF/Pillow
+отсутствуют, исходный payload извлекается точно. Это приёмка инвентаря таблиц,
+а не проверки glyph programs, shaping, variable instances или лицензии шрифта.
+
+## Выбранный face TTC
+
+`tests/test_native_font_collection.py`: 34 проверки TTC 1.0/2.0, TrueType/CFF,
+общих таблиц, DSIG declaration, выбора обоих faces, строгого index, границ,
+квот и отмены. Native metadata и абсолютные ranges сравниваются с fontTools;
+импорт движка на принятом пути запрещён. Resolver сохраняет первый face и fallback
+при неподтверждённом collection profile. Исходные байты остаются неизменными.
+Общий набор sfnt/шрифтов/HTML/PDF и TextLayout — 729 passed.
+В 15 независимых системных TTC весь FontFace совпал с прежним reader; 14 прочитаны
+без fontTools, один файл превышает 32 MiB и использует прежний fallback.
+Установленный base wheel только с `opendoc-model` проверяет два различных faces
+и resolver. Автоматическое перечисление всех системных TTC и их embedding
+не засчитываются; источник и границы — в [свидетельстве TTC](font-collection-evidence.json).
+
+`tests/test_anatomy_font_collection.py`: ещё 27 проверок общего API/CLI:
+выбор face, полная исходная коллекция и точные таблицы, JSON inventory, locators
+с номером face, comparison scope, общие budgets, поздняя отмена, polyglot и
+отказы по неверным/несовместимым options. Общий Anatomy/sfnt/TTC набор — 334 passed.
+Установленный base wheel без fontTools проверяет тот же selected-face API;
+его CLI сохраняет коллекцию побайтно и сравнивает выбранный face.
+Совокупный обход всех faces и проверка подписи DSIG остаются открытыми.
+Хеши и границы — в [приёмке Anatomy TTC](anatomy-font-collection-evidence.json).
+
+## Нативные PDF glyph observations
+
+Потребительский `tests/native/test_text_layout_consumer.py` принят отдельно на
+Model `0.19.0.dev20261024+consumer5`, без изменения основной зависимости.
+Одиннадцать проверок покрывают реальные placement matrices и FONT, `fi` 2:1,
+ActualText 1:N, два JSON-цикла, range-aware edit и batch-инвалидацию fill/stroke,
+unknown, атомарные отказы и 12 000 физических глифов с явным node budget.
+Пакетная запись проверена на 16 реальных PDF-вхождениях и 1 245 точных кластерах;
+прежний snapshot от SHA-проверенного установленного consumer2 сохраняет привязку
+версии 1 через два JSON-цикла и обновляется до версии 2 только явно.
+Область и hashes записаны в [свидетельстве приёмки](text-layout-consumer-evidence.json).
+Оба пакета установлены из отдельных preview wheels; runtime files Formats
+проверены по hash, объявленные зависимости совместимы. Сборку/проверку воспроизводит
+`tools.text_layout_preview`; артефакты отмечены dev, не являются публикацией и
+не закрывают рабочий reader/writer C-PDF-01.
+
+`tests/native/test_pdf_placements.py` проверяет точные матрицы через native text
+device: исходные text/CTM/Form operators, отдельные fill/stroke/ignore/clip,
+shear, наследуемый Rotate, реальные границы собственных прямоугольных глифов и
+`fi` continuation. `own_placement_font` создаёт собственную single-face TTF с
+детерминированными bytes; fontTools нужен только генератору fixture. PDF собирается
+из wire objects/commands, без Formats writer. Program digest совпадает с исходным
+TTF, raw sentinel не превращается во второй физический glyph.
+
+Проверены точная compact metadata quota, glyph/span budget до font copy,
+однократное хеширование программы и суммарный font bytes budget, отмена внутри
+callback, неизвестный native профиль и нечисловая матрица до native glyph bound.
+После ошибки/отмены повторное чтение, исходные object dictionaries и свежие
+растры прежние. Ошибки переносятся за C boundary без заимствованных wrappers.
+Native memory/time, полная видимость и общий semantic projection этим не приняты.
+
+`tests/native/test_pdf_text_spans.py` использует прямые PDF objects/commands,
+без writer Formats: обычный текст, `2 Tr`, `3 Tr`, zero alpha и частичный clip.
+Проверены исходные Unicode/origin, дубли fill/stroke, raw ligature continuation,
+unknown Unicode, отсутствие alias на mutable backend arrays, точные metadata budgets,
+отмена внутри glyph copy и после native call. Неверные native shapes имеют явный
+отказ; источник и контекст сохраняются. Default bytes прежнего wire fixture не меняются.
+
+Свежий native raster при отключённом кэше совпадает до/после инспекции на 0/90°.
+Для inherited Rotate после успеха/ошибки совпадают активные словари объектов и
+повторный рендер. Независимый Poppler при 108 dpi показывает `Visible`, synthetic-bold
+`Both` и только `Pa` от `Partial`; hidden/zero-alpha текст не виден, хотя span inventory
+его сохраняет. Это конечная read-only приёмка, не доказательство полной видимости,
+shaping, порядка чтения или PDF → DOCX fidelity. Установленный минимальный PDF-профиль
+проверяется в `tools/pdf_profile_smoke.py` без остальных PDF/Office/image backend.
+
+`tests/readers/test_pdf_paint_matching.py` проверяет переход от нативных наблюдений
+к paint-признакам Model: единственное точное совпадение, неоднозначные fill/stroke,
+недопустимые Unicode scalars/U+FFFD, ligature continuation и неоднозначные FONT
+bindings. Отмена проверяется внутри сравнения Unicode; выбранные квоты импорта
+дают адрес и тип ограничения. Прямой wire PDF подтверждает очистку устаревших
+paint-признаков после изменения текста, сохранение причины неопределённости через
+JSON и неизменность исходных bytes. Это конечная проверка привязки, а не полная
+проекция глифов или закрытие C-PDF-01.
+
+## Независимые бинарные оригиналы
+
+`own_cfbf` собирает CFBF v3/v4 непосредственно из header, FAT/DIFAT/miniFAT,
+directory entries и заданных bytes. Оригиналы содержат разрывные обычные и mini
+цепочки, padding и unclaimed сектор. `tests/test_anatomy_cfbf.py` подтверждает
+payload, диапазоны, raw metadata, полное восстановление физических bytes, старый
+v3 high DWORD, extended DIFAT, неверные цепочки/имена, квоты, отмену и CLI.
+Контролируемые изменения wire bytes дают явный отказ либо неизменённый физический
+инвентарь, без положительной оценки полноты.
+
+`tests/native/test_cfbf_windows.py` отдельно открывает только эти собственные
+оригиналы read-only через Windows IStorage и сравнивает Small/Large bytes для
+v3, v4 и старого v3. COM storage API не активирует вложенный объект; source bytes
+после закрытия прежние. На других платформах эти три проверки пропускаются.
+Четыре дополнительных native originals (v3/v4 × root red/black) сохраняют
+разную чёрную высоту sibling ветвей и прежние Small/Large bytes; IStorage читает
+их read-only. `tests/native/test_cfbf_colors.py` отдельно проверяет 17 случаев:
+оба root colors, all-black unbalanced pointers, неверные flags с исходным offset,
+различие sibling/containment, red top/red-red, недостигнутые циклы и отмену.
+Потоки и физические bytes остаются прежними, весь storage tree не объявляется
+валидным по одному цветовому профилю. Установленный base wheel принимает root red
+и сохраняет полный повреждённый оригинал с located invalid-color finding.
+`tests/native/test_cfbf_names.py` содержит 22 проверки порядка/уникальности:
+UTF-16 length перед casing, числовое сравнение units, full-expansion исключения,
+Greek simple uppercase, неизменённые surrogate pairs, отсутствие нормализации,
+scoped duplicates, нарушение диапазона предка и отмену. При цикле графа name order
+остаётся unknown; повредившаяся связь не заменяется догадкой о storage owner.
+Десять дополнительных originals (пять наборов имён × v3/v4) принимаются Windows
+IStorage read-only с точным чтением обоих потоков и неизменным source. Сравнение
+всех 65536 UTF-16 units с UnicodeData — отдельное
+[свидетельство](cfbf-unicode-evidence.json), не полная приёмка всего дерева CFBF.
+Это конечная приёмка чтения потоков, не storage tree validation и не проверка
+семантических правок OLE. Базовый установленный wheel проверяет CFBF/miniFAT
+без olefile, Office, PDF и XML backend.
+
+`tests/binary_fixtures.py` собирает воспроизводимый ZIP/XML DOCX с вложенной таблицей,
+PNG, внешней гиперссылкой и неизвестной бинарной частью. PDF собирается напрямую
+из объектов, xref offsets, команд и Flate-потоков; 2×2 RGB изображение имеет
+независимо заданные pixels. Ни один оригинал не создаётся нашим writer.
+
+`tests/test_anatomy.py` проверяет wire/content fingerprints, реальные XML-узлы и
+атрибуты связей, opaque payload, CRC, unsafe/duplicate names, XML DTD в UTF-8/16,
+квоты/отмену, отсутствие обязательных Office/PDF декодеров для ZIP и признак ремонта
+PDF. CLI выгружает части под собственными именами и не заменяет существующий каталог.
+
+`tests/test_anatomy_content_types.py` задаёт OPC manifest после payload в ZIP.
+Проверяются extensionless UTF-16 XML, `+xml`, приоритет overrides, case-insensitive
+extension defaults, declared binary с именем `.xml`, прежний extension fallback,
+ошибочные bindings, DTD, единый бюджет и его однократный учёт manifest.
+Отмена после manifest не допускает чтения следующих частей; oversized manifest
+отвергается до открытия payload. `--opaque-xml` сохраняет прежние bytes без
+разбора деклараций. Базовый установленный wheel проверяет extensionless OPC XML
+без дополнительных зависимостей.
+
+`tests/test_anatomy_opc.py` проверяет корневые/частичные связи, внешние Target,
+фрагменты, несколько путей, недостижимые циклы и подключение компонента к root.
+Missing owner/target, инфраструктурные targets, unsafe URI, duplicate Id,
+неизвестные mode/markup, missing Content Type/Override и неразобранные `.rels`
+имеют located findings и не дают ложного полного обхода. Обычный binary с именем
+`.rels` вне relationship directory остаётся data part. Проверены неизменяемые
+snapshots, независимая JSON-копия, `opc_changed`, отмена внутри resolver
+и отсутствие OPC claims при opaque inspection.
+
+`tests/test_anatomy_epub.py` собирает независимые ZIP/XML originals с extensionless
+OPF/XHTML в UTF-16, percent-encoded href, binary под именем `.xml` и двумя rootfiles.
+Проверены совместные ресурсы, конфликтующие типы/дубликаты, missing части,
+точное определение mimetype, DTD, `xml:base`, remote rootfiles/outside ссылки, общий XML-бюджет
+и отмена после OPF до чтения ресурсов. ZIP open spy подтверждает однократное чтение;
+opaque inspection сохраняет bytes. Базовый установленный wheel проверяет этот
+маршрут без BeautifulSoup/EbookLib/lxml; это проверка контейнера, не EPUBCheck
+и не визуальная/семантическая приёмка всех ресурсов книги.
+
+Инвентарь `EpubAudit` дополнительно проверен на отдельных manifest occurrences
+всех rendition, исходных атрибутах/адресах, неизменяемости и независимом JSON,
+`epub_changed` и отсутствии положительной оценки полноты. HTTP(S), protocol-relative,
+file/data/javascript/mailto адреса остаются `external-unassessed`; тест запрещает
+открытие файлов, создание sockets и URL fetch при inspection bytes. Неверные поля,
+буквальные дубликаты и отвергнутый URL дают адресный отказ. Квота XML ограничивает
+и внешние записи; отмена внутри инвентаризации не читает content parts. Строгий
+EPUB reader продолжает отвергать внешние ресурсы; источник остаётся прежним.
+Локальный URL-профиль дополнительно проверяет корректные Unicode/percent paths,
+однократное декодирование, фрагменты и dot segments. Некорректные escapes/UTF-8,
+controls/пробелы, query и encoded separators отказывают по исходному XML-адресу
+до чтения content parts. Нативный и публичный EPUB import также отвергают
+повреждённые ссылки при наличии реально существующего «исправленного» имени,
+не выбирая другой ресурс и не меняя архив. Новые 30 inspection и 10 reader
+проверок входят в профильный EPUB/Anatomy прогон: 334 passed.
+Установленный базовый wheel проверен без EPUB/font/PDF движков;
+SHA и границы — в [свидетельстве локальных URL](epub-local-url-evidence.json).
+Полный 2595-test прогон Model 0.19.0 относится к снимку перед этим EPUB-изменением;
+его новый локальный профиль принят указанным отдельным набором.
+
+`tests/native/test_binary_compatibility.py` проверяет, что нативная правка меняет
+содержимое только `word/document.xml`, сохраняя PNG, `.rels` и opaque bytes;
+сопоставляет таблицы/пиксели/диагностику с фактическим оригиналом.
+`tools/document_anatomy_word_acceptance.ps1` принят в Microsoft Word 16.0,
+build 16.0.17932: одна страница, корневая таблица шириной 120 pt, одна картинка и
+одна гиперссылка сохранены; файлы read-only не изменились. Независимые Poppler
+PNG при 108 dpi совпали вне области единственной правки `Before` → `Edited`.
+Повторяемая проверка — `tools/document_anatomy_visual_check.py`.
+Это конечный native-edit fixture, а не полная семантическая приёмка Word.
+Обработка default/preserve `xml:space` и отсутствующего `pgSz` rich reader
+остаётся открытой задачей. У sparse DOCX оригинала Word показывает `AfterLink`
+и страницу 612×792 pt; текущая модель содержит `After Link` и 595.28×841.89 pt.
+Эти расхождения не скрываются стабильностью собственного JSON/экспорта.
+
+`tests/test_opc_orphans.py` проверяет перенос физически недостижимых OPC частей
+через rich Model и два JSON/DOCX цикла. Независимые оригиналы содержат циклические
+компоненты, UTF-16 `.rels`, внешний target, зависимость от достижимого XML со
+своими связями, неизвестный binary и коллизии URI. Payload выбранных частей
+совпадают побайтно; редактирование текста/картинки и явная правка opaque bytes
+не восстанавливаются из устаревшего снимка. Неверные связи/metadata, DTD,
+embedded-byte quota и отмена, включая копирование выходного ZIP, сохраняют
+источник, модель и прежнее назначение. Промежуточные файлы удаляются.
+
+Microsoft Word 16.0 открывает результаты Model/JSON-экспорта обычного fixture
+и варианта с `/custom/main.xml`: доступны изменённый текст, одна таблица и
+одна картинка. Это проверка читаемости; она не подтверждает геометрию страницы,
+поведение произвольного вложения или полный lossless-профиль DOCX.
+
+`tests/native/test_docx_consumer_contract.py` проверяет на прямом OPC/XML tab stops
+отдельно от run tabs, `noBreakHyphen`, text/run offsets, сохранение native токена
+при граничной вставке, явную замену дефиса и разделители пустых абзацев ячейки.
+Merge остаётся физическим; отсутствие владельца `.rels` в обычном режиме даёт явный отказ.
+Потребительская gate из десяти случаев проходит на локальном установленном wheel
+с Model 0.18.0 и lxml 6.1.3, без python-docx и других format extras.
+Официальный выпуск и повторная приёмка реального корпуса остаются открытой работой
+[C-DOCX-NATIVE-TEXT-01](format-requests.md#c-docx-native-text-01).
+
+`tests/native/test_docx_inspection_only.py` проверяет отдельный явный осмотр:
+два orphan `.rels` получают общие ConversionIssue ERROR с адресами и source names;
+текстовые snapshots читаются, исходные bytes не меняются. Режим запрещает patches
+и write даже для исправного пакета, сохраняя прежнее назначение. Неверные targets,
+duplicate Id/namespace, DTD, input/entry/text limits и отмена остаются отказами.
+Минимальный установленный `docx-native` smoke повторяет строгий отказ, inspection,
+byte-for-byte no-op и запрет изменений без python-docx. Это конечная приёмка
+повреждённого OPC source, не полный реальный корпус и не право на repair/write.
+[Свидетельство установленного профиля](docx-inspection-evidence.json) связывает
+wheel и runtime/tests/smoke SHA, состав среды и 157 проверок native DOCX/OPC.
+
+`tests/native/test_docx_target_encoding.py` проверяет 18 случаев URI-привязки:
+malformed percent, invalid/overlong/surrogate UTF-8, корректные Unicode и literal
+percent names, genuine replacement character и инертный external target. Ошибочный
+target не связывается с созданной специально похожей ZIP-частью, исходник остаётся
+прежним; оба native режима применяют одну политику. По сравнению с прежним decoder
+profile исключена ошибочная привязка `%FF` к literal `�.xml`: отказ имеет source
+location. Полная OPC conformance этим конечным профилем не подтверждается.
+
+`tests/native/test_docx_uri_aliases.py` проверяет 19 независимых package cases:
+encoded main target, raw/decoded ZIP names, content-type aliases, Unicode/percent
+spelling, относительные references, точную native правку и неизменённые соседние
+parts. Два физических aliases, дубли главного Override, encoded separators и
+выход за корень не выбираются по предпочтению. Callback прерывает resolver без
+изменения исходника. Минимальный installed `docx-native` smoke повторяет main-part
+alias edits без python-docx; парсинг и bindings принадлежат Formats, не Model.
+
+`tests/native/test_docx_relationship_snapshots.py` проверяет семь source inventory
+сценариев: package/internal/external records и unknown namespace attributes,
+child indices с comments/PI, immutable facts до/после native edit и close, missing physical owner при похожем
+URI имени, literal-percent owner без второго decoding, общую квоту и отмену.
+Для отсутствующего владельца не создаётся target binding. Installed `docx-native`
+smoke проверяет те же public snapshots без python-docx; новые dependencies/DTO Model
+не требуются. Инвентарь не подтверждает полную URI-эквивалентность или C-MAP-01.
+
+`tests/test_text_projection.py` проверяет инвентарь потерь Model → Text, исходные
+адреса/provenance, таблицы и повторные occurrences, вложенное содержимое ячеек,
+два JSON-цикла, конфликтующие ссылки, выбранные бюджеты и отмену.
+Графовые поля оцениваются агрегатно; assessment_complete не повышается.
+
+## Диагностика legacy Text
+
+`tests/test_text_diagnostics.py` проверяет два Text/Model/JSON цикла, повторяющиеся
+сообщения разных объектов, общий envelope Model, независимые вложенные
+данные, неизвестные record fields, source node locators и выбранный бюджет.
+Положительные semantic claims не переносятся в упрощённый view; отсутствие
+оценки не становится подтверждением lossless. Некорректные metadata warnings
+не отбрасываются молча.
+
+На Model 0.18.1 дополнительно проверены публичные `Text.to_dict` и
+`text_to_document`: не-JSON объект в extra/measurement отклоняется до вызова
+его `__deepcopy__`, без подмены значения и изменения исходного Text. Общий codec
+остаётся в Model; собственного обхода или копирования его схемы Formats не вводит.
+
+`tests/readers/test_pdf_text_fallback.py` проверяет прекращение цепочки при отмене
+и превышении лимитов, восстановление контекста, table-only результат и сохранение
+source bytes/полного текстового результата при неактивном callback.
+OCR diagnostics сравниваются в богатом и текстовом маршрутах; локальные индексы
+warnings после fallback сохраняют отдельные occurrences. Тесты DjVu различают
+отсутствующий процесс, ненулевой exit, timeout и пустой hidden text.
+
+## FONT и сохранённый OOXML
+
+`tests/writers/test_docx_opaque_fonts.py` строит собственный smartTag с
+`OwnSmartToken` между обычными runs. Два публичных DOCX/Model/JSON цикла
+сохраняют XML, исходник, FONT references и cmap выбранных font programs;
+все глифы opaque-текста остаются в программах, дополнительного `font-glyphs`
+LOSS нет. Известная `docx.smart-tags` LOSS остаётся при каждом импорте.
+Проверяется full-program policy для retained OOXML и прежняя semantic subsetting
+policy для обычного документа. Полнота opaque-only font inventory и отображение
+всех возможных wrappers не выводятся из этой приёмки: C-FONT-OPAQUE-01 остаётся
+открытым для этих профилей.
+
+`tests/writers/test_pdf_unicode.py` constructs a project-owned OpenType font at
+runtime with `fi` and `ti` ligatures. Its native Story PDF checks repeated text
+and exact RGB pixel equality before/after ToUnicode restoration. No third-party
+font is shipped; ambiguous or unknown glyph decompositions are negative controls.
+
+The primary corpus is generated from source instead of storing opaque binary fixtures. Run:
+
+```powershell
+uv run python -m tests.corpus.scientific_report
+uv run python -m tests.corpus.multiformat
+```
+
+The primary `scientific_report` fixture covers portrait and landscape sections,
+named styles, numbering, headers and a page-number footer, hyperlinks, merged
+tables, raster and SVG images, native OMML, and a footnote. Archive timestamps and
+document metadata are fixed so identical dependencies produce identical bytes.
+
+`multiformat.py` adds deterministic PDF, PPTX and EMF fixtures. It covers fixed PDF
+page geometry, two-column text, tables, raster/vector commands, presentation text,
+charts, tables, speaker notes and a native EMF package relationship. Nested chart
+workbooks and outer OOXML archives have normalized timestamps, so two builds are
+byte-identical.
+
+`office/libreoffice-scientific-slides.pptx` is a committed compatibility profile
+opened and re-saved by LibreOffice. Its producer/version, SHA-256 and expected WMF
+part are recorded in `office/manifest.json`; the source content is generated by
+`multiformat.py`.
+
+Structural expectations live in `scientific_report.golden.json` and
+`multiformat.golden.json`. Visual checks combine tolerant page occupancy bounds
+with committed images under `visual/`. The perceptual regression normalizes page
+size and antialiasing, then checks mean absolute similarity, difference-hash
+distance and foreground intersection-over-union against explicit thresholds in
+`visual/manifest.json`.
+
+Regenerate page references only after reviewing an intentional visual change:
+
+```powershell
+uv run python -m tests.corpus.visual_references
+```
+
+`charts.py` builds a pure `DocumentModel` corpus of 14 rich chart fixtures (dual
+axes, trendlines, error bars, per-point colors, combo, percent data labels).
+Charts render deterministically through `pdf_writer` (fitz.Story) into PNG pages
+compared perceptually against committed golden images in `visual/charts/`. The
+per-chart pages and their thresholds live in `visual/charts/manifest.json`.
+
+Regenerate chart references only after reviewing an intentional chart change:
+
+```powershell
+uv run python -m tests.corpus.charts
+```
+
+## Office provenance fixtures
+
+`libreoffice-scientific-slides.pptx` is the reproducible source presentation from
+`tests.corpus.multiformat`, opened and re-saved by LibreOffice 25.8.6.2 on Windows.
+It contains only project-generated content. ZIP timestamps are normalized after
+the office-suite roundtrip; the producer metadata and converted WMF media part are
+left untouched. `manifest.json` records provenance, size, SHA-256 and structural
+expectations.
+
+The fixture is intentionally committed because office-suite serialization cannot
+be reproduced in CI without that exact application and version. Source-first PDF,
+PPTX and EMF fixtures remain generated during tests and require no office suite.
+
+## Нативные fixtures
+
+Каталог: `tests/corpus/native/`.
+
+Созданы для этого проекта, без внешних документов и пользовательских данных.
+
+- `native-edit.docx`: генератор `fixture_bytes` в `tests/native/test_docx_access.py`;
+  split runs, header/footer, объединения, вложенная таблица, собственный PNG, OMML и секции.
+- `zero-opacity.pdf`: PyMuPDF, страница 100×100 points, прямоугольник (10,10,90,90),
+  красная заливка и синяя обводка с alpha=0. Приёмка: alpha сохраняется, raster белый.
+- `vector-export.pdf`: та же геометрия с alpha=1. Приёмка: нативный экспорт сохраняет
+  paint, геометрию и пиксели без растровых изображений.
+- `unsupported-vector.json`: собственная модель с неизвестной командой. Приёмка:
+  явное отклонение и сохранение прежнего выходного файла; surrogate проверяется отдельно.
+- `text-pages.pdf`: собственные две страницы PyMuPDF с текстом Native PDF и второй
+  страницей с поворотом 90°. Проверяет установленный extra pdf-text без PyMuPDF.
+
+Файлы являются тестовыми входами, а не временными сборками. Контрольные SHA-256
+вычисляются тестами для проверки неизменности частей и транзакций.
+
+## DOCX: исходные ширины и smartTag
+
+`tests/readers/test_docx_layout_roundtrip.py` создаёт собственные smartTag и таблицу
+20×3 с колонками 10/80/10, длинным текстом средней колонки и фиксированным layout.
+Два JSON roundtrip проверяются независимым чтением `word/document.xml`:
+видимый текст, оболочка, `tblW`, `tcW` и grid widths. Отдельно проверены
+`auto`, `nil`, процентная запись и явное изменение ширины ячейки.
+
+Локальная приёмка Microsoft Word 16.0 build 16.0.17932 подтвердила одну страницу
+во всех трёх файлах каждого случая, совпадение текста и ширины 48/384/48 pt
+в таблице. Исходники открываются только для чтения, их SHA-256 не меняется.
+Проверка не является полной визуальной приёмкой или проверкой произвольного DOCX.
+
+Повторить при установленном Word:
+
+```powershell
+uv run --frozen pytest tests/readers/test_docx_layout_roundtrip.py --basetemp=.opendoc-formats/docx-word
+./tools/docx_word_acceptance.ps1 -FixtureRoot .opendoc-formats/docx-word
+```
+
+Word — отдельная локальная программа; её отсутствие не заменяет проверку XML
+и не означает выполненной нативной приёмки в CI.
+
+## PPTX: нативные свойства фона, линий и таблицы
+
+`tests/readers/test_pptx_visual_roundtrip.py` создаёт собственные слайды со
+сплошным фоном в slide/layout/master, двумя осевыми freeform paths и таблицей
+с наследуемым цветом текста. Проверяются два JSON roundtrip, приоритет ближайшего
+фона, отсутствие мутации источника, размеры и сохранение editable custGeom,
+отсутствие пустого `solidFill` для неуказанного цвета.
+
+Microsoft PowerPoint 16.0 build 17932 подтвердил равенство нативных свойств
+во всех трёх файлах каждого случая: RGB фона, типы/позиции/размеры фигур,
+текст и цвета ячеек. Источники открываются read-only, SHA-256 не меняется.
+Это не пиксельная или полная семантическая приёмка и не проверка всех тем Office.
+
+```powershell
+uv run --frozen pytest tests/readers/test_pptx_visual_roundtrip.py --basetemp=.opendoc-formats/pptx-native
+./tools/pptx_visual_acceptance.ps1 -FixtureRoot .opendoc-formats/pptx-native
+```
+
+PowerPoint устанавливается отдельно; CI выполняет проверки XML и модели,
+а локальная нативная проверка требует установленной программы.
+
+## PDF: размещения растра и обрезка
+
+`tests/writers/test_pdf_raster_roundtrip.py` самостоятельно создаёт растровые
+страницы с рамкой и диагональю, повторяет один xref на двух страницах, размещает
+несколько разноцветных изображений и обрезает страницу. Тесты охватывают
+четвертьобороты изображения/страницы, soft mask и JSON.
+
+После каждого из двух циклов результат сравнивается с оригиналом, а не только
+с предыдущим результатом: число страниц/размещений, page rect/rotation, image bbox
+и все RGB pixel bytes. Исходные bytes не изменяются. Отдельно проверены явная
+правка геометрии, отмена и отклонение unsupported transform с сохранением старого файла.
+Для этого конечного профиля результат пиксельно совпадает в проверенном PyMuPDF.
+Другой raster engine и произвольный PDF не считаются проверенными этим тестом.
+
+## HTML: язык и семантика таблиц
+
+`tests/readers/test_html_accessibility.py` создаёт собственные документы,
+выполняет два цикла через публичные API и JSON и сравнивает lang (в том числе
+пустой и вложенный), caption/форматирование, th/scope/headers/IDs, группы строк,
+заголовки, нумерацию и внутренние ссылки. Вложенные таблицы и пустая подпись
+проверены отдельно; опасные символы в атрибутах экранируются. ARIA вне профиля
+получает расположенный loss. Это структурная приёмка, без доказательства
+браузерного accessibility tree или работы экранного диктора.
+
+## DOCX: общая предпочтительная ширина
+
+`tests/readers/test_docx_typed_widths.py` проверяет абсолютные и относительные
+предпочтения таблиц/ячеек, physical units, отсутствие type, ноль, auto/nil,
+отсутствующую ширину, два JSON/DOCX цикла, точную native запись и неизменность
+исходника/модели. Старые JSON проходят публичный импорт до правки/удаления.
+Отрицательная native ширина остаётся расширением. Прежний тест неверной ширины
+проверяет сохранение старого результата при отказе.
+
+`tools/docx_word_acceptance.ps1` подтверждает прежний текст, одну страницу и
+колонки 48/384/48 pt. `tools/docx_typed_width_acceptance.ps1` открывает четыре
+результата правок read-only в Word 16.0, проверяет preferred types и значения:
+75.001% и 12.125 pt отображаются API Word как 75% и 12.1 pt. Точный XML сохраняется;
+это дискретность Word, без утверждения о точном полном визуальном рендере.
+
+```powershell
+uv run --frozen pytest tests/readers/test_docx_typed_widths.py --basetemp=.opendoc-formats/width-native
+./tools/docx_typed_width_acceptance.ps1 -FixtureRoot .opendoc-formats/width-native
+```
+
+## DOCX: формальная роль заголовка
+
+`tests/readers/test_docx_headings.py` создаёт собственные документы с уровнями
+1/2/3/9 без именованного стиля, native Heading 2, наследуемым пользовательским
+стилем, прямым override и основным текстом. Проверяются JSON и два DOCX цикла,
+document defaults, смена/удаление роли, неверные уровни и защита старого результата.
+`tools/docx_heading_acceptance.ps1` открывает исходник и два результата read-only
+в установленном Word, сверяет уровни структуры. Для явно изменённых ролей
+сравнивает текст, имя/размер/цвет шрифта и интервалы с исходником. SHA-256 файлов
+не меняется. Это конечная проверка свойств, без полной визуальной приёмки Word.
+
+```powershell
+uv run --frozen pytest tests/readers/test_docx_headings.py --basetemp=.opendoc-formats/heading-native
+./tools/docx_heading_acceptance.ps1 -FixtureRoot .opendoc-formats/heading-native
+```
+
+## PDF: affine, обрезка и поток изображений
+
+`tests/writers/test_pdf_raster_roundtrip.py` сравнивает два цикла с независимо
+заданными native matrices для произвольного поворота, shear и отражений:
+совпадают исходные RGB bytes и geometry. Невырожденность проверяется отдельно.
+`tests/writers/test_pdf_docx_rasters.py` проверяет ImageCrop и углы 3/12.5/-17/90
+по независимому Form-reference. Из-за двойного clipping у reference допускаются
+различия антиалиасинга только в пределах 1.5 pixels от границы, а не внутри изображения.
+
+Настоящие PDF → JSON → PDF циклы с поворотами страниц/изображений сохраняют
+crop и RGB pixels точно. Собственные DOCX проверяют положение изображения
+между абзацами, перенос на следующие страницы, центрирование, колонтитулы,
+located LOSS для paragraph anchor и отказ при пустой обрезке, чрезмерной
+рамке и PNG pixel dimensions. Исходник и модель не изменяются.
+
+## PDF: перенос body-изображений у границы страницы
+
+`tests/writers/test_pdf_flow_pagination.py` строит собственный DOCX с таблицей,
+двумя изображениями, подписями и заключительным абзацем. Без повторной компоновки
+этот источник получает `pdf-text-content` и сохраняет прежнее назначение.
+С переносом двухкратный JSON → PDF экспорт сохраняет весь текст, видимую рамку
+обрезанных изображений, поворот 0/3° и left/center/right alignment. Проверяются
+отсутствие перекрытий с текстом и одинаковые страницы при 108 dpi между циклами.
+Ширины страниц 200/240 pt включают перенос заключительного абзаца на строки;
+сравнение текста нормализует whitespace, сохраняя все слова и число вхождений.
+Отдельная приёмка исходных crop/rotation pixels остаётся в независимом
+Form-reference наборе, а не выводится из одного совпадения двух generated PDF.
+Poppler-рендер собственного двухстраничного примера проверен визуально.
+Отмена, повторное переполнение и предел 32 повторов сохраняют назначение;
+discarded native documents закрываются. Состав зависимостей и Model не меняется.
+`tools/pdf_profile_smoke.py pdf` проверяет перенос в установленном wheel без
+DOCX/Pillow/lxml и альтернативных PDF-движков.
+
+## PDF: изображения в ячейках таблиц
+
+`tests/writers/test_pdf_cell_images.py` строит собственные DOCX с обычной,
+объединённой и вложенной ячейкой, картинкой, подписью, соседним и последующим
+текстом. Проверяются три выравнивания, crop/rotation, два JSON/PDF-цикла,
+отсутствие перекрытий и совпадение decoded RGBA программы с исходным PNG.
+Negative case оставляет только изображение без текста: выход в поля нельзя
+скрыть успешной проверкой текста. Измеренные grid proportions учитывают
+горизонтальные/вертикальные spans, общий HTML-renderer сохраняет прежние стили.
+
+Собственный MIT `tests/native/data/table-image.png` — 561 bytes, 120×180 RGBA,
+SHA-256 `5f229f090b197209fe7703d18f3ce7a47ebb0eb2f1549e400e0748c1979372fe`.
+Его RGBA-пиксели воспроизводятся `tests.writers.test_pdf_docx_rasters.own_pixels`;
+проверка сравнивает все каналы, включая RGB прозрачных пикселей, при разных
+уровнях PNG-сжатия. Байты deflate могут отличаться между сборками zlib;
+SHA выше относится к сохранённому файлу. Сторонних
+изображений нет. Word независимо экспортирует три исходных DOCX: размеры растра
+72×72 pt, pixel dimensions 120×180, подпись и последующий текст подтверждены.
+Страницы могут отличаться: вложенная строка Word разбивается иначе; это явно
+диагностируется, совпадение с source pagination не заявляется.
+
+`tools/pdf_cell_image_smoke.py` проверяет вложенную таблицу из установленного
+wheel только с Model/PyMuPDF, без Office/Pillow/fontTools/NumPy и других PDF engines.
+Тест проходит два JSON/PDF-цикла с теми же pixel samples и всем текстом;
+gate добавлен в локальный CI. [Доказательства и границы](pdf-cell-images-evidence.json).
+
+## PPTX: восстановление выбранного графа OPC
+
+`tests/support/test_ooxml_pptx_package.py` создаёт исходный PPTX непосредственно
+через `python-pptx`, независимо от проверяемого helper. Исходные XML/PNG bytes,
+internal/external relationships, цикл и две разные связи к одной картинке проходят
+через общий PackageGraph, JSON и два новых PPTX. ZIP проверяется по байтам частей
+и уникальности имён; повторное открытие через `Presentation` проверяет связи,
+соседний редактируемый текст и генерируемую картинку с конфликтующим именем.
+Внешняя ссылка только хранится, сеть не вызывается.
+
+Проверены конфликты rId на корневом слайде и привязанной части: все генерируемые
+XML-ссылки перемещаются, protected XML и одноимённые атрибуты вне namespace
+relationships сохраняются. Неудержанная ссылка отклоняется до мутации.
+Общий тест отмены создания частей выполняется для обоих движков DOCX/PPTX.
+
+Это приёмка внутреннего Formats helper на конечном профиле `python-pptx`;
+публичный PPTX writer ещё не восстанавливает весь исходный package graph.
+PowerPoint rendering, master/layout bindings, timing и нативное редактирование
+не подтверждаются этими тестами и остаются задачами OF06. Изменения Model
+и новые зависимости для этого профиля не потребовались.
+[Проверки и границы профиля](pptx-package-helper-evidence.json).
+
+## PPTX: физический исходный пакет и JSON
+
+`tests/readers/test_pptx_source_package.py` сопоставляет все физические ZIP members
+с `PackageGraph(format="pptx")`: XML, инфраструктуру OPC, известные/неизвестные
+компоненты, недостижимые бинарные вложения, циклы и inert external links.
+После двух JSON-циклов сравниваются точные bytes каждой части, typed relationships,
+SHA-256/размер/source location каждого opaque record и неизменность источника.
+Проекция и инвентарь получают один снимок bytes; отдельный тест удаляет исходный
+файл перед открытием движка и подтверждает, что повторного чтения нет.
+
+Повреждённые targets, отсутствующий owner, повторные Id, неизвестный Type и выход
+за корень сохраняются в сырых `.rels` с `pptx.package-audit`. Model не получает
+недоказанных связей; при повторном Id исключается и первая неоднозначная запись.
+Переупорядоченные слайды сохраняют исходные part names до переименования движком.
+Payload с бинарным объявленным media type не декодируется как XML из-за суффикса.
+Необъявленный type удерживается как opaque `application/octet-stream`, а исходное
+отсутствие декларации видно в measurement `declared_content_type=null`.
+
+Входной/распакованный размер, XML nodes/depth и нулевой embedded budget отклоняются
+до открытия `Presentation`; проверены отмена и DTD/entities в недостижимом XML.
+Исходные master/layout/theme/OLE/workbooks доступны как bytes, их полная семантика
+не объявляется. Обычный rebuild PPTX writer выдаёт LOSS вместо восстановления, а DOCX writer
+не вставляет чужие PPTX части. Попытка передать весь физический snapshot напрямую
+общему helper отклоняется до мутации: нужен план привязки редактируемого корня.
+
+`tools/pptx_package_smoke.py` предназначен для установленного extra `[pptx]`
+без DOCX/PDF/fontTools: оригинальные части, неизвестное вложение, external edge
+без сети и два JSON-цикла. В CI добавлен отдельный профиль. Это не нативная
+приёмка полного PPTX round-trip в PowerPoint.
+[Проверки и оставшаяся работа](pptx-source-package-evidence.json).
+
+## PPTX: нативная текстовая правка исходного пакета
+
+`tests/writers/test_pptx_source_text.py` проверяет явный `PptxProfile(layout="source")`.
+В двух PPTX → JSON → PPTX циклах без правок совпадают bytes всех file payloads;
+при текстовой замене меняется только исходный slide XML, чья canonical структура
+совпадает с оригиналом после такой же адресной замены `a:t`. Остальные части,
+неизвестные вложения, `.rels`, master/layout/theme остаются побайтово прежними.
+Отдельный group fixture покрывает несколько runs, bold/italic, гиперссылку,
+абзацы, соседнюю фигуру и два цикла без изменения нативной топологии.
+
+Контрольный digest создаётся Formats через официальный codec Model. Маскируются
+только поддержанные текстовые слоты; исходные payload, геометрия, стили, ссылки,
+notes и состав остаются в проверке свежести. Неподдержанные правки не используют
+старый source XML и не переключаются незаметно на rebuild. Проверены атомарные
+отказы, отмена внутри ZIP-записи и признаки подписи по пути, content type и reltype.
+ZIP storage metadata остаётся явным LOSS, подписи не объявляются проверенными.
+
+Независимая приёмка PowerPoint 16: к исходному собственному примеру применена
+та же правка нативным TextRange, а результат Formats открыт отдельно. Экспорт
+обоих вариантов в PDF даёт одинаковые страницы при 108 dpi отдельно в MuPDF
+и Poppler; изображение результата просмотрено. Повторная текстовая правка
+в PowerPoint сохраняется в PPTX и импортируется обратно. Это конечный source-text
+профиль одного native acceptance case, не приёмка всех анимаций, медиа или fields.
+Обычный export и прочие функции Model по-прежнему проверяются отдельным корпусом.
+[Проверки и границы source-text профиля](pptx-source-text-evidence.json).
+
+## PPTX: исходные frames и правки Box
+
+`tests/writers/test_pptx_source_geometry.py` сравнивает source export с отдельными
+PPTX, чьи локальные `off/ext/rot` изменены через нативное XML API `python-pptx`.
+Фигуры, изображения и свободные коннекторы проходят два JSON/PPTX-цикла в обычных,
+повёрнутых, отражённых, вложенных и неравномерно масштабированных группах.
+У таблицы проверено перемещение; resize требует отдельной grid/row проекции.
+Canonical slide XML совпадает с адресно изменённым оригиналом, остальные file
+payloads побайтово прежние; совместная правка текста не перезаписывает геометрию.
+
+Матрицы reader/source writer вынесены без изменения вычислений в общий Formats
+модуль. Обратная проекция сохраняет исходные parent frames и проверяет достижимость
+рамки в пределах одного EMU на слайде. Singular/45° resize, невозможные local
+extents, связанный connector и превышение точности отклоняются атомарно.
+Bindings v2 маскируют подтверждённые Box frames при проверке digest; v1 JSON
+сохраняет прежнюю текстовую семантику. XML DOM разделяется между проекциями;
+общий nodes/depth/characters budget проверяется перед DOM, включая comments/PI.
+Отдельный тест изменённого Model payload подтверждает, что это бюджет XML-парсера,
+а не только подсчёт DTO Model.
+
+Независимый PowerPoint 16 меняет Left/Top/Width/Height/Rotation дочерней фигуры
+в повёрнутой неравномерно масштабированной группе. Формат получает целевой Box
+из этого реального результата и применяет его к исходному пакету. Погрешности
+координат меньше 1 EMU, угол совпадает. Poppler 108 dpi дал одинаковые pixels;
+MuPDF — 9 изменённых RGB channels (3 pixels), максимум 10/255 на контуре.
+Изображение просмотрено; полного pixel identity для геометрии не заявляется.
+
+PowerPoint нормализовал более сложную вложенную отражённую группу. Её целевой
+Box нельзя воспроизвести в сохранённых исходных frames с требуемой точностью:
+профиль явно отказывает, regression case удерживает прежний файл и Model.
+Это остаётся работой по управляемой перестройке parent frames, а не принятой
+универсальной геометрией. Вспомогательный native script —
+`tools/pptx_geometry_powerpoint_acceptance.ps1` (reference/render stages).
+[Измерения, проверки и ограничения](pptx-source-geometry-evidence.json).
+
+## PPTX: cell text и заполнение пустой ячейки
+
+`tests/writers/test_pptx_source_cells.py` использует собственную таблицу с merge
+2×2, оформленными runs, ссылкой, line break, пустым средним абзацем, отдельным
+caret style пустой ячейки и неизвестным бинарным соседом в ZIP. Правки проходят
+два JSON/PPTX-цикла вместе с перемещением таблицы. Проверяются все неизменённые
+file bytes, grid, row heights, merge attrs, tcPr, font/link и соседние объекты.
+Plain text в существующем пустом абзаце наследует native endParaRPr, не удаляя
+его; новый style/link требует отдельной проекции. Приняты физические origin cells,
+а продолжения не получают bindings. Row/column hints внутри properties Formats
+помогают отличить текстовые правки от перестановки ячеек.
+
+Отдельные отрицательные случаи: скрытое продолжение merge, перестановки,
+изменение span/fill, новый стиль, неподдержанные control characters и сломанная
+прямоугольная топология. Отмена останавливает работу до следующей ячейки,
+сохраняя старый файл и Model. Старые v1/v2 snapshots удерживают прежние права
+редактирования и не получают cell edits из-за одной смены версии библиотеки.
+
+`tools/pptx_cells_powerpoint_acceptance.ps1` независимо заменяет текст merged
+origin и оформленного run и заполняет пустую ячейку в PowerPoint 16. Экспорт
+native reference и результата Formats совпадает по всем pixels при 108 dpi
+отдельно в MuPDF и Poppler; размер нового текста 23 pt подтверждён приложением,
+страница просмотрена. Исходник неизменён. Это конечная приёмка cell-text профиля;
+полный reflow и логическая нормализация merge для межформатных маршрутов открыты.
+[Проверки и ограничения](pptx-source-cells-evidence.json).
+
+## PDF: общий outline и нативные закладки
+
+`tests/writers/test_pdf_outline.py` создаёт собственный PDF с nested entries,
+page/URI/unknown destinations, точками, zoom и bold. Два PDF → JSON → PDF цикла
+сравнивают исходную иерархию, номера страниц и destination points для 0/90/180/270
+градусов, с crop и без него. Исходник и модель не меняются. Body paragraph anchor
+проверяется на реально следующей странице; удаление не оставляет bookmarks.
+Прежний JSON мигрирует один раз, сохраняет native raw данные и не восстанавливает
+явно удалённый outline. Минимальный установленный pdf-rich профиль проверяет
+настоящие закладки без дополнительных движков.
+
+## PDF: отдельные MediaBox/CropBox
+
+`tests/writers/test_pdf_page_geometry.py` создаёт собственный растровый документ
+с нулевым, положительным и отрицательным native MediaBox origin, crop и всеми
+четырьмя поворотами. Два PDF → JSON → PDF цикла сравнивают MediaBox, CropBox,
+viewport rect, rotation и все RGB bytes; источник и модель не меняются.
+Typed crop/rotation edits сравниваются с независимо изменённым native PDF.
+Удалённая декларация не восстанавливает старые области/поворот. Layout links
+сохраняют native rectangles и internal destinations при переносе; unknown null
+outline points остаются unknown вместо NaN или произвольной точки backend-а.
+Минимальный installed pdf-rich профиль проверяет общий тип и реальные crop cycles.
+
+## PDF → DOCX: обрезка, Form XObject и группы
+
+`tests/writers/test_pdf_docx_graphics.py` создаёт независимые PDF с вложенными
+Form, разными обрезками общего ресурса, поворотами страницы/формы, отражением,
+кубическими контурами, even-odd отверстием и прозрачными пересечениями внутри
+нейтральной isolated/nonisolated группы. Проверяются исходные RGBA bytes,
+границы scope, два DOCX/JSON цикла и неизменность входной Model. Растр остаётся
+исходным PNG внутри SVG; векторная обрезка не получает растрового представления.
+
+Негативные примеры: knockout, nonseparable blend, пересекающая текст
+обрезка, stencil, preblended `/Matte`, повреждённые ссылки/команды/bounds/alpha
+и лимит вложенности. Текст внутри полностью содержащего его clip Form остаётся
+редактируемым; внешний текст не наследует clip формы.
+Отказ сохраняет прежний файл; source PDF удерживается при неизвестной композиции.
+Нативный PDF writer продолжает отклонять неподдержанный не-прямоугольный clip.
+
+Сравнение с исходными PDF выполняется в Microsoft Word 16.0, build 16.0.17932,
+с независимым Poppler 96 dpi. Девять примеров частного проектора включают растр/вектор,
+отверстие, reflected Form и обе нейтральные группы. Два нативных DOCX/JSON цикла
+дают попиксельно одинаковые страницы Word. Это проверка конечного профиля,
+а не утверждение о попиксельном равенстве разных движков PDF и Word.
+Границы кубических контуров отличаются от заданного оригинала до 0,041 pt.
+Проверка нативного изменения crop/position использует сохранение встроенного
+шрифта в Word: обе полные страницы двух циклов совпадают с нативно изменённым
+оригиналом. Удаление программы шрифта проверяется как отдельное ограничение.
+
+![Оригинальные PDF слева и Word справа: обрезка, отверстия, формы и группы](../assets/pdf-docx-clips.png)
+
+Это визуальная приёмка проектора. Строгий маршрут дополнительно требует сохранения
+нативной структуры групп: одинаковые картинки без независимо редактируемой группы,
+её clip и isolation получают LOSS и отказ. Нейтральная группа сама по себе
+не означает отсутствия этих ограничений.
+
+## Общая прозрачность и typed scopes
+
+`tests/writers/test_pdf_group_scopes.py` проверяет официальный scene API SDK:
+исходный полный Unicode, clips/occurrences, JSON, правку opacity, удаление
+group/clip/scene без возврата legacy, порядок children, лимиты и атомарный отказ.
+48 сочетаний двенадцати separable режимов, isolated/nonisolated и двух alpha фона
+проверяют цвета пяти областей независимых PDF, созданных PDF-операторами.
+MuPDF сравнивает исходный PDF с аналитической SVG-проекцией с допуском 3/255.
+Дополнительная проверка всех 48 исходников Poppler даёт максимум 2/255.
+Проверяется вложенная общая opacity; SVG не содержит filters, image и group opacity.
+Отдельные оригиналы отличают технологический запас `bboxlog` от реального
+контура глифа: clip внутри запаса допускается, пересечение контура меньше чем
+на 1 pt отказывает. Используются измерения нативного glyph API, без вычитания
+предполагаемого запаса. Повторный PDF/JSON экспорт AcroForm остаётся отдельным
+прежним профилем и проходит без ложной mixed scope сцены.
+
+Word 16.0: opacity .5, Multiply, Screen, nonisolated фон и снятый typed clip
+проверены относительно исходных PDF через Poppler 96 dpi. Цвета внутренних
+областей отличаются до 2/255, два нативных DOCX/JSON цикла дают попиксельно
+одинаковые страницы. Печатные PDF Word не содержат растровых image XObjects.
+Внешний текст и строка после удаления clip остаются редактируемыми.
+Исходные typed группы сохраняются в Model; DOCX-проекция — один векторный SVG,
+без нативного управления отдельными детьми/композицией группы. Обычный экспорт
+и строгий конвертер помечают потерю структуры как LOSS и отказывают до публикации.
+Проверки Word/SVG относятся к экспериментальному частному представлению,
+а не к принятому маршруту без потерь.
+
+Нативная `wpg:wgp` с двумя отдельными фигурами также проверена в Word:
+`a:effectDag/a:alphaModFix amt="50000"` применяет общую opacity, но печатный
+PDF содержит image XObject вместо векторной группы. Вариант с вложенным
+`a:cont` даёт тот же результат; контрольная группа без эффекта остаётся векторной.
+Наличие эффекта в схеме DrawingML не подтверждает векторный вывод Word.
+Такое представление не принимается как маршрут без потерь качества.
+
+Knockout не принят: при красном opaque и синем alpha=.5 прямоугольниках,
+`/I true /K true /CS /DeviceRGB` MuPDF даёт RGB (116,109,203) в пересечении,
+Poppler — (127,0,128), PDFium — (128,0,127). Совпадение с одним движком
+недостаточно. Смысл knockout сохраняется в SDK/JSON, DOCX отказывает.
+Частичная обрезка глифов также отказывает: Word игнорирует правую границу
+`horzOverflow="clip"`; поворот текстового блока может приводить к растеризации.
+Скрытая часть текста не удаляется и не появляется в успешном экспорте без
+явного снятия typed clip. Эти ограничения остаются в OF17.
+
+## Редактируемые группы и цветовое пространство
+
+`tests/writers/test_docx_vector_groups.py` использует официальный Model 0.16.0,
+конечный WPC/WPG профиль и независимый XML из документа, созданного непосредственно
+в Microsoft Word. `tests/corpus/native/word-canvas-group.xml` содержит только
+собственные геометрию и заливки; личные метаданные и пакет шаблона не включены.
+Проверяются фон полотна, имена и порядок детей, собственная alpha, правка цвета,
+перенос, удаление и два JSON/DOCX цикла. Активная сцена не подменяется старым SVG;
+общая opacity/ICC/unknown, непроверенные эффекты/расширения и глубокая вложенность
+отклоняются. PDF-тест допускает нативную группу только после явных typed правок,
+снимающих исходные clip/общую opacity, и не выдаёт их за сохранение исходного PDF.
+
+В Word 16.0 полотно имеет Shape.Type=20; группа доступна отдельно как
+CanvasItems.Item(...).Type=6 с двумя GroupItems. Контроль `wpg:grpSp` сохранял
+XML, но не отдельную промежуточную группу в интерфейсе. Проверены: собственная
+сцена адаптера, независимый Word-оригинал и документ после нативного переноса
+группы/ребёнка и перекрашивания ребёнка. Два цикла каждого из трёх документов
+дали попиксельно одинаковые страницы Word при независимом рендере MuPDF и
+Poppler 144 dpi. Печатные PDF не содержат image XObjects. Внутренние цвета
+контрольных областей совпали с независимыми PDF-примитивами. Эти результаты
+подтверждают только описанный профиль, а не общую прозрачность или Form clipping.
+Нативную структуру, геометрию и заливки сравнивает
+`tools/docx_group_acceptance.ps1 -FixtureRoot .opendoc-formats/native-groups`:
+`source.docx`, `cycle-0.docx`, `cycle-1.docx` создаются из `scene_document()`
+и двух публичных JSON/DOCX циклов. Параметр `-Names` позволяет проверить
+независимый Word-оригинал или нативно изменённый документ с его циклами.
+Скрипт открывает только собственные fixtures, не меняет их и печатает PDF;
+отсутствие image XObjects и сравнение страниц проверяются отдельным PDF renderer.
+
+Штатная `Group.Fill.Transparency=.5` также не заменяет общий эффект: Word создаёт
+групповую заливку `a:solidFill` и переводит детей на `a:grpFill`, теряя их
+разные цвета/собственную alpha. В контрольном пересечении получается RGB
+(57,54,38), а не исходная композиция. Векторный вывод такого варианта не
+означает сохранения качества; этот обход в writer не применяется.
+
+`tests/writers/test_pdf_group_color_space.py` проверяет закрытый C-GRAPHICS-02:
+официальную декларацию, два JSON-цикла, правку/удаление и unknown/Gray/CMYK.
+Старое нативное свидетельство RGB не восстанавливает удалённую декларацию.
+Унаследованное PDF-пространство разрешает Formats в явно объявленном RGB device
+профиле; отсутствующая декларация старого документа остаётся неизвестной.
+
+## Нативные списки TeX
+
+`tests/writers/test_latex_lists.py` проверяет C-LIST-02 Model 0.17.0:
+продолжения без нового номера, пустой родитель, вложенные списки, начало и
+перезапуск нумерации, выход из списка, правку и удаление официальной роли.
+Два JSON/TeX цикла сохраняют Anchor, ListItem и текст; Office imports запрещены
+в контрольном тесте. Несогласованные counters/metadata, custom labels и
+непредставимое расположение связей приводят к атомарному отказу.
+
+`tests/writers/test_latex_list_acceptance.py` независимо компилирует три собственных
+оригинала и по два нативных цикла через `pdflatex -no-shell-escape`.
+MuPDF сравнивает страницы попиксельно при 108 dpi и проверяет отсутствие image
+XObjects. В набор входят продолжения, пустой родитель и пустой листовой пункт,
+перезапуск счётчика и смешанная вложенность. Эта проверка включена в Linux CI
+Python 3.12; TeX distribution не является runtime-зависимостью.
+Она подтверждает только конечный профиль, а не произвольные macros, labels,
+формулы, таблицы или компоновку. Другие экспортеры явно сообщают LOSS общей
+структуры списка; quality gate может отклонить публикацию такого результата.
+
+## Нативные формулы TeX
+
+`tests/writers/test_latex_math.py` проверяет точные value/format/display/fallback,
+text/formula порядок и paragraph boundaries, формулы внутри пунктов/продолжений
+списка, отдельные Formula blocks, правку режима и выражения, удаление, два JSON/TeX цикла и запрет Office
+imports. Неподдержанные команды/форматы/geometry, numbered environments,
+непривязанные и повреждённые metadata, попытки file/shell/macro/`^^` синтаксиса
+отклоняются до публикации. Fallback — inert metadata, не подмена выражения.
+
+`tests/writers/test_latex_math_acceptance.py` компилирует четыре собственных оригинала
+и по два JSON/TeX цикла через pdflatex с отключённым shell escape. Дроби, корни,
+суммы/интегралы, матрицы, cases/aligned, оба display delimiter и формулы в списках
+дают попиксельно одинаковые страницы MuPDF при 108 dpi; image XObjects отсутствуют.
+Проверка работает в том же Linux CI профиле, что и списки; TeX distribution
+не включается в пакет. MathML/OMML, FormulaTree, numbered equation/align,
+произвольные macros/Unicode и moving arguments вне описанного профиля заголовков
+не входят в принятую проекцию.
+
+`tests/writers/test_latex_heading_acceptance.py` проверяет inline math в Heading 1–5,
+numbered/starred команды, дроби/корни/греческие символы и матрицу. Для каждого
+original и двух JSON/TeX циклов отдельная обёртка добавляет оглавление и выполняет
+три прохода pdflatex, проверяя moving arguments через auxiliary files.
+Страницы MuPDF при 108 dpi совпадают попиксельно без image XObjects.
+Структурные тесты подтверждают правку/удаление Heading и значения формулы,
+сохранение fallback и отказ для display в заголовке без Office imports.
+
+## Предупреждения OCR в PDF
+
+`tests/readers/test_pdf_model_ocr_diagnostics.py` использует собственный двухстраничный
+PDF и внедрённые провайдеры. Structure/scan сохраняют warnings результата с блоками
+и без блоков в metadata, публичном ImportResult и JSON; исходные bytes неизменны.
+Отдельно проверены отсутствующий/недоступный backend, исключение и пустой список
+page results в богатом и текстовом маршрутах. Fast не инициализирует OCR и не
+добавляет ложное предупреждение о его отсутствии. Эти проверки подтверждают
+типизированные коды отсутствия/сбоя/пустого ответа OCR и provider warnings,
+reason, OPAQUE-состояние и provenance страниц. Одинаковые сообщения разных страниц
+остаются разными occurrences; лишнему OCR page result не приписывается выдуманная
+страница источника. JSON сохраняет ledger и коды; явно связанный legacy warning
+не дублируется в публичном отчёте. Проверена отмена после первой записи ledger.
+Превышение лимита OCR провайдера в structure/scan не превращается в best-effort
+warning: прямые rich/text readers сохраняют исходный тип исключения, общий
+ArtifactLimitError в реестре даёт `import.document-limit` с адресом источника.
+Полнота распознавания и типизация всех остальных PDF-потерь этим не объявляются.
+
+## Отмена нативного импорта PDF
+
+`tests/readers/test_pdf_resource_diagnostics.py` использует собственные страницы
+с повторными raster xref и вектором, созданные только PyMuPDF. Контролируемое
+отсутствие bytes даёт четыре разных LOST occurrences; сбой анализа drawings
+даёт OPAQUE с адресом страницы. Текст ячейки сохраняется при неподтверждённой
+геометрии с адресом Model и native row/column. Проверены JSON, общий порядок
+warnings с OCR, неизменность source bytes и повторное обычное чтение. Лимиты
+и отмена в vector backend не становятся best-effort предупреждением; реконструкция
+ячеек и связывание warning records проверяют отмену до следующего элемента.
+Строгий DOCX-экспорт известной потери изображения отказывает до публикации и
+сохраняет прежнее назначение.
+
+`tests/readers/test_pdf_table_diagnostics.py` использует собственный двухстраничный
+PDF и контролируемые отказы нативного поиска таблиц. Обе стратегии имеют отдельные
+записи с адресом страницы, причиной, provenance и связью с исходным warning.
+Геометрический enrichment, rich import и JSON сохраняют эти записи. Проверены
+общий ledger с OCR без смещения индексов, типизированные лимиты без попытки
+следующей стратегии и отмена после backend до обхода найденных таблиц.
+Исходные bytes неизменны, повторное обычное чтение успешно; состояние OPAQUE
+не объявляет наличие или отсутствие исходных таблиц.
+
+`tests/readers/test_pdf_import_cancellation.py` проверяет сигнал через геометрию,
+растр/вектор, enrichment, шрифты, paint, interactions и scopes. Отмена после native
+text extraction не начинает tables/следующую страницу; между table strategies
+второй backend call не запускается. Отмена при удалении appearances в несохраняемой
+копии оставляет исходные notes и bytes неизменными. Источник повторно импортируется
+после отмены, частичная Model не выдаётся.
+
+OCR cancellation не превращается в warning, включая отдельное исключение провайдера.
+Проверены direct reader, текстовый scenario, завершение history stage и поздняя
+отмена при Model validation. Публичный реестр возвращает import.cancelled;
+прямой reader — OperationCancelledError. Неактивный callback даёт полный
+идентичный JSON собственной модели с текстом, растром, вектором и annotation.
+Контрольные точки кооперативные: одиночный сторонний вызов не прерывается.
+
+## Отмена нативного импорта HTML и EPUB
+
+`tests/readers/test_web_import_cancellation.py` использует собственные HTML
+и трёхглавный EPUB с CSS, MathML и таблицей. Проверены отмена после разбора
+первой главы и между блоками, остановка чтения ZIP перед следующей главой,
+локальных изображений перед следующим ресурсом и CSS перед обработкой правил.
+Длинный сканер CSS EPUB реагирует на сигнал внутри цикла. Поздний сигнал
+при привязке диагностики также отбрасывает модель.
+
+Реестр возвращает `import.cancelled` без частичного документа; прямые readers
+и package reader выбрасывают `OperationCancelledError`. Архив повторно
+открывается, исходные bytes не меняются, повторный импорт успешен.
+Неактивный callback сохраняет полный JSON обоих форматов. Проверки не
+доказывают прерываемость одиночного стороннего вызова или жёсткий бюджет памяти.
+
+## Отмена нативного импорта DOCX и PPTX
+
+`tests/readers/test_office_import_cancellation.py` использует собственные DOCX
+со стилями, runs, вложенной/объединённой таблицей, изображениями и колонтитулами
+и трёхслайдный PPTX с группами, таблицей, изображениями, диаграммой и notes.
+Контрольные события после первого обработанного объекта проверяют остановку
+между runs, ячейками, стилями, ресурсами, фигурами и chart caches. Отмена после
+открытия backend не начинает построение модели; поздняя отмена при диагностике
+не выдаёт частичный документ. Отмена при чтении темы не заменяется default palette.
+
+Реестр возвращает `import.cancelled`; богатые и текстовые direct readers —
+`OperationCancelledError`. ZIP проходит проверку целостности, source bytes
+сохраняются, повторный импорт успешен. Неактивный callback даёт идентичный полный
+JSON, включая оформление, ресурсы, package и diagnostics. Два параллельных импорта
+с независимыми сигналами и вложенный scope с исключением проверяют восстановление
+контекста Formats. Никакие runtime-поля в Model не добавляются.
+`tools/package_smoke.py --all-formats` дополнительно проверяет отмену DOCX/PPTX
+и повторное чтение установленного wheel вне checkout.
+
+`tests/readers/test_docx_heading_cancellation.py` проверяет отмену внутри
+наследования нативного стиля заголовка: следующий предок не разрешается,
+исходный DOCX и выходной узел не меняются, контекст восстанавливается.
+
+## Отмена нативного экспорта DOCX и PPTX
+
+Потоковый профиль PDF-модели дополнительно принят на собственном crop 3×3 → 2×2,
+двух DOCX/JSON циклах и нативной правке Microsoft Word. Проверяются точные
+ячейки, ширины и границы, source locations шрифтов, карта исходных линий,
+неизменность модели и назначения при отказе/отмене. Установленный wheel
+проверяет JSON → flow без PDF-движков; [границы и результаты](pdf-word-flow-contract.md#приёмка).
+
+`tests/writers/test_docx_flow_borders.py` проверяет разные цвета/толщины общих
+и поклеточных границ, обычные и merged tables, crops и два JSON/DOCX-цикла.
+Подмена записанных XML-границ, в том числе continuation, отклоняется до замены
+назначения. Переход стиля внутри одной логической стороны не усредняется;
+квота сравнений и отмена проверяются отдельно.
+`tools/docx_flow_cell_word_acceptance.ps1` подтверждает все четыре стороны каждой
+логической ячейки в Word, ширины, нативную правку и экспорт PDF для двух случаев.
+Шесть PDF стабильны внутри MuPDF/Poppler при 108 dpi; изображения просмотрены.
+`tools/docx_flow_smoke.py --minimal --cell-borders` проходит из установленного
+wheel без PDF/fontTools/Pillow/NumPy; gate включён в локальные изменения CI.
+[План, наблюдения Word и hashes](docx-flow-cell-borders-evidence.json).
+
+`tests/writers/test_docx_source_grid.py` проверяет source-grid snapshot и скрытую
+закладку таблицы, нормализацию 3→2 столбца с полностью изменённым текстом,
+два JSON/DOCX-цикла и отсутствие накопленных custom XML. Изменённые границы,
+удалённая ячейка, missing/duplicate/outside/reversed bookmark, отсутствующая или
+неоднозначная OPC-связь, неизвестная версия и повреждённые spans не восстанавливают
+исходную сетку. Подмена snapshot, relationship или bookmark до публикации сохраняет
+прежний файл и Model. XML byte budget/DTD и unknown profile проверяются отдельно.
+Реальный Word 16.0 нормализует таблицу и заменяет текст; импорт восстанавливает
+исходную identity по binding, затем проходит ещё два JSON/DOCX-цикла. Три Word PDF
+стабильны внутри MuPDF и Poppler при 108 dpi. Установленный минимальный DOCX gate
+`tools/docx_flow_merge_smoke.py --crop top` проверяет snapshot без PDF/fontTools/Pillow.
+[Доказательства и границы](docx-source-grid-evidence.json).
+
+`tests/writers/test_office_export_cancellation.py` использует собственные Office
+источники из проверки импорта. Сигнал после первого native объекта останавливает
+запись текста, ячеек, изображений, групп, данных диаграмм, embedding и package graph.
+Проверены прямые writers и публичный реестр; отмена после сохранения ZIP и после
+копирования `.partial` оставляет прежнее назначение целым, промежуточные файлы
+удаляются. Повторный экспорт после отмены успешен, исходный JSON не изменяется.
+
+Неактивный callback сохраняет полный JSON повторного импорта по сравнению с
+обычным экспортом в тот же путь. Сигнал после успешного прямого commit возвращает
+успешный отчёт, не заявляя rollback опубликованных bytes. При работе через реестр
+публикация дополнительно отделена staging и его последними проверками.
+Установленный wheel проверяется также через `tools/package_smoke.py --all-formats`:
+отмена внутри DOCX/PPTX writers сохраняет хеш готового файла назначения.
+`tests/support/test_ooxml_package.py` дополнительно проверяет отмену после
+создания первой части OOXML в DOCX: следующая часть не создаётся,
+исходный граф и связи корня неизменны; повторное восстановление успешно.
+
+`tests/writers/test_office_nested_cancellation.py` проверяет сигнал внутри одного
+объекта: сетки DOCX, физических продолжений объединённой ячейки, векторной сцены,
+сбора одной группы PPTX и одного набора серий комбинированной диаграммы.
+Прямые writers и реестр останавливаются до следующего элемента; исходный JSON
+и прежний файл назначения неизменны, `.partial` удалён, повторный экспорт читается.
+Обычные регрессии таблиц, заголовков, групп и комбинированных диаграмм проверяют
+сохранение структуры без активного сигнала.
+
+## Отмена HTML, EPUB и TeX export
+
+`tests/writers/test_web_tex_export_cancellation.py` использует собственную
+модель с тремя секциями, таблицами, MathML и SVG, а также нативные TeX списки
+с формулами и отдельный табличный DOCX-мост. Прямые writers и реестр проверяются
+с сигналом после первого объекта: HTML абзаца/изображения и verification,
+XHTML start tag/image, EPUB XML, TeX символа/токенизации/маркера списка
+и bridge paragraph. Следующий такой объект не обрабатывается.
+
+Проверены отмена после `.partial`, удаление временного файла, сохранение прежнего
+назначения и JSON модели, повторный экспорт и восстановление контекста. Сигнал
+после успешного прямого commit не даёт ложный отказ. При неактивном callback
+HTML/TeX совпадают побайтно; содержимое каждого ZIP member EPUB совпадает при
+фиксированном времени OPF metadata. ZIP timestamps не выдаются за format semantics.
+
+## Отмена подготовки PDF → DOCX
+
+`tests/writers/test_pdf_docx_preparation_cancellation.py` использует собственные
+двухстраничные PDF: текстовые колонки, merged table, repeated image Form, curved
+clip, neutral/opacity groups и многокомандный вектор. Без сигнала проверяется
+полный JSON частного Word view и исходной модели. Отмена после первого объекта
+проверена для прямой подготовки, direct writer и реестра: lines/baselines,
+tables/borders, image transform, clip commands, SVG, native groups и compositor.
+Для native group используется принятый профиль с явной правкой typed clip;
+исходные Form clips не удаляются неявно. Сценарий общей opacity проверяет
+подготовку и отмену, не отменяя последующий отказ quality gate.
+
+Проверены source bytes/JSON, прежнее назначение, отсутствие `.partial`, повторная
+подготовка и восстановление контекста. Отмена font provider не превращается в
+warning. Отмена между командами вектора сохраняет тип ошибки и закрывает native
+document. Поздний сигнал после Model validation отбрасывает подготовленное
+представление. Converter наследует import signal при отсутствии export options.
+`tools/pdf_profile_smoke.py pdf` проверяет ту же подготовку и отмену в установленном
+минимальном PDF-профиле без DOCX/Pillow/lxml и альтернативных PDF-движков.
+
+## Отмена нативного TXT
+
+`tests/test_txt_cancellation.py` проверяет отказ между создаваемыми абзацами,
+после нормализации, внутри вложенной таблицы, после проверки кодирования
+и после записи `.partial`. Проверены public/direct API, восстановление контекста,
+повторный запуск, неизменность source bytes/Model и прежнего назначения.
+Неактивный callback сохраняет полный JSON и исходные UTF-8/UTF-16/CP1251 bytes
+с BOM и смешанными переводами строк; кодировочные ошибки не заменяются отменой.
+
+## Нативные текстовые индексы TeX
+
+`tests/writers/test_latex_text_scripts.py` проверяет общие superscript/subscript
+в тексте, списках и заголовках, два JSON/TeX цикла, изменение/снятие роли,
+разбиение run внутри одного scope и запрет Office imports. Вложенные индексы,
+underline ordering, пустые/многоабзацные аргументы и nested emphasis имеют located
+opaque records; unsupported styles/objects и некорректные scope hints отказывают
+до публикации и сохраняют назначение. Флаг из native hint не восстанавливает
+снятый/изменённый общий стиль.
+
+`tests/writers/test_latex_text_scripts_acceptance.py` компилирует пять собственных
+оригиналов и по два JSON/TeX цикла. Каждый вариант проходит три pdflatex запуска
+с оглавлением и `-no-shell-escape`; страницы MuPDF при 108 dpi совпадают попиксельно
+без image XObjects. Проверены font declarations/normalfont внутри индексов,
+соседние отдельные scopes и отличия italic correction между itshape и textit.
+`tools/package_smoke.py` подтверждает маршрут установленного базового wheel
+без Office и дополнительных зависимостей.
+
+
+## Логическая сетка объединённых PPTX-таблиц
+
+`tests/writers/test_pptx_logical_grid.py` проверяет собственную таблицу 5×4:
+горизонтальное и прямоугольное объединения, полностью перекрытую строку,
+соседние ячейки, неравные ширины и явную границу физического продолжения.
+Два JSON/PPTX rebuild цикла сохраняют логические origins/spans и физическое
+оформление. DOCX получает четыре grid columns, `gridSpan`/`vMerge` и ширины;
+HTML — ячейки без дубликатов и правильные `rowspan`/`colspan`.
+
+Проверяются source edits после горизонтальных/вертикальных объединений,
+совместимость с физическими v3 snapshots и отказ от guessed bindings при
+неподтверждённых merge flags или скрытом continuation text. Без правок source
+profile сохраняет все payload даже такого неподтверждённого исходника.
+После смены span/владельца оформление продолжения не переносится на чужую ячейку;
+выдаётся явный LOSS. Бюджет общей сетки проверяется до публикации результата.
+
+`tools/pptx_cells_powerpoint_acceptance.ps1` проверяет source edits после импорта
+в логическую сетку на собственном merged/styled/empty примере. Независимые правки
+PowerPoint 16 дают одинаковые RGB pixels при 108 dpi в MuPDF и Poppler;
+вставленный текст сохраняет 23 pt, исходник неизменен. Это конечный source-профиль;
+полное совпадение layout/themes при rebuild не заявляется.
+Доказательства и границы: [pptx-logical-grid-evidence.json](pptx-logical-grid-evidence.json).
+
+
+## Нативные размеры таблиц PPTX
+
+`tests/writers/test_pptx_source_table_grid.py` проверяет bindings v4: изменение
+только Box с пропорциональной сеткой, явное перераспределение points/twips,
+согласованное изменение Box и размеров, два JSON/PPTX цикла и общую DOM-проекцию
+с правкой текста. Канонический slide XML сравнивается с независимо изменёнными
+колонками/строками `python-pptx`; остальные ZIP payload остаются точными.
+Дробное изменение на один EMU распределяется без расхождения итоговых сумм.
+Отрицательные проверки охватывают несовпадающие суммы, нулевые/неконечные размеры,
+разногласие points/twips, поворот, суб-EMU сетку, изменение числа колонок,
+неподтверждённый исходный extent, прежние bindings и отмену до публикации.
+
+`tools/pptx_table_grid_powerpoint_acceptance.ps1` независимо изменяет собственную
+таблицу 5×4 в PowerPoint 16: общий размер 600×360 pt и перераспределение внутри
+500×300 pt. В обоих случаях сетка/рамка совпадают в EMU, RGB pages при 108 dpi
+попиксельно совпадают в MuPDF и Poppler; исходник не изменён. Результаты осмотрены.
+Это проверка двух конечных source-сценариев, не всех вариантов автоподбора текста,
+минимальной высоты, групповой нормализации и диаграмм.
+
+`tools/pptx_package_smoke.py` проверяет resize и cell edits вместе в установленном
+PPTX-only wheel без DOCX/PDF/fontTools extras, затем выполняет rebuild повторно
+импортированного результата. Подробности: [pptx-table-grid-evidence.json](pptx-table-grid-evidence.json).
+
+
+## Нативная рамка диаграмм PPTX
+
+`tests/writers/test_pptx_source_chart_frame.py` проверяет bindings v5 на собственных
+column, scatter, pie, 3D и manual-layout диаграммах. Два JSON/PPTX цикла меняют
+рамку слайда; chart XML, встроенная XLSX, связи, темы и соседние части сохраняются
+побайтно. Slide XML сравнивается с независимой правкой рамки через python-pptx.
+Проверяются прежние bindings v2/v3/v4, отказ при правке данных/title/rotation,
+неподтверждённые связи/content type/root/URI, XML node budget и отмена до изменения
+геометрии. Эти проверки не выдают opaque содержимое за полную семантическую модель.
+
+`tools/pptx_chart_frame_powerpoint_acceptance.ps1` независимо меняет рамку
+собственных column/manual-layout/3D диаграмм в PowerPoint 16 до 570×340 pt,
+сдвигая её на 10×5 pt. Исходники открываются read-only с отключёнными макросами;
+скрипт закрывает только собственные decks/app и ждёт завершения своего процесса.
+При 108 dpi страницы попиксельно совпадают в MuPDF и Poppler для всех трёх сцен.
+Оба manual-layout/3D результата осмотрены; исходник неизменен, библиотека меняет
+только `ppt/slides/slide1.xml`.
+
+Установленный PPTX-only wheel проверяет chart resize одновременно с текстом,
+таблицей и её размером без DOCX/PDF/fontTools extras. Границы и hashes:
+[pptx-chart-frame-evidence.json](pptx-chart-frame-evidence.json).
+
+
+## Нативная обрезка изображений PPTX
+
+`tests/writers/test_pptx_source_crop.py` проверяет bindings v6: установка/изменение/
+снятие `ImageCrop`, PNG с альфой, SVG с PNG companion, изображение в группе,
+два JSON/PPTX цикла и одновременное изменение рамки. Native media payload,
+неизменённые части, blip effects и XML-структура сохраняются; slide XML сравнивается
+с независимой правкой python-pptx. Проверяются старые bindings v2–v5, tile/nonzero
+fillRect/unknown attributes/linked ambiguity, percent lexemes и explicit zero
+fillRect, отказ при полном удалении изображения из-за native округления и отмена.
+
+Собственный native negative/outside srcRect сохраняется opaque с located
+диагностикой вместо исключения при импорте, проходит официальный JSON и исходный
+source export; guessed semantic crop edit отказывается. Контракт общего DTO —
+[C-IMAGE-RECT-01](image-source-rectangle-contract.md), а native XML и правила
+проекции принадлежат Formats.
+
+`tools/pptx_crop_powerpoint_acceptance.ps1` независимо выполняет crop PNG/SVG
+в PowerPoint 16, сохраняет фиксированную рамку и выводит оба результата в PDF.
+В обоих renderers (MuPDF/Poppler) при 108 dpi все RGB pixels совпадают;
+оригинальные PNG/SVG SHA256 не меняются. Raster/SVG картинки осмотрены.
+Native `-Stage outset` подтверждает source rectangle с отрицательной границей;
+это отдельный неподключённый общий контракт, а не принятый semantic crop.
+Доказательства и границы: [pptx-crop-evidence.json](pptx-crop-evidence.json).
+
+Установленный PPTX-only wheel проверяет crop одновременно с текстом, таблицей,
+её grid resize и chart frame без DOCX/PDF/fontTools extras.
+
+
+## Текст PPTX рядом с полями и разрывами
+
+`tests/writers/test_pptx_structured_text.py` проверяет bindings v7 для фигур,
+фигур в группе и таблиц: обычные runs до/после line break и `a:fld`, ссылки,
+оформление, пустой paragraph, непустой/пустой cached field text и два JSON/PPTX
+цикла. Slide XML сравнивается с независимой правкой python-pptx; исходные
+field/break nodes и остальные payload остаются точными. Protected cache/style,
+разрыв/его роль, перестановка runs, неизвестный native child и отмена не получают
+скрытой правки; snapshots v1/v3/v6 сохраняют прежний scope.
+
+`tools/pptx_structured_text_powerpoint_acceptance.ps1` независимо меняет только
+обычный текст рядом с полем номера слайда и разрывом в textbox и table cell.
+PowerPoint 16 открывает исходник read-only с отключёнными макросами; исходник не
+меняется. При 108 dpi RGB pages попиксельно совпадают в MuPDF и Poppler;
+результат textbox осмотрен. Native field остаётся полем, не обычным текстом.
+Это finite source acceptance, не поддержка редактирования/пересчёта полей в Model.
+
+В установленном PPTX-only wheel общий сценарий проверяет обычные правки вокруг
+field/break одновременно с таблицей, chart frame и image crop, без DOCX/PDF
+extras и без fontTools. Доказательства: [pptx-structured-text-evidence.json](pptx-structured-text-evidence.json).
+
+
+## C-IMAGE-RECT-01: независимая потребительская приёмка
+
+`tools/image_rect_consumer.py` запускается с `-I` в отдельной среде с wheel,
+собранным из неизменённой копии Model draft. Основная среда и dependency pin
+не заменяются. Публичные getter/setter/codec проверяются на собственном native
+PowerPoint signed viewport: два JSON-цикла, detached unknown fields, атомарная
+квота, конфликт с ImageCrop, миграция и сохранение extras/Box/resource bytes.
+
+Prototype writer существует только внутри consumer-скрипта и принимает одну
+собственную картинку; все посторонние изменения Model отказываются. Он переводит
+общие координаты в native srcRect и сохраняет остальные ZIP payload. Независимая
+правка PowerPoint CropLeft=-24pt и prototype дают одинаковые RGB pixels при
+108 dpi в MuPDF/Poppler. Изменяется только slide1.xml; результат осмотрен.
+Это не подключённый production exporter и не утверждение о выпуске Model.
+
+`tests/test_image_source_rect_export.py` проверяет предотвращение молчаливой
+потери нового/непрозрачного carrier старым registry для HTML/DOCX/PPTX/PDF/EPUB/
+TeX/TXT, сохранение публичным JSON и явное объявление custom writer capability.
+Доказательства: [image-source-rect-consumer-evidence.json](image-source-rect-consumer-evidence.json).
+
+
+## Унаследованные placeholders PPTX
+
+`tests/writers/test_pptx_source_placeholders.py` проверяет bindings v8: полную
+рамку из layout или master, исходный поворот 0/17°, изменение позиции/размера/
+поворота и текста, два JSON/PPTX цикла, неизменность всех layout/master/theme
+payload и отсутствие frame materialization при одной текстовой правке.
+Старые v2/v7 не получают новые геометрические правки; неоднозначный idx,
+partial local/layout frame, XML budget и отмена не обходят защиту назначения.
+
+Native PowerPoint 16 показывает для собственного partial local frame с одним
+`a:off` фактические width=0/height=0. Reader не подставляет вместо этого размеры
+макета: исходная форма сохраняется opaque с located диагностикой.
+`tools/pptx_placeholder_powerpoint_acceptance.ps1` независимо меняет конечную
+рамку (54,125,580,310 pt, rotation 9/26°) и текст. При повороте позиция задаётся
+последней, поскольку native resize сохраняет центр повёрнутой формы.
+Для layout/master и обоих углов RGB pages при 108 dpi попиксельно совпадают
+в MuPDF/Poppler. Поворачиваемый master-case осмотрен; исходники неизменны.
+
+Установленный PPTX-only wheel проверяет второй слайд с inherited placeholder
+вместе с text/field/break, table grid, chart frame и crop первого слайда.
+Изменяются только два slide XML; все остальные payload остаются исходными.
+Доказательства и границы: [pptx-placeholder-evidence.json](pptx-placeholder-evidence.json).
+
+
+## Унаследованные объекты master/layout PPTX
+
+`test_pptx_inheritance.py` проверяет собственные оригиналы с обычными фигурами,
+текстом, изображением, группой и одинаковыми object ID в разных физических частях.
+Master/layout материализуются перед локальными объектами; flags showMasterSp/hidden,
+ссылки владельца, точные image bytes и provenance проверяются отдельно. Source replay
+сохраняет исходные XML; правка отдельного shared owner отклоняется атомарно.
+Общий бюджет раскрытия действует до поздней сериализации Model, проверен на 100
+слайдах; отмена и отказ quality_gate сохраняют исходник и прежнее назначение.
+Совокупный PPTX reader/writer набор: 550 passed; новый набор: 23 passed.
+
+[Нативное свидетельство](pptx-inheritance-native-evidence.json) содержит девять
+независимых оригиналов, оба JSON/source и JSON/rebuild цикла, а также изменение
+геометрии относительно такой же правки исходного master в PowerPoint.
+PowerPoint 16 экспортировал полные страницы: 72/72 сравнения точны в MuPDF и
+72/72 в Poppler при 108 dpi. Маски и допуски полного сравнения не применяются.
+Наличие фигуры и текста проверено в исходных страницах; при распознавании контрольного
+цвета допускается только округление канала на 1, отдельное от побайтного сравнения.
+Все исходники неизменны; приватные документы не использованы.
+
+Воспроизведение требует dev/pptx/pdf extras, Poppler и свободный PowerPoint:
+
+```powershell
+python -m tools.pptx_inheritance_acceptance prepare .opendoc-formats/own-inheritance
+./tools/pptx_inheritance_powerpoint_acceptance.ps1 -Root .opendoc-formats/own-inheritance
+./tools/pptx_inheritance_powerpoint_acceptance.ps1 -Root .opendoc-formats/own-inheritance -Stage edit
+python -m tools.pptx_inheritance_acceptance check .opendoc-formats/own-inheritance --output .opendoc-formats/own-inheritance/evidence.json
+```
+
+Без дополнительного `--reference` создаются только восемь встроенных собственных
+примеров. Опция принимает отдельный независимый контрольный PPTX; приложение или
+его runtime для генерации не используются. Полная иерархия master/layout, общие
+source-правки, произвольные эффекты и все варианты AlternateContent не приняты.
+Model DTO/JSON codec не изменены; алгоритмы, source bindings и приёмка принадлежат Formats.

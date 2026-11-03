@@ -1,0 +1,24 @@
+{
+  "scope": "Bound total fragmented-grid discrepancy per full border, rather than granting independent tolerance to every joint",
+  "published": false,
+  "dependencies_changed": false,
+  "model_changed": false,
+  "policy": "Sum absolute joint discrepancies and both endpoint discrepancies; reject if total exceeds 0.0001 pt. Opposite signed errors do not cancel.",
+  "checks": {
+    "transactional": "Two 0.00006 pt gaps or overlaps in owned PDF vector occurrences reject export and preserve destination bytes and Model JSON",
+    "boundary": "Two 0.00004 pt discrepancies accepted; two 0.00006 pt discrepancies rejected for both gap and overlap",
+    "compatibility": "Existing complete-grid, fragment mapping, crop, cancellation and editable Word flow regressions retained",
+    "selected_regression_passed": 104,
+    "validation_composition": "100-case main run plus 4 added endpoint/opposite-sign cases; union exactly matches current selected --collect-only IDs",
+    "regression_scope": "test_docx_flow.py, test_text_flow.py, test_pdf_mapping.py and test_mapping_composition.py; not a full-project run",
+    "strict_mypy_files": 41,
+    "ruff": "passed",
+    "documentation": "strict build passed",
+    "boundary_audit_modules": 217
+  },
+  "boundary": "Formats-only validation; coordinate precision, real stroke geometry and Word rendering behavior unchanged. Larger original corpus and remaining table/graphics profiles remain TODO.",
+  "source_sha256": {
+    "src/opendoc_formats/writers/docx_flow.py": "4b465dfedb2665d6c996a150b881752708b1bc5f3ec4dd461edab48b45880c55",
+    "tests/writers/test_docx_flow.py": "7e15d3918eabd364efe9b7049d6d2addedfb0f7e8dd1cc2ebb2ecfad9f005e04"
+  }
+}

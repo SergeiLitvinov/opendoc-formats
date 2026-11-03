@@ -1,0 +1,817 @@
+{
+  "profile": "current-and-historical-object-stream-collections",
+  "cases": [
+    {
+      "case": "parent",
+      "source_sha256": "7b39294159583095d9ba559763200f2116f246dc41d27ba2f9b66a06d3dc3521",
+      "source_bytes": 935,
+      "declared_links": [
+        {
+          "source_object": 4,
+          "source_generation": 0,
+          "source_offset": 186,
+          "context_xref": 409,
+          "target_object": 5,
+          "target_generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "members_inherited": false,
+          "in_cycle": false,
+          "primary_xref": 409,
+          "target_xref": 409,
+          "target_record_range": {
+            "space": "decoded-xref",
+            "start": 35,
+            "end": 42
+          },
+          "target_offset": 305,
+          "status": "matched-declared-extends"
+        }
+      ],
+      "dag_valid": true,
+      "decoded_containers": 3,
+      "work_items": 33,
+      "current_projection": {
+        "object_stream_current_extends_assessed": true,
+        "object_stream_current_extends_xref": 748,
+        "object_stream_current_extends_roots": [
+          {
+            "object": 100,
+            "object_stream": 4,
+            "index": 0,
+            "context_xref": 748,
+            "reference_xref": 748,
+            "reference_record_range": {
+              "space": "decoded-xref",
+              "start": 0,
+              "end": 7
+            },
+            "ownership_proven": false,
+            "object_resolved": false,
+            "container_xref": 409,
+            "container_record_range": {
+              "space": "decoded-xref",
+              "start": 28,
+              "end": 35
+            },
+            "container_state": "uncompressed",
+            "container_generation": 0,
+            "status": "selected-container",
+            "container_offset": 186
+          }
+        ],
+        "object_stream_current_extends_links": [
+          {
+            "source_object": 4,
+            "source_generation": 0,
+            "source_offset": 186,
+            "context_xref": 748,
+            "target_object": 5,
+            "target_generation": 0,
+            "ownership_proven": false,
+            "object_resolved": false,
+            "members_inherited": false,
+            "in_cycle": false,
+            "primary_xref": 748,
+            "target_xref": 748,
+            "target_record_range": {
+              "space": "decoded-xref",
+              "start": 7,
+              "end": 14
+            },
+            "target_offset": 639,
+            "status": "matched-declared-extends"
+          }
+        ],
+        "object_stream_current_extends_dag_valid": true,
+        "object_stream_current_extends_work_items": 22
+      },
+      "independent_reader": {
+        "name": "pypdf",
+        "version": "6.19.0",
+        "strict": true,
+        "pages": 1,
+        "title": "Own 0"
+      }
+    },
+    {
+      "case": "free",
+      "source_sha256": "be71b797ab168aabe8a074f48093dfc51089bc04c3204a3c14a0dd9e2d8c9866",
+      "source_bytes": 826,
+      "declared_links": [
+        {
+          "source_object": 4,
+          "source_generation": 0,
+          "source_offset": 186,
+          "context_xref": 409,
+          "target_object": 5,
+          "target_generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "members_inherited": false,
+          "in_cycle": false,
+          "primary_xref": 409,
+          "target_xref": 409,
+          "target_record_range": {
+            "space": "decoded-xref",
+            "start": 35,
+            "end": 42
+          },
+          "target_offset": 305,
+          "status": "matched-declared-extends"
+        }
+      ],
+      "dag_valid": true,
+      "decoded_containers": 2,
+      "work_items": 32,
+      "current_projection": {
+        "object_stream_current_extends_assessed": true,
+        "object_stream_current_extends_xref": 639,
+        "object_stream_current_extends_roots": [
+          {
+            "object": 100,
+            "object_stream": 4,
+            "index": 0,
+            "context_xref": 639,
+            "reference_xref": 639,
+            "reference_record_range": {
+              "space": "decoded-xref",
+              "start": 0,
+              "end": 7
+            },
+            "ownership_proven": false,
+            "object_resolved": false,
+            "container_xref": 409,
+            "container_record_range": {
+              "space": "decoded-xref",
+              "start": 28,
+              "end": 35
+            },
+            "container_state": "uncompressed",
+            "container_generation": 0,
+            "status": "selected-container",
+            "container_offset": 186
+          }
+        ],
+        "object_stream_current_extends_links": [
+          {
+            "source_object": 4,
+            "source_generation": 0,
+            "source_offset": 186,
+            "context_xref": 639,
+            "target_object": 5,
+            "target_generation": 0,
+            "ownership_proven": false,
+            "object_resolved": false,
+            "members_inherited": false,
+            "in_cycle": false,
+            "primary_xref": 639,
+            "status": "missing-target"
+          }
+        ],
+        "object_stream_current_extends_dag_valid": null,
+        "object_stream_current_extends_work_items": 21
+      }
+    },
+    {
+      "case": "unknown",
+      "source_sha256": "47af6cb75ab471dfd9d3817734595c558dc6459ba3f90c5acbb98fde48b0d87e",
+      "source_bytes": 826,
+      "declared_links": [
+        {
+          "source_object": 4,
+          "source_generation": 0,
+          "source_offset": 186,
+          "context_xref": 409,
+          "target_object": 5,
+          "target_generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "members_inherited": false,
+          "in_cycle": false,
+          "primary_xref": 409,
+          "target_xref": 409,
+          "target_record_range": {
+            "space": "decoded-xref",
+            "start": 35,
+            "end": 42
+          },
+          "target_offset": 305,
+          "status": "matched-declared-extends"
+        }
+      ],
+      "dag_valid": true,
+      "decoded_containers": 2,
+      "work_items": 32,
+      "current_projection": {
+        "object_stream_current_extends_assessed": true,
+        "object_stream_current_extends_xref": 639,
+        "object_stream_current_extends_roots": [
+          {
+            "object": 100,
+            "object_stream": 4,
+            "index": 0,
+            "context_xref": 639,
+            "reference_xref": 639,
+            "reference_record_range": {
+              "space": "decoded-xref",
+              "start": 0,
+              "end": 7
+            },
+            "ownership_proven": false,
+            "object_resolved": false,
+            "container_xref": 409,
+            "container_record_range": {
+              "space": "decoded-xref",
+              "start": 28,
+              "end": 35
+            },
+            "container_state": "uncompressed",
+            "container_generation": 0,
+            "status": "selected-container",
+            "container_offset": 186
+          }
+        ],
+        "object_stream_current_extends_links": [
+          {
+            "source_object": 4,
+            "source_generation": 0,
+            "source_offset": 186,
+            "context_xref": 639,
+            "target_object": 5,
+            "target_generation": 0,
+            "ownership_proven": false,
+            "object_resolved": false,
+            "members_inherited": false,
+            "in_cycle": false,
+            "primary_xref": 639,
+            "status": "missing-target"
+          }
+        ],
+        "object_stream_current_extends_dag_valid": null,
+        "object_stream_current_extends_work_items": 21
+      }
+    },
+    {
+      "case": "compressed",
+      "source_sha256": "8225df38dc2d8c7bfebdf9200c115134ae323d70cc2630a9a037c73257dcfda7",
+      "source_bytes": 826,
+      "declared_links": [
+        {
+          "source_object": 4,
+          "source_generation": 0,
+          "source_offset": 186,
+          "context_xref": 409,
+          "target_object": 5,
+          "target_generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "members_inherited": false,
+          "in_cycle": false,
+          "primary_xref": 409,
+          "target_xref": 409,
+          "target_record_range": {
+            "space": "decoded-xref",
+            "start": 35,
+            "end": 42
+          },
+          "target_offset": 305,
+          "status": "matched-declared-extends"
+        }
+      ],
+      "dag_valid": true,
+      "decoded_containers": 2,
+      "work_items": 33,
+      "current_projection": {
+        "object_stream_current_extends_assessed": true,
+        "object_stream_current_extends_xref": 639,
+        "object_stream_current_extends_roots": [
+          {
+            "object": 5,
+            "object_stream": 4,
+            "index": 0,
+            "context_xref": 639,
+            "reference_xref": 639,
+            "reference_record_range": {
+              "space": "decoded-xref",
+              "start": 7,
+              "end": 14
+            },
+            "ownership_proven": false,
+            "object_resolved": false,
+            "container_xref": 409,
+            "container_record_range": {
+              "space": "decoded-xref",
+              "start": 28,
+              "end": 35
+            },
+            "container_state": "uncompressed",
+            "container_generation": 0,
+            "status": "selected-container",
+            "container_offset": 186
+          },
+          {
+            "object": 100,
+            "object_stream": 4,
+            "index": 0,
+            "context_xref": 639,
+            "reference_xref": 639,
+            "reference_record_range": {
+              "space": "decoded-xref",
+              "start": 0,
+              "end": 7
+            },
+            "ownership_proven": false,
+            "object_resolved": false,
+            "container_xref": 409,
+            "container_record_range": {
+              "space": "decoded-xref",
+              "start": 28,
+              "end": 35
+            },
+            "container_state": "uncompressed",
+            "container_generation": 0,
+            "status": "selected-container",
+            "container_offset": 186
+          }
+        ],
+        "object_stream_current_extends_links": [
+          {
+            "source_object": 4,
+            "source_generation": 0,
+            "source_offset": 186,
+            "context_xref": 639,
+            "target_object": 5,
+            "target_generation": 0,
+            "ownership_proven": false,
+            "object_resolved": false,
+            "members_inherited": false,
+            "in_cycle": false,
+            "primary_xref": 639,
+            "target_xref": 639,
+            "target_record_range": {
+              "space": "decoded-xref",
+              "start": 7,
+              "end": 14
+            },
+            "status": "target-not-uncompressed"
+          }
+        ],
+        "object_stream_current_extends_dag_valid": null,
+        "object_stream_current_extends_work_items": 22
+      }
+    },
+    {
+      "case": "ordinary",
+      "source_sha256": "d7058a004a99876be3228269289d52a2a553a6b6714472140d0aacc26e6df99d",
+      "source_bytes": 844,
+      "declared_links": [
+        {
+          "source_object": 4,
+          "source_generation": 0,
+          "source_offset": 186,
+          "context_xref": 409,
+          "target_object": 5,
+          "target_generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "members_inherited": false,
+          "in_cycle": false,
+          "primary_xref": 409,
+          "target_xref": 409,
+          "target_record_range": {
+            "space": "decoded-xref",
+            "start": 35,
+            "end": 42
+          },
+          "target_offset": 305,
+          "status": "matched-declared-extends"
+        }
+      ],
+      "dag_valid": true,
+      "decoded_containers": 2,
+      "work_items": 33,
+      "current_projection": {
+        "object_stream_current_extends_assessed": true,
+        "object_stream_current_extends_xref": 657,
+        "object_stream_current_extends_roots": [
+          {
+            "object": 100,
+            "object_stream": 4,
+            "index": 0,
+            "context_xref": 657,
+            "reference_xref": 657,
+            "reference_record_range": {
+              "space": "decoded-xref",
+              "start": 0,
+              "end": 7
+            },
+            "ownership_proven": false,
+            "object_resolved": false,
+            "container_xref": 409,
+            "container_record_range": {
+              "space": "decoded-xref",
+              "start": 28,
+              "end": 35
+            },
+            "container_state": "uncompressed",
+            "container_generation": 0,
+            "status": "selected-container",
+            "container_offset": 186
+          }
+        ],
+        "object_stream_current_extends_links": [
+          {
+            "source_object": 4,
+            "source_generation": 0,
+            "source_offset": 186,
+            "context_xref": 657,
+            "target_object": 5,
+            "target_generation": 0,
+            "ownership_proven": false,
+            "object_resolved": false,
+            "members_inherited": false,
+            "in_cycle": false,
+            "primary_xref": 657,
+            "target_xref": 657,
+            "target_record_range": {
+              "space": "decoded-xref",
+              "start": 7,
+              "end": 14
+            },
+            "target_offset": 639,
+            "status": "target-not-object-stream"
+          }
+        ],
+        "object_stream_current_extends_dag_valid": null,
+        "object_stream_current_extends_work_items": 22
+      }
+    },
+    {
+      "case": "cycle",
+      "source_sha256": "b10d4a0efd762deff6917918c3587825894ffc2770440670f91d54fb4e03b329",
+      "source_bytes": 950,
+      "declared_links": [
+        {
+          "source_object": 4,
+          "source_generation": 0,
+          "source_offset": 186,
+          "context_xref": 409,
+          "target_object": 5,
+          "target_generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "members_inherited": false,
+          "in_cycle": false,
+          "primary_xref": 409,
+          "target_xref": 409,
+          "target_record_range": {
+            "space": "decoded-xref",
+            "start": 35,
+            "end": 42
+          },
+          "target_offset": 305,
+          "status": "matched-declared-extends"
+        }
+      ],
+      "dag_valid": true,
+      "decoded_containers": 3,
+      "work_items": 34,
+      "current_projection": {
+        "object_stream_current_extends_assessed": true,
+        "object_stream_current_extends_xref": 763,
+        "object_stream_current_extends_roots": [
+          {
+            "object": 100,
+            "object_stream": 4,
+            "index": 0,
+            "context_xref": 763,
+            "reference_xref": 763,
+            "reference_record_range": {
+              "space": "decoded-xref",
+              "start": 0,
+              "end": 7
+            },
+            "ownership_proven": false,
+            "object_resolved": false,
+            "container_xref": 409,
+            "container_record_range": {
+              "space": "decoded-xref",
+              "start": 28,
+              "end": 35
+            },
+            "container_state": "uncompressed",
+            "container_generation": 0,
+            "status": "selected-container",
+            "container_offset": 186
+          }
+        ],
+        "object_stream_current_extends_links": [
+          {
+            "source_object": 4,
+            "source_generation": 0,
+            "source_offset": 186,
+            "context_xref": 763,
+            "target_object": 5,
+            "target_generation": 0,
+            "ownership_proven": false,
+            "object_resolved": false,
+            "members_inherited": false,
+            "in_cycle": true,
+            "primary_xref": 763,
+            "target_xref": 763,
+            "target_record_range": {
+              "space": "decoded-xref",
+              "start": 7,
+              "end": 14
+            },
+            "target_offset": 639,
+            "status": "matched-declared-extends"
+          },
+          {
+            "source_object": 5,
+            "source_generation": 0,
+            "source_offset": 639,
+            "context_xref": 763,
+            "target_object": 4,
+            "target_generation": 0,
+            "ownership_proven": false,
+            "object_resolved": false,
+            "members_inherited": false,
+            "in_cycle": true,
+            "primary_xref": 763,
+            "target_xref": 409,
+            "target_record_range": {
+              "space": "decoded-xref",
+              "start": 28,
+              "end": 35
+            },
+            "target_offset": 186,
+            "status": "matched-declared-extends"
+          }
+        ],
+        "object_stream_current_extends_dag_valid": false,
+        "object_stream_current_extends_work_items": 23
+      }
+    },
+    {
+      "case": "root-free",
+      "source_sha256": "51ffc8f29560539e7e273dc978ab7e095eaee0d0e61383c34a40e8f7c4df8042",
+      "source_bytes": 826,
+      "declared_links": [
+        {
+          "source_object": 4,
+          "source_generation": 0,
+          "source_offset": 186,
+          "context_xref": 409,
+          "target_object": 5,
+          "target_generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "members_inherited": false,
+          "in_cycle": false,
+          "primary_xref": 409,
+          "target_xref": 409,
+          "target_record_range": {
+            "space": "decoded-xref",
+            "start": 35,
+            "end": 42
+          },
+          "target_offset": 305,
+          "status": "matched-declared-extends"
+        }
+      ],
+      "dag_valid": true,
+      "decoded_containers": 2,
+      "work_items": 21,
+      "current_projection": {
+        "object_stream_current_extends_assessed": true,
+        "object_stream_current_extends_xref": 639,
+        "object_stream_current_extends_roots": [
+          {
+            "object": 100,
+            "object_stream": 4,
+            "index": 0,
+            "context_xref": 639,
+            "reference_xref": 639,
+            "reference_record_range": {
+              "space": "decoded-xref",
+              "start": 0,
+              "end": 7
+            },
+            "ownership_proven": false,
+            "object_resolved": false,
+            "container_xref": 639,
+            "container_record_range": {
+              "space": "decoded-xref",
+              "start": 7,
+              "end": 14
+            },
+            "container_state": "free",
+            "container_generation": 1,
+            "status": "missing-container"
+          }
+        ],
+        "object_stream_current_extends_links": [],
+        "object_stream_current_extends_dag_valid": null,
+        "object_stream_current_extends_work_items": 10
+      }
+    },
+    {
+      "case": "root-ordinary",
+      "source_sha256": "fe66f775a82d8b95caf66fe37ddd03d2f59b2636ca47867f60941a3fc9496a52",
+      "source_bytes": 844,
+      "declared_links": [
+        {
+          "source_object": 4,
+          "source_generation": 0,
+          "source_offset": 186,
+          "context_xref": 409,
+          "target_object": 5,
+          "target_generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "members_inherited": false,
+          "in_cycle": false,
+          "primary_xref": 409,
+          "target_xref": 409,
+          "target_record_range": {
+            "space": "decoded-xref",
+            "start": 35,
+            "end": 42
+          },
+          "target_offset": 305,
+          "status": "matched-declared-extends"
+        }
+      ],
+      "dag_valid": true,
+      "decoded_containers": 2,
+      "work_items": 23,
+      "current_projection": {
+        "object_stream_current_extends_assessed": true,
+        "object_stream_current_extends_xref": 657,
+        "object_stream_current_extends_roots": [
+          {
+            "object": 100,
+            "object_stream": 4,
+            "index": 0,
+            "context_xref": 657,
+            "reference_xref": 657,
+            "reference_record_range": {
+              "space": "decoded-xref",
+              "start": 0,
+              "end": 7
+            },
+            "ownership_proven": false,
+            "object_resolved": false,
+            "container_xref": 657,
+            "container_record_range": {
+              "space": "decoded-xref",
+              "start": 7,
+              "end": 14
+            },
+            "container_state": "uncompressed",
+            "container_generation": 0,
+            "status": "container-not-object-stream",
+            "container_offset": 639
+          }
+        ],
+        "object_stream_current_extends_links": [],
+        "object_stream_current_extends_dag_valid": null,
+        "object_stream_current_extends_work_items": 11
+      }
+    },
+    {
+      "case": "no-users",
+      "source_sha256": "4cc8a1d2e3e07b8120bc47ebfc9377431d57e9911e4e0a8a5f66928e065adece",
+      "source_bytes": 815,
+      "declared_links": [
+        {
+          "source_object": 4,
+          "source_generation": 0,
+          "source_offset": 186,
+          "context_xref": 409,
+          "target_object": 5,
+          "target_generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "members_inherited": false,
+          "in_cycle": false,
+          "primary_xref": 409,
+          "target_xref": 409,
+          "target_record_range": {
+            "space": "decoded-xref",
+            "start": 35,
+            "end": 42
+          },
+          "target_offset": 305,
+          "status": "matched-declared-extends"
+        }
+      ],
+      "dag_valid": true,
+      "decoded_containers": 2,
+      "work_items": 20,
+      "current_projection": {
+        "object_stream_current_extends_assessed": true,
+        "object_stream_current_extends_xref": 639,
+        "object_stream_current_extends_roots": [],
+        "object_stream_current_extends_links": [],
+        "object_stream_current_extends_dag_valid": true,
+        "object_stream_current_extends_work_items": 9
+      }
+    },
+    {
+      "case": "generation",
+      "source_sha256": "3f4253e2bc465171afc2c01a4c77a08e50fbb9ec41118c9b5981472b224c2ffd",
+      "source_bytes": 935,
+      "declared_links": [
+        {
+          "source_object": 4,
+          "source_generation": 0,
+          "source_offset": 186,
+          "context_xref": 409,
+          "target_object": 5,
+          "target_generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "members_inherited": false,
+          "in_cycle": false,
+          "primary_xref": 409,
+          "target_xref": 409,
+          "target_record_range": {
+            "space": "decoded-xref",
+            "start": 35,
+            "end": 42
+          },
+          "target_offset": 305,
+          "status": "matched-declared-extends"
+        }
+      ],
+      "dag_valid": true,
+      "decoded_containers": 2,
+      "work_items": 32,
+      "current_projection": {
+        "object_stream_current_extends_assessed": true,
+        "object_stream_current_extends_xref": 748,
+        "object_stream_current_extends_roots": [
+          {
+            "object": 100,
+            "object_stream": 4,
+            "index": 0,
+            "context_xref": 748,
+            "reference_xref": 748,
+            "reference_record_range": {
+              "space": "decoded-xref",
+              "start": 0,
+              "end": 7
+            },
+            "ownership_proven": false,
+            "object_resolved": false,
+            "container_xref": 409,
+            "container_record_range": {
+              "space": "decoded-xref",
+              "start": 28,
+              "end": 35
+            },
+            "container_state": "uncompressed",
+            "container_generation": 0,
+            "status": "selected-container",
+            "container_offset": 186
+          }
+        ],
+        "object_stream_current_extends_links": [
+          {
+            "source_object": 4,
+            "source_generation": 0,
+            "source_offset": 186,
+            "context_xref": 748,
+            "target_object": 5,
+            "target_generation": 0,
+            "ownership_proven": false,
+            "object_resolved": false,
+            "members_inherited": false,
+            "in_cycle": false,
+            "primary_xref": 748,
+            "target_xref": 748,
+            "target_record_range": {
+              "space": "decoded-xref",
+              "start": 7,
+              "end": 14
+            },
+            "status": "generation-mismatch"
+          }
+        ],
+        "object_stream_current_extends_dag_valid": null,
+        "object_stream_current_extends_work_items": 21
+      }
+    }
+  ],
+  "test_fixture_sha256": "094ff1293eedc57c85a41099c24d874869c3d1be34ca680e286ccfc05857fbcd",
+  "consumer_sha256": "68ce52525d18b612bd3ae8f27f04027f4fa1efa4a86f00d9027406e5a10319d9",
+  "current_fixture_sha256": "c99c2645f6a191936c58723fe2d7d0729855f99dbf82c7efe1cd55c178ea6e39",
+  "limitations": [
+    "No member inheritance, object ownership or active-body resolution",
+    "Current collection declarations are separate from historical links; parameter contexts must agree",
+    "Independent reader checks valid chain/replacement only; damaged and hybrid use literal source assertions"
+  ]
+}

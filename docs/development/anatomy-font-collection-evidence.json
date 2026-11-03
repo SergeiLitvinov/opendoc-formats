@@ -1,0 +1,52 @@
+{
+  "scope": "Explicit selected TTC face in common Anatomy snapshot and CLI; not automatic collection-wide traversal",
+  "model": "opendoc-model==0.19.0",
+  "published": false,
+  "dependencies_changed": false,
+  "checks": {
+    "new_shared_TTC_tests_passed": 27,
+    "Anatomy_sfnt_collection_suite_passed": 334,
+    "strict_mypy_files_passed": 39
+  },
+  "profile": {
+    "public_keyword": "sfnt_face_index",
+    "cli_option": "--sfnt-face-index",
+    "required_for_collections": true,
+    "source_payload": "Complete original collection, byte-exact including other faces and opaque DSIG",
+    "table_locators": "sfnt:face=INDEX:table=TAG",
+    "offsets": "Original absolute source offsets",
+    "source_locator": "sfnt:source",
+    "scope": "Same selected face for CLI source and comparison",
+    "common_budgets": "Source plus selected table bytes; max_items-1 bounds selected table count and declared face count",
+    "standalone_checksums_on_TTC": "Explicit refusal; never silently misapplied",
+    "ZIP_TTC_polyglot": "Explicit container required",
+    "cancel_and_invalid_options": "No partial snapshot or output"
+  },
+  "installed_acceptance": {
+    "packages": [
+      "opendoc-formats==0.42.0",
+      "opendoc-model==0.19.0"
+    ],
+    "commands": [
+      "python -I tools/package_smoke.py",
+      "python -I tools/document_anatomy.py SOURCE --sfnt-face-index 1 --compare SOURCE --output NEW_DIRECTORY"
+    ],
+    "fonttools_Office_HTML_PDF_Pillow_absent": true,
+    "API_capture_and_scoped_comparison_passed": true,
+    "CLI_exact_original_source_capture_passed": true,
+    "runtime_source_wheel_installed_files_identical": 216,
+    "tested_wheel_sha256": "c767fbf51c50d4a13715dad2175ad39682da4f3a8c172644486886f03e024bf1"
+  },
+  "source_files_sha256": {
+    "src/opendoc_formats/anatomy.py": "55e5352a45608f767b94ae80a9734cb92bc6bf91b4dc0e236d3fe23f8fc75819",
+    "tools/document_anatomy.py": "44a80e37291433b6ed4390c20504da76b85e69d5e8eb78c072b992ef2352af11",
+    "tools/package_smoke.py": "92822c774d8873b715bc9eb8baac7135cf364433eb8ce7ca6d610170b2894b76",
+    "tests/test_anatomy_font_collection.py": "6f45265a95255ebcf59c46ebf4e2abecdfd7331971a3e31c21c624f9911bca23"
+  },
+  "limitations": [
+    "No automatic all-face recursive Anatomy traversal or semantic correspondence claim",
+    "Collection signatures remain opaque and unauthenticated",
+    "Full overlap/sorting/padding/glyph validation and font embedding remain open",
+    "No Model parser or codec changes; optional fontTools retained for other profiles and subsetting"
+  ]
+}

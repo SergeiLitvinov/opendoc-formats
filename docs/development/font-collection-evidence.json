@@ -1,0 +1,166 @@
+{
+  "scope": "Explicit selected-face TTC 1.0/2.0 inert table inventory and finite metadata; no collection rebuilding or embedding",
+  "model": "opendoc-model==0.19.0",
+  "published": false,
+  "dependencies_changed": false,
+  "checks": {
+    "new_collection_tests_passed": 34,
+    "affected_sfnt_font_HTML_PDF_TextLayout_tests_passed": 729,
+    "strict_mypy_files_passed": 39
+  },
+  "profile": {
+    "explicit_face_index_required": true,
+    "TTC_versions": [
+      "1.0",
+      "2.0"
+    ],
+    "face_wrappers": [
+      "TrueType",
+      "OTTO/CFF"
+    ],
+    "max_faces_default": 256,
+    "offsets": "original absolute source offsets, including shared tables before selected directory",
+    "source_identity": "SHA256 and size of complete unchanged collection",
+    "header_identity": "selected face header and directory_offset",
+    "DSIG": "declaration bounds only; no signature authentication",
+    "resolver": "existing face-zero selection; default filesystem scan still TTF/OTF only"
+  },
+  "system_acceptance": {
+    "total_face_metadata_equal": 15,
+    "native_without_fonttools_import": 14,
+    "fonts_copied_or_distributed": false,
+    "cases": [
+      {
+        "filename": "cambria.ttc",
+        "size": 1792664,
+        "sha256": "84e70ccc1664482f4a960442c7a166c91a1b2cf98ff88c33cb73f79403f66d7b",
+        "full_face_equals_engine": true,
+        "fonttools_import_not_needed": true
+      },
+      {
+        "filename": "mingliub.ttc",
+        "size": 37112128,
+        "sha256": "8f8afdb3ec7047118f6dc51b29d395e697ee6770d0afd0cd407457e2ad6e93cb",
+        "full_face_equals_engine": true,
+        "fonttools_import_not_needed": false
+      },
+      {
+        "filename": "msgothic.ttc",
+        "size": 8990160,
+        "sha256": "4bde3e6392b96910fb59094c6c1a4dbfae18fee78d0bf13dc30616837c4f95db",
+        "full_face_equals_engine": true,
+        "fonttools_import_not_needed": true
+      },
+      {
+        "filename": "msjh.ttc",
+        "size": 21404172,
+        "sha256": "1fd5fc7046e0eea753988ee06d1a5a731df68475614e2174fbba9b4800f392ac",
+        "full_face_equals_engine": true,
+        "fonttools_import_not_needed": true
+      },
+      {
+        "filename": "msjhbd.ttc",
+        "size": 14441188,
+        "sha256": "7d55cd4801102131d991630cea74534dcf73a9fabf4a33e54fe05dfb4f5aa790",
+        "full_face_equals_engine": true,
+        "fonttools_import_not_needed": true
+      },
+      {
+        "filename": "msjhl.ttc",
+        "size": 12877764,
+        "sha256": "15f1162a68b5859f246d89ea62aed711b1994817c72e78e3df5d205c89c5c6e8",
+        "full_face_equals_engine": true,
+        "fonttools_import_not_needed": true
+      },
+      {
+        "filename": "msyh.ttc",
+        "size": 19704352,
+        "sha256": "d79c55e68b1131eea0cc1c47be4f572d964f28c682e143db2ad09c1e4cb07a3f",
+        "full_face_equals_engine": true,
+        "fonttools_import_not_needed": true
+      },
+      {
+        "filename": "msyhbd.ttc",
+        "size": 16883552,
+        "sha256": "4508821b3dffe01f0ef5e5326a3e60df705a44633858811f67b6982dce3f6ee6",
+        "full_face_equals_engine": true,
+        "fonttools_import_not_needed": true
+      },
+      {
+        "filename": "msyhl.ttc",
+        "size": 12189612,
+        "sha256": "7e9bdf90bb5d3fe1b5975fc8ae31944b8fa674122261f92c28d4ec0b9c482fa1",
+        "full_face_equals_engine": true,
+        "fonttools_import_not_needed": true
+      },
+      {
+        "filename": "Nirmala.ttc",
+        "size": 5304988,
+        "sha256": "ad02cdfc06e144ac45f318e8e5a64cbe04c7479d4beb91d25f5a319a466b1767",
+        "full_face_equals_engine": true,
+        "fonttools_import_not_needed": true
+      },
+      {
+        "filename": "simsun.ttc",
+        "size": 18316748,
+        "sha256": "1526ac24375f51f6eb73bc2d3f8072dbe4a80a3a65217677c9d9a84f67dab2ab",
+        "full_face_equals_engine": true,
+        "fonttools_import_not_needed": true
+      },
+      {
+        "filename": "YuGothB.ttc",
+        "size": 14729372,
+        "sha256": "d923a57f781f06198167da4f58287be7ac64a954a47aff4295e078a42b4b68b2",
+        "full_face_equals_engine": true,
+        "fonttools_import_not_needed": true
+      },
+      {
+        "filename": "YuGothL.ttc",
+        "size": 13969876,
+        "sha256": "0acf409fc61e1560ea0384f8c72bf87c6fa7282077420657979680ee21dad2a4",
+        "full_face_equals_engine": true,
+        "fonttools_import_not_needed": true
+      },
+      {
+        "filename": "YuGothM.ttc",
+        "size": 13908392,
+        "sha256": "cb2021bbfe40b21ec564848b8d702125661594e1b4f1eb2e77fd8a98b485cf19",
+        "full_face_equals_engine": true,
+        "fonttools_import_not_needed": true
+      },
+      {
+        "filename": "YuGothR.ttc",
+        "size": 13835976,
+        "sha256": "cd24b5617c1e26572b0a7fe7e558f7121ca42c36f7b50e8d9216ac222a1c0a93",
+        "full_face_equals_engine": true,
+        "fonttools_import_not_needed": true
+      }
+    ]
+  },
+  "installed_acceptance": {
+    "packages": [
+      "opendoc-formats==0.42.0",
+      "opendoc-model==0.19.0"
+    ],
+    "command": "python -I tools/package_smoke.py",
+    "fonttools_Office_HTML_PDF_Pillow_absent": true,
+    "two_distinct_collection_faces_and_resolver_passed": true,
+    "runtime_source_wheel_installed_files_identical": 216,
+    "tested_wheel_sha256": "23e606e1593192ec9fa0770aa43ca17431445bc22702427a1bb8b1367e545957"
+  },
+  "source_files_sha256": {
+    "src/opendoc_formats/native/sfnt.py": "0a228983107842b39d43ad329d75201cc6a7cf89b12052c81846636f21720cf0",
+    "src/opendoc_formats/fonts/resolver.py": "0b58f511772830ba85ace5bf11493ff2f1d5f4708a97cc73d12e3560c7dd048c",
+    "src/opendoc_formats/fonts/sfnt_names.py": "302f7d4ae3a8f7271df813fdc1896ec4ed479ea10d89bbb97532dc51a6b4a1a3",
+    "src/opendoc_formats/fonts/sfnt_cmap.py": "4b33b49d76dd21b07cd13d41c612067fe640583ebd3d5fc36bf7de8371f54565",
+    "tests/test_native_font_collection.py": "f79963afde8f5358cd3226a5636bbea16df968e7d9107dbc7b53985eea91fc82",
+    "tools/package_smoke.py": "dd102a21ac6301f3f89b52afb27b9890bc2cc6188b49efc0d789a41d5a728a5e"
+  },
+  "limitations": [
+    "No automatic all-face Anatomy traversal, full collection graph or overlap/padding audit",
+    "No new TTC embedding, collection subsetting, glyph shaping or instance interpolation",
+    "Unconfirmed or over-budget metadata retains established fontTools fallback; fallback itself is not native-budget bounded",
+    "Whole-file standalone checksum adjustment API still rejects collections",
+    "No Model changes; no renderer or native writer acceptance claimed from metadata comparison"
+  ]
+}

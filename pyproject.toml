@@ -1,0 +1,155 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "opendoc-formats"
+version = "0.1.0"
+description = "Document format readers and writers built on OpenDoc: formats, structure, transition"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["docs/development/LICENSE", "docs/development/notice.md"]
+authors = [{name = "Sergei Litvinov"}]
+keywords = ["opendoc", "okidoki", "document", "conversion", "docx", "pdf", "pptx", "html"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent",
+    "Typing :: Typed",
+    "Topic :: Text Processing :: General",
+]
+dependencies = ["opendoc-model==0.1.0"]
+
+[project.optional-dependencies]
+pdf-text = ["pypdf>=4"]
+pdf = ["pymupdf>=1.24,<2"]
+pdf-rich = ["pymupdf>=1.24,<2"]
+pdf-docx = ["pdf2docx>=0.2", "pymupdf>=1.24,<2"]
+pdf-layout = ["pdfplumber>=0.11"]
+docx = ["python-docx>=1.1", "lxml>=5"]
+docx-native = ["lxml>=5"]
+pptx = ["python-pptx>=1.0.2", "lxml>=5", "Pillow>=10"]
+epub = ["beautifulsoup4>=4.12"]
+fonts = ["fonttools>=4.50"]
+html = ["beautifulsoup4>=4.12", "tinycss2>=1.5"]
+dev = ["pytest>=8", "ruff>=0.9", "mypy>=1.15", "twine>=6"]
+docs = ["mkdocs>=1.6,<2"]
+
+[project.urls]
+Homepage = "https://SergeiLitvinov.github.io/opendoc-formats/"
+Documentation = "https://SergeiLitvinov.github.io/opendoc-formats/"
+Repository = "https://github.com/SergeiLitvinov/opendoc-formats"
+Issues = "https://github.com/SergeiLitvinov/opendoc-formats/issues"
+Changelog = "https://github.com/SergeiLitvinov/opendoc-formats/blob/main/docs/development/changelog.md"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.uv.sources]
+opendoc-model = { url = "https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.1.0/opendoc_model-0.1.0-py3-none-any.whl" }
+
+[tool.ruff]
+line-length = 130
+target-version = "py311"
+extend-exclude = [".opendoc-formats", "build", "dist"]
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "BLE", "ANN"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "--import-mode=importlib"
+
+[tool.ruff.lint.per-file-ignores]
+"src/opendoc_formats/writers/pptx_to_html/*" = ["N801", "N802", "N803", "N806", "W293", "E501", "BLE001"]
+"src/opendoc_formats/writers/pdf_to_docx.py" = ["BLE001"]
+
+[tool.setuptools.package-data]
+"opendoc_formats" = ["py.typed"]
+"opendoc_formats.writers.pptx_to_html" = ["assets/css/*", "assets/js/*"]
+
+"opendoc_formats.readers" = ["lua-filters/*.lua"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+follow_imports = "silent"
+ignore_missing_imports = true
+files = [
+    "src/opendoc_formats/readers/epub_anchors.py",
+    "src/opendoc_formats/tex_tables.py",
+    "src/opendoc_formats/ooxml/color.py",
+    "src/opendoc_formats/ooxml/pptx_gradient.py",
+    "src/opendoc_formats/writers/pptx_background_writer.py",
+    "src/opendoc_formats/native/pdf_object_links.py",
+    "src/opendoc_formats/native/pdf_current_parameters.py",
+    "src/opendoc_formats/native/pdf_extends.py",
+    "src/opendoc_formats/native/docx_uri.py",
+    "src/opendoc_formats/tex_headings.py",
+    "src/opendoc_formats/writers/latex_tables.py",
+    "src/opendoc_formats/readers/pptx_inheritance.py",
+    "src/opendoc_formats/readers/pptx_background.py",
+    "src/opendoc_formats/readers/pptx_theme_colors.py",
+    "src/opendoc_formats/native/cfbf.py",
+    "src/opendoc_formats/native/cfbf_fields.py",
+    "src/opendoc_formats/native/cfbf_names.py",
+    "src/opendoc_formats/native/sfnt.py",
+    "src/opendoc_formats/native/fvar.py",
+    "src/opendoc_formats/fonts/word_metrics.py",
+    "src/opendoc_formats/fonts/sfnt_names.py",
+    "src/opendoc_formats/fonts/sfnt_cmap.py",
+    "src/opendoc_formats/fonts/sfnt_ligatures.py",
+    "src/opendoc_formats/fonts/subset_cache.py",
+    "src/opendoc_formats/fonts/embedding.py",
+    "src/opendoc_formats/api.py", "src/opendoc_formats/export.py", "src/opendoc_formats/text_profile.py",
+    "src/opendoc_formats/types.py", "src/opendoc_formats/docx.py", "src/opendoc_formats/pdf.py",
+    "src/opendoc_formats/office.py", "src/opendoc_formats/package_resources.py", "src/opendoc_formats/errors.py",
+    "src/opendoc_formats/support/text_diagnostics.py", "src/opendoc_formats/support/document_adapters.py",
+    "src/opendoc_formats/support/text_projection.py",
+    "src/opendoc_formats/anatomy.py",
+    "src/opendoc_formats/anatomy_tree.py",
+    "src/opendoc_formats/native/ole_native.py",
+    "src/opendoc_formats/native/png.py",
+    "src/opendoc_formats/native/png_metadata.py",
+    "src/opendoc_formats/ooxml/orphans.py",
+    "src/opendoc_formats/ooxml/docx_whitespace.py",
+    "src/opendoc_formats/ooxml/docx_defaults.py",
+    "src/opendoc_formats/ooxml/page_geometry.py",
+    "src/opendoc_formats/native/opc.py",
+    "src/opendoc_formats/native/opc_audit.py",
+    "src/opendoc_formats/native/epub.py",
+    "src/opendoc_formats/native/pdf_text.py",
+    "src/opendoc_formats/native/pdf_syntax.py",
+    "src/opendoc_formats/native/pdf_revisions.py",
+    "src/opendoc_formats/native/pdf_xref_streams.py",
+    "src/opendoc_formats/native/pdf_predictors.py",
+    "src/opendoc_formats/native/pdf_flate.py",
+    "src/opendoc_formats/native/pdf_runlength.py",
+    "src/opendoc_formats/native/pdf_byte_filters.py",
+    "src/opendoc_formats/native/pdf_stream_decode.py",
+    "src/opendoc_formats/native/pdf_lzw.py",
+    "src/opendoc_formats/native/pdf_object_streams.py",
+    "src/opendoc_formats/native/pdf_source_integers.py",
+    "src/opendoc_formats/native/pdf_xref_state.py",
+    "src/opendoc_formats/native/pdf_placements.py",
+    "src/opendoc_formats/readers/pdf_paint.py",
+    "src/opendoc_formats/readers/pdf_font_bindings.py",
+    "src/opendoc_formats/readers/pdf_text_layout.py",
+    "src/opendoc_formats/readers/pdf_layout_bindings.py",
+    "src/opendoc_formats/readers/pdf_styles.py",
+    "src/opendoc_formats/readers/pdf.py", "src/opendoc_formats/readers/pdf_diagnostics.py",
+    "src/opendoc_formats/readers/pdf_semantic.py", "src/opendoc_formats/readers/pdf_ocr_merge.py",
+    "src/opendoc_formats/readers/html_text.py", "src/opendoc_formats/readers/epub.py",
+    "src/opendoc_formats/readers/html_fonts.py",
+    "src/opendoc_formats/readers/_djvu_text.py",
+]
+
+[tool.ruff.lint.extend-per-file-ignores]
+"src/opendoc_formats/**/*.py" = ["ANN401"]
+"tests/**/*.py" = ["ANN"]
+"tools/**/*.py" = ["ANN"]

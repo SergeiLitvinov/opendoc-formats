@@ -1,0 +1,37 @@
+{
+  "scope": "Adjacent ReverseChainSingleSubst type 8 format 1 and extension 7->8 in static standalone TrueType post 1/2/3/4; structural validation only",
+  "model": "opendoc-model==0.19.0; import opendoc_model",
+  "published": false,
+  "dependencies_changed": false,
+  "specification": "https://learn.microsoft.com/en-us/typography/opentype/spec/gsub#lookup-type-8-subtable-reverse-chained-contexts-single-substitution",
+  "checks": {
+    "font_regression_passed": 1006,
+    "font_regression_skipped": 1,
+    "skip_reason": "Real POSIX fork unavailable on Windows",
+    "regression_scope": "All tests/**/*.py filenames containing font/sfnt/fvar/ligature; not a full-project regression",
+    "equivalence": "Independent owned byte encoding, coverage 1/2, direct/extension, before/after ligatures, absent/backtrack/lookahead/both contexts and shared storage match the previous fontTools mapping; imports blocked during native reads",
+    "unicode_policy": "Reverse outputs do not add Unicode; encoded ligatures and ambiguous components keep the previous candidate policy",
+    "damage": "Offsets into headers or outside source, mismatched counts, invalid coverage/glyph IDs and every truncation of the 38-byte owned subtable reject partial evidence",
+    "work_budget": "Shared context coverages charged per reference; existing 262144 word/coverage budget enforced",
+    "cancellation": "Cancellation within reverse backtrack coverage propagates without engine fallback",
+    "pdf": "Real Story PDF GSUB 1.0/1.1 and post 1/2/3/4: text restored after saving/reopening, identical MuPDF pixels with fontTools import forbidden",
+    "installed_pdf_smoke": "Fresh isolated wheel plus Model 0.19.0 and PyMuPDF 1.28.2 only: six owned TTF/OTF programs, exact embedded bytes, text, stable pixels, two JSON cycles, PDF re-import and opt-in TextLayout; fontTools/Pillow/Office/HTML engines absent",
+    "strict_mypy_files": 41,
+    "ruff": "passed",
+    "license_inventory": "passed",
+    "boundary_audit_modules": 217
+  },
+  "fixture": {
+    "file": "tests/native/data/ligature-reverse.ttf",
+    "bytes": 1368,
+    "license": "MIT; Copyright 2026 Sergei Litvinov; own outlines, raw GSUB, reproducible timestamps and license records"
+  },
+  "boundary": "Formats owns binary validation and ToUnicode evidence; Model unchanged. No reverse substitution execution, shaping, contextual type 5/6 support, CFF/variations extension or replacement of actual subsetting. Unsupported profiles retain previous fontTools fallback; its resource usage is outside native budgets.",
+  "source_sha256": {
+    "src/opendoc_formats/fonts/sfnt_ligatures.py": "175e80a4ca3af15719544ab2a664fa28853b100c1d5a121080d2d57600687c3f",
+    "tests/test_native_font_reverse_gsub.py": "48406a0375557552ae2d3df4627552d54db83ef4cdf9dbc07475dee18d7cdd7d",
+    "tests/test_native_font_ligatures.py": "84e89faf51fbe26d4cc87eb4e1d380f9f780d99e156b4214f40895d982633559",
+    "tools/pdf_ligature_smoke.py": "286f26c96300a4d32cc207bec591488e870b465320646fe40fa381d1a1603d70",
+    "tests/native/data/ligature-reverse.ttf": "e92a9b8819c68d89506ecac9e2bc06d3d616cd17e17ffbe94efc1f5913b76767"
+  }
+}

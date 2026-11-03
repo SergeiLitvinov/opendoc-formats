@@ -1,0 +1,51 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  acceptance:
+    if: github.event.deleted != true
+    uses: ./.github/workflows/ci.yml
+  publish:
+    needs: acceptance
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-packages
+          path: .opendoc-formats/dist
+      - run: python -m tools.release check --tag "$GITHUB_REF_NAME"
+      - name: Create release and upload distributions
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const tag = context.ref.replace('refs/tags/', '');
+            const changelog = fs.readFileSync('docs/development/changelog.md', 'utf8');
+            const section = changelog.split(/^## /m).find(s => s.startsWith(tag.slice(1) + ' — '));
+            if (!section) throw new Error('Missing release notes for tag');
+            const { data: release } = await github.rest.repos.createRelease({
+              ...context.repo, tag_name: tag, name: `OpenDoc Formats ${tag}`,
+              body: section.substring(section.indexOf('\n') + 1).trim(), draft: true
+            });
+            const directory = '.opendoc-formats/dist';
+            for (const name of fs.readdirSync(directory).sort()) {
+              if (!name.endsWith('.whl') && !name.endsWith('.tar.gz') && name !== 'SHA256SUMS') continue;
+              await github.rest.repos.uploadReleaseAsset({
+                ...context.repo, release_id: release.id, name,
+                data: fs.readFileSync(path.join(directory, name))
+              });
+            }
+            await github.rest.repos.updateRelease({ ...context.repo, release_id: release.id, draft: false });

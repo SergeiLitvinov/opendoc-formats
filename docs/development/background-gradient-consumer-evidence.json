@@ -1,0 +1,60 @@
+{
+  "contract": "C-BACKGROUND-GRADIENT-01",
+  "status": "isolated public API passed; production adoption pending",
+  "candidate_wheel_sha256": "cf33977cddd155ad3ef9fc7fa5c93be71c0f7d3d7e127384d36edac5d56de034",
+  "source_file_count": 55,
+  "consumer_sha256": "e68366fb9f767e5016ea0a4cf6f53cb3d1f1258d98736ff9443aecf4aa902d1f",
+  "python": "3.12.16",
+  "installed_distributions": [
+    "opendoc-model"
+  ],
+  "checks": [
+    "two document cycles and all DTO codecs retain coincident interior stops, alpha, unknown color and geometry",
+    "independent snapshots and authoritative edits/removals preserve unknown envelope; native hints stay inert",
+    "section/page scopes have no inferred cascade; separate walk creates no body nodes; CMYK/ICC/blend remain color data, not invented resources",
+    "merge retains both section declarations and explicit metadata policy; section extraction preserves paint",
+    "invalid ranges, roles, geometry, versions, opaque collision and cycle refuse; failed setters are atomic",
+    "exact paired transport, section setter, page copy and walk node/depth/byte boundaries; one-below is atomic"
+  ],
+  "located_refusals": [
+    "gradient.stop.position: expected finite number between 0 and 1",
+    "gradient.stop.position: expected finite number",
+    "gradient.stop.position: expected finite number between 0 and 1",
+    "gradient.stops[1].position: positions must be nondecreasing; ties retain order",
+    "gradient.stops: expected at least two ordered stops or unknown",
+    "gradient.opacity: expected finite number between 0 and 1",
+    "gradient.spread: unsupported spread",
+    "gradient.interpolation: unsupported interpolation",
+    "gradient.end: linear endpoints must differ",
+    "gradient.radius: expected positive radius",
+    "background: none/unknown cannot retain paint payloads",
+    "background.solid: solid requires only existing Paint",
+    "gradient: choose at most one geometry; both absent means unknown",
+    "invalid document model: sections[0].properties['opendoc.background'].version: unsupported background version",
+    "invalid document model: sections[0].properties['opendoc.background'].version: unsupported background version",
+    "invalid document model: sections[0].properties['opendoc.background'].data.background: background.solid: solid requires only existing Paint",
+    "section.background: background key contains opaque data",
+    "$.extra['cycle']: cyclic document model"
+  ],
+  "exact_quota_boundaries": {
+    "max_nodes": {
+      "transport": 235,
+      "section-setter": 123,
+      "page-with": 73,
+      "walk": 235
+    },
+    "max_depth": {
+      "transport": 14,
+      "section-setter": 9,
+      "page-with": 9,
+      "walk": 13
+    },
+    "max_bytes": {
+      "transport": 3766,
+      "section-setter": 556,
+      "page-with": 475,
+      "walk": 805
+    }
+  },
+  "scope": "Neutral DTO/codec acceptance only; no native parsing, gradient projection or rendering claimed."
+}

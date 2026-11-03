@@ -1,0 +1,54 @@
+{
+  "scope": "Internal Formats OOXML package graph helper adapted to python-pptx 1.0.2; not full public PPTX round-trip preservation",
+  "model": "opendoc-model==0.19.0; import opendoc_model",
+  "published": false,
+  "dependencies_changed": false,
+  "fixes": [
+    "Part imported from pptx.opc.package, with keyword arguments to respect different DOCX/PPTX constructor ordering",
+    "PPTX relationship adapter retains exact source rIds and distinct edges to the same target",
+    "Generated colliding references remapped using PPTX _element, excluding protected XML and unrelated attributes",
+    "PPTX relationships removed explicitly even when several generated XML references require remapping"
+  ],
+  "acceptance": {
+    "source": "Own original generated directly with python-pptx, independently of the helper under test",
+    "test": "tests/support/test_ooxml_pptx_package.py",
+    "cycles": 2,
+    "checks": [
+      "PackageGraph JSON unchanged; source PPTX bytes unchanged",
+      "Exact XML and PNG payload bytes after ZIP save/reopen",
+      "Internal, external and cyclic relationships; distinct source IDs to shared target",
+      "Generated picture name collision resolved without changing generated text or image bytes",
+      "Root and bound-part rId collisions preserve protected references",
+      "Unretained opaque source reference refuses before package mutation",
+      "Part-creation cancellation checked on both DOCX and PPTX engines"
+    ],
+    "regression": {
+      "command": "python -m pytest tests/support/test_ooxml_pptx_package.py tests/support/test_ooxml_package.py tests/writers/test_docx_source_grid.py tests/writers/test_docx_flow_borders.py tests/writers/test_office_export_cancellation.py tests/writers/test_pdf_cell_images.py -q --tb=short",
+      "passed": 95,
+      "duration_seconds": 133.47,
+      "platform": "Windows",
+      "full_project_run": false
+    },
+    "ruff": "passed",
+    "strict_mypy_files": 41,
+    "boundary_audit_modules": 219,
+    "dependency_license_inventory": "passed",
+    "strict_docs_build": "passed",
+    "wheel_and_sdist_structure": "passed"
+  },
+  "ci_png_correction": {
+    "observed_run": "https://github.com/SergeiLitvinov/opendoc-formats/actions/runs/40421277251",
+    "head": "d953f346e9a943c3ecd7a4bd94b111b2b3003918",
+    "observed": "Windows contracts passed; Linux Python 3.11, 3.12 and 3.13 each failed only test_owned_rgba_fixture_is_reproducible, comparing compressed PNG bytes",
+    "correction": "Exact dimensions, mode and all decoded RGBA channels compared; compression levels 0, 1 and 9 tested, with deliberately different compressed bytes at level 0",
+    "fixture_sha256": "5f229f090b197209fe7703d18f3ce7a47ebb0eb2f1549e400e0748c1979372fe",
+    "decoded_rgba_sha256": "dc0d6180532c840824b38db24e9e6056414d6cf553427fa0105c5a5c008f0c3c",
+    "fixture_changed": false,
+    "linux_rerun_after_correction": false
+  },
+  "remaining": [
+    "Connect source bindings for slides, layouts and masters to public PPTX import/export",
+    "Retain all unknown package components and reconcile editable objects without stale native references",
+    "Independent original PowerPoint rendering and native editing acceptance; helper tests are not application-level acceptance"
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "scope": "Finite installed DOCX flow and owned static TTF preservation without fontTools; no arbitrary Word rendering claim",
+  "platform": "Windows",
+  "python": "3.12.13",
+  "packages": {
+    "lxml": "6.1.3",
+    "opendoc-formats": "0.42.0",
+    "opendoc-model": "0.18.1",
+    "python-docx": "1.2.0",
+    "typing-extensions": "4.16.0"
+  },
+  "package_count": 5,
+  "absent_modules": [
+    "fontTools",
+    "pymupdf",
+    "fitz",
+    "pdf2docx",
+    "cv2",
+    "numpy",
+    "PIL"
+  ],
+  "runtime_dependencies_changed": false,
+  "ci_profile_changed_from": "docx,fonts",
+  "ci_profile_changed_to": "docx",
+  "local_installed_gate_passed": true,
+  "remote_ci_run": false,
+  "published": false,
+  "full_font_preservation": {
+    "json_docx_cycles": 2,
+    "font_bytes_sha256": "c743f9954ffc87ca2f888c8cd853550fb164ca2368f8cef16ce8680e6f87d713",
+    "font_bytes": 1056,
+    "font_program_identical_after_import": true,
+    "style_font_reference_retained": true,
+    "text_preserved": "AB",
+    "model_and_fixture_unchanged": true,
+    "source_and_embedded_program_byte_counts_equal": true
+  },
+  "flow": {
+    "public_and_direct_api_passed": true,
+    "cropped_cells": [
+      [
+        "R2C1",
+        "R2C2"
+      ],
+      [
+        "R3C1",
+        "R3C2"
+      ]
+    ],
+    "mapping_sources": 8,
+    "mapping_targets": 1,
+    "mapping_result_digest_matches": true
+  },
+  "wheel": {
+    "sha256": "111483828d986cf765d7a268951534853e43c512772bae8bc17b7121413841e8",
+    "python_files_match_source_and_installed": 210
+  },
+  "source_files_sha256": {
+    ".github/workflows/ci.yml": "25461b6578c90fa39f109cead814031ad94a4bef6740de34bb5f3c9256bcd423",
+    "tools/docx_flow_smoke.py": "2c95329eae21108a155e314d2f083193f2cc09029a65bcfa95a8802b013933a0",
+    "tests/native/data/text-layout-v1.json": "04c7254f88c20bfa0ddd67d7b018b82e2754282ea4b155b0bf8a329ec17c7a16"
+  },
+  "limitations": [
+    "Full program retained instead of subsetting",
+    "Variable/legacy/out-of-profile fonts may require fonts extra",
+    "Font source license conditions still apply",
+    "Not a full native Word visual acceptance gate",
+    "Remote CI not dispatched; workflow changed locally"
+  ]
+}

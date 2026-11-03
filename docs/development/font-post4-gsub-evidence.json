@@ -1,0 +1,39 @@
+{
+  "scope": "Static standalone TrueType post 4 numeric cmap/GSUB identity; same finite ligature and adjacent lookup policy as post 1/2/3",
+  "published": false,
+  "dependencies_changed": false,
+  "model": "opendoc-model==0.19.0; import opendoc_model",
+  "fixture": {
+    "path": "tests/native/data/ligature-post4.ttf",
+    "bytes": 1336,
+    "sha256": "335485e769416135ca5e87dee7bee5b96b9be004ff2fbeb8e9e16d558aa3d31a",
+    "license": "MIT; owned synthetic glyph outlines, no system font payloads",
+    "reproduction": "test_owned_post4_fixture_is_reproducible"
+  },
+  "checks": {
+    "parity": "Distinct/repeated/sentinel/surrogate-like printer codes, direct/extension ligatures, ambiguous results and unknown components match fontTools with engine imports blocked during native reads",
+    "fallback": "Short/empty/extra post 4 arrays preserve previous engine recovery",
+    "pdf": "GSUB 1.0/1.1 and adjacent Single/Multiple/AlternateSubst; extracted embedded program retains post 4, saved/reopened PDF has correct text and unchanged page pixels",
+    "focused_ligature_tests_passed": 294,
+    "font_regression_passed": 886,
+    "font_regression_skipped": 1,
+    "skip_reason": "Real POSIX fork unavailable on Windows",
+    "regression_scope": "All tests/**/*.py filenames containing font/sfnt/fvar/ligature; not a new full-project run",
+    "installed_profile": [
+      "opendoc-formats==0.42.0",
+      "opendoc-model==0.19.0",
+      "pymupdf==1.28.2"
+    ],
+    "installed_smoke": "Passed isolated python -I tools/pdf_ligature_smoke.py: full programs, extracted text, stable pixels, re-import, two JSON cycles and opt-in TextLayout without fontTools",
+    "strict_mypy_files": 41,
+    "ruff": "passed",
+    "documentation": "strict build passed"
+  },
+  "boundary": "Only Formats changed. Printer codes never replace cmap; no glyph names copied/generated, AAT execution or shaping added. Existing flags/context/CFF/variation fallbacks and subsetting engine remain.",
+  "source_sha256": {
+    "src/opendoc_formats/fonts/sfnt_ligatures.py": "4aec29b7fdacecfdc4cd781152a6659252f961d0b8ba04c0d6677fafd211e596",
+    "tests/test_native_font_ligatures.py": "b0706f6cc5bab597884fd64759c3140f8620b2063691dad7c112d5510b88266a",
+    "tests/test_native_font_face.py": "ef1417a8905b1de88ec810fb1cc0429b7a914704ba8775b870399562f6a870d7",
+    "tools/pdf_ligature_smoke.py": "33ef18cf707643e44ae0e8a7bcfee179ca252845d533012dfc1cbcbf18766cbc"
+  }
+}

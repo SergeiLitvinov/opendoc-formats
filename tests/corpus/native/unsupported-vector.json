@@ -1,0 +1,190 @@
+{
+  "format": "opendoc.document",
+  "version": 2,
+  "document": {
+    "property_schema_version": 1,
+    "mode": "balanced",
+    "source_format": "pdf",
+    "metadata": {
+      "engine": "pymupdf+fast+document-model",
+      "pages": 1,
+      "warnings": [],
+      "coordinate_system": {
+        "unit": "pt",
+        "origin": "top-left",
+        "x_axis": "right",
+        "y_axis": "down",
+        "rotation_unit": "degree",
+        "rotation_direction": "clockwise"
+      },
+      "format": "PDF 1.7",
+      "title": "",
+      "author": "",
+      "subject": "",
+      "keywords": "",
+      "creator": "",
+      "producer": "",
+      "creationDate": "",
+      "modDate": "",
+      "trapped": "",
+      "encryption": ""
+    },
+    "package": null,
+    "styles": {},
+    "resources": {
+      "p1_vec1": {
+        "id": "p1_vec1",
+        "kind": "vector_image",
+        "media_type": "application/pdf+vector",
+        "data_base64": "",
+        "source": null,
+        "filename": null,
+        "properties": {
+          "items": [
+            [
+              "unsupported-opcode"
+            ]
+          ],
+          "fill": {
+            "space": "srgb",
+            "components": [
+              1.0,
+              0.0,
+              0.0
+            ],
+            "alpha": 1.0,
+            "icc_profile": null,
+            "blend_mode": "normal"
+          },
+          "stroke": {
+            "space": "srgb",
+            "components": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "alpha": 1.0,
+            "icc_profile": null,
+            "blend_mode": "normal"
+          },
+          "fill_opacity": 1.0,
+          "stroke_opacity": 1.0,
+          "bbox": [
+            10.0,
+            10.0,
+            90.0,
+            90.0
+          ],
+          "width": 1.0,
+          "even_odd": false,
+          "close_path": false,
+          "dashes": "[] 0",
+          "line_join": 0,
+          "line_cap": 0
+        },
+        "provenance": {
+          "source_format": "pdf",
+          "source_path": "tests\\corpus\\native\\vector-export.pdf",
+          "page": 1,
+          "object_id": "vector-1",
+          "package_part": null,
+          "events": [
+            {
+              "operation": "extract.pdf.fast",
+              "detail": "extracted PDF drawing operators",
+              "fallback_reason": null
+            }
+          ]
+        }
+      }
+    },
+    "sections": [
+      {
+        "blocks": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "image",
+                "resource_id": "p1_vec1",
+                "alt_text": "Vector drawing 1 on page 1",
+                "box": {
+                  "x": 10.0,
+                  "y": 10.0,
+                  "width": 80.0,
+                  "height": 80.0,
+                  "rotation": 0.0
+                },
+                "properties": {},
+                "crop": null,
+                "provenance": {
+                  "source_format": "pdf",
+                  "source_path": "tests\\corpus\\native\\vector-export.pdf",
+                  "page": 1,
+                  "object_id": "vector-1",
+                  "package_part": null,
+                  "events": [
+                    {
+                      "operation": "extract.pdf.fast",
+                      "detail": "represented PDF drawing as editable vector resource",
+                      "fallback_reason": null
+                    }
+                  ]
+                },
+                "visual_surrogate": null
+              }
+            ],
+            "style_id": null,
+            "alignment": null,
+            "box": null,
+            "properties": {},
+            "provenance": {
+              "source_format": "pdf",
+              "source_path": "tests\\corpus\\native\\vector-export.pdf",
+              "page": 1,
+              "object_id": "vector-1",
+              "package_part": null,
+              "events": [
+                {
+                  "operation": "extract.pdf.fast",
+                  "detail": "represented PDF drawing as editable vector resource",
+                  "fallback_reason": null
+                }
+              ]
+            },
+            "visual_surrogate": null
+          }
+        ],
+        "page": {
+          "width_pt": 100.0,
+          "height_pt": 100.0,
+          "margin_top_pt": 25.0,
+          "margin_right_pt": 25.0,
+          "margin_bottom_pt": 25.0,
+          "margin_left_pt": 25.0
+        },
+        "headers": [],
+        "footers": [],
+        "first_page_headers": [],
+        "first_page_footers": [],
+        "even_page_headers": [],
+        "even_page_footers": [],
+        "properties": {},
+        "provenance": {
+          "source_format": "pdf",
+          "source_path": "tests\\corpus\\native\\vector-export.pdf",
+          "page": 1,
+          "object_id": "page-1",
+          "package_part": null,
+          "events": [
+            {
+              "operation": "extract.pdf.fast",
+              "detail": "created document section from PDF page",
+              "fallback_reason": null
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

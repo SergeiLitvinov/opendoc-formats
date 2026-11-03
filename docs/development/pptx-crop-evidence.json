@@ -1,0 +1,138 @@
+{
+  "scope": "Bindings v6: native stretch picture crop edits; signed source rectangles retained opaque pending Model contract",
+  "model": "opendoc-model==0.19.0; import opendoc_model",
+  "model_code_changed": false,
+  "dependencies_changed": false,
+  "implementation": {
+    "module": "opendoc_formats.ooxml.pptx_crop",
+    "eligibility": "Uniquely identified p:pic, stretch with empty/zero destination rectangle, internal image links and SVG companions, proved srcRect attributes/topology",
+    "projection": "Set/change/remove native srcRect, nearest integer 1/100000 units; reject rounding that removes the whole image",
+    "preservation": "Original raster/vector/preview bytes, alpha/effects, source geometry, relationships and opaque parts retained; no resampling",
+    "freshness": "Mask only eligible crop in official Model codec digest v6; all other image fields/resources remain protected",
+    "compatibility": "Older v1-v5 retain prior scopes; no automatic crop permission; unchanged native percentage lexemes retained",
+    "reader": "Read bounded integer or decimal-percent srcRect lexical forms",
+    "outset": "Signed/outside native crop becomes Formats-owned opaque source rectangle plus located diagnostic rather than Model validation exception; no semantic projection claim"
+  },
+  "checks": {
+    "test_file": "tests/writers/test_pptx_source_crop.py",
+    "full_project_run": false,
+    "crop_cases_passed": 20,
+    "regression_command": "python -m pytest tests/readers tests/writers tests/support/test_ooxml_pptx_package.py tests/support/test_ooxml_package.py -k 'pptx or office_export_cancellation or ooxml_package' -q --tb=short",
+    "regression_passed": 515,
+    "regression_deselected": 1545,
+    "regression_seconds": 183.09,
+    "ruff": "passed",
+    "configured_strict_mypy": "41 files passed",
+    "boundary_audit_modules": 231,
+    "docs": "generated and strict build passed; contract included in navigation",
+    "reviewed_license_inventory": "unchanged lockfile matches inventory",
+    "release_archives": "0.42.0 wheel/sdist licenses, resources, metadata and required modules verified",
+    "installed_pptx_only_smoke": {
+      "passed": true,
+      "python": "3.12.16",
+      "script": "tools/pptx_package_smoke.py",
+      "scope": "Two JSON cycles; source shape text/frame, table text/grid, chart frame and image crop in one slide DOM; only slide XML differs",
+      "absent": [
+        "fontTools",
+        "docx",
+        "pymupdf",
+        "pypdf",
+        "bs4"
+      ],
+      "installed": [
+        "opendoc-formats==0.42.0",
+        "opendoc-model==0.19.0",
+        "python-pptx==1.0.2",
+        "lxml==6.1.3",
+        "Pillow==12.3.0",
+        "typing-extensions==4.16.0",
+        "xlsxwriter==3.3.1"
+      ],
+      "inventory_scope": "Reviewed uv.lock unchanged; smoke additionally resolves xlsxwriter 3.3.1, lock pins 3.3.0"
+    }
+  },
+  "native_acceptance": {
+    "application": "Microsoft PowerPoint 16.0",
+    "script": "tools/pptx_crop_powerpoint_acceptance.ps1",
+    "fixture": "tests.writers.test_pptx_source_crop.own_picture",
+    "profiles": [
+      "raster",
+      "svg"
+    ],
+    "dpi": 108,
+    "images_inspected": true,
+    "source_unchanged": true,
+    "results": {
+      "raster": {
+        "changed_payloads": [
+          "ppt/slides/slide1.xml"
+        ],
+        "media_sha256": {
+          "ppt/media/image1.png": "5f229f090b197209fe7703d18f3ce7a47ebb0eb2f1549e400e0748c1979372fe"
+        },
+        "mupdf": {
+          "dimensions": [
+            1080,
+            810
+          ],
+          "all_pixels_equal": true,
+          "decoded_rgb_sha256": "4d29271fbadccb9800e4e4176a22effba4b3462d115895bb9dc24ae5672a1254"
+        },
+        "poppler": {
+          "dimensions": [
+            1080,
+            810
+          ],
+          "all_pixels_equal": true,
+          "decoded_rgb_sha256": "30d8ff47ea1145667a5fa4345cff2e44dac63985ce1e9900ea9dc263f0b16491"
+        }
+      },
+      "svg": {
+        "changed_payloads": [
+          "ppt/slides/slide1.xml"
+        ],
+        "media_sha256": {
+          "ppt/media/vector1.svg": "afdf683127621c631a67f657c81df506125a57536078406c3bbb5d8c011db0d2",
+          "ppt/media/image1.png": "5f229f090b197209fe7703d18f3ce7a47ebb0eb2f1549e400e0748c1979372fe"
+        },
+        "mupdf": {
+          "dimensions": [
+            893,
+            1263
+          ],
+          "all_pixels_equal": true,
+          "decoded_rgb_sha256": "824ef755961ba79807373d4517825fad805e753ede246ec0eab4b49ab99b0522"
+        },
+        "poppler": {
+          "dimensions": [
+            893,
+            1263
+          ],
+          "all_pixels_equal": true,
+          "decoded_rgb_sha256": "a44930597b46135379c777330f16059fcef6e635c4e8a44e20379c829f581ddc"
+        }
+      }
+    }
+  },
+  "model_contract": {
+    "id": "C-IMAGE-RECT-01",
+    "document": "docs/development/image-source-rectangle-contract.md",
+    "status": "sent to existing OpenDoc thread; stable API not adopted",
+    "thread_id": "01a0fb93-a881-7d81-9a48-5ebf977021c3",
+    "native_outset": {
+      "l": "-13333",
+      "t": "26667",
+      "r": "13333",
+      "b": "13333"
+    },
+    "required_semantics": "Optional finite signed normalized source rect with positive width/height, official codec/limits and explicit ImageCrop coexistence/migration",
+    "ownership": "Model DTO/codec/validation only; Formats native units/bindings/projection and engine acceptance"
+  },
+  "limits": [
+    "Finite native acceptance on own raster and SVG examples, not all image layouts",
+    "Signed/outside viewports are opaque until stable Model contract and consumer acceptance",
+    "Tiling, nonzero fill rectangles, linked/ambiguous/AlternateContent image scopes are not editable crop bindings",
+    "No source media content replacement, no general rendering/layout fidelity claim",
+    "ZIP metadata/archive byte identity and arbitrary signature edits remain outside profile"
+  ]
+}

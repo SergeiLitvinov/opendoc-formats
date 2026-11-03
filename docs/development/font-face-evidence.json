@@ -1,0 +1,250 @@
+{
+  "scope": "Finite static face metadata parity, not complete font/shaping/render validation",
+  "production_model": "opendoc-model==0.18.1",
+  "published": false,
+  "dependencies_changed": false,
+  "face_tests_passed": 50,
+  "affected_tests_passed": 164,
+  "test_selection": [
+    "tests/test_native_font_face.py",
+    "tests/test_native_font_cmap.py",
+    "tests/test_native_font_names.py",
+    "tests/test_word_font_metrics.py",
+    "tests/writers/test_pdf_docx_complex.py",
+    "tests/writers/test_pdf_model_docx.py",
+    "tests/writers/test_docx_opaque_fonts.py",
+    "tests/writers/test_pdf_unicode.py"
+  ],
+  "source_files_sha256": {
+    "src/opendoc_formats/native/sfnt.py": "060d3634a224e62605521b68c4c00214e01b113189f18c57fce8e3caef6e0ce2",
+    "src/opendoc_formats/fonts/resolver.py": "c7017ea668f1b6cfab03044d934c590bf985d27680be3f14b6551ce1a89c2644",
+    "src/opendoc_formats/fonts/sfnt_names.py": "aa12f44d10db95063f59461549f8697e5f63754e0fde803e0420de022aecb759",
+    "src/opendoc_formats/fonts/sfnt_cmap.py": "697f4ab8916aae52bd5cf70f40e27d07d4f778fd7083c667f2784abd5f02bacc",
+    "tests/test_native_font_face.py": "3bf4ca20740e8412b7ddc22aba1589beed3ee71507197bbefc4ba2ffa876fb64",
+    "tests/test_native_font_cmap.py": "cb20e5bdcd8830455907d43a23c9a6f3acfdca841421e9305d524bd78b793d76",
+    "tools/package_smoke.py": "9f6493d77994997bdbe9f40fca52ba614754d4f0c4d9b080487ccc632ca5b770"
+  },
+  "system_corpus": {
+    "selection": "sorted(Path(C:/Windows/Fonts).glob(*.ttf))[:24] on Windows",
+    "all_fields_matched": 24,
+    "without_fonttools_import": 23,
+    "engine_fallback": 1,
+    "fallback_reason": "bahnschrift.ttf is variable; existing reader retained",
+    "payloads_redistributed": false,
+    "entries": [
+      {
+        "filename": "Alef-Bold.ttf",
+        "sha256": "39c262cf1aedb7f404c03f35c629fd74a62630f1544e53b999e80b000bb33d20",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 423
+      },
+      {
+        "filename": "Alef-Regular.ttf",
+        "sha256": "d424d553c4b1ab0473ca7198a980d767c1e697f2d74a1d95705c9855c02f41de",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 423
+      },
+      {
+        "filename": "Amiri-Bold.ttf",
+        "sha256": "c20c5fda0b648bfd7672fd3ded17488daa3a4810673b9b012fbb4a0af6a26aab",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 1548
+      },
+      {
+        "filename": "Amiri-BoldItalic.ttf",
+        "sha256": "0ea3471e45795c04fd90c630575546df7c6d77c13ab976dde0a0e1354b38d3ac",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 1549
+      },
+      {
+        "filename": "Amiri-Italic.ttf",
+        "sha256": "7a678bab178232bb154bdf045bc7eaa0ab4193c312ff618037b4ac8977ac1b2a",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 1693
+      },
+      {
+        "filename": "Amiri-Regular.ttf",
+        "sha256": "b092096eb992aebe59084b0cb5cf0015ae82c7e76b0aac5e7d60ae5113af5f54",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 1699
+      },
+      {
+        "filename": "AmiriQuran.ttf",
+        "sha256": "8dcb435b14cb706d79024df4b994221e18474d4be1ec18b04d8120eeaf1844f5",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 266
+      },
+      {
+        "filename": "ANTQUAB.TTF",
+        "sha256": "134a9f8ecf618660305d7d34b6905375c1d5d7838ea15cdb2789ba94317f4117",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 671
+      },
+      {
+        "filename": "ANTQUABI.TTF",
+        "sha256": "bc546e3e96f8cdd9e6cf02eb5c8ac5551ef20ef4639ff701c338ea281f56fbd0",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 671
+      },
+      {
+        "filename": "ANTQUAI.TTF",
+        "sha256": "6b00590bd7a52a94e9e90e35a28c1d2fa03f83f458d2f2dfbced70a9c1ea0c80",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 671
+      },
+      {
+        "filename": "arial.ttf",
+        "sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 3506
+      },
+      {
+        "filename": "arialbd.ttf",
+        "sha256": "e8f4e3baf6cc35fed6fcce3a540e8b39e8f6cda1d22a28f2ec8f526fef7a43f5",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 3506
+      },
+      {
+        "filename": "arialbi.ttf",
+        "sha256": "267a411525980d648f10a7222a6ff1ebe4d4feeefbf9b3100cae2b5cfab5594a",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 2811
+      },
+      {
+        "filename": "ariali.ttf",
+        "sha256": "86b32db9a06f9694e2a3760c42e5117bcdc5cc1255bb5186ca8ce0305e22f288",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 2811
+      },
+      {
+        "filename": "ARIALN.TTF",
+        "sha256": "cad552553cf2a75afca01955751aaa115e2a64fd6c6eea42e1fbd236630b7e0a",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 656
+      },
+      {
+        "filename": "ARIALNB.TTF",
+        "sha256": "6c4a4b643461def5411e0217b74a625dcf2fb681252ef5da1db0af4eae80aa7e",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 656
+      },
+      {
+        "filename": "ARIALNBI.TTF",
+        "sha256": "161b859efd20c69ddebb23012a49f4f2030d56a0c1b9bcfd4df753217ce3e358",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 656
+      },
+      {
+        "filename": "ARIALNI.TTF",
+        "sha256": "faf73aa7ce40b77ad19c09507a2263fe3f3ce9fa5642e8a1cd54fb3c9f52d599",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 656
+      },
+      {
+        "filename": "ariblk.ttf",
+        "sha256": "10df702864b1f89cb29ba0d6b97c04228338d16807e13e8d8c74b91aba5e5f23",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 667
+      },
+      {
+        "filename": "bahnschrift.ttf",
+        "sha256": "eaad201da94cb323401fdb8cc760650803ddf8fd704cb9fa56317e6c69bc6fd6",
+        "native_face": false,
+        "all_fields_matched": true,
+        "codepoints": 896
+      },
+      {
+        "filename": "BKANT.TTF",
+        "sha256": "c019f155a0004760f32079c22c29ef0ddd223d0c2c79e2487122e66d38a53b32",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 671
+      },
+      {
+        "filename": "BOOKOS.TTF",
+        "sha256": "8f2df7dbc1f2b790f6e6fdd24dbb6c2a96b6e554ba2031c3ab0fe34d322a1b3e",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 671
+      },
+      {
+        "filename": "BOOKOSB.TTF",
+        "sha256": "ec95c7380ab7f92ebc75bba6c56a80646fcb450ef6cccc631852a8b97be75c55",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 672
+      },
+      {
+        "filename": "BOOKOSBI.TTF",
+        "sha256": "2de5e34daf966be8e165bd5604ac0714a7946ea2a0a08f86ff04e687ed54d8d7",
+        "native_face": true,
+        "all_fields_matched": true,
+        "codepoints": 671
+      }
+    ]
+  },
+  "installed_base_wheel": {
+    "sha256": "8433c02890e33994caf73b1230e85eeef331ad794eec500d7996de210ae481cd",
+    "python_files": 211,
+    "all_source_wheel_installed_python_files_match": true,
+    "optional_font_pdf_pillow_engines_absent": true,
+    "static_face_names_coverage_baseline_package_smoke_passed": true,
+    "dependency_check_passed": true
+  },
+  "native_profile": {
+    "static_standalone_sfnt": true,
+    "os2_versions": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "post_versions": [
+      1,
+      2,
+      3
+    ],
+    "maxp_versions_hex": [
+      "00005000",
+      "00010000"
+    ],
+    "missing_permission_table_not_inferred": true,
+    "same_existing_embedding_subsetting_flag_policy": true,
+    "average_width_zero_keeps_existing_500_default": true,
+    "source_snapshot_shared_for_metadata_and_coverage": true
+  },
+  "remaining": [
+    "Variable/compressed/collection or unknown profiles use existing engine path",
+    "fontTools remains for GSUB/ToUnicode and actual subsetting",
+    "Native budgets do not bound engine fallback",
+    "No proof of complete glyph outline, variation instance or font license correctness"
+  ],
+  "additional_cff_otf_test_after_regression_collection": {
+    "passed": 1,
+    "maxp_version_hex": "00005000",
+    "fonttools_import_forbidden": true,
+    "runtime_source_unchanged": true
+  },
+  "base_fvar_acceptance": "font-fvar-evidence.json"
+}

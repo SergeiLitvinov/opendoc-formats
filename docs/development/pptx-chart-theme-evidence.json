@@ -1,0 +1,785 @@
+{
+  "scope": "Chart-local themeOverride and clrMapOvr with consumer inheritance and isolated chart contexts",
+  "dpi": 108,
+  "masks": null,
+  "pixel_tolerance": 0,
+  "source_color_control_maximum_channel_rounding": 1,
+  "native": {
+    "version": "16.0",
+    "stage": "render",
+    "files": [
+      {
+        "file": "chart-theme/original.pptx",
+        "source_sha256": "B5241BE4DB94E2A9F8153CC1DA15A8DD2E4616003612B274F3D5BE5140F5BBA9",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "chart-theme/source-1.pptx",
+        "source_sha256": "E1B2B27AF882FCD938D638A6236C8CE11FCD8506F3BE3FB6419726397E736FD0",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "chart-theme/source-2.pptx",
+        "source_sha256": "E1B2B27AF882FCD938D638A6236C8CE11FCD8506F3BE3FB6419726397E736FD0",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "chart-theme/rebuild-1.pptx",
+        "source_sha256": "E2E8E0728803A02707833DD49241FC774D26C5AFE11BBB511FB76CC97ECBE2F5",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "chart-theme/rebuild-2.pptx",
+        "source_sha256": "812431C5CBFDBBA650530D4465841B886950B9850BB59B57F7484682FF7DDA22",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "chart-map/original.pptx",
+        "source_sha256": "860ADD5344CF05C35975C29D110185914C93EBD12FA601F33013B7E4207D7611",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "chart-map/source-1.pptx",
+        "source_sha256": "663E55D314ADB6312F25042C4B342BDABB6A2B0E70811EAC03A4F3407FF07E34",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "chart-map/source-2.pptx",
+        "source_sha256": "663E55D314ADB6312F25042C4B342BDABB6A2B0E70811EAC03A4F3407FF07E34",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "chart-map/rebuild-1.pptx",
+        "source_sha256": "A383D30E0423759C1FA3A2F373CED46CB60A31129CAB51B490D9C074C460515C",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "chart-map/rebuild-2.pptx",
+        "source_sha256": "2CCB21A03D76EA17102580F7F2245123887866CE1B9FBBD748467DF7837A5662",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "combined/original.pptx",
+        "source_sha256": "9E1DCA56E620F7AD101188A236AB40BD5F116172897EC1D4F2710D084E9C474A",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "combined/source-1.pptx",
+        "source_sha256": "462418C3C11338C0F637D06A2BB69AF1E7E38CE8645D7DCA5A4F2EE0235E18C9",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "combined/source-2.pptx",
+        "source_sha256": "462418C3C11338C0F637D06A2BB69AF1E7E38CE8645D7DCA5A4F2EE0235E18C9",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "combined/rebuild-1.pptx",
+        "source_sha256": "4E9738D1353BA937527DB64CDF1BCA478F114C983386E1406E10C190C60F5CC0",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "combined/rebuild-2.pptx",
+        "source_sha256": "05AB07C3652EF1CE0BAD84E1299A516506A1F240527CEC9E0A57253D5323FEDF",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "consumer-map/original.pptx",
+        "source_sha256": "B70BC32E1EE5FF43F68E514458C37604EB575EFAFFDFF535276ABF69B2830DE7",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "consumer-map/source-1.pptx",
+        "source_sha256": "310AAC7D802AA886DB9DCDDA7DDCEE53088F4245F7D83C4C0A7DDA9C79E8414A",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "consumer-map/source-2.pptx",
+        "source_sha256": "310AAC7D802AA886DB9DCDDA7DDCEE53088F4245F7D83C4C0A7DDA9C79E8414A",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "consumer-map/rebuild-1.pptx",
+        "source_sha256": "E01E1C62233A0F9D62D6DB65E7817CEEA07998C222A9CA739DD2EDA26C19AB10",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "consumer-map/rebuild-2.pptx",
+        "source_sha256": "1C37CD783FCC5F6CBA84CF7AD5D193F11CFCFDD28643E38B61E4617382A2EA1F",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "chart-map-priority/original.pptx",
+        "source_sha256": "07A6CE5B79A9065BEA3FCB6D44AC11D4786771C3CBBA355DDF92D182A71511D4",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "chart-map-priority/source-1.pptx",
+        "source_sha256": "063DC97B4E0410D5278E728E0A8A7AB295E107E61C24AE22E9620D9DB43174B5",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "chart-map-priority/source-2.pptx",
+        "source_sha256": "063DC97B4E0410D5278E728E0A8A7AB295E107E61C24AE22E9620D9DB43174B5",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "chart-map-priority/rebuild-1.pptx",
+        "source_sha256": "05011B7C84AECD9EBC6ED2AFCCF9658410CD7385038A6D00331F3FF1EE1C96CF",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "chart-map-priority/rebuild-2.pptx",
+        "source_sha256": "6687CD6D9E165247EDFA91662CF5C0CCFCD6A2803941968CEC93DA6CA4302CED",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "two-charts/original.pptx",
+        "source_sha256": "4AB5DB785FDF9508A5DC219DB8B53A5589E5C236CCAC9C909CF00702E60F6093",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "two-charts/source-1.pptx",
+        "source_sha256": "8BEAC7E9E29AEE8781FCA0A90D3E770CCF2D0F7DD06914FF17C99BB83367BD3F",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "two-charts/source-2.pptx",
+        "source_sha256": "8BEAC7E9E29AEE8781FCA0A90D3E770CCF2D0F7DD06914FF17C99BB83367BD3F",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "two-charts/rebuild-1.pptx",
+        "source_sha256": "158BF1AA631D12892E25F2AB9014BD33EC08DB81D320354536383BC1D527ABEE",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "two-charts/rebuild-2.pptx",
+        "source_sha256": "54C832C14DE12397A0800CDC127F5E965EB343B32255DAE95529DEF99E1C8952",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "inherited-chart/original.pptx",
+        "source_sha256": "45F93AFF6A4F34FC2FA821258BC36DC0CB752B6406C3683D6E24FD5DC37A9D46",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "inherited-chart/source-1.pptx",
+        "source_sha256": "E5A486E4BB1582986120C828CEABD437383474BA6F3CEE96192FA90EDD5D7D3A",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "inherited-chart/source-2.pptx",
+        "source_sha256": "E5A486E4BB1582986120C828CEABD437383474BA6F3CEE96192FA90EDD5D7D3A",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "inherited-chart/rebuild-1.pptx",
+        "source_sha256": "30B749860E26E73CFC3C91A9706DE50FF5A3EC03D3689C5812404A0CECEE263B",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "inherited-chart/rebuild-2.pptx",
+        "source_sha256": "AEB23A0FCDCF6169E5118D3172F7F7B33443CEDFB12434A9B1EB679D71B88454",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "layout-chart/original.pptx",
+        "source_sha256": "DCD28C26FFDE45CCB5C2820EF50EA6B26B8CB6740FB125FBA4DCC31A85C1F9DD",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "layout-chart/source-1.pptx",
+        "source_sha256": "86FFAD3B42AD7E8EA97E8F996DE186FB4C4F7EFBC0A6446837CBD0499DFD6A1A",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "layout-chart/source-2.pptx",
+        "source_sha256": "86FFAD3B42AD7E8EA97E8F996DE186FB4C4F7EFBC0A6446837CBD0499DFD6A1A",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "layout-chart/rebuild-1.pptx",
+        "source_sha256": "8118AC55F8850800D6E9C0ECD67E127CF246D67B90DE288E2CA5225470417A28",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "layout-chart/rebuild-2.pptx",
+        "source_sha256": "7A13C6D36009FCAB9513E9EAF444DCA5D1A1A08C270AA61A3FB00C713F3E000F",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "layout-owner-map/original.pptx",
+        "source_sha256": "52B09203654D73B586D019BBE22D9BF129F07256E9EF58A7745A1B5080B6E820",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "layout-owner-map/source-1.pptx",
+        "source_sha256": "5B4383E575B0543900B6A193BBE80EAAF5911D0803B7F861939883AF7BF94742",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "layout-owner-map/source-2.pptx",
+        "source_sha256": "5B4383E575B0543900B6A193BBE80EAAF5911D0803B7F861939883AF7BF94742",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "layout-owner-map/rebuild-1.pptx",
+        "source_sha256": "1342587183F9A4FE703600F3C7FC7EF47672F6B3A815FD699AC249C7BE8F6AA4",
+        "pages": 1,
+        "source_unchanged": true
+      },
+      {
+        "file": "layout-owner-map/rebuild-2.pptx",
+        "source_sha256": "6A7D98FA2B76C15DA15BD9B1AD4C1985248AC00E049CE1D0D2F07167DEB0AF07",
+        "pages": 1,
+        "source_unchanged": true
+      }
+    ],
+    "success": true
+  },
+  "sources": [
+    {
+      "file": "chart-theme/original.pptx",
+      "case": "chart-theme",
+      "route": "original",
+      "expected_background": "#FFFFFF",
+      "expected_chart_colors": [
+        "#228866"
+      ],
+      "sha256": "b5241be4db94e2a9f8153cc1da15a8dd2e4616003612b274f3d5be5140f5bba9"
+    },
+    {
+      "file": "chart-map/original.pptx",
+      "case": "chart-map",
+      "route": "original",
+      "expected_background": "#FFFFFF",
+      "expected_chart_colors": [
+        "#4060A0"
+      ],
+      "sha256": "860add5344cf05c35975c29d110185914c93ebd12fa601f33013b7e4207d7611"
+    },
+    {
+      "file": "combined/original.pptx",
+      "case": "combined",
+      "route": "original",
+      "expected_background": "#FFFFFF",
+      "expected_chart_colors": [
+        "#8844AA"
+      ],
+      "sha256": "9e1dca56e620f7ad101188a236ab40bd5f116172897ec1d4f2710d084e9c474a"
+    },
+    {
+      "file": "consumer-map/original.pptx",
+      "case": "consumer-map",
+      "route": "original",
+      "expected_background": "#FFFFFF",
+      "expected_chart_colors": [
+        "#8844AA"
+      ],
+      "sha256": "b70bc32e1ee5ff43f68e514458c37604eb575efaffdff535276abf69b2830de7"
+    },
+    {
+      "file": "chart-map-priority/original.pptx",
+      "case": "chart-map-priority",
+      "route": "original",
+      "expected_background": "#FFFFFF",
+      "expected_chart_colors": [
+        "#228866"
+      ],
+      "sha256": "07a6ce5b79a9065bea3fcb6d44ac11d4786771c3cbba355ddf92d182a71511d4"
+    },
+    {
+      "file": "two-charts/original.pptx",
+      "case": "two-charts",
+      "route": "original",
+      "expected_background": "#FFFFFF",
+      "expected_chart_colors": [
+        "#228866",
+        "#8844AA"
+      ],
+      "sha256": "4ab5db785fdf9508a5dc219db8b53a5589e5c236ccac9c909cf00702e60f6093"
+    },
+    {
+      "file": "inherited-chart/original.pptx",
+      "case": "inherited-chart",
+      "route": "original",
+      "expected_background": "#FFFFFF",
+      "expected_chart_colors": [
+        "#228866"
+      ],
+      "sha256": "45f93aff6a4f34fc2fa821258bc36dc0cb752b6406c3683d6e24fd5dc37a9d46"
+    },
+    {
+      "file": "layout-chart/original.pptx",
+      "case": "layout-chart",
+      "route": "original",
+      "expected_background": "#FFFFFF",
+      "expected_chart_colors": [
+        "#228866"
+      ],
+      "sha256": "dcd28c26ffde45ccb5c2820ef50ea6b26b8cb6740fb125fba4dcc31a85c1f9dd"
+    },
+    {
+      "file": "layout-owner-map/original.pptx",
+      "case": "layout-owner-map",
+      "route": "original",
+      "expected_background": "#FFFFFF",
+      "expected_chart_colors": [
+        "#8844AA"
+      ],
+      "sha256": "52b09203654d73b586d019bbe22d9bf129f07256e9ef58a7745a1b5080b6e820"
+    }
+  ],
+  "comparisons": [
+    {
+      "file": "chart-theme/source-1.pptx",
+      "case": "chart-theme",
+      "route": "source",
+      "cycle": 1,
+      "sha256": "e1b2b27af882fcd938d638a6236c8ce11fcd8506f3be3fb6419726397e736fd0",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "chart-theme/source-2.pptx",
+      "case": "chart-theme",
+      "route": "source",
+      "cycle": 2,
+      "sha256": "e1b2b27af882fcd938d638a6236c8ce11fcd8506f3be3fb6419726397e736fd0",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "chart-theme/rebuild-1.pptx",
+      "case": "chart-theme",
+      "route": "rebuild",
+      "cycle": 1,
+      "sha256": "e2e8e0728803a02707833dd49241fc774d26c5afe11bbb511fb76cc97ecbe2f5",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "chart-theme/rebuild-2.pptx",
+      "case": "chart-theme",
+      "route": "rebuild",
+      "cycle": 2,
+      "sha256": "812431c5cbfdbba650530d4465841b886950b9850bb59b57f7484682ff7dda22",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "chart-map/source-1.pptx",
+      "case": "chart-map",
+      "route": "source",
+      "cycle": 1,
+      "sha256": "663e55d314adb6312f25042c4b342bdabb6a2b0e70811eac03a4f3407ff07e34",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "chart-map/source-2.pptx",
+      "case": "chart-map",
+      "route": "source",
+      "cycle": 2,
+      "sha256": "663e55d314adb6312f25042c4b342bdabb6a2b0e70811eac03a4f3407ff07e34",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "chart-map/rebuild-1.pptx",
+      "case": "chart-map",
+      "route": "rebuild",
+      "cycle": 1,
+      "sha256": "a383d30e0423759c1fa3a2f373ced46cb60a31129cab51b490d9c074c460515c",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "chart-map/rebuild-2.pptx",
+      "case": "chart-map",
+      "route": "rebuild",
+      "cycle": 2,
+      "sha256": "2ccb21a03d76ea17102580f7f2245123887866ce1b9fbbd748467df7837a5662",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "combined/source-1.pptx",
+      "case": "combined",
+      "route": "source",
+      "cycle": 1,
+      "sha256": "462418c3c11338c0f637d06a2bb69af1e7e38ce8645d7dca5a4f2ee0235e18c9",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "combined/source-2.pptx",
+      "case": "combined",
+      "route": "source",
+      "cycle": 2,
+      "sha256": "462418c3c11338c0f637d06a2bb69af1e7e38ce8645d7dca5a4f2ee0235e18c9",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "combined/rebuild-1.pptx",
+      "case": "combined",
+      "route": "rebuild",
+      "cycle": 1,
+      "sha256": "4e9738d1353ba937527db64cdf1bca478f114c983386e1406e10c190c60f5cc0",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "combined/rebuild-2.pptx",
+      "case": "combined",
+      "route": "rebuild",
+      "cycle": 2,
+      "sha256": "05ab07c3652ef1ce0bad84e1299a516506a1f240527cec9e0a57253d5323fedf",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "consumer-map/source-1.pptx",
+      "case": "consumer-map",
+      "route": "source",
+      "cycle": 1,
+      "sha256": "310aac7d802aa886db9dcdda7ddcee53088f4245f7d83c4c0a7dda9c79e8414a",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "consumer-map/source-2.pptx",
+      "case": "consumer-map",
+      "route": "source",
+      "cycle": 2,
+      "sha256": "310aac7d802aa886db9dcdda7ddcee53088f4245f7d83c4c0a7dda9c79e8414a",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "consumer-map/rebuild-1.pptx",
+      "case": "consumer-map",
+      "route": "rebuild",
+      "cycle": 1,
+      "sha256": "e01e1c62233a0f9d62d6db65e7817ceea07998c222a9ca739dd2eda26c19ab10",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "consumer-map/rebuild-2.pptx",
+      "case": "consumer-map",
+      "route": "rebuild",
+      "cycle": 2,
+      "sha256": "1c37cd783fcc5f6cba84cf7ad5d193f11cfcfdd28643e38b61e4617382a2ea1f",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "chart-map-priority/source-1.pptx",
+      "case": "chart-map-priority",
+      "route": "source",
+      "cycle": 1,
+      "sha256": "063dc97b4e0410d5278e728e0a8a7ab295e107e61c24ae22e9620d9db43174b5",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "chart-map-priority/source-2.pptx",
+      "case": "chart-map-priority",
+      "route": "source",
+      "cycle": 2,
+      "sha256": "063dc97b4e0410d5278e728e0a8a7ab295e107e61c24ae22e9620d9db43174b5",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "chart-map-priority/rebuild-1.pptx",
+      "case": "chart-map-priority",
+      "route": "rebuild",
+      "cycle": 1,
+      "sha256": "05011b7c84aecd9ebc6ed2afccf9658410cd7385038a6d00331f3ff1ee1c96cf",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "chart-map-priority/rebuild-2.pptx",
+      "case": "chart-map-priority",
+      "route": "rebuild",
+      "cycle": 2,
+      "sha256": "6687cd6d9e165247edfa91662cf5c0ccfcd6a2803941968cec93da6ca4302ced",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "two-charts/source-1.pptx",
+      "case": "two-charts",
+      "route": "source",
+      "cycle": 1,
+      "sha256": "8beac7e9e29aee8781fca0a90d3e770ccf2d0f7dd06914ff17c99bb83367bd3f",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "two-charts/source-2.pptx",
+      "case": "two-charts",
+      "route": "source",
+      "cycle": 2,
+      "sha256": "8beac7e9e29aee8781fca0a90d3e770ccf2d0f7dd06914ff17c99bb83367bd3f",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "two-charts/rebuild-1.pptx",
+      "case": "two-charts",
+      "route": "rebuild",
+      "cycle": 1,
+      "sha256": "158bf1aa631d12892e25f2ab9014bd33ec08db81d320354536383bc1d527abee",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "two-charts/rebuild-2.pptx",
+      "case": "two-charts",
+      "route": "rebuild",
+      "cycle": 2,
+      "sha256": "54c832c14de12397a0800cdc127f5e965eb343b32255dae95529def99e1c8952",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "inherited-chart/source-1.pptx",
+      "case": "inherited-chart",
+      "route": "source",
+      "cycle": 1,
+      "sha256": "e5a486e4bb1582986120c828ceabd437383474ba6f3cee96192fa90edd5d7d3a",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "inherited-chart/source-2.pptx",
+      "case": "inherited-chart",
+      "route": "source",
+      "cycle": 2,
+      "sha256": "e5a486e4bb1582986120c828ceabd437383474ba6f3cee96192fa90edd5d7d3a",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "inherited-chart/rebuild-1.pptx",
+      "case": "inherited-chart",
+      "route": "rebuild",
+      "cycle": 1,
+      "sha256": "30b749860e26e73cfc3c91a9706de50ff5a3ec03d3689c5812404a0cecee263b",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "inherited-chart/rebuild-2.pptx",
+      "case": "inherited-chart",
+      "route": "rebuild",
+      "cycle": 2,
+      "sha256": "aeb23a0fcdcf6169e5118d3172f7f7b33443cedfb12434a9b1eb679d71b88454",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "layout-chart/source-1.pptx",
+      "case": "layout-chart",
+      "route": "source",
+      "cycle": 1,
+      "sha256": "86ffad3b42ad7e8ea97e8f996de186fb4c4f7efbc0a6446837cbd0499dfd6a1a",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "layout-chart/source-2.pptx",
+      "case": "layout-chart",
+      "route": "source",
+      "cycle": 2,
+      "sha256": "86ffad3b42ad7e8ea97e8f996de186fb4c4f7efbc0a6446837cbd0499dfd6a1a",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "layout-chart/rebuild-1.pptx",
+      "case": "layout-chart",
+      "route": "rebuild",
+      "cycle": 1,
+      "sha256": "8118ac55f8850800d6e9c0ecd67e127cf246d67b90de288e2ca5225470417a28",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "layout-chart/rebuild-2.pptx",
+      "case": "layout-chart",
+      "route": "rebuild",
+      "cycle": 2,
+      "sha256": "7a13c6d36009fcab9513e9eaf444dca5d1a1a08c270aa61a3fb00c713f3e000f",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "layout-owner-map/source-1.pptx",
+      "case": "layout-owner-map",
+      "route": "source",
+      "cycle": 1,
+      "sha256": "5b4383e575b0543900b6a193bbe80eaaf5911d0803b7f861939883af7bf94742",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "layout-owner-map/source-2.pptx",
+      "case": "layout-owner-map",
+      "route": "source",
+      "cycle": 2,
+      "sha256": "5b4383e575b0543900b6a193bbe80eaaf5911d0803b7f861939883af7bf94742",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "layout-owner-map/rebuild-1.pptx",
+      "case": "layout-owner-map",
+      "route": "rebuild",
+      "cycle": 1,
+      "sha256": "1342587183f9a4fe703600f3c7fc7ef47672f6b3a815fd699ac249c7be8f6aa4",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    },
+    {
+      "file": "layout-owner-map/rebuild-2.pptx",
+      "case": "layout-owner-map",
+      "route": "rebuild",
+      "cycle": 2,
+      "sha256": "6a7d98fa2b76c15da15bd9b1ad4c1985248ac00e049ce1d0d2f07167deb0af07",
+      "mupdf_exact": true,
+      "poppler_exact": true
+    }
+  ],
+  "limitations": [
+    "Finite series-fill palette profile, not complete chart compatibility",
+    "Font/effect/style overrides, malformed mappings and complete shared-theme edits remain unaccepted"
+  ],
+  "source_color_controls": [
+    {
+      "case": "chart-theme",
+      "expected_rgb": "#228866",
+      "matching_pixels": 21736,
+      "maximum_channel_rounding": 1
+    },
+    {
+      "case": "chart-map",
+      "expected_rgb": "#4060A0",
+      "matching_pixels": 21736,
+      "maximum_channel_rounding": 1
+    },
+    {
+      "case": "combined",
+      "expected_rgb": "#8844AA",
+      "matching_pixels": 21736,
+      "maximum_channel_rounding": 1
+    },
+    {
+      "case": "consumer-map",
+      "expected_rgb": "#8844AA",
+      "matching_pixels": 21736,
+      "maximum_channel_rounding": 1
+    },
+    {
+      "case": "chart-map-priority",
+      "expected_rgb": "#228866",
+      "matching_pixels": 21736,
+      "maximum_channel_rounding": 1
+    },
+    {
+      "case": "two-charts",
+      "expected_rgb": "#228866",
+      "matching_pixels": 11856,
+      "maximum_channel_rounding": 1
+    },
+    {
+      "case": "two-charts",
+      "expected_rgb": "#8844AA",
+      "matching_pixels": 11856,
+      "maximum_channel_rounding": 1
+    },
+    {
+      "case": "inherited-chart",
+      "expected_rgb": "#228866",
+      "matching_pixels": 21736,
+      "maximum_channel_rounding": 1
+    },
+    {
+      "case": "layout-chart",
+      "expected_rgb": "#228866",
+      "matching_pixels": 21736,
+      "maximum_channel_rounding": 1
+    },
+    {
+      "case": "layout-owner-map",
+      "expected_rgb": "#8844AA",
+      "matching_pixels": 21736,
+      "maximum_channel_rounding": 1
+    }
+  ],
+  "installed_consumer": {
+    "isolated_interpreter": true,
+    "versions": {
+      "lxml": "6.1.3",
+      "opendoc-formats": "0.42.0",
+      "opendoc-model": "0.19.0",
+      "pillow": "13.0.0",
+      "python-pptx": "1.0.2",
+      "typing_extensions": "4.16.0",
+      "xlsxwriter": "3.3.1"
+    },
+    "cases": 9,
+    "json_rebuild_cycles": 2,
+    "source_unchanged": true,
+    "scope": "Finite chart-local palette cases; not full package/version acceptance"
+  }
+}

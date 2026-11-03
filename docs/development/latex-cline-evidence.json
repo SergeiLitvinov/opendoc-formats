@@ -1,0 +1,128 @@
+{
+  "scope": "Finite ordered hline/cline tabular profile with native cell/range edit",
+  "cases": [
+    {
+      "case": 0,
+      "dpi": 108,
+      "masks": null,
+      "pixel_tolerance": 0,
+      "source_sha256": "273957d131bd27809008ce4e46ee67aa57a8d505126a8077373b982d2d5187d6",
+      "reference_sha256": "273957d131bd27809008ce4e46ee67aa57a8d505126a8077373b982d2d5187d6",
+      "cycles": [
+        {
+          "source_sha256": "b515456ab6faa48cd04048c790293f7f4909fd13d055feb84511d215f7c4fa1d",
+          "mupdf_exact_pages": 1,
+          "poppler_exact_pages": 1,
+          "image_objects": 0
+        },
+        {
+          "source_sha256": "b515456ab6faa48cd04048c790293f7f4909fd13d055feb84511d215f7c4fa1d",
+          "mupdf_exact_pages": 1,
+          "poppler_exact_pages": 1,
+          "image_objects": 0
+        }
+      ],
+      "source_unchanged": true
+    },
+    {
+      "case": 1,
+      "dpi": 108,
+      "masks": null,
+      "pixel_tolerance": 0,
+      "source_sha256": "22b1853ca89305bab7aad90843cfb97c4e23e74d887297f6b34d66c124a925d4",
+      "reference_sha256": "22b1853ca89305bab7aad90843cfb97c4e23e74d887297f6b34d66c124a925d4",
+      "cycles": [
+        {
+          "source_sha256": "bde3b5395d4184e3a4e8bbd59a1b9f871c68f206743d38680202c9fbf6057e5b",
+          "mupdf_exact_pages": 1,
+          "poppler_exact_pages": 1,
+          "image_objects": 0
+        },
+        {
+          "source_sha256": "bde3b5395d4184e3a4e8bbd59a1b9f871c68f206743d38680202c9fbf6057e5b",
+          "mupdf_exact_pages": 1,
+          "poppler_exact_pages": 1,
+          "image_objects": 0
+        }
+      ],
+      "source_unchanged": true
+    },
+    {
+      "case": 2,
+      "dpi": 108,
+      "masks": null,
+      "pixel_tolerance": 0,
+      "source_sha256": "563ca1e293f4ff9c04ef84620d8645c37f4496a0d4a7657a34a42480ace6d3d1",
+      "reference_sha256": "563ca1e293f4ff9c04ef84620d8645c37f4496a0d4a7657a34a42480ace6d3d1",
+      "cycles": [
+        {
+          "source_sha256": "e6ed6b1f0958bd093511ea31dbaf7656f5dfd9bd160ef527069f3d77160af13a",
+          "mupdf_exact_pages": 1,
+          "poppler_exact_pages": 1,
+          "image_objects": 0
+        },
+        {
+          "source_sha256": "e6ed6b1f0958bd093511ea31dbaf7656f5dfd9bd160ef527069f3d77160af13a",
+          "mupdf_exact_pages": 1,
+          "poppler_exact_pages": 1,
+          "image_objects": 0
+        }
+      ],
+      "source_unchanged": true
+    },
+    {
+      "case": 3,
+      "dpi": 108,
+      "masks": null,
+      "pixel_tolerance": 0,
+      "source_sha256": "fa01907ce5e5a1daab3afb188eec6164c693c47fa482cea539b728cb1f03c676",
+      "reference_sha256": "fa01907ce5e5a1daab3afb188eec6164c693c47fa482cea539b728cb1f03c676",
+      "cycles": [
+        {
+          "source_sha256": "160e9a2ea456d439aefe2ab55141aabcedf21727a2503e681ff8c1661283ac7d",
+          "mupdf_exact_pages": 1,
+          "poppler_exact_pages": 1,
+          "image_objects": 0
+        },
+        {
+          "source_sha256": "160e9a2ea456d439aefe2ab55141aabcedf21727a2503e681ff8c1661283ac7d",
+          "mupdf_exact_pages": 1,
+          "poppler_exact_pages": 1,
+          "image_objects": 0
+        }
+      ],
+      "source_unchanged": true
+    },
+    {
+      "case": "edit",
+      "dpi": 108,
+      "masks": null,
+      "pixel_tolerance": 0,
+      "source_sha256": "273957d131bd27809008ce4e46ee67aa57a8d505126a8077373b982d2d5187d6",
+      "reference_sha256": "669f258fb700112564cf7b2e56d2a6fbc9e3a3ff2756f0285a63706085ed8511",
+      "cycles": [
+        {
+          "source_sha256": "dda18b1eca7363f27559fb0382c05e4fc61a50213d356de19797e0ffda05a6ab",
+          "mupdf_exact_pages": 1,
+          "poppler_exact_pages": 1,
+          "image_objects": 0
+        },
+        {
+          "source_sha256": "dda18b1eca7363f27559fb0382c05e4fc61a50213d356de19797e0ffda05a6ab",
+          "mupdf_exact_pages": 1,
+          "poppler_exact_pages": 1,
+          "image_objects": 0
+        }
+      ],
+      "source_unchanged": true
+    }
+  ],
+  "exact_pages_per_renderer": 10,
+  "renderers": [
+    "MuPDF",
+    "Poppler"
+  ],
+  "limitations": [
+    "Not paragraph columns, multirow, arbitrary TeX macros or measured cross-format borders"
+  ]
+}

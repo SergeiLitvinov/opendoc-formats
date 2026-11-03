@@ -1,0 +1,95 @@
+<img src="https://raw.githubusercontent.com/SergeiLitvinov/opendoc-formats/main/docs/assets/documentation-logo.svg" width="64" height="64" align="right" alt="OpenDoc Formats">
+
+# OpenDoc Formats
+
+**Файлы → модель OpenDoc → файлы.**
+
+[![CI](https://github.com/SergeiLitvinov/opendoc-formats/actions/workflows/ci.yml/badge.svg)](https://github.com/SergeiLitvinov/opendoc-formats/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/SergeiLitvinov/opendoc-formats)](https://github.com/SergeiLitvinov/opendoc-formats/releases)
+[![MIT](https://img.shields.io/badge/license-MIT-blue)](development/LICENSE)
+
+[Документация](https://SergeiLitvinov.github.io/opendoc-formats/) · [Руководство](guide/index.md) · [API](reference/api.md) · [Выпуски](https://github.com/SergeiLitvinov/opendoc-formats/releases)
+
+Импорт и экспорт файлов через модель OpenDoc, с диагностикой преобразований.
+Пакет: `opendoc-formats`, импорт: `opendoc_formats`; Python 3.11+.
+**Обязательная зависимость — OpenDoc Model 0.1.0 (`opendoc-model`, MIT).** Собственной копии модели и зависимости от приложений нет.
+
+Проект экосистемы [okidoki](https://github.com/search?q=user%3ASergeiLitvinov+topic%3Aokidoki&type=repositories), со своими версиями, тестами и выпусками.
+Библиотека предназначена для открытых проектов. MIT собственного кода и условия
+каждого набора движков описаны в [лицензионных профилях](guide/dependencies.md#лицензия-каждого-профиля).
+
+| Формат | Импорт | Экспорт | Движок / extra |
+| --- | --- | --- | --- |
+| TXT / JSON OpenDoc | Да | Да | Базовый пакет |
+| HTML / CSS | Да | Да | `html` для импорта |
+| DOCX | Да | Да | `docx` |
+| PPTX | Да | Да | `pptx` |
+| PDF | Да | Да | `pdf` — один PyMuPDF; `pdf-rich` — тот же профиль |
+| EPUB | Да | Да, конечный EPUB 3 профиль | `epub` для импорта; экспорт в базовом пакете |
+| DjVu | Текст | — | Внешний `djvutxt` |
+| LaTeX | Конечный source profile | Текст, заголовки, списки, TeX-формулы и конечный tabular без extras | Остальные объекты через DOCX-мост; неподдержанные списки/формулы отклоняются |
+
+Дополнительные инструменты: внедряемый OCR для PDF, шрифты (`fonts`),
+прямой PDF → DOCX и PPTX → HTML-просмотрщик с локальными CSS/JS и браузерным MathML.
+[Нативные правки DOCX, страницы PDF и офисный preview](guide/native-access.md),
+с типизированными снимками и сохранением исходного пакета. OCR и шаблоны принадлежат потребителю.
+[Препарирование документа](guide/document-anatomy.md) раскрывает части ZIP/XML,
+PDF xref/ObjStm-объявления и кандидаты объектов и бинарные payload для проверки исходной совместимости.
+Подробные [границы форматов](guide/formats.md) включают потери, непрозрачные объекты и доступ к ресурсам.
+[Полнота исходного импорта](guide/format-audit.md) и [открытые задачи](development/todo.md)
+описывают непокрытые части спецификаций; [LaTeX source profile](guide/latex-source.md)
+покрывает базовую структуру без исполнения TeX.
+
+[Бинарный инспектор](guide/document-anatomy.md) разбирает ZIP/XML, EPUB,
+PDF xref/ObjStm-объявления и кандидаты объектов и CFBF/OLE sectors/streams. Он сохраняет исходные данные;
+инспекция контейнера не означает полной поддержки вложенного формата.
+
+## Установка
+
+Из исходников: `uv sync --frozen --all-extras`. Для нужных движков:
+`uv sync --frozen --extra docx --extra html`. Python 3.11–3.13.
+
+Из [GitHub Release](https://github.com/SergeiLitvinov/opendoc-formats/releases), без зависимости от публикации на PyPI.
+Formats 0.1.0 использует Model 0.1.0:
+
+```sh
+python -m pip install "opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.1.0/opendoc_model-0.1.0-py3-none-any.whl" "opendoc-formats[docx,html] @ https://github.com/SergeiLitvinov/opendoc-formats/releases/download/v0.1.0/opendoc_formats-0.1.0-py3-none-any.whl"
+```
+
+Необязательные движки импортируются только при выборе обработчика. TXT/JSON работают с базовой установкой.
+Extra `pdf` устанавливает один PyMuPDF для модели, геометрии, рендера и PDF writer.
+Альтернативы подключаются явно: `pdf-text` — pypdf, `pdf-layout` — pdfplumber,
+`pdf-docx` — отдельный converter pdf2docx. Их зависимости не входят в обычный `pdf`.
+
+Для снимков и адресной правки исходного DOCX через `DocxPackage` достаточно
+`docx-native` с одним lxml. Полный импорт/экспорт модели DOCX использует `docx`.
+Подробнее — [нативный доступ](guide/native-access.md).
+
+## Пример
+
+```python
+from opendoc_formats import read_document, write_document
+result = read_document("report.docx")
+if result.success:
+    report = write_document(result.document, "report.html")
+    print(report.to_dict())  # Потери нужно читать и при успешной записи.
+```
+
+[Документация](https://SergeiLitvinov.github.io/opendoc-formats/) ·
+[Руководство](guide/index.md) · [API](reference/api.md) ·
+[Аудит](development/audit.md) · [Улучшения версии](development/changelog.md)
+
+## Разработка
+
+`uv run ruff check` · `uv run mypy` · `uv run pytest` · `uv run python -m tools.audit`
+
+Документация: `uv run python -m tools.docs generate`, затем `check` или `serve`.
+Сборка: `uv build --out-dir .opendoc-formats/dist`;
+проверка пакетов: `uv run python -m tools.release check`.
+CI проверяет Linux на Python 3.11/3.12/3.13 и Windows на 3.12, базовую установку и wheel из sdist.
+GitHub Pages публикуется после успешного CI. Тег `vX.Y.Z` запускает проверку версии и выпуск пакетов.
+
+Собственный код — MIT. Необязательный PyMuPDF имеет условия AGPL/commercial;
+у PyMuPDF также доступна коммерческая лицензия. Состав и назначение движков —
+в [зависимостях](guide/dependencies.md), условия — в [лицензионном аудите](development/licenses.md).
+Уведомления — в [NOTICE](development/notice.md).

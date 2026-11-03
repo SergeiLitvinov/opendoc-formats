@@ -1,0 +1,255 @@
+{
+  "profile": "declared-object-stream-links-v1",
+  "independent_reader": {
+    "name": "pypdf",
+    "version": "6.19.0",
+    "strict": true,
+    "repair_free_claim": false,
+    "warning_scope": "Hybrid originals use nonzero classic subsection starts; pypdf warns of ID correction. Native source offsets/shadowing are asserted separately without backend repair."
+  },
+  "cases": [
+    {
+      "case": "replaced-container",
+      "source_sha256": "09a3febe1137e04e69ae073bea4f71254b165fb566f23b1ef840fa1f9630922d",
+      "source_bytes": 758,
+      "independent_reader_object_7": "New own member",
+      "independent_reader_pages": 1,
+      "links": [
+        {
+          "xref_offset": 578,
+          "object": 7,
+          "object_stream": 4,
+          "index": 0,
+          "generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "primary_xref": 578,
+          "reference_record_range": {
+            "space": "decoded-xref",
+            "start": 7,
+            "end": 14
+          },
+          "container_xref": 578,
+          "container_record_range": {
+            "space": "decoded-xref",
+            "start": 0,
+            "end": 7
+          },
+          "container_offset": 480,
+          "container_generation": 0,
+          "container_locator": "pdf:source-objstm=480",
+          "container_sha256": "77c9e40d4917633170ea7a25eb308ce159a358d22ae34ee41ca7b4cf54d5e8c7",
+          "member_object": 7,
+          "status": "matched-declared-member",
+          "member_locator": "pdf:source-objstm=480/index=0/object=7",
+          "member_sha256": "735ebb47df62461ba151fd773290e00e6ecacc2ff176d5623516f5424a8f2d83",
+          "decoded_range": {
+            "start": 4,
+            "end": 20
+          }
+        },
+        {
+          "xref_offset": 285,
+          "object": 7,
+          "object_stream": 4,
+          "index": 0,
+          "generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "primary_xref": 285,
+          "reference_record_range": {
+            "space": "decoded-xref",
+            "start": 42,
+            "end": 49
+          },
+          "container_xref": 285,
+          "container_record_range": {
+            "space": "decoded-xref",
+            "start": 28,
+            "end": 35
+          },
+          "container_offset": 186,
+          "container_generation": 0,
+          "container_locator": "pdf:source-objstm=186",
+          "container_sha256": "bd9e2b2b0c8706e8eafd7f7d580fa0606520ae448b8094447820954250227b29",
+          "member_object": 7,
+          "status": "matched-declared-member",
+          "member_locator": "pdf:source-objstm=186/index=0/object=7",
+          "member_sha256": "850410b100d89a35901ac48050442476aa7a9adfe9f5c658aa0f821dac19e667",
+          "decoded_range": {
+            "start": 4,
+            "end": 20
+          }
+        }
+      ],
+      "independent_reader_warnings": []
+    },
+    {
+      "case": "inherited-container",
+      "source_sha256": "52d6e0c26a53562e0b261ceb20e25aeb05afbe84e31153e3f19e2879c0697d17",
+      "source_bytes": 649,
+      "independent_reader_object_7": "Old own member",
+      "independent_reader_pages": 1,
+      "links": [
+        {
+          "xref_offset": 480,
+          "object": 7,
+          "object_stream": 4,
+          "index": 0,
+          "generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "primary_xref": 480,
+          "reference_record_range": {
+            "space": "decoded-xref",
+            "start": 0,
+            "end": 7
+          },
+          "container_xref": 285,
+          "container_record_range": {
+            "space": "decoded-xref",
+            "start": 28,
+            "end": 35
+          },
+          "container_offset": 186,
+          "container_generation": 0,
+          "container_locator": "pdf:source-objstm=186",
+          "container_sha256": "bd9e2b2b0c8706e8eafd7f7d580fa0606520ae448b8094447820954250227b29",
+          "member_object": 7,
+          "status": "matched-declared-member",
+          "member_locator": "pdf:source-objstm=186/index=0/object=7",
+          "member_sha256": "850410b100d89a35901ac48050442476aa7a9adfe9f5c658aa0f821dac19e667",
+          "decoded_range": {
+            "start": 4,
+            "end": 20
+          }
+        },
+        {
+          "xref_offset": 285,
+          "object": 7,
+          "object_stream": 4,
+          "index": 0,
+          "generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "primary_xref": 285,
+          "reference_record_range": {
+            "space": "decoded-xref",
+            "start": 42,
+            "end": 49
+          },
+          "container_xref": 285,
+          "container_record_range": {
+            "space": "decoded-xref",
+            "start": 28,
+            "end": 35
+          },
+          "container_offset": 186,
+          "container_generation": 0,
+          "container_locator": "pdf:source-objstm=186",
+          "container_sha256": "bd9e2b2b0c8706e8eafd7f7d580fa0606520ae448b8094447820954250227b29",
+          "member_object": 7,
+          "status": "matched-declared-member",
+          "member_locator": "pdf:source-objstm=186/index=0/object=7",
+          "member_sha256": "850410b100d89a35901ac48050442476aa7a9adfe9f5c658aa0f821dac19e667",
+          "decoded_range": {
+            "start": 4,
+            "end": 20
+          }
+        }
+      ],
+      "independent_reader_warnings": []
+    },
+    {
+      "case": "hybrid-None",
+      "source_sha256": "eea0d5e6cd9f791ccef735faa1a548fb604c4211f2a7eaa2f0040028e6ec522d",
+      "source_bytes": 1373,
+      "independent_reader_pages": 1,
+      "links": [
+        {
+          "xref_offset": 1143,
+          "object": 8,
+          "object_stream": 7,
+          "index": 0,
+          "generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "primary_xref": 1252,
+          "reference_record_range": {
+            "space": "decoded-xref",
+            "start": 0,
+            "end": 7
+          },
+          "container_xref": 1252,
+          "container_record_range": {
+            "space": "source",
+            "start": 1261,
+            "end": 1279
+          },
+          "container_offset": 1027,
+          "container_generation": 0,
+          "container_locator": "pdf:source-objstm=1027",
+          "container_sha256": "803b0e9d8bab39fbcd73e88d033208457bbfb109cf1f065f5bdf43be7e2b26c2",
+          "member_object": 8,
+          "status": "matched-declared-member",
+          "member_locator": "pdf:source-objstm=1027/index=0/object=8",
+          "member_sha256": "1dc4c95e2070f76a7022d43af1d8ff820051a740e63794d0692404e7fef08072",
+          "decoded_range": {
+            "start": 4,
+            "end": 38
+          }
+        }
+      ],
+      "independent_reader_warnings": [
+        "Xref table not zero-indexed. ID numbers for objects will be corrected."
+      ]
+    },
+    {
+      "case": "hybrid-direct",
+      "source_sha256": "1157b8011b195eb2d2dc9808860a95d19524ac6d5f7ebe3da46d6835c744a0d6",
+      "source_bytes": 1442,
+      "independent_reader_pages": 1,
+      "links": [
+        {
+          "xref_offset": 1192,
+          "object": 8,
+          "object_stream": 7,
+          "index": 0,
+          "generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "primary_xref": 1301,
+          "status": "shadowed-reference"
+        }
+      ],
+      "independent_reader_warnings": [
+        "Xref table not zero-indexed. ID numbers for objects will be corrected."
+      ]
+    },
+    {
+      "case": "hybrid-free",
+      "source_sha256": "ba331a6f120a6947bbd851fa561677b4733bf0330a85235bedc783d2977673fb",
+      "source_bytes": 1393,
+      "independent_reader_pages": 1,
+      "links": [
+        {
+          "xref_offset": 1143,
+          "object": 8,
+          "object_stream": 7,
+          "index": 0,
+          "generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "primary_xref": 1252,
+          "status": "shadowed-reference"
+        }
+      ],
+      "independent_reader_warnings": [
+        "Xref table not zero-indexed. ID numbers for objects will be corrected."
+      ]
+    }
+  ],
+  "ownership_proven": false,
+  "object_resolution_complete": false,
+  "scope": "Original source xref contexts and directly contained decoded members; no active/semantic ownership or page-rendering claim"
+}

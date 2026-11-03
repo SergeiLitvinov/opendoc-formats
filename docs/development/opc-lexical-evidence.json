@@ -1,0 +1,34 @@
+{
+  "scope": "Forensic OPC audit: literal XML 1.0 Fifth Edition NCName Id and finite ASCII URI Type profile; package bytes, rich readers and native editing policy unchanged",
+  "published": false,
+  "dependencies_changed": false,
+  "model": "opendoc-model==0.19.0; import opendoc_model; no Model changes",
+  "sources": [
+    "https://www.w3.org/TR/xml/#NT-NameStartChar",
+    "https://www.w3.org/TR/xml-names/#NT-NCName",
+    "https://source.dot.net/System.IO.Packaging/System/IO/Packaging/InternalRelationshipCollection.cs.html"
+  ],
+  "checks": {
+    "literal_ids": "Cyrillic, Japanese, combining tails, supplementary-plane boundaries accepted; invalid starts, colon and whitespace remain captured with located findings",
+    "identity": "NFC/NFD spellings remain distinct; no whitespace or Unicode normalization",
+    "type": "ASCII URI schemes, escaped components, reg-name authorities, userinfo and decimal ports; no fetch or shared URL-parser cache",
+    "uncertainty": "Unproved Id/Type reject edge resolution and suppress definite unreachable_parts while preserving complete rels payload and decoded attributes",
+    "anatomy_opc_regression_passed": 326,
+    "regression_scope": "All tests/**/*.py filenames containing anatomy or opc; not a new full-project run",
+    "focused_lexical_and_graph_tests": 69,
+    "cancellation": "Both NCName and URI literal match checkpoints cancel before any target resolver is entered",
+    "installed_base_smoke": "Passed isolated installed wheel with Formats and Model only; Unicode Id and rejected Id/Type cases verified without optional document engines",
+    "strict_mypy_files": 41,
+    "ruff": "passed",
+    "documentation": "strict build passed",
+    "license_inventory": "passed",
+    "boundary_audit_modules": 217
+  },
+  "limits": "Linear regular expressions and literal component scans use the existing aggregate XML character/part/node budgets; cancellation before and after lexical validation",
+  "remaining": "Full URI/IRI/IP-literal and XML Schema whitespace profiles, content-type field validation and independent larger corpus; reachability_complete is not a complete OPC conformance certificate",
+  "source_sha256": {
+    "src/opendoc_formats/native/opc_audit.py": "7cd75340691907e53f2023350d48454372d73a036559d3a9e19e0a8eea9cb5b9",
+    "tests/test_anatomy_opc.py": "fde613910dc2637447a6e1199dc8dd97854d6667c476341e2594d5abfe84491e",
+    "tools/package_smoke.py": "de8ebe5fa719b0127587c279644bc50235c2312805745784bfd1106b2cc68b71"
+  }
+}

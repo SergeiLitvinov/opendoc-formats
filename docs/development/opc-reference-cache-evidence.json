@@ -1,0 +1,25 @@
+{
+  "scope": "Own finite internal OPC URI component parser replaces cached urllib.parse.urlsplit; target resolution and existing safety policy retained",
+  "published": false,
+  "dependencies_changed": false,
+  "model_changed": false,
+  "checks": {
+    "focused_tests_passed": 47,
+    "parity": "6000 deterministic generated references plus explicit URI component boundary cases compared to the previous stdlib parser",
+    "boundaries": "Fragment/query ordering, empty query delimiter, leading ASCII spaces, repeated leading slashes, Unicode paths, schemes/authorities and existing traversal/control/encoded-separator refusals",
+    "retention": "Three 64000-character target paths do not alter shared urlsplit cache hits/misses/size; pre-existing unrelated cached entry remains a hit",
+    "anatomy_opc_regression_passed": 373,
+    "regression_scope": "All tests/**/*.py filenames containing anatomy or opc; not a full-project run",
+    "installed_base_smoke": "Passed isolated wheel with Formats and Model only, no optional document engines",
+    "strict_mypy_files": 41,
+    "ruff": "passed",
+    "documentation": "strict build passed",
+    "licenses": "unchanged reviewed inventory verified",
+    "boundary_audit_modules": 217
+  },
+  "boundary": "No process-wide cache clearing, private stdlib APIs, filesystem target lookup or network fetch; existing finite OPC normalization profile unchanged. EPUB/general URI callers outside this resolver remain separate work.",
+  "source_sha256": {
+    "src/opendoc_formats/native/opc.py": "971fd4cb319f1ddd786fd27bb890792e23d4a779635bfbbfbab56b1cd3223ae1",
+    "tests/test_opc_reference_paths.py": "e15cca3bdb70d6dca6f40a866c6e83201701e6fb8f2783b9b7c66f15f5d6a780"
+  }
+}

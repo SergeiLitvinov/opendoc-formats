@@ -1,0 +1,387 @@
+"""Finite PDF interaction profile; actions are inert data, never executed."""
+
+from __future__ import annotations
+
+import math
+from collections.abc import Callable
+from pathlib import Path
+from typing import Any
+
+from opendoc_model import (
+    Annotation,
+    Box,
+    DiagnosticIssue,
+    DocumentLimits,
+    DocumentModel,
+    FormControl,
+    IntegrationModel,
+    IssueSeverity,
+    PreservationRecord,
+    PreservationState,
+    Provenance,
+    Resource,
+    ResourceKind,
+    set_integration,
+)
+
+MAX_OBJECTS = 10_000
+MAX_STRING = 65_536
+MAX_SOURCE_BYTES = 10 * 1024 * 1024
+
+
+def _plain(value: Any) -> Any:
+    if value is None or type(value) in (bool, int):
+        return value
+    if isinstance(value, str):
+        if len(value) > MAX_STRING:
+            raise ValueError("PDF interaction string exceeds profile limit")
+        return str(value)
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise ValueError("Nonfinite PDF interaction value")
+        return float(value)
+    if isinstance(value, dict):
+        return {str(key): _plain(item) for key, item in value.items()}
+    if isinstance(value, (tuple, list)) or type(value).__name__ in {"Point", "Rect", "Quad"}:
+        return [_plain(item) for item in value]
+    raise ValueError(f"Unsupported PDF interaction value: {type(value).__name__}")
+
+
+def _box(rect: Any) -> Box:
+    values = [float(item) for item in rect]
+    if len(values) != 4 or not all(math.isfinite(item) and abs(item) <= 1_000_000 for item in values):
+        raise ValueError("Invalid PDF interaction geometry")
+    x0, y0, x1, y1 = values
+    if x1 < x0 or y1 < y0:
+        raise ValueError("Negative PDF interaction extent")
+    return Box(x0, y0, x1 - x0, y1 - y0)
+
+
+def _actions(pdf: Any, xref: int) -> dict[str, Any]:
+    actions = {}
+    for key in ("A", "AA"):
+        kind, value = pdf.xref_get_key(xref, key)
+        if kind != "null":
+            actions[key] = {"pdf_type": kind, "value": _plain(value)}
+    return actions
+
+
+def attach_pdf_interactions(model: DocumentModel, source: str | Path, *, limits: DocumentLimits | None = None,
+                            cancelled: Callable[[], bool] | None = None) -> None:
+    import fitz
+
+    from opendoc_formats.support.cancellation import check_cancelled
+
+    check_cancelled(cancelled, 'PDF interactions')
+    source = Path(source)
+    pages, annotations, forms, records = [], [], [], []
+    count = 0
+    preserve_source = False
+
+    def record(feature: str, state: PreservationState, page: int | None, xref: int, reason: str, message: str) -> None:
+        nonlocal count, preserve_source
+        count += 1
+        if count > MAX_OBJECTS:
+            raise ValueError("PDF interaction objects exceed profile limit")
+        preserve_source = True
+        records.append(
+            PreservationRecord(
+                issue=DiagnosticIssue(
+                    feature,
+                    IssueSeverity.INFO if state is PreservationState.SEMANTIC else IssueSeverity.LOSS,
+                    message,
+                    f"{source}#page={page or 0},xref={xref}",
+                    reason=reason,
+                ),
+                state=state,
+                provenance=Provenance("pdf", str(source), page=page, object_id=f"xref-{xref}"),
+            )
+        )
+
+    with fitz.open(source) as pdf:
+        from opendoc_formats.pdf_page_geometry import read_page_geometry
+
+        note_types = {fitz.PDF_ANNOT_TEXT: "note", fitz.PDF_ANNOT_FREE_TEXT: "note", fitz.PDF_ANNOT_HIGHLIGHT: "highlight"}
+        form_types = {
+            fitz.PDF_WIDGET_TYPE_TEXT: "text",
+            fitz.PDF_WIDGET_TYPE_CHECKBOX: "checkbox",
+            fitz.PDF_WIDGET_TYPE_COMBOBOX: "choice",
+            fitz.PDF_WIDGET_TYPE_LISTBOX: "choice",
+            fitz.PDF_WIDGET_TYPE_BUTTON: "button",
+        }
+        for index, page in enumerate(pdf, 1):
+            check_cancelled(cancelled, 'PDF interaction page')
+            page_id = f"pdf-page-{index}"
+            native_page = read_page_geometry(page, page_id)
+            source_rotation = page.rotation
+            page.set_rotation(0)
+            page = pdf.reload_page(page)
+            unsupported_geometry = native_page.extra.get("pdf_page_geometry_unsupported")
+            unit = native_page.extra.get("pdf_user_unit", 1)
+            if index <= len(model.sections):
+                model.sections[index - 1].properties.setdefault("pdf", {}).update(
+                    page_id=page_id, crop_origin=([page.cropbox.x0*unit, page.cropbox.y0*unit] if unsupported_geometry
+                                               else [page.cropbox.x0, page.cropbox.y0-page.mediabox.y1]),
+                )
+            pages.append(native_page)
+            if unsupported_geometry:
+                record("pdf.page-geometry", PreservationState.OPAQUE, index, page.xref, "unsupported-user-unit",
+                       "UserUnit geometry retained in source PDF; shared regions are not inferred")
+            for ordinal, link in enumerate(page.get_links(), 1):
+                check_cancelled(cancelled, 'PDF link')
+                xref = int(link.get("xref", 0))
+                target = link.get("uri") or (f"#pdf-page-{link['page'] + 1}" if link.get("page", -1) >= 0 else None)
+                annotations.append(
+                    Annotation(
+                        f"pdf-link-{index}-{xref}-{ordinal}",
+                        page_id,
+                        "link",
+                        target=target,
+                        action={"destination": _plain(link), **(_actions(pdf, xref) if xref else {})},
+                        box=_box(link["from"]),
+                        extra={"source_xref": xref, "pdf_uri_action_complete": _simple_uri_action(pdf, xref)},
+                    )
+                )
+                record(
+                    "pdf.link", PreservationState.SEMANTIC, index, xref, "parsed-link", "Link destination retained as inert data"
+                )
+            for annotation in page.annots() or ():
+                check_cancelled(cancelled, 'PDF annotation')
+                xref, kind = int(annotation.xref), int(annotation.type[0])
+                if kind not in note_types:
+                    record(
+                        "pdf.annotation",
+                        PreservationState.OPAQUE,
+                        index,
+                        xref,
+                        "unsupported-annotation",
+                        f"Annotation type {annotation.type[1]} retained only in source PDF",
+                    )
+                    continue
+                annotations.append(
+                    Annotation(
+                        f"pdf-annotation-{xref}",
+                        page_id,
+                        note_types[kind],
+                        text=str(annotation.info.get("content", "")),
+                        action=_actions(pdf, xref),
+                        box=_box(annotation.rect),
+                        extra={
+                            "source_xref": xref,
+                            "pdf_type": kind,
+                            "info": _plain(annotation.info),
+                            "flags": int(annotation.flags),
+                            "colors": _plain(annotation.colors),
+                            "opacity": float(annotation.opacity),
+                            "vertices": _plain(annotation.vertices),
+                            "pdf_source_box": [annotation.rect.x0, annotation.rect.y0,
+                                               annotation.rect.width, annotation.rect.height],
+                        },
+                    )
+                )
+                record(
+                    "pdf.annotation",
+                    PreservationState.SEMANTIC,
+                    index,
+                    xref,
+                    "parsed-annotation",
+                    "Finite annotation profile imported",
+                )
+            for widget in page.widgets() or ():
+                check_cancelled(cancelled, 'PDF widget')
+                xref, kind = int(widget.xref), int(widget.field_type)
+                if kind not in form_types or not isinstance(widget.field_value, (str, int, float, bool, type(None))):
+                    record(
+                        "pdf.form",
+                        PreservationState.OPAQUE,
+                        index,
+                        xref,
+                        "unsupported-form",
+                        f"Form type {widget.field_type_string} retained only in source PDF",
+                    )
+                    continue
+                choices = widget.choice_values or []
+                actions = _actions(pdf, xref)
+                for key in (
+                    "script",
+                    "script_stroke",
+                    "script_format",
+                    "script_change",
+                    "script_calc",
+                    "script_blur",
+                    "script_focus",
+                ):
+                    value = getattr(widget, key, None)
+                    if value:
+                        actions[key] = _plain(value)
+                forms.append(
+                    FormControl(
+                        f"pdf-form-{xref}",
+                        page_id,
+                        form_types[kind],
+                        value="" if widget.field_value is None else str(_plain(widget.field_value)),
+                        choices=tuple(str(item[-1] if isinstance(item, (list, tuple)) else item) for item in choices),
+                        action=actions,
+                        box=_box(widget.rect),
+                        extra={
+                            "source_xref": xref,
+                            "field_name": _plain(widget.field_name or ""),
+                            "field_label": _plain(widget.field_label or ""),
+                            "field_flags": int(widget.field_flags),
+                            "pdf_type": kind,
+                            "pdf_choices": _plain(choices),
+                            "pdf_default_value": (
+                                _plain(pdf.xref_get_key(xref, 'DV')[1])
+                                if pdf.xref_get_key(xref, 'DV')[0] == 'string' else None
+                            ),
+                            "pdf_action_profile": "javascript-A-v1" if _simple_script_action(pdf, xref, actions) else None,
+                            "pdf_source_action": actions.get("A"),
+                            "pdf_widget_appearance": {key: _plain(getattr(widget, key)) for key in (
+                                "border_color", "border_style", "border_width", "border_dashes", "fill_color",
+                                "text_color", "text_font", "text_fontsize", "text_maxlen",
+                            )},
+                        },
+                    )
+                )
+                record(
+                    "pdf.form",
+                    PreservationState.SEMANTIC,
+                    index,
+                    xref,
+                    "parsed-form",
+                    "Finite form profile imported; scripts remain inert",
+                )
+            page.set_rotation(source_rotation)
+        from opendoc_formats.readers.pdf_fields import audit_field_tree
+
+        widget_xrefs = {int(widget.xref) for native_page in pdf for widget in native_page.widgets() or ()}
+        audit_field_tree(pdf, widget_xrefs, record)
+        native_outline = pdf.get_toc(simple=False)
+        from opendoc_formats.pdf_page_geometry import native_xyz_destination
+
+        for entry in native_outline:
+            destination = entry[3]
+            if destination.get("kind") == fitz.LINK_GOTO:
+                xyz = native_xyz_destination(pdf, int(destination.get("xref", 0)))
+                if xyz is not None and (xyz[1] is None or xyz[2] is None):
+                    # A valid PDF null coordinate is unknown, not a floating-point NaN.
+                    destination["to"] = None
+        outline = _plain(native_outline)
+        if len(outline) > MAX_OBJECTS:
+            raise ValueError("PDF outline exceeds profile limit")
+        if outline:
+            record(
+                "pdf.outline",
+                PreservationState.OPAQUE,
+                None,
+                pdf.pdf_catalog(),
+                "outline-extension",
+                "Native outline retained alongside the shared outline; unsupported actions and appearance remain opaque",
+            )
+        catalog = pdf.pdf_catalog()
+        for key in ("StructTreeRoot", "OCProperties", "OpenAction", "AA", "Names"):
+            if pdf.xref_get_key(catalog, key)[0] != "null":
+                record(
+                    "pdf.catalog",
+                    PreservationState.OPAQUE,
+                    None,
+                    catalog,
+                    "unsupported-" + key,
+                    f"Catalog {key} retained only in source PDF",
+                )
+    from opendoc_formats.pdf_graphics import paint_clips
+
+    for index, section in enumerate(model.sections):
+        check_cancelled(cancelled, 'PDF interaction paint section')
+        evidence = section.properties.get('pdf_graphics')
+        if evidence is None:
+            continue
+        try:
+            if evidence.get('unknown'):
+                raise ValueError(evidence['unknown'])
+            for sequence in range(len(evidence.get('paints', []))):
+                paint_clips(evidence, sequence,
+                            {'fill-path', 'stroke-path', 'fill-image', 'fill-text', 'stroke-text', 'ignore-text'},
+                            compositing=True)
+        except ValueError as error:
+            record('pdf.graphics-state', PreservationState.OPAQUE, index + 1, 0,
+                   'unsupported-native-paint-state', str(error))
+    for resource in model.resources.values():
+        if resource.media_type != "application/pdf+vector" or not resource.properties.get("graphics_state_unsupported"):
+            continue
+        count += 1
+        if count > MAX_OBJECTS:
+            raise ValueError("PDF interaction objects exceed profile limit")
+        preserve_source = True
+        neutral = (resource.properties.get('neutral_page_group_only') is True
+                   or resource.properties.get('pdf_docx_graphics_measured') is True)
+        records.append(PreservationRecord(
+            issue=DiagnosticIssue(
+                "pdf.vector-graphics-state", IssueSeverity.INFO if neutral else IssueSeverity.LOSS,
+                ("Native clip/group state measured; preservation requires a supported target projection" if neutral
+                 else "Vector clip path or graphics group retained only in source PDF"),
+                f"resources[{resource.id!r}]", {"source_resource_id": resource.id},
+                "measured-native-graphics" if neutral else "unsupported-graphics-state",
+            ), state=PreservationState.SEMANTIC if neutral else PreservationState.OPAQUE, provenance=resource.provenance,
+        ))
+    if preserve_source:
+        with source.open("rb") as stream:
+            snapshot = stream.read(MAX_SOURCE_BYTES + 1)
+        if len(snapshot) > MAX_SOURCE_BYTES:
+            raise ValueError("Source PDF exceeds opaque snapshot limit")
+        model.add_resource(
+            Resource(
+                "pdf-original-source",
+                ResourceKind.ATTACHMENT,
+                "application/pdf",
+                data=snapshot,
+                filename=source.name,
+                provenance=Provenance("pdf", str(source)),
+            )
+        )
+    set_integration(
+        model,
+        IntegrationModel(
+            pages=tuple(pages),
+            annotations=tuple(annotations),
+            forms=tuple(forms),
+            preservation=tuple(records),
+            assessed_features=tuple(dict.fromkeys(item.issue.code for item in records)),
+            assessment_complete=False,
+            extra={"pdf_outline": outline, "pdf_source_resource_id": "pdf-original-source" if preserve_source else None},
+        ), limits=limits,
+    )
+    from opendoc_formats.pdf_outline import import_pdf_outline
+
+    with fitz.open(source) as pdf:
+        import_pdf_outline(model, pdf=pdf, source=str(source))
+    check_cancelled(cancelled, 'PDF interactions completion')
+
+
+def _simple_script_action(pdf: Any, xref: int, actions: dict[str, Any]) -> bool:
+    if not actions:
+        return True
+    if set(actions) != {'A', 'script'}:
+        return False
+    kind, value = pdf.xref_get_key(xref, 'A')
+    if kind != 'xref':
+        return False
+    action_xref = int(value.split()[0])
+    return (pdf.xref_get_key(action_xref, 'S') == ('name', '/JavaScript')
+            and set(pdf.xref_get_keys(action_xref)).issubset({'Type', 'S', 'JS'}))
+
+
+def _simple_uri_action(pdf: Any, xref: int) -> bool:
+    import pymupdf
+
+    if not xref or pdf.xref_get_key(xref, 'AA')[0] != 'null':
+        return False
+    kind, value = pdf.xref_get_key(xref, 'A')
+    if kind == 'dict':
+        uri_kind, uri = pdf.xref_get_key(xref, 'A/URI')
+        return (uri_kind == 'string' and value == '<</S/URI/URI' + pymupdf.get_pdf_str(uri) + '>>')
+    if kind != 'xref':
+        return False
+    action_xref = int(value.split()[0])
+    return (pdf.xref_get_key(action_xref, 'S') == ('name', '/URI')
+            and set(pdf.xref_get_keys(action_xref)).issubset({'Type', 'S', 'URI'}))

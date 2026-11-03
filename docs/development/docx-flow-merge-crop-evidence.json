@@ -1,0 +1,527 @@
+{
+  "scope": "Rectangle crop retaining whole measured source cells; original merged topology stored by Formats in existing Model properties",
+  "published": false,
+  "dependencies_changed": false,
+  "model": "opendoc-model==0.19.0; import opendoc_model; no new Model DTOs/codecs",
+  "source_hint": "pdf_source_cell_bounds: source bbox array for measured non-text-strategy merged tables only; JSON retains it independently of edited rows/cells",
+  "checks": {
+    "regression_passed": 130,
+    "scope": "Word flow/text flow/PDF mapping/composition and PDF geometry/table diagnostics tests; not a full-project run",
+    "crops": "Retain horizontal merge, retain vertical merge, or retain only plain cells: source JSON immutable, same spans/text through two JSON/DOCX cycles, all 8 source lines accounted with 3/1/2 excluded respectively",
+    "validation": "Reject overlapping/incomplete/off-grid source inventories and retained partial/unmeasured cells; previous destination and Model JSON unchanged",
+    "quotas": "Source grid dimensions charge DocumentLimits.max_nodes; cancellation inside occupancy iteration propagates as cancellation",
+    "word": "Word 16.0 build 16.0.17932: three crop profiles, two native cycles, widths/text and read-only hashes verified; edits checked with the explicit one-row normalization limitation",
+    "pixels": "Nine Word PDFs stable within each crop profile in MuPDF and independent Poppler at 108 dpi; all three page PNGs visually inspected",
+    "installed_smoke": "All top/bottom/plain crops passed isolated installed writer checks with Formats/Model/python-docx/lxml/typing-extensions only; no PDF/fontTools/Pillow/NumPy dependencies",
+    "strict_mypy_files": 41,
+    "ruff": "passed",
+    "documentation": "strict build passed",
+    "licenses": "reviewed inventory unchanged and verified",
+    "boundary_audit_modules": 217,
+    "ci": "Crop gates added and workflow parsed locally; not dispatched"
+  },
+  "limitation": "Word editing a one-row crop normalizes redundant physical grid columns: 2 cells and 200/100 pt widths remain, but column_span 2 becomes 1 relative to its new grid. Exact original grid identity after this edit is not accepted and remains TODO. Native vertical span edit is retained.",
+  "remaining": "Cutting through source merged cells, arbitrary permutations, legacy crops without independent source inventory and larger originals; no universal PDF pixel-equivalence claim or removal of pdf2docx extra",
+  "native_acceptance": {
+    "top": {
+      "word": {
+        "edit_source": "Top merge",
+        "observations": [
+          {
+            "file": "flow",
+            "pages": 1,
+            "cells": [
+              {
+                "row": 1,
+                "width": 200.0,
+                "text": "Top merge",
+                "column": 1
+              },
+              {
+                "row": 1,
+                "width": 100.0,
+                "text": "R1C3",
+                "column": 2
+              }
+            ]
+          },
+          {
+            "file": "native-0",
+            "pages": 1,
+            "cells": [
+              {
+                "row": 1,
+                "width": 200.0,
+                "text": "Top merge",
+                "column": 1
+              },
+              {
+                "row": 1,
+                "width": 100.0,
+                "text": "R1C3",
+                "column": 2
+              }
+            ]
+          },
+          {
+            "file": "native-1",
+            "pages": 1,
+            "cells": [
+              {
+                "row": 1,
+                "width": 200.0,
+                "text": "Top merge",
+                "column": 1
+              },
+              {
+                "row": 1,
+                "width": 100.0,
+                "text": "R1C3",
+                "column": 2
+              }
+            ]
+          }
+        ],
+        "profile": "top",
+        "version": "16.0",
+        "success": true,
+        "edit_text": "Edited cell",
+        "build": "16.0.17932",
+        "program": "Microsoft Word"
+      },
+      "render_pairs": [
+        {
+          "case": "flow",
+          "mupdf": [
+            [
+              900,
+              751,
+              "bd8e57c6f8a2f325e11f80a398a2c50d9c8258a9464dbe14bd515af0a25c96c6"
+            ]
+          ],
+          "poppler": [
+            [
+              [
+                900,
+                751
+              ],
+              "75db40a3252865d09d64bf1fcaed061535dc8e914dbc459fae61a382b8bfc6d5"
+            ]
+          ],
+          "docx_sha256": "07b8685b1c216a5327a286c6dd234108a0404d4835ee9079c8815a5f368bbc0e"
+        },
+        {
+          "case": "native-0",
+          "mupdf": [
+            [
+              900,
+              751,
+              "bd8e57c6f8a2f325e11f80a398a2c50d9c8258a9464dbe14bd515af0a25c96c6"
+            ]
+          ],
+          "poppler": [
+            [
+              [
+                900,
+                751
+              ],
+              "75db40a3252865d09d64bf1fcaed061535dc8e914dbc459fae61a382b8bfc6d5"
+            ]
+          ],
+          "docx_sha256": "7d412cee9611e43a8c921802eabbcb3557002e1ea5e2659ba12c01ff764c6a13"
+        },
+        {
+          "case": "native-1",
+          "mupdf": [
+            [
+              900,
+              751,
+              "bd8e57c6f8a2f325e11f80a398a2c50d9c8258a9464dbe14bd515af0a25c96c6"
+            ]
+          ],
+          "poppler": [
+            [
+              [
+                900,
+                751
+              ],
+              "75db40a3252865d09d64bf1fcaed061535dc8e914dbc459fae61a382b8bfc6d5"
+            ]
+          ],
+          "docx_sha256": "2926812bbdc0c9056e59417862819956565ddf4d9c3e412c3defa6993eb55544"
+        }
+      ],
+      "edit_spans": [
+        1,
+        1
+      ],
+      "strict_original_span_after_word_edit": false,
+      "normalization": "Word edit collapses redundant 3-column grid to [200,100] pt; exported/JSON-cycled column_span=2 becomes 1, while 2 cells and widths remain. Exact original-grid identity after native edit remains TODO."
+    },
+    "bottom": {
+      "word": {
+        "edit_source": "Tall merge",
+        "observations": [
+          {
+            "file": "flow",
+            "pages": 1,
+            "cells": [
+              {
+                "row": 1,
+                "width": 100.0,
+                "text": "Tall merge",
+                "column": 1
+              },
+              {
+                "row": 1,
+                "width": 100.0,
+                "text": "R2C2",
+                "column": 2
+              },
+              {
+                "row": 1,
+                "width": 100.0,
+                "text": "R2C3",
+                "column": 3
+              },
+              {
+                "row": 2,
+                "width": 100.0,
+                "text": "R3C2",
+                "column": 2
+              },
+              {
+                "row": 2,
+                "width": 100.0,
+                "text": "R3C3",
+                "column": 3
+              }
+            ]
+          },
+          {
+            "file": "native-0",
+            "pages": 1,
+            "cells": [
+              {
+                "row": 1,
+                "width": 100.0,
+                "text": "Tall merge",
+                "column": 1
+              },
+              {
+                "row": 1,
+                "width": 100.0,
+                "text": "R2C2",
+                "column": 2
+              },
+              {
+                "row": 1,
+                "width": 100.0,
+                "text": "R2C3",
+                "column": 3
+              },
+              {
+                "row": 2,
+                "width": 100.0,
+                "text": "R3C2",
+                "column": 2
+              },
+              {
+                "row": 2,
+                "width": 100.0,
+                "text": "R3C3",
+                "column": 3
+              }
+            ]
+          },
+          {
+            "file": "native-1",
+            "pages": 1,
+            "cells": [
+              {
+                "row": 1,
+                "width": 100.0,
+                "text": "Tall merge",
+                "column": 1
+              },
+              {
+                "row": 1,
+                "width": 100.0,
+                "text": "R2C2",
+                "column": 2
+              },
+              {
+                "row": 1,
+                "width": 100.0,
+                "text": "R2C3",
+                "column": 3
+              },
+              {
+                "row": 2,
+                "width": 100.0,
+                "text": "R3C2",
+                "column": 2
+              },
+              {
+                "row": 2,
+                "width": 100.0,
+                "text": "R3C3",
+                "column": 3
+              }
+            ]
+          }
+        ],
+        "profile": "bottom",
+        "version": "16.0",
+        "success": true,
+        "edit_text": "Edited cell",
+        "build": "16.0.17932",
+        "program": "Microsoft Word"
+      },
+      "render_pairs": [
+        {
+          "case": "flow",
+          "mupdf": [
+            [
+              900,
+              751,
+              "9259c68b1a5661218e44ca13e6fcd6cb5f8f48555ad8fc2288c56cca15334d15"
+            ]
+          ],
+          "poppler": [
+            [
+              [
+                900,
+                751
+              ],
+              "c00cbcffa4cc763f729252653cee8e2378ab3fb213e8b6bcadfcd13aac0244d4"
+            ]
+          ],
+          "docx_sha256": "9374b3d43a63f7db9b5df87cb447188bd22d356f11f007cc5ee2c17ab814e75b"
+        },
+        {
+          "case": "native-0",
+          "mupdf": [
+            [
+              900,
+              751,
+              "9259c68b1a5661218e44ca13e6fcd6cb5f8f48555ad8fc2288c56cca15334d15"
+            ]
+          ],
+          "poppler": [
+            [
+              [
+                900,
+                751
+              ],
+              "c00cbcffa4cc763f729252653cee8e2378ab3fb213e8b6bcadfcd13aac0244d4"
+            ]
+          ],
+          "docx_sha256": "88ca890111bc446657d9d02e35604445310992b125437551b4cc1e7fb1a31cf3"
+        },
+        {
+          "case": "native-1",
+          "mupdf": [
+            [
+              900,
+              751,
+              "9259c68b1a5661218e44ca13e6fcd6cb5f8f48555ad8fc2288c56cca15334d15"
+            ]
+          ],
+          "poppler": [
+            [
+              [
+                900,
+                751
+              ],
+              "c00cbcffa4cc763f729252653cee8e2378ab3fb213e8b6bcadfcd13aac0244d4"
+            ]
+          ],
+          "docx_sha256": "27c9369cfb22359504473eedc599d93fc173474bbe4609e601c26921076c41fd"
+        }
+      ],
+      "edit_spans": [
+        2,
+        1
+      ],
+      "strict_original_span_after_word_edit": true
+    },
+    "plain": {
+      "word": {
+        "edit_source": "R2C2",
+        "observations": [
+          {
+            "file": "flow",
+            "pages": 1,
+            "cells": [
+              {
+                "row": 1,
+                "width": 100.0,
+                "text": "R2C2",
+                "column": 1
+              },
+              {
+                "row": 1,
+                "width": 100.0,
+                "text": "R2C3",
+                "column": 2
+              },
+              {
+                "row": 2,
+                "width": 100.0,
+                "text": "R3C2",
+                "column": 1
+              },
+              {
+                "row": 2,
+                "width": 100.0,
+                "text": "R3C3",
+                "column": 2
+              }
+            ]
+          },
+          {
+            "file": "native-0",
+            "pages": 1,
+            "cells": [
+              {
+                "row": 1,
+                "width": 100.0,
+                "text": "R2C2",
+                "column": 1
+              },
+              {
+                "row": 1,
+                "width": 100.0,
+                "text": "R2C3",
+                "column": 2
+              },
+              {
+                "row": 2,
+                "width": 100.0,
+                "text": "R3C2",
+                "column": 1
+              },
+              {
+                "row": 2,
+                "width": 100.0,
+                "text": "R3C3",
+                "column": 2
+              }
+            ]
+          },
+          {
+            "file": "native-1",
+            "pages": 1,
+            "cells": [
+              {
+                "row": 1,
+                "width": 100.0,
+                "text": "R2C2",
+                "column": 1
+              },
+              {
+                "row": 1,
+                "width": 100.0,
+                "text": "R2C3",
+                "column": 2
+              },
+              {
+                "row": 2,
+                "width": 100.0,
+                "text": "R3C2",
+                "column": 1
+              },
+              {
+                "row": 2,
+                "width": 100.0,
+                "text": "R3C3",
+                "column": 2
+              }
+            ]
+          }
+        ],
+        "profile": "plain",
+        "version": "16.0",
+        "success": true,
+        "edit_text": "Edited cell",
+        "build": "16.0.17932",
+        "program": "Microsoft Word"
+      },
+      "render_pairs": [
+        {
+          "case": "flow",
+          "mupdf": [
+            [
+              900,
+              751,
+              "67cec894353470d2e05f752756e3ba788b7d4138b4f444bfaf1a0e4e10b09a2c"
+            ]
+          ],
+          "poppler": [
+            [
+              [
+                900,
+                751
+              ],
+              "083ffbcb4daf935e9e21aa75f13c2226d2de63d1e14e06d86a656fc54b5dff9f"
+            ]
+          ],
+          "docx_sha256": "4704f5483deb1fb60f3bfa0192058e22ce8e198a444b03419dda096ef00b344d"
+        },
+        {
+          "case": "native-0",
+          "mupdf": [
+            [
+              900,
+              751,
+              "67cec894353470d2e05f752756e3ba788b7d4138b4f444bfaf1a0e4e10b09a2c"
+            ]
+          ],
+          "poppler": [
+            [
+              [
+                900,
+                751
+              ],
+              "083ffbcb4daf935e9e21aa75f13c2226d2de63d1e14e06d86a656fc54b5dff9f"
+            ]
+          ],
+          "docx_sha256": "e54415d5979b61aa447596c60ef89fc45ac6173de9bfe2e9c02573f8ebc503df"
+        },
+        {
+          "case": "native-1",
+          "mupdf": [
+            [
+              900,
+              751,
+              "67cec894353470d2e05f752756e3ba788b7d4138b4f444bfaf1a0e4e10b09a2c"
+            ]
+          ],
+          "poppler": [
+            [
+              [
+                900,
+                751
+              ],
+              "083ffbcb4daf935e9e21aa75f13c2226d2de63d1e14e06d86a656fc54b5dff9f"
+            ]
+          ],
+          "docx_sha256": "76ccff7a7fc8b6d0b44a8fb01073ee281a202802a20aca40baaa4bc68efbd14a"
+        }
+      ],
+      "edit_spans": [
+        1,
+        1
+      ],
+      "strict_original_span_after_word_edit": true
+    }
+  },
+  "source_sha256": {
+    "src/opendoc_formats/readers/pdf_model.py": "bbfa8006b070720940769d88ebc51900c7b3797549cd8ad88ad80ab226ee1585",
+    "src/opendoc_formats/writers/docx_flow.py": "e17ccd8277fa53794877b495381f67b84c1a7bdbe997e6860d64c483e699a7bf",
+    "tests/writers/test_docx_flow.py": "d52d9d20c2445438c319e8fbcbeb849b5229e5fc59e8efce5aeafa6f2229c857",
+    "tools/docx_flow_merge_smoke.py": "d5a6a2f3fae5a8b8ab1dff7de1b787597af4ed78576f4041792ff112a8b759d0",
+    "tools/docx_flow_merge_word_acceptance.ps1": "3ffdeb29c60af1b972dca92a7f7a58efdd177602e789b7c3324d427675b3df57"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "contract": "C-BLOCK-GROUP-01",
+  "status": "isolated public-API consumer passed; production adoption pending",
+  "candidate_wheel_sha256": "5fac0c362b5f343f59984f437f135cba9bb3fd907abfce823c9b8b1cecbcc1be",
+  "source_file_count": 54,
+  "consumer_sha256": "2ca3cbfbddb72809e3380ed19f827e58dfa06776c464c2c46ac2811e7b0bdb49",
+  "python": "3.12.16",
+  "installed_distributions": [
+    "opendoc-model"
+  ],
+  "checks": [
+    "two JSON cycles: ordered table/paragraph/group scopes, independent anchors, one list number",
+    "unknown group and owner fields survive codec without mutable aliasing",
+    "cell edit preserves outer quotation, list continuation and nested numbering",
+    "six invalid owner bindings and dangling-owner removal refuse atomically; whole-item removal works",
+    "invalid role, inline child, untyped binding and actual cycle refuse explicitly",
+    "nested cell groups, empty scope and repeated occurrences retain order and separate paths",
+    "merge remaps compound owners and anchors; cell extraction closes owner dependencies",
+    "selected node/depth/byte quotas: exact paired encode/decode boundary and one-below refusal"
+  ],
+  "paired_transport_quota_boundaries": {
+    "max_nodes": 322,
+    "max_depth": 20,
+    "max_bytes": 5620
+  },
+  "scope": "Neutral API only; no EPUB/HTML rendering, source mapping or production support claimed."
+}

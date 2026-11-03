@@ -1,0 +1,164 @@
+{
+  "scope": "Standard book/report six-level hierarchy; four independent source cases and two authored structural-edit references; two JSON/TeX cycles each",
+  "dpi": 108,
+  "pixel_tolerance": 0,
+  "masks": null,
+  "image_objects": 0,
+  "cases": [
+    {
+      "class": "book",
+      "case": "numbered",
+      "dpi": 108,
+      "pixel_tolerance": 0,
+      "masks": null,
+      "source_sha256": "796937b794d4f0086d1c6085f2640380612c523960b0ed89082af41b391e2ac4",
+      "reference_sha256": "796937b794d4f0086d1c6085f2640380612c523960b0ed89082af41b391e2ac4",
+      "cycles": [
+        {
+          "source_sha256": "2918735104714ec1a3f4cc794cacd33fd7e209b7d243be1286bcafd170f74d73",
+          "mupdf_exact_pages": 5,
+          "poppler_exact_pages": 5,
+          "image_objects": 0
+        },
+        {
+          "source_sha256": "2918735104714ec1a3f4cc794cacd33fd7e209b7d243be1286bcafd170f74d73",
+          "mupdf_exact_pages": 5,
+          "poppler_exact_pages": 5,
+          "image_objects": 0
+        }
+      ],
+      "source_unchanged": true
+    },
+    {
+      "class": "report",
+      "case": "numbered",
+      "dpi": 108,
+      "pixel_tolerance": 0,
+      "masks": null,
+      "source_sha256": "f56eede0be505213e75f1ffaa4085280e464b9c3cebd93721d1d2bb9298cfa72",
+      "reference_sha256": "f56eede0be505213e75f1ffaa4085280e464b9c3cebd93721d1d2bb9298cfa72",
+      "cycles": [
+        {
+          "source_sha256": "45a8a7ded85a95a096bb1c1a12c2c9eea64784d32b74bcac698cdbe626f68723",
+          "mupdf_exact_pages": 3,
+          "poppler_exact_pages": 3,
+          "image_objects": 0
+        },
+        {
+          "source_sha256": "45a8a7ded85a95a096bb1c1a12c2c9eea64784d32b74bcac698cdbe626f68723",
+          "mupdf_exact_pages": 3,
+          "poppler_exact_pages": 3,
+          "image_objects": 0
+        }
+      ],
+      "source_unchanged": true
+    },
+    {
+      "class": "book",
+      "case": "starred",
+      "dpi": 108,
+      "pixel_tolerance": 0,
+      "masks": null,
+      "source_sha256": "a28e16731dccae9a088f7bf3c6f9af3abb5a7bf2d98d056d2da3cd3145c43b9b",
+      "reference_sha256": "a28e16731dccae9a088f7bf3c6f9af3abb5a7bf2d98d056d2da3cd3145c43b9b",
+      "cycles": [
+        {
+          "source_sha256": "1675180996ff5e16e9eb0318607a34b39887ba6fb8c780c0820437cbc6e43bb7",
+          "mupdf_exact_pages": 5,
+          "poppler_exact_pages": 5,
+          "image_objects": 0
+        },
+        {
+          "source_sha256": "1675180996ff5e16e9eb0318607a34b39887ba6fb8c780c0820437cbc6e43bb7",
+          "mupdf_exact_pages": 5,
+          "poppler_exact_pages": 5,
+          "image_objects": 0
+        }
+      ],
+      "source_unchanged": true
+    },
+    {
+      "class": "report",
+      "case": "starred",
+      "dpi": 108,
+      "pixel_tolerance": 0,
+      "masks": null,
+      "source_sha256": "ba97f54b6df8acb5e2161569b0d556e150c2116cbed5e7ba924a3af6a4dab117",
+      "reference_sha256": "ba97f54b6df8acb5e2161569b0d556e150c2116cbed5e7ba924a3af6a4dab117",
+      "cycles": [
+        {
+          "source_sha256": "bd1fceacd892c57ffe193f5a4d9bcc47ebb8cd98e85f7564bf0557a7e268c470",
+          "mupdf_exact_pages": 3,
+          "poppler_exact_pages": 3,
+          "image_objects": 0
+        },
+        {
+          "source_sha256": "bd1fceacd892c57ffe193f5a4d9bcc47ebb8cd98e85f7564bf0557a7e268c470",
+          "mupdf_exact_pages": 3,
+          "poppler_exact_pages": 3,
+          "image_objects": 0
+        }
+      ],
+      "source_unchanged": true
+    },
+    {
+      "class": "book",
+      "case": "edit",
+      "dpi": 108,
+      "pixel_tolerance": 0,
+      "masks": null,
+      "source_sha256": "796937b794d4f0086d1c6085f2640380612c523960b0ed89082af41b391e2ac4",
+      "reference_sha256": "218c7c415fcbb7ba073276c16a67dc3b4a594717df14d7a0eaf1513d1c4ea46a",
+      "cycles": [
+        {
+          "source_sha256": "ce56ccb4e01203acbdf2d1a331a83223a730fc71da7f4b7be1cf2fe5d8a906e7",
+          "mupdf_exact_pages": 3,
+          "poppler_exact_pages": 3,
+          "image_objects": 0
+        },
+        {
+          "source_sha256": "ce56ccb4e01203acbdf2d1a331a83223a730fc71da7f4b7be1cf2fe5d8a906e7",
+          "mupdf_exact_pages": 3,
+          "poppler_exact_pages": 3,
+          "image_objects": 0
+        }
+      ],
+      "source_unchanged": true
+    },
+    {
+      "class": "report",
+      "case": "edit",
+      "dpi": 108,
+      "pixel_tolerance": 0,
+      "masks": null,
+      "source_sha256": "f56eede0be505213e75f1ffaa4085280e464b9c3cebd93721d1d2bb9298cfa72",
+      "reference_sha256": "cbeb4c156b0582f73e34c03b768a33dde8eb2181fcd40b631851dd31ebf09845",
+      "cycles": [
+        {
+          "source_sha256": "39aa50f84114f7f47b3d88553043a3eef8ecdf2ffc47ab1232802d2aa8db2074",
+          "mupdf_exact_pages": 2,
+          "poppler_exact_pages": 2,
+          "image_objects": 0
+        },
+        {
+          "source_sha256": "39aa50f84114f7f47b3d88553043a3eef8ecdf2ffc47ab1232802d2aa8db2074",
+          "mupdf_exact_pages": 2,
+          "poppler_exact_pages": 2,
+          "image_objects": 0
+        }
+      ],
+      "source_unchanged": true
+    }
+  ],
+  "exact_page_comparisons": {
+    "mupdf": 42,
+    "poppler": 42
+  },
+  "acceptance_test_sha256": "c03c4b0984a6e383aec14f3dd3dbcc2ca3fdff5e17f03707918f7b911b024f86",
+  "implementation_ast_sha256": {
+    "src/opendoc_formats/tex_headings.py": "5bb784fa273e4a09fa910708e6ee72ae2f7f4f19223ba1b957c050ad302a9621",
+    "src/opendoc_formats/readers/tex_model.py": "9c1a48055badcf3e5529802d8ac4e2501f763c9e3429d01146c5044be0782581",
+    "src/opendoc_formats/writers/latex_text.py": "076b6b3878b523dd2ca9e9fd040a12eb69aa34d5bda5e04d37ef14e364196b3e"
+  },
+  "limits": "Finite heading/class profile and generated preamble; arbitrary class options, custom classes, short titles and front/back matter not accepted."
+}

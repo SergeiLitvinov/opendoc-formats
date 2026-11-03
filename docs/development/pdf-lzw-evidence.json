@@ -1,0 +1,1842 @@
+{
+  "scope": "Exact physical PDF stream decoding, not semantic import or visual roundtrip",
+  "source": "Own byte-built complete PDFs; forward longest-match encoder and explicit code vectors; no Formats/PDF writer",
+  "references": [
+    "https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/pdfreference1.2.pdf#page=52"
+  ],
+  "versions": {
+    "pymupdf": "1.28.2",
+    "pypdf": "6.19.0"
+  },
+  "summary": {
+    "originals": 58,
+    "own_exact": 58,
+    "mupdf_exact": 58,
+    "pypdf_exact": 35
+  },
+  "limitations": [
+    "pypdf does not apply LZW PNG predictors",
+    "pypdf differs after EarlyChange=0 width transitions",
+    "direct stream dictionaries only; no indirect Length, encryption or active object/body resolution"
+  ],
+  "originals": [
+    {
+      "kind": "xref",
+      "source_sha256": "b0873a13cef41be429f72a4c2e31a19f1c6e29fb058912797ddb8e087ec37f23",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "decoded_bytes": 49,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "LZWDecode",
+            "predictor": 1,
+            "input_bytes": 50,
+            "input_space": "source",
+            "input_data_end": 507,
+            "trailing_input_bytes": 18,
+            "decoded_bytes": 49,
+            "decode_work_bytes": 49,
+            "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b"
+          }
+        ],
+        "decode_work_bytes": 49
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+        "decoded_bytes": 49
+      },
+      "early_change": 0,
+      "predictor": 1
+    },
+    {
+      "kind": "xref",
+      "source_sha256": "9911bb81f4ae8382d7e49149fe651ee6be0e24eee184e5f9d0e65c4bbe316631",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "decoded_bytes": 49,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "ASCII85Decode",
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "ASCII85Decode",
+            "predictor": 1,
+            "input_bytes": 42,
+            "input_space": "source",
+            "input_data_end": 537,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 32,
+            "decode_work_bytes": 32,
+            "decoded_sha256": "76d8bfb1bdded8b4116e85578481e8490245272fef4765b82af81ab6d6288697"
+          },
+          {
+            "stage": 1,
+            "filter": "LZWDecode",
+            "predictor": 1,
+            "input_bytes": 32,
+            "input_space": "stage[0]-output",
+            "input_data_end": 32,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 49,
+            "decode_work_bytes": 49,
+            "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b"
+          }
+        ],
+        "decode_work_bytes": 81
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+        "decoded_bytes": 49
+      },
+      "early_change": 0,
+      "predictor": 1
+    },
+    {
+      "kind": "xref",
+      "source_sha256": "b2566ce51eecb4a2df451495a39c68d9d02c7665c8a25f2779648d7f996f028c",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "decoded_bytes": 49,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "LZWDecode",
+            "predictor": 2,
+            "input_bytes": 50,
+            "input_space": "source",
+            "input_data_end": 507,
+            "trailing_input_bytes": 18,
+            "decoded_bytes": 49,
+            "decode_work_bytes": 49,
+            "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b"
+          }
+        ],
+        "decode_work_bytes": 49
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+        "decoded_bytes": 49
+      },
+      "early_change": 0,
+      "predictor": 2
+    },
+    {
+      "kind": "xref",
+      "source_sha256": "406b59182564ff74ef241113f5d0d0f33fa7f1d3f6d7c2480debcac284af922d",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "decoded_bytes": 49,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "ASCII85Decode",
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "ASCII85Decode",
+            "predictor": 1,
+            "input_bytes": 42,
+            "input_space": "source",
+            "input_data_end": 537,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 32,
+            "decode_work_bytes": 32,
+            "decoded_sha256": "76d8bfb1bdded8b4116e85578481e8490245272fef4765b82af81ab6d6288697"
+          },
+          {
+            "stage": 1,
+            "filter": "LZWDecode",
+            "predictor": 2,
+            "input_bytes": 32,
+            "input_space": "stage[0]-output",
+            "input_data_end": 32,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 49,
+            "decode_work_bytes": 49,
+            "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b"
+          }
+        ],
+        "decode_work_bytes": 81
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+        "decoded_bytes": 49
+      },
+      "early_change": 0,
+      "predictor": 2
+    },
+    {
+      "kind": "xref",
+      "source_sha256": "6bdbd133df7e4e630c3886fc141662121236113594b8a1d44240fbd2e907eaa2",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "decoded_bytes": 49,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "LZWDecode",
+            "predictor": 12,
+            "input_bytes": 92,
+            "input_space": "source",
+            "input_data_end": 550,
+            "trailing_input_bytes": 18,
+            "decoded_bytes": 49,
+            "decode_work_bytes": 98,
+            "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b"
+          }
+        ],
+        "decode_work_bytes": 98
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "error": "PdfReadError: Trailer cannot be read: Unknown xref type: 4"
+      },
+      "early_change": 0,
+      "predictor": 12
+    },
+    {
+      "kind": "xref",
+      "source_sha256": "c0ea0a3c81f2233c88e2b4e63d752e68b8690cd6142c529461f99308f9ae9c37",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "decoded_bytes": 49,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "ASCII85Decode",
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "ASCII85Decode",
+            "predictor": 1,
+            "input_bytes": 95,
+            "input_space": "source",
+            "input_data_end": 591,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 74,
+            "decode_work_bytes": 74,
+            "decoded_sha256": "e4ac8a36becd839d789a93ff34917e59915952453c9c2dbfa0fc58a45b409ee8"
+          },
+          {
+            "stage": 1,
+            "filter": "LZWDecode",
+            "predictor": 12,
+            "input_bytes": 74,
+            "input_space": "stage[0]-output",
+            "input_data_end": 74,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 49,
+            "decode_work_bytes": 98,
+            "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b"
+          }
+        ],
+        "decode_work_bytes": 172
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "error": "PdfReadError: Trailer cannot be read: Unknown xref type: 4"
+      },
+      "early_change": 0,
+      "predictor": 12
+    },
+    {
+      "kind": "xref",
+      "source_sha256": "c91994cc43505c0a8b627163d0861e170956a73dce8cb993c8942a63f08502a0",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "decoded_bytes": 49,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "LZWDecode",
+            "predictor": 1,
+            "input_bytes": 50,
+            "input_space": "source",
+            "input_data_end": 507,
+            "trailing_input_bytes": 18,
+            "decoded_bytes": 49,
+            "decode_work_bytes": 49,
+            "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b"
+          }
+        ],
+        "decode_work_bytes": 49
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+        "decoded_bytes": 49
+      },
+      "early_change": 1,
+      "predictor": 1
+    },
+    {
+      "kind": "xref",
+      "source_sha256": "c8938289dd412137a6914adee6bdac79da00171aaaac4fe299932c8e475e8175",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "decoded_bytes": 49,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "ASCII85Decode",
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "ASCII85Decode",
+            "predictor": 1,
+            "input_bytes": 42,
+            "input_space": "source",
+            "input_data_end": 537,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 32,
+            "decode_work_bytes": 32,
+            "decoded_sha256": "76d8bfb1bdded8b4116e85578481e8490245272fef4765b82af81ab6d6288697"
+          },
+          {
+            "stage": 1,
+            "filter": "LZWDecode",
+            "predictor": 1,
+            "input_bytes": 32,
+            "input_space": "stage[0]-output",
+            "input_data_end": 32,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 49,
+            "decode_work_bytes": 49,
+            "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b"
+          }
+        ],
+        "decode_work_bytes": 81
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+        "decoded_bytes": 49
+      },
+      "early_change": 1,
+      "predictor": 1
+    },
+    {
+      "kind": "xref",
+      "source_sha256": "d9097c83edda2f397e220deb912e9d8bd912a32e85290f1d17b371dec7f03b69",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "decoded_bytes": 49,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "LZWDecode",
+            "predictor": 2,
+            "input_bytes": 50,
+            "input_space": "source",
+            "input_data_end": 507,
+            "trailing_input_bytes": 18,
+            "decoded_bytes": 49,
+            "decode_work_bytes": 49,
+            "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b"
+          }
+        ],
+        "decode_work_bytes": 49
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+        "decoded_bytes": 49
+      },
+      "early_change": 1,
+      "predictor": 2
+    },
+    {
+      "kind": "xref",
+      "source_sha256": "8dc43f0f385ba679e9d34bb06aeb88e26b0e1c3f056c478f6d3a52eb663946a7",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "decoded_bytes": 49,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "ASCII85Decode",
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "ASCII85Decode",
+            "predictor": 1,
+            "input_bytes": 42,
+            "input_space": "source",
+            "input_data_end": 537,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 32,
+            "decode_work_bytes": 32,
+            "decoded_sha256": "76d8bfb1bdded8b4116e85578481e8490245272fef4765b82af81ab6d6288697"
+          },
+          {
+            "stage": 1,
+            "filter": "LZWDecode",
+            "predictor": 2,
+            "input_bytes": 32,
+            "input_space": "stage[0]-output",
+            "input_data_end": 32,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 49,
+            "decode_work_bytes": 49,
+            "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b"
+          }
+        ],
+        "decode_work_bytes": 81
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+        "decoded_bytes": 49
+      },
+      "early_change": 1,
+      "predictor": 2
+    },
+    {
+      "kind": "xref",
+      "source_sha256": "bd4002a409d00bfadde9963df3b76399a94a2060e78d50b940d856e6750efbcf",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "decoded_bytes": 49,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "LZWDecode",
+            "predictor": 12,
+            "input_bytes": 92,
+            "input_space": "source",
+            "input_data_end": 550,
+            "trailing_input_bytes": 18,
+            "decoded_bytes": 49,
+            "decode_work_bytes": 98,
+            "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b"
+          }
+        ],
+        "decode_work_bytes": 98
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "error": "PdfReadError: Trailer cannot be read: Unknown xref type: 4"
+      },
+      "early_change": 1,
+      "predictor": 12
+    },
+    {
+      "kind": "xref",
+      "source_sha256": "7d53411f58d69bed1871708e07703f58b15dcc8eeaea187b9dbeebc8e5ba7d5b",
+      "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+      "decoded_bytes": 49,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "ASCII85Decode",
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "ASCII85Decode",
+            "predictor": 1,
+            "input_bytes": 95,
+            "input_space": "source",
+            "input_data_end": 591,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 74,
+            "decode_work_bytes": 74,
+            "decoded_sha256": "e4ac8a36becd839d789a93ff34917e59915952453c9c2dbfa0fc58a45b409ee8"
+          },
+          {
+            "stage": 1,
+            "filter": "LZWDecode",
+            "predictor": 12,
+            "input_bytes": 74,
+            "input_space": "stage[0]-output",
+            "input_data_end": 74,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 49,
+            "decode_work_bytes": 98,
+            "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b"
+          }
+        ],
+        "decode_work_bytes": 172
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "a767557b75c33796f7a4ffd31c9b3fa7c9d3825dcdb052085493b8d0ce2cd76b",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "error": "PdfReadError: Trailer cannot be read: Unknown xref type: 4"
+      },
+      "early_change": 1,
+      "predictor": 12
+    },
+    {
+      "kind": "ObjStm",
+      "source_sha256": "90e4d878dd87620cd8419a71620517a38c833cb65d17843efe0d227fd5db5053",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "decoded_bytes": 83,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "LZWDecode",
+            "predictor": 1,
+            "input_bytes": 104,
+            "input_space": "source",
+            "input_data_end": 415,
+            "trailing_input_bytes": 18,
+            "decoded_bytes": 83,
+            "decode_work_bytes": 83,
+            "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc"
+          }
+        ],
+        "decode_work_bytes": 83
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+        "decoded_bytes": 83
+      },
+      "early_change": 0,
+      "predictor": 1
+    },
+    {
+      "kind": "ObjStm",
+      "source_sha256": "74654dc94e6e8f04d19ca82b3560c76442bb4d02f7effbc51653cdd777cf0d66",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "decoded_bytes": 83,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "ASCII85Decode",
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "ASCII85Decode",
+            "predictor": 1,
+            "input_bytes": 110,
+            "input_space": "source",
+            "input_data_end": 459,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 86,
+            "decode_work_bytes": 86,
+            "decoded_sha256": "19c102958eef924e5ab23c7cecf1910ec2a89d22564c95724e7f1010740f82ed"
+          },
+          {
+            "stage": 1,
+            "filter": "LZWDecode",
+            "predictor": 1,
+            "input_bytes": 86,
+            "input_space": "stage[0]-output",
+            "input_data_end": 86,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 83,
+            "decode_work_bytes": 83,
+            "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc"
+          }
+        ],
+        "decode_work_bytes": 169
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+        "decoded_bytes": 83
+      },
+      "early_change": 0,
+      "predictor": 1
+    },
+    {
+      "kind": "ObjStm",
+      "source_sha256": "5c141a6ab1de7b62e06e9066d7d918562eb8336aa376b18f002c9a85c9449b49",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "decoded_bytes": 83,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "LZWDecode",
+            "predictor": 2,
+            "input_bytes": 104,
+            "input_space": "source",
+            "input_data_end": 415,
+            "trailing_input_bytes": 18,
+            "decoded_bytes": 83,
+            "decode_work_bytes": 83,
+            "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc"
+          }
+        ],
+        "decode_work_bytes": 83
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+        "decoded_bytes": 83
+      },
+      "early_change": 0,
+      "predictor": 2
+    },
+    {
+      "kind": "ObjStm",
+      "source_sha256": "bf608c42ee4797d06a04f16c77e55678a80979ef81afb5e257806b994ef5f99e",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "decoded_bytes": 83,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "ASCII85Decode",
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "ASCII85Decode",
+            "predictor": 1,
+            "input_bytes": 110,
+            "input_space": "source",
+            "input_data_end": 459,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 86,
+            "decode_work_bytes": 86,
+            "decoded_sha256": "19c102958eef924e5ab23c7cecf1910ec2a89d22564c95724e7f1010740f82ed"
+          },
+          {
+            "stage": 1,
+            "filter": "LZWDecode",
+            "predictor": 2,
+            "input_bytes": 86,
+            "input_space": "stage[0]-output",
+            "input_data_end": 86,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 83,
+            "decode_work_bytes": 83,
+            "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc"
+          }
+        ],
+        "decode_work_bytes": 169
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+        "decoded_bytes": 83
+      },
+      "early_change": 0,
+      "predictor": 2
+    },
+    {
+      "kind": "ObjStm",
+      "source_sha256": "05f60247447e92fd52ede816bbd6b759201865d264fee7d4d13ba13a76187541",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "decoded_bytes": 83,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "LZWDecode",
+            "predictor": 12,
+            "input_bytes": 185,
+            "input_space": "source",
+            "input_data_end": 497,
+            "trailing_input_bytes": 18,
+            "decoded_bytes": 83,
+            "decode_work_bytes": 166,
+            "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc"
+          }
+        ],
+        "decode_work_bytes": 166
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "decoded_sha256": "49d6ddd1272b508a295ab4b8f05999cc004c15351e54877cd946e3d81b2699e2",
+        "decoded_bytes": 166
+      },
+      "early_change": 0,
+      "predictor": 12
+    },
+    {
+      "kind": "ObjStm",
+      "source_sha256": "a2d48e5a8ad58ce4398e5cb20331f660acd4f96e09f9d03b2ce13c31badfc9f0",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "decoded_bytes": 83,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "ASCII85Decode",
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "ASCII85Decode",
+            "predictor": 1,
+            "input_bytes": 211,
+            "input_space": "source",
+            "input_data_end": 561,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 167,
+            "decode_work_bytes": 167,
+            "decoded_sha256": "6d18eb90f5f8c849d26904e2a487f96fe3a54f62a4044a928dfed3bbcca20098"
+          },
+          {
+            "stage": 1,
+            "filter": "LZWDecode",
+            "predictor": 12,
+            "input_bytes": 167,
+            "input_space": "stage[0]-output",
+            "input_data_end": 167,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 83,
+            "decode_work_bytes": 166,
+            "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc"
+          }
+        ],
+        "decode_work_bytes": 333
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "decoded_sha256": "49d6ddd1272b508a295ab4b8f05999cc004c15351e54877cd946e3d81b2699e2",
+        "decoded_bytes": 166
+      },
+      "early_change": 0,
+      "predictor": 12
+    },
+    {
+      "kind": "ObjStm",
+      "source_sha256": "aac3e9105e823e13120024f68c978087f1741480f429de159ec95ccd94d7f94a",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "decoded_bytes": 83,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "LZWDecode",
+            "predictor": 1,
+            "input_bytes": 104,
+            "input_space": "source",
+            "input_data_end": 415,
+            "trailing_input_bytes": 18,
+            "decoded_bytes": 83,
+            "decode_work_bytes": 83,
+            "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc"
+          }
+        ],
+        "decode_work_bytes": 83
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+        "decoded_bytes": 83
+      },
+      "early_change": 1,
+      "predictor": 1
+    },
+    {
+      "kind": "ObjStm",
+      "source_sha256": "aa0be04383bea2bad1dca27e3afb0291758254b4dfcbd7ab1b3a197516ee62f1",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "decoded_bytes": 83,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "ASCII85Decode",
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "ASCII85Decode",
+            "predictor": 1,
+            "input_bytes": 110,
+            "input_space": "source",
+            "input_data_end": 459,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 86,
+            "decode_work_bytes": 86,
+            "decoded_sha256": "19c102958eef924e5ab23c7cecf1910ec2a89d22564c95724e7f1010740f82ed"
+          },
+          {
+            "stage": 1,
+            "filter": "LZWDecode",
+            "predictor": 1,
+            "input_bytes": 86,
+            "input_space": "stage[0]-output",
+            "input_data_end": 86,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 83,
+            "decode_work_bytes": 83,
+            "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc"
+          }
+        ],
+        "decode_work_bytes": 169
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+        "decoded_bytes": 83
+      },
+      "early_change": 1,
+      "predictor": 1
+    },
+    {
+      "kind": "ObjStm",
+      "source_sha256": "af2d5b2d18670d1f08309847b440a415242aa924bbd833889953443eae2974c3",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "decoded_bytes": 83,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "LZWDecode",
+            "predictor": 2,
+            "input_bytes": 104,
+            "input_space": "source",
+            "input_data_end": 415,
+            "trailing_input_bytes": 18,
+            "decoded_bytes": 83,
+            "decode_work_bytes": 83,
+            "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc"
+          }
+        ],
+        "decode_work_bytes": 83
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+        "decoded_bytes": 83
+      },
+      "early_change": 1,
+      "predictor": 2
+    },
+    {
+      "kind": "ObjStm",
+      "source_sha256": "59d351285786e59ed7dcf85ecc4cb53afaf4523b3efd0ec1e00eaf470bef85d0",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "decoded_bytes": 83,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "ASCII85Decode",
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "ASCII85Decode",
+            "predictor": 1,
+            "input_bytes": 110,
+            "input_space": "source",
+            "input_data_end": 459,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 86,
+            "decode_work_bytes": 86,
+            "decoded_sha256": "19c102958eef924e5ab23c7cecf1910ec2a89d22564c95724e7f1010740f82ed"
+          },
+          {
+            "stage": 1,
+            "filter": "LZWDecode",
+            "predictor": 2,
+            "input_bytes": 86,
+            "input_space": "stage[0]-output",
+            "input_data_end": 86,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 83,
+            "decode_work_bytes": 83,
+            "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc"
+          }
+        ],
+        "decode_work_bytes": 169
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+        "decoded_bytes": 83
+      },
+      "early_change": 1,
+      "predictor": 2
+    },
+    {
+      "kind": "ObjStm",
+      "source_sha256": "c422f78c764c5a71df053b14dc734da89e323856fc533e8d022a21b8d0c8f138",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "decoded_bytes": 83,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "LZWDecode",
+            "predictor": 12,
+            "input_bytes": 185,
+            "input_space": "source",
+            "input_data_end": 497,
+            "trailing_input_bytes": 18,
+            "decoded_bytes": 83,
+            "decode_work_bytes": 166,
+            "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc"
+          }
+        ],
+        "decode_work_bytes": 166
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "decoded_sha256": "49d6ddd1272b508a295ab4b8f05999cc004c15351e54877cd946e3d81b2699e2",
+        "decoded_bytes": 166
+      },
+      "early_change": 1,
+      "predictor": 12
+    },
+    {
+      "kind": "ObjStm",
+      "source_sha256": "a098bcd46d859d3f0c2500ad606793d0d1ee22041419d09c6d7e3c6063f7b969",
+      "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+      "decoded_bytes": 83,
+      "own_exact": true,
+      "own": {
+        "filter_chain": [
+          "ASCII85Decode",
+          "LZWDecode"
+        ],
+        "decode_stages": [
+          {
+            "stage": 0,
+            "filter": "ASCII85Decode",
+            "predictor": 1,
+            "input_bytes": 211,
+            "input_space": "source",
+            "input_data_end": 561,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 167,
+            "decode_work_bytes": 167,
+            "decoded_sha256": "6d18eb90f5f8c849d26904e2a487f96fe3a54f62a4044a928dfed3bbcca20098"
+          },
+          {
+            "stage": 1,
+            "filter": "LZWDecode",
+            "predictor": 12,
+            "input_bytes": 167,
+            "input_space": "stage[0]-output",
+            "input_data_end": 167,
+            "trailing_input_bytes": 0,
+            "decoded_bytes": 83,
+            "decode_work_bytes": 166,
+            "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc"
+          }
+        ],
+        "decode_work_bytes": 333
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "2492fb5a2b2632875a11da522534f383f709c4d4231bc0e6b7e416acdfcc71fc",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "decoded_sha256": "49d6ddd1272b508a295ab4b8f05999cc004c15351e54877cd946e3d81b2699e2",
+        "decoded_bytes": 166
+      },
+      "early_change": 1,
+      "predictor": 12
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "095a4b4babea334eb6845201f83c0308d021e39e699329610519d6614ba4e83d",
+      "decoded_sha256": "52105f89fc927ef4912b1ac9e0333835381cdf079dbab5618eead7171c78182f",
+      "decoded_bytes": 256,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "52105f89fc927ef4912b1ac9e0333835381cdf079dbab5618eead7171c78182f"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "52105f89fc927ef4912b1ac9e0333835381cdf079dbab5618eead7171c78182f",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "52105f89fc927ef4912b1ac9e0333835381cdf079dbab5618eead7171c78182f",
+        "decoded_bytes": 256
+      },
+      "early_change": 0,
+      "literal_count": 253
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "6089166fc47c5d85d8a332efd5d03704172adf2ba3f868e3e68a189b08b0a3bb",
+      "decoded_sha256": "6dbbc1bfbe00b2f03db74cf6a71a640584f7bb91e11b0fe4ff5b1b6f8c10b45a",
+      "decoded_bytes": 257,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "6dbbc1bfbe00b2f03db74cf6a71a640584f7bb91e11b0fe4ff5b1b6f8c10b45a"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "6dbbc1bfbe00b2f03db74cf6a71a640584f7bb91e11b0fe4ff5b1b6f8c10b45a",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "decoded_sha256": "bebb03c0a67ffc4c396e9b56f5ea046ec353cc73c4a02d920c59469a081092c9",
+        "decoded_bytes": 260
+      },
+      "early_change": 0,
+      "literal_count": 254
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "278dee37011ef7e919a900da23fc83a8b940cf852f7e42be9e2fd81f257970fb",
+      "decoded_sha256": "7efc742a69ffa4920a053ba4b8b4175a217cd95d24148fd328626194b10cd79e",
+      "decoded_bytes": 258,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "7efc742a69ffa4920a053ba4b8b4175a217cd95d24148fd328626194b10cd79e"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "7efc742a69ffa4920a053ba4b8b4175a217cd95d24148fd328626194b10cd79e",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "decoded_sha256": "904d27d4b02b9a07bbfd5a5f7df043dcb3147ecfd08eae569bc6a4f205d7cd27",
+        "decoded_bytes": 262
+      },
+      "early_change": 0,
+      "literal_count": 255
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "70b250ef73da5b625c1747d0cfc12cbe3219c7ca05c21c34e037b84dcf918e17",
+      "decoded_sha256": "e06565ca560e8379d69ac4bc63cf64e349738cf8571e79c2ec6b6b0ebc97eca2",
+      "decoded_bytes": 259,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "e06565ca560e8379d69ac4bc63cf64e349738cf8571e79c2ec6b6b0ebc97eca2"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "e06565ca560e8379d69ac4bc63cf64e349738cf8571e79c2ec6b6b0ebc97eca2",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "decoded_sha256": "8102aa3a683281a6547dbf72c93448852fc6a75461bc0ddf43c1e9656643a6b6",
+        "decoded_bytes": 264
+      },
+      "early_change": 0,
+      "literal_count": 256
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "66f64b15cce5df78fcd0884255025f9abfa1195b43e86d870b64b1d374bbe8a1",
+      "decoded_sha256": "1ee77c85f2c0e20f1b34e84ac76716a350e8d44e82b6343345b2ac400e1cde68",
+      "decoded_bytes": 768,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "1ee77c85f2c0e20f1b34e84ac76716a350e8d44e82b6343345b2ac400e1cde68"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "1ee77c85f2c0e20f1b34e84ac76716a350e8d44e82b6343345b2ac400e1cde68",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "error": "PdfStreamError: LZW code 264 out of range with empty base at table index 261."
+      },
+      "early_change": 0,
+      "literal_count": 765
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "891289df94cc7adf76ea81a1c05e8fb905f54af9d22544334101fcedd9d0f423",
+      "decoded_sha256": "a992775d60091ebc9dd20fc36d5e400bd665c49623ba18a089dd02e040d0516a",
+      "decoded_bytes": 769,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "a992775d60091ebc9dd20fc36d5e400bd665c49623ba18a089dd02e040d0516a"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "a992775d60091ebc9dd20fc36d5e400bd665c49623ba18a089dd02e040d0516a",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "error": "PdfStreamError: LZW code 264 out of range with empty base at table index 261."
+      },
+      "early_change": 0,
+      "literal_count": 766
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "00cf54bd5b504d13fb4d7816efd4f7a8652c360d854014f1061552cd9e40ff11",
+      "decoded_sha256": "e96d2191caaf23c9414ba859c358a255213d843856e5ef87c8743c7ce91ef4cf",
+      "decoded_bytes": 770,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "e96d2191caaf23c9414ba859c358a255213d843856e5ef87c8743c7ce91ef4cf"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "e96d2191caaf23c9414ba859c358a255213d843856e5ef87c8743c7ce91ef4cf",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "error": "PdfStreamError: LZW code 264 out of range with empty base at table index 261."
+      },
+      "early_change": 0,
+      "literal_count": 767
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "11a9b110460aa261d24adf2fef8d94c54cd681006a65297ed7b71a7517a79a82",
+      "decoded_sha256": "6858a6ea3f08a3eee5ca28274fd35840cf053c1faac8c99731795890e261fa62",
+      "decoded_bytes": 771,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "6858a6ea3f08a3eee5ca28274fd35840cf053c1faac8c99731795890e261fa62"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "6858a6ea3f08a3eee5ca28274fd35840cf053c1faac8c99731795890e261fa62",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "error": "PdfStreamError: LZW code 264 out of range with empty base at table index 261."
+      },
+      "early_change": 0,
+      "literal_count": 768
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "5899685e29ab74022957eec2d7e11ff6dfd08575704c0721b0712b4958ff7bff",
+      "decoded_sha256": "06c434e1fb427e8ccb33cb40087574275a5279be1a0b0a4d0c1bf9927c387b47",
+      "decoded_bytes": 1792,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "06c434e1fb427e8ccb33cb40087574275a5279be1a0b0a4d0c1bf9927c387b47"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "06c434e1fb427e8ccb33cb40087574275a5279be1a0b0a4d0c1bf9927c387b47",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "error": "PdfStreamError: LZW code 264 out of range with empty base at table index 261."
+      },
+      "early_change": 0,
+      "literal_count": 1789
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "753702be3c2689733d313a4335342fdd40cc829c248a9bd856f945a6c5fdcbd4",
+      "decoded_sha256": "97873724d29fefdcee4907bb58343c36e0eb8b4306a8109e251e303c054fa8e2",
+      "decoded_bytes": 1793,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "97873724d29fefdcee4907bb58343c36e0eb8b4306a8109e251e303c054fa8e2"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "97873724d29fefdcee4907bb58343c36e0eb8b4306a8109e251e303c054fa8e2",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "error": "PdfStreamError: LZW code 264 out of range with empty base at table index 261."
+      },
+      "early_change": 0,
+      "literal_count": 1790
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "21d5e7c99a67674a5902c6154350a87fd3068a0bc7baa4c6c08e4b1f247aacbb",
+      "decoded_sha256": "e4ae4f8c49196adfa3878bdb45197d6056af653023cc0169b7f50356d24a4628",
+      "decoded_bytes": 1794,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "e4ae4f8c49196adfa3878bdb45197d6056af653023cc0169b7f50356d24a4628"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "e4ae4f8c49196adfa3878bdb45197d6056af653023cc0169b7f50356d24a4628",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "error": "PdfStreamError: LZW code 264 out of range with empty base at table index 261."
+      },
+      "early_change": 0,
+      "literal_count": 1791
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "cba1e687cd83bb11f338aa0dc816730ab0512018eed7b1f5e08ab51368c2023c",
+      "decoded_sha256": "cffbaafc7cadefebbf1cc5aca665e06f0a9fe5f443899fb38853623ef7db29b0",
+      "decoded_bytes": 1795,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "cffbaafc7cadefebbf1cc5aca665e06f0a9fe5f443899fb38853623ef7db29b0"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "cffbaafc7cadefebbf1cc5aca665e06f0a9fe5f443899fb38853623ef7db29b0",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "error": "PdfStreamError: LZW code 264 out of range with empty base at table index 261."
+      },
+      "early_change": 0,
+      "literal_count": 1792
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "b948e4b8e9bd663691a44732914f0e34b830cf66ff9863b51edc14a8d3c7b2d9",
+      "decoded_sha256": "5495990f4a7a013bda39d951a69ea193461b277e76ecfa975fefe730e972b60d",
+      "decoded_bytes": 3841,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "5495990f4a7a013bda39d951a69ea193461b277e76ecfa975fefe730e972b60d"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "5495990f4a7a013bda39d951a69ea193461b277e76ecfa975fefe730e972b60d",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "error": "PdfStreamError: LZW code 264 out of range with empty base at table index 261."
+      },
+      "early_change": 0,
+      "literal_count": 3838
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "37b47a615ef181831c7a8f66cce5b24539876b49f6aab70abc5bdbabddd9e3a9",
+      "decoded_sha256": "43d40dae89cba409766fc43cae9b63d4caf38b082c2429b1c2d6d7c603016c81",
+      "decoded_bytes": 3842,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "43d40dae89cba409766fc43cae9b63d4caf38b082c2429b1c2d6d7c603016c81"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "43d40dae89cba409766fc43cae9b63d4caf38b082c2429b1c2d6d7c603016c81",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "error": "PdfStreamError: LZW code 264 out of range with empty base at table index 261."
+      },
+      "early_change": 0,
+      "literal_count": 3839
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "08b13820478535a981e8b7ea871e7258f5ffe7d849d8bb4df1d7f2dd76cf7935",
+      "decoded_sha256": "52105f89fc927ef4912b1ac9e0333835381cdf079dbab5618eead7171c78182f",
+      "decoded_bytes": 256,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "52105f89fc927ef4912b1ac9e0333835381cdf079dbab5618eead7171c78182f"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "52105f89fc927ef4912b1ac9e0333835381cdf079dbab5618eead7171c78182f",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "52105f89fc927ef4912b1ac9e0333835381cdf079dbab5618eead7171c78182f",
+        "decoded_bytes": 256
+      },
+      "early_change": 1,
+      "literal_count": 253
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "803ca7d07783656bfeb981fc42bdc2373652852e06b19cc5a0da578b5ece8060",
+      "decoded_sha256": "6dbbc1bfbe00b2f03db74cf6a71a640584f7bb91e11b0fe4ff5b1b6f8c10b45a",
+      "decoded_bytes": 257,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "6dbbc1bfbe00b2f03db74cf6a71a640584f7bb91e11b0fe4ff5b1b6f8c10b45a"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "6dbbc1bfbe00b2f03db74cf6a71a640584f7bb91e11b0fe4ff5b1b6f8c10b45a",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "6dbbc1bfbe00b2f03db74cf6a71a640584f7bb91e11b0fe4ff5b1b6f8c10b45a",
+        "decoded_bytes": 257
+      },
+      "early_change": 1,
+      "literal_count": 254
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "dbab32a771b58b152a408fb9f5a5fbca4a947b3641c10b1af4328bf51da102cb",
+      "decoded_sha256": "7efc742a69ffa4920a053ba4b8b4175a217cd95d24148fd328626194b10cd79e",
+      "decoded_bytes": 258,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "7efc742a69ffa4920a053ba4b8b4175a217cd95d24148fd328626194b10cd79e"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "7efc742a69ffa4920a053ba4b8b4175a217cd95d24148fd328626194b10cd79e",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "7efc742a69ffa4920a053ba4b8b4175a217cd95d24148fd328626194b10cd79e",
+        "decoded_bytes": 258
+      },
+      "early_change": 1,
+      "literal_count": 255
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "353d7ac90257217c0b0e29525cdf5f131efd115d2582b751e864198d46858495",
+      "decoded_sha256": "e06565ca560e8379d69ac4bc63cf64e349738cf8571e79c2ec6b6b0ebc97eca2",
+      "decoded_bytes": 259,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "e06565ca560e8379d69ac4bc63cf64e349738cf8571e79c2ec6b6b0ebc97eca2"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "e06565ca560e8379d69ac4bc63cf64e349738cf8571e79c2ec6b6b0ebc97eca2",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "e06565ca560e8379d69ac4bc63cf64e349738cf8571e79c2ec6b6b0ebc97eca2",
+        "decoded_bytes": 259
+      },
+      "early_change": 1,
+      "literal_count": 256
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "de46824eeb4a5531b48c36882217b8b1397189840bd7d3b5a1fd7634448e05c7",
+      "decoded_sha256": "1ee77c85f2c0e20f1b34e84ac76716a350e8d44e82b6343345b2ac400e1cde68",
+      "decoded_bytes": 768,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "1ee77c85f2c0e20f1b34e84ac76716a350e8d44e82b6343345b2ac400e1cde68"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "1ee77c85f2c0e20f1b34e84ac76716a350e8d44e82b6343345b2ac400e1cde68",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "1ee77c85f2c0e20f1b34e84ac76716a350e8d44e82b6343345b2ac400e1cde68",
+        "decoded_bytes": 768
+      },
+      "early_change": 1,
+      "literal_count": 765
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "92175c82d2b399bee0d20233224ee8448afcc43c1e62bd44bf0d8a56b6a8f4a4",
+      "decoded_sha256": "a992775d60091ebc9dd20fc36d5e400bd665c49623ba18a089dd02e040d0516a",
+      "decoded_bytes": 769,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "a992775d60091ebc9dd20fc36d5e400bd665c49623ba18a089dd02e040d0516a"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "a992775d60091ebc9dd20fc36d5e400bd665c49623ba18a089dd02e040d0516a",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "a992775d60091ebc9dd20fc36d5e400bd665c49623ba18a089dd02e040d0516a",
+        "decoded_bytes": 769
+      },
+      "early_change": 1,
+      "literal_count": 766
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "518809bc3d9250ee0ea7cee3b2e1cc5ee13e6ee98e4b7301ae989ad0428a82f2",
+      "decoded_sha256": "e96d2191caaf23c9414ba859c358a255213d843856e5ef87c8743c7ce91ef4cf",
+      "decoded_bytes": 770,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "e96d2191caaf23c9414ba859c358a255213d843856e5ef87c8743c7ce91ef4cf"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "e96d2191caaf23c9414ba859c358a255213d843856e5ef87c8743c7ce91ef4cf",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "e96d2191caaf23c9414ba859c358a255213d843856e5ef87c8743c7ce91ef4cf",
+        "decoded_bytes": 770
+      },
+      "early_change": 1,
+      "literal_count": 767
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "60877bdc37613d1cadaeed869014f3fe3d4566fa5dec3cb9399b465d2ed9177a",
+      "decoded_sha256": "6858a6ea3f08a3eee5ca28274fd35840cf053c1faac8c99731795890e261fa62",
+      "decoded_bytes": 771,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "6858a6ea3f08a3eee5ca28274fd35840cf053c1faac8c99731795890e261fa62"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "6858a6ea3f08a3eee5ca28274fd35840cf053c1faac8c99731795890e261fa62",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "6858a6ea3f08a3eee5ca28274fd35840cf053c1faac8c99731795890e261fa62",
+        "decoded_bytes": 771
+      },
+      "early_change": 1,
+      "literal_count": 768
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "fbb9fbd8c724c8f82bf9bbdd604a433309ea96840071861fbe481b007a0d9173",
+      "decoded_sha256": "06c434e1fb427e8ccb33cb40087574275a5279be1a0b0a4d0c1bf9927c387b47",
+      "decoded_bytes": 1792,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "06c434e1fb427e8ccb33cb40087574275a5279be1a0b0a4d0c1bf9927c387b47"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "06c434e1fb427e8ccb33cb40087574275a5279be1a0b0a4d0c1bf9927c387b47",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "06c434e1fb427e8ccb33cb40087574275a5279be1a0b0a4d0c1bf9927c387b47",
+        "decoded_bytes": 1792
+      },
+      "early_change": 1,
+      "literal_count": 1789
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "d2e95caaec8fad97f63a2db1faeeddfdd3c9818bc6dfe19a0bd3e95fe215701d",
+      "decoded_sha256": "97873724d29fefdcee4907bb58343c36e0eb8b4306a8109e251e303c054fa8e2",
+      "decoded_bytes": 1793,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "97873724d29fefdcee4907bb58343c36e0eb8b4306a8109e251e303c054fa8e2"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "97873724d29fefdcee4907bb58343c36e0eb8b4306a8109e251e303c054fa8e2",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "97873724d29fefdcee4907bb58343c36e0eb8b4306a8109e251e303c054fa8e2",
+        "decoded_bytes": 1793
+      },
+      "early_change": 1,
+      "literal_count": 1790
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "fad3b7cdf0215c45dd93e9f627f6d1e2d89c4c5fdbd03b650ea5904d29ac303e",
+      "decoded_sha256": "e4ae4f8c49196adfa3878bdb45197d6056af653023cc0169b7f50356d24a4628",
+      "decoded_bytes": 1794,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "e4ae4f8c49196adfa3878bdb45197d6056af653023cc0169b7f50356d24a4628"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "e4ae4f8c49196adfa3878bdb45197d6056af653023cc0169b7f50356d24a4628",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "e4ae4f8c49196adfa3878bdb45197d6056af653023cc0169b7f50356d24a4628",
+        "decoded_bytes": 1794
+      },
+      "early_change": 1,
+      "literal_count": 1791
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "e4e35f2ab0edcbf7990a18a65d406d86e7b5aa0f8a5e7400268a7e2ab93751eb",
+      "decoded_sha256": "cffbaafc7cadefebbf1cc5aca665e06f0a9fe5f443899fb38853623ef7db29b0",
+      "decoded_bytes": 1795,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "cffbaafc7cadefebbf1cc5aca665e06f0a9fe5f443899fb38853623ef7db29b0"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "cffbaafc7cadefebbf1cc5aca665e06f0a9fe5f443899fb38853623ef7db29b0",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "cffbaafc7cadefebbf1cc5aca665e06f0a9fe5f443899fb38853623ef7db29b0",
+        "decoded_bytes": 1795
+      },
+      "early_change": 1,
+      "literal_count": 1792
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "28c4327ba440fd2bd771017efa3cc0fc37a9e0b4cdfc64d72b78bba945ebcaf7",
+      "decoded_sha256": "5495990f4a7a013bda39d951a69ea193461b277e76ecfa975fefe730e972b60d",
+      "decoded_bytes": 3841,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "5495990f4a7a013bda39d951a69ea193461b277e76ecfa975fefe730e972b60d"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "5495990f4a7a013bda39d951a69ea193461b277e76ecfa975fefe730e972b60d",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "5495990f4a7a013bda39d951a69ea193461b277e76ecfa975fefe730e972b60d",
+        "decoded_bytes": 3841
+      },
+      "early_change": 1,
+      "literal_count": 3838
+    },
+    {
+      "kind": "width-boundary",
+      "source_sha256": "128b27b46ba9842454abbbeb499a5990a5de3590a63b46829c9fa60a76894025",
+      "decoded_sha256": "43d40dae89cba409766fc43cae9b63d4caf38b082c2429b1c2d6d7c603016c81",
+      "decoded_bytes": 3842,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "43d40dae89cba409766fc43cae9b63d4caf38b082c2429b1c2d6d7c603016c81"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "43d40dae89cba409766fc43cae9b63d4caf38b082c2429b1c2d6d7c603016c81",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "43d40dae89cba409766fc43cae9b63d4caf38b082c2429b1c2d6d7c603016c81",
+        "decoded_bytes": 3842
+      },
+      "early_change": 1,
+      "literal_count": 3839
+    },
+    {
+      "kind": "repeat",
+      "source_sha256": "de5ef3eac2574c534f120e6930202e5857238409594779150906d52a5898e5e1",
+      "decoded_sha256": "c9c5207f6d565d873f7d44e97addda746f1cd1370d487aa80295746a95401587",
+      "decoded_bytes": 30000,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "c9c5207f6d565d873f7d44e97addda746f1cd1370d487aa80295746a95401587"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "c9c5207f6d565d873f7d44e97addda746f1cd1370d487aa80295746a95401587",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "c9c5207f6d565d873f7d44e97addda746f1cd1370d487aa80295746a95401587",
+        "decoded_bytes": 30000
+      },
+      "early_change": 0
+    },
+    {
+      "kind": "byte-range",
+      "source_sha256": "133ae1b6f90185507f42adef839379145f8b59ff2ace8c99d3ec60d72b060149",
+      "decoded_sha256": "a4759e7aa20338328866a2ea17eaf8c7fe4ec6bbe3bb71cee7df7c0461b3c22f",
+      "decoded_bytes": 20480,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "a4759e7aa20338328866a2ea17eaf8c7fe4ec6bbe3bb71cee7df7c0461b3c22f"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "a4759e7aa20338328866a2ea17eaf8c7fe4ec6bbe3bb71cee7df7c0461b3c22f",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "error": "PdfStreamError: LZW code 520 out of range with empty base at table index 514."
+      },
+      "early_change": 0
+    },
+    {
+      "kind": "random-resets",
+      "source_sha256": "04c333c503cf724e6cdde22cac0e28703d7d5da29ad7f6f76836a57965e03725",
+      "decoded_sha256": "4c294d929b048dd9f4e69ab74f78c87bf0896fdf03e1aa18e78532631c9f0961",
+      "decoded_bytes": 20000,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "4c294d929b048dd9f4e69ab74f78c87bf0896fdf03e1aa18e78532631c9f0961"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "4c294d929b048dd9f4e69ab74f78c87bf0896fdf03e1aa18e78532631c9f0961",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": false,
+        "error": "PdfStreamError: LZW code 387 out of range with empty base at table index 261."
+      },
+      "early_change": 0
+    },
+    {
+      "kind": "repeat",
+      "source_sha256": "82a75264784d50e4380d41a964d1bad2709b9df41b27c706a9577587e4dcbf1c",
+      "decoded_sha256": "c9c5207f6d565d873f7d44e97addda746f1cd1370d487aa80295746a95401587",
+      "decoded_bytes": 30000,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "c9c5207f6d565d873f7d44e97addda746f1cd1370d487aa80295746a95401587"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "c9c5207f6d565d873f7d44e97addda746f1cd1370d487aa80295746a95401587",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "c9c5207f6d565d873f7d44e97addda746f1cd1370d487aa80295746a95401587",
+        "decoded_bytes": 30000
+      },
+      "early_change": 1
+    },
+    {
+      "kind": "byte-range",
+      "source_sha256": "f56456ab8d75a1d9188db0be46aa7b8e7864b9a09c2cde3839942654b1ac8b2b",
+      "decoded_sha256": "a4759e7aa20338328866a2ea17eaf8c7fe4ec6bbe3bb71cee7df7c0461b3c22f",
+      "decoded_bytes": 20480,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "a4759e7aa20338328866a2ea17eaf8c7fe4ec6bbe3bb71cee7df7c0461b3c22f"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "a4759e7aa20338328866a2ea17eaf8c7fe4ec6bbe3bb71cee7df7c0461b3c22f",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "a4759e7aa20338328866a2ea17eaf8c7fe4ec6bbe3bb71cee7df7c0461b3c22f",
+        "decoded_bytes": 20480
+      },
+      "early_change": 1
+    },
+    {
+      "kind": "random-resets",
+      "source_sha256": "95b6a5dfe9e4273007addf08b85c316fea629d1479156100c3c12b0691ddf0d8",
+      "decoded_sha256": "4c294d929b048dd9f4e69ab74f78c87bf0896fdf03e1aa18e78532631c9f0961",
+      "decoded_bytes": 20000,
+      "own_exact": true,
+      "own": {
+        "decoded_sha256": "4c294d929b048dd9f4e69ab74f78c87bf0896fdf03e1aa18e78532631c9f0961"
+      },
+      "mupdf": {
+        "exact": true,
+        "decoded_sha256": "4c294d929b048dd9f4e69ab74f78c87bf0896fdf03e1aa18e78532631c9f0961",
+        "repaired": false
+      },
+      "pypdf": {
+        "exact": true,
+        "decoded_sha256": "4c294d929b048dd9f4e69ab74f78c87bf0896fdf03e1aa18e78532631c9f0961",
+        "decoded_bytes": 20000
+      },
+      "early_change": 1
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "scope": "Finite static TrueType/post-3 GSUB ligature evidence for generated Story PDF ToUnicode; not shaping or full PDF acceptance",
+  "model": "opendoc-model==0.19.0",
+  "published": false,
+  "dependencies_changed": false,
+  "native_ligature_tests_passed": 41,
+  "affected_font_pdf_docx_tests_passed": 298,
+  "native_and_existing_unicode_tests_after_final_fixture_passed": 43,
+  "source_files_sha256": {
+    "src/opendoc_formats/fonts/sfnt_cmap.py": "1c403cf0abe7abdc00293e72b3ab676d95449e7992b4eb3d8029588ccb77ab4e",
+    "src/opendoc_formats/fonts/sfnt_ligatures.py": "faa0fedd5afaf944038e802b90377ebfefc2358ac1c622bc0edb7f07704fac2f",
+    "src/opendoc_formats/writers/pdf_unicode.py": "91dc15920a0c3ef2b5c633d1df042d18a70caaa1e8ef48b1ab299f1633a540e6",
+    "tests/test_native_font_cmap.py": "f22a898718de48d4493ec94b0c14f1d0aafbea5ba04aa7055ac8b6565b7bb1e4",
+    "tests/test_native_font_ligatures.py": "ed4b04d258b6f55d153ad510403cfbbbac0aed3c050a473df529129674380b19",
+    "tests/writers/test_pdf_unicode.py": "c06ee64bc88127a703511b2c163da5f10e1fdb49fc61de8a04c8334da40e83b2",
+    "tools/package_smoke.py": "0286b8e01fda263c21db48c79156778662e4c4008e72bac6f73681a07bea342c",
+    "tools/pdf_ligature_smoke.py": "7f9d0aae32c60e1c77843aad3c18fabc848307e1315d65bcdff0e689533e76e7",
+    ".github/workflows/ci.yml": "2967573d476170ea8379dafd00f910cdb1691b6aef201746c2d3f3f10b918d55"
+  },
+  "legacy_ligature_policy_ast_unchanged": true,
+  "test_selection": [
+    "tests/test_native_font_ligatures.py",
+    "tests/test_native_font_cmap.py",
+    "tests/test_native_font_names.py",
+    "tests/test_native_font_face.py",
+    "tests/test_native_fvar.py",
+    "tests/test_word_font_metrics.py",
+    "tests/test_font_subset_cancellation.py",
+    "tests/writers/test_pdf_docx_complex.py",
+    "tests/writers/test_pdf_model_docx.py",
+    "tests/writers/test_docx_opaque_fonts.py",
+    "tests/writers/test_pdf_unicode.py"
+  ],
+  "native_profile": {
+    "font": "standalone static TrueType, post 3",
+    "GSUB_version": "1.0",
+    "lookup_types": [
+      4,
+      7
+    ],
+    "extension_target_type": 4,
+    "coverage_formats": [
+      1,
+      2
+    ],
+    "lookup_flags": 0,
+    "policy": "Same unique nonencoded target / uniquely encoded components policy across all lookups; no language feature application",
+    "limits": {
+      "GSUB_bytes": 8388608,
+      "lookups": 1000,
+      "ligatures": 100000,
+      "word_coverage_work": 262144,
+      "components": [
+        2,
+        32
+      ]
+    },
+    "repeated_references_charge_work": true,
+    "cancellation_in_parser_and_pdf_pipeline": true,
+    "cmap_numeric_ids_match_engine": true,
+    "coverage_stream_does_not_allocate_intermediate_glyph_dictionary": true
+  },
+  "installed_acceptance": {
+    "wheel_sha256": "14a6716e8aab920cd98e41e969cd83135e9cad5d5348f199e60e6054cf32bddd",
+    "python_files": 212,
+    "all_source_wheel_two_installed_profiles_match": true,
+    "base_GSUB_without_fonttools_passed": true,
+    "PDF_profile_packages": [
+      "opendoc-formats==0.42.0",
+      "opendoc-model==0.19.0",
+      "pymupdf==1.28.2"
+    ],
+    "fonttools_pillow_office_html_other_pdf_engines_absent": true,
+    "Story_ToUnicode_saved_file_reload_passed": true,
+    "expected_text": "fi ti fi",
+    "ToUnicode_mappings": 2,
+    "MuPDF_pixels_before_after_identical": true,
+    "pip_checks_passed": true,
+    "CI_command": "python -I tools/pdf_ligature_smoke.py",
+    "CI_not_dispatched": true,
+    "sdist_contains_owned_font_and_native_gate": true,
+    "sdist_sha256": "37d090469476a5cb23ae4e689283eff099801af4859d803af41862a1c72abe79"
+  },
+  "owned_fixture": {
+    "path": "tests/native/data/ligature-post3.ttf",
+    "sha256": "002ab3822db7196c8ba23fa443d5d4e7026301fdee7f89883045d6b4f70528ad",
+    "bytes": 1320,
+    "generator": "tests.test_native_font_ligatures.program (default table, post3=True)",
+    "license": "MIT",
+    "copyright_name_record": "Copyright 2026 Sergei Litvinov",
+    "canonical_head_timestamp": 3400000000,
+    "third_party_glyph_data": false
+  },
+  "remaining": [
+    "Other post profiles/CFF/variations/GSUB types/flags and invalid profiles keep fontTools fallback; post-2 accepted in font-post2-evidence.json",
+    "Third-party fallback work is not bounded by native quotas",
+    "Fonts extra retained for actual subsetting and uncovered profiles",
+    "Public PDF standalone TTF/OTF resource binding is accepted separately in pdf-resource-font-evidence.json",
+    "No general PDF shaping/visibility or independent multi-renderer conformance claim"
+  ],
+  "full_regression_note": "2595-pass full regression predates EPUB and this GSUB change; this change is accepted by the stated 298-test profile and installed gates",
+  "affected_test_scope": "Final runtime and canonical MIT fixture; all stated 298 tests passed after streaming cmap refactor"
+}

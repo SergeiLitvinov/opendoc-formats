@@ -1,0 +1,11 @@
+{
+  "scope": "All 65536 UTF-16 units; simple uppercase only, not complete CFBF tree acceptance",
+  "python": "3.12.16",
+  "unicode_version": "15.0.0",
+  "unicode_data_url": "https://www.unicode.org/Public/15.0.0/ucd/UnicodeData.txt",
+  "unicode_data_sha256": "806e9aed65037197f1ec85e12be6e8cd870fc5608b4de0fffd990f689f376a73",
+  "verified_units": 65536,
+  "mismatches": 0,
+  "mapping_sha256": "d4b70b21431157f3323ed26236dd8e2a58acfbf31dca14dc93c2b1d249050549",
+  "consumer_sha256": "92618f42e98f13ab2bab366bb0ff0ab3c17f55f15bf91aa9124020cd5e94cc84"
+}

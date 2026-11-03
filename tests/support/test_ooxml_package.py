@@ -1,0 +1,282 @@
+"""Tests for shared OOXML package graph helpers."""
+
+from types import SimpleNamespace
+
+import pytest
+from opendoc_model.document_model import PackageGraph, PackagePart, PackageRelationship
+
+from opendoc_formats.ooxml.package import (
+    EMU_PER_POINT,
+    RELATIONSHIP_TYPE,
+    load_package_graph,
+    package_part_for_relationship,
+    points_to_emu,
+    restore_package_graph,
+)
+
+
+def _part(name, media_type, data, relationships=()):
+    return SimpleNamespace(
+        partname=name,
+        content_type=media_type,
+        blob=data,
+        rels={relationship.rId: relationship for relationship in relationships},
+    )
+
+
+def _internal(relationship_id, relationship_type, target_part):
+    return SimpleNamespace(
+        rId=relationship_id,
+        reltype=relationship_type,
+        is_external=False,
+        target_part=target_part,
+        target_ref=str(target_part.partname),
+    )
+
+
+def _external(relationship_id, relationship_type, target):
+    return SimpleNamespace(
+        rId=relationship_id,
+        reltype=relationship_type,
+        is_external=True,
+        target_ref=target,
+    )
+
+
+def test_load_package_graph_preserves_recursive_and_external_relationships():
+    hyperlink_type = "urn:test:hyperlink"
+    image = _part("/word/media/note.png", "image/png", b"png")
+    notes = _part(
+        "/word/footnotes.xml",
+        "application/xml",
+        b"<notes/>",
+        (
+            _internal("rIdImage", "urn:test:image", image),
+            _external("rIdLink", hyperlink_type, "https://example.com"),
+        ),
+    )
+    footnote_type = "urn:test:footnotes"
+    root = _part(
+        "/word/document.xml",
+        "application/xml",
+        b"<document/>",
+        (_internal("rIdNotes", footnote_type, notes),),
+    )
+
+    graph = load_package_graph(
+        root,
+        format_name="ooxml",
+        supported_relationships={footnote_type},
+        recursive_relationships={footnote_type},
+    )
+
+    assert graph is not None
+    assert set(graph.parts) == {"/word/footnotes.xml", "/word/media/note.png"}
+    assert package_part_for_relationship(graph, footnote_type) == graph.parts["/word/footnotes.xml"]
+    external = next(item for item in graph.relationships if item.relationship_type == hyperlink_type)
+    assert external.external is True
+    assert external.target == "https://example.com"
+    assert graph.validate() == []
+
+
+def test_point_to_emu_conversion_uses_shared_ooxml_unit():
+    assert EMU_PER_POINT == 12700
+    assert points_to_emu(72) == 914400
+
+
+def test_recursive_load_visits_shared_part_once_but_keeps_both_root_edges():
+    image = _part('/word/media/own.png', 'image/png', b'own')
+    shared = _part('/word/shared.xml', 'application/xml', b'<own/>',
+                   (_internal('rIdImage', 'urn:own:image', image),))
+    root = _part('/word/document.xml', 'application/xml', b'<root/>',
+                 tuple(_internal(identifier, 'urn:own:shared', shared) for identifier in ('rIdA', 'rIdB')))
+    graph = load_package_graph(root, format_name='ooxml', supported_relationships={'urn:own:shared'},
+                               recursive_relationships={'urn:own:shared'})
+    assert len(graph.parts) == 2 and graph.validate() == []
+    assert [(edge.source, edge.id) for edge in graph.relationships] == [
+        ('/word/document.xml', 'rIdA'), ('/word/shared.xml', 'rIdImage'), ('/word/document.xml', 'rIdB')]
+
+
+@pytest.mark.parametrize('external', [False, True])
+def test_bound_part_keeps_identical_imported_relationship_without_alias(external):
+    from docx import Document
+    from docx.opc.constants import RELATIONSHIP_TYPE as RT
+    from docx.opc.packuri import PackURI
+    from docx.opc.part import Part
+
+    document = Document()
+    package = document.part.package
+    item = Part(PackURI('/customXml/own.xml'), 'application/xml', b'<own/>', package)
+    props = Part(PackURI('/customXml/ownProps.xml'), 'application/xml', b'<props/>', package)
+    destination = 'https://example.invalid/own' if external else props
+    relation_type = RT.HYPERLINK if external else RT.CUSTOM_XML_PROPS
+    identifier = item.relate_to(destination, relation_type, is_external=external)
+    root_id = document.part.relate_to(item, RT.CUSTOM_XML)
+    graph = PackageGraph(format='ooxml', root='/word/document.xml')
+    graph.add_part(PackagePart(str(item.partname), item.content_type, item.blob))
+    graph.add_relationship(PackageRelationship(id=root_id, relationship_type=RT.CUSTOM_XML,
+                                              source=graph.root, target=str(item.partname)))
+    if not external:
+        graph.add_part(PackagePart(str(props.partname), props.content_type, props.blob))
+    graph.add_relationship(PackageRelationship(id=identifier, relationship_type=relation_type,
+                                              source=str(item.partname),
+                                              target=destination if external else str(props.partname), external=external))
+    bound = {str(item.partname): item, str(props.partname): props}
+    restore_package_graph(document.part, graph, source_parts=bound)
+    assert list(item.rels) == [identifier]
+    relationship = item.rels[identifier]
+    assert relationship.is_external == external and relationship.reltype == relation_type
+    assert relationship.target_ref == destination if external else relationship.target_part is props
+
+
+@pytest.mark.parametrize('format_name', ['docx', 'pptx'])
+def test_cancel_during_part_creation_stops_before_next_part(monkeypatch, format_name):
+    from copy import deepcopy
+    from threading import Event
+
+    from docx import Document
+
+    from opendoc_formats.errors import OperationCancelledError
+    from opendoc_formats.ooxml import package
+    from opendoc_formats.support.cancellation import cancellation_scope, checkpoint
+
+    if format_name == 'docx':
+        root = Document().part
+    else:
+        from pptx import Presentation
+        target = Presentation()
+        root = target.slides.add_slide(target.slide_layouts[6]).part
+    graph = PackageGraph(format='ooxml', root=str(root.partname))
+    for index in range(3):
+        graph.add_part(PackagePart(f'/own/part{index}.xml', 'application/xml', b'<own/>'))
+    original = deepcopy(graph)
+    relationships = tuple(root.rels)
+    uri_type, part_type = package._opc_types(root)
+    stop, created = Event(), []
+
+    def create(*args, **kwargs):
+        assert not created, 'Part construction continued after cancellation'
+        part = part_type(*args, **kwargs)
+        created.append(part)
+        stop.set()
+        return part
+
+    with monkeypatch.context() as context:
+        context.setattr(package, '_opc_types', lambda owner: (uri_type, create))
+        with pytest.raises(OperationCancelledError):
+            with cancellation_scope(stop.is_set, 'own package restoration'):
+                restore_package_graph(root, graph)
+    assert len(created) == 1
+    assert graph == original
+    assert tuple(root.rels) == relationships
+    checkpoint()
+    restore_package_graph(root, graph)
+
+
+def test_load_package_graph_keeps_comments_smartart_and_ole_payloads():
+    comments = _part("/word/comments.xml", "application/xml", b"<comments/>")
+    diagram_layout = _part("/word/diagrams/layout1.xml", "application/xml", b"<layout/>")
+    diagram_data = _part(
+        "/word/diagrams/data1.xml",
+        "application/xml",
+        b"<data/>",
+        (_internal("rIdLayout", RELATIONSHIP_TYPE["diagram_layout"], diagram_layout),),
+    )
+    embedded = _part("/word/embeddings/workbook.xlsx", "application/octet-stream", b"xlsx")
+    root = _part(
+        "/word/document.xml",
+        "application/xml",
+        b"<document/>",
+        (
+            _internal("rIdComments", RELATIONSHIP_TYPE["comments"], comments),
+            _internal("rIdDiagram", RELATIONSHIP_TYPE["diagram_data"], diagram_data),
+            _internal("rIdOle", RELATIONSHIP_TYPE["package"], embedded),
+        ),
+    )
+
+    graph = load_package_graph(
+        root,
+        format_name="ooxml",
+        supported_relationships=set(RELATIONSHIP_TYPE.values()),
+        recursive_relationships={
+            RELATIONSHIP_TYPE["comments"],
+            RELATIONSHIP_TYPE["diagram_data"],
+            RELATIONSHIP_TYPE["package"],
+        },
+    )
+
+    assert graph is not None
+    assert set(graph.parts) == {
+        "/word/comments.xml",
+        "/word/diagrams/data1.xml",
+        "/word/diagrams/layout1.xml",
+        "/word/embeddings/workbook.xlsx",
+    }
+    assert {relationship.relationship_type for relationship in graph.relationships} >= {
+        RELATIONSHIP_TYPE["comments"],
+        RELATIONSHIP_TYPE["diagram_data"],
+        RELATIONSHIP_TYPE["diagram_layout"],
+        RELATIONSHIP_TYPE["package"],
+    }
+    assert graph.validate() == []
+
+
+def test_restore_package_graph_preserves_imported_id_and_rewrites_collision():
+    from docx import Document
+    from docx.opc.constants import RELATIONSHIP_TYPE as DOCX_RELATIONSHIP_TYPE
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+
+    target = Document()
+    paragraph = target.add_paragraph()
+    hyperlink_id = target.part.relate_to(
+        "https://example.com",
+        DOCX_RELATIONSHIP_TYPE.HYPERLINK,
+        is_external=True,
+    )
+    hyperlink = OxmlElement("w:hyperlink")
+    hyperlink.set(qn("r:id"), hyperlink_id)
+    paragraph._p.append(hyperlink)
+    opaque = OxmlElement("w:hyperlink")
+    opaque.set(qn("r:id"), hyperlink_id)
+    opaque.set(qn("w:id"), hyperlink_id)
+    paragraph._p.append(opaque)
+    graph = PackageGraph(format="ooxml", root="/word/document.xml")
+    graph.add_part(PackagePart("/word/comments.xml", "application/xml", b"<w:comments xmlns:w='x'/>") )
+    graph.add_relationship(
+        PackageRelationship(
+            id=hyperlink_id,
+            relationship_type=RELATIONSHIP_TYPE["comments"],
+            source=graph.root,
+            target="/word/comments.xml",
+        )
+    )
+
+    restore_package_graph(target.part, graph, protected_roots=(opaque,))
+
+    assert target.part.rels[hyperlink_id].reltype == RELATIONSHIP_TYPE["comments"]
+    moved = next(rel for rel in target.part.rels.values() if rel.reltype == DOCX_RELATIONSHIP_TYPE.HYPERLINK)
+    assert moved.rId != hyperlink_id
+    assert hyperlink.get(qn("r:id")) == moved.rId
+    assert opaque.get(qn("r:id")) == hyperlink_id
+    assert opaque.get(qn("w:id")) == hyperlink_id
+
+
+def test_restore_does_not_overwrite_generated_part_with_same_name():
+    from docx import Document
+    from docx.opc.packuri import PackURI
+    from docx.opc.part import Part
+
+    target = Document()
+    image_type = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/image'
+    generated = Part(PackURI('/word/media/image1.png'), 'image/png', b'generated', target.part.package)
+    generated_id = target.part.relate_to(generated, image_type)
+    graph = PackageGraph(format='ooxml', root='/word/document.xml')
+    graph.add_part(PackagePart('/word/media/image1.png', 'image/png', b'source'))
+    graph.add_relationship(PackageRelationship(
+        id='rIdSource', relationship_type=image_type, source=graph.root, target='/word/media/image1.png',
+    ))
+    restore_package_graph(target.part, graph)
+    assert target.part.rels[generated_id].target_part.blob == b'generated'
+    assert target.part.rels['rIdSource'].target_part.blob == b'source'
+    assert generated.partname != target.part.rels['rIdSource'].target_part.partname

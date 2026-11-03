@@ -1,0 +1,50 @@
+{
+  "contract": "C-OUTLINE-LABEL-01",
+  "status": "isolated public API passed; production adoption pending",
+  "candidate_wheel_sha256": "06f4ab1202fc534b7d3f1fc808eb3c7016d427f0ed6b363002e62508c2e977c9",
+  "source_file_count": 54,
+  "consumer_sha256": "2c494082c3dd19a2eefd6944c72a340051185adaae8ac92d3101a96c1eca413a",
+  "python": "3.12.16",
+  "installed_distributions": [
+    "opendoc-model"
+  ],
+  "checks": [
+    "two JSON cycles retain styled/math labels, provenance, FONT/link refs; separate label walk never adds body text",
+    "unknown fields and detached getters are independent; empty/absent labels and multiple labels per heading stay distinct",
+    "plain-title mismatch refuses atomically; explicit rich update/removal remains authoritative and legacy plain wire omits label",
+    "ten invalid inline/reference/cyclic profiles refuse without changing destination metadata or wire",
+    "merge with explicit keep_last remaps body targets, internal label links, FONT and named styles; extract closes label dependencies independently",
+    "node/depth/byte/embedded quotas: exact paired transport and setter boundaries; one-below refusal is atomic"
+  ],
+  "located_refusals": {
+    "paragraph": "outline.entries[0].label: value does not match the declared union",
+    "display": "outline.entries[0].label.content[0]: label formulas require inline display=False and a nonempty explicit fallback",
+    "no-fallback": "outline.entries[0].label.content[0]: label formulas require inline display=False and a nonempty explicit fallback",
+    "missing-font": "invalid integration: outline.entries[0].label.content[0].style.font_reference: unknown resource reference 'missing'",
+    "wrong-font-kind": "invalid integration: outline.entries[0].label.content[0].style: expected an existing FONT resource",
+    "missing-link": "invalid integration: outline.entries[0].label.content[0].internal_link: unknown anchor reference 'missing'",
+    "missing-target": "invalid integration: outline.entries[0].target: unknown anchor destination 'missing'",
+    "missing-style": "invalid integration: outline.entries[0].label.content[0].style.properties.base_style_id: unknown style reference 'missing'",
+    "private-anchor": "outline.entries[0].label.content[0]: label identities use entry ID/index; body anchors are not declared here",
+    "cycle": "$.entries[0].label.content[0].properties['cycle']: cyclic document model"
+  },
+  "exact_quota_boundaries": {
+    "max_nodes": {
+      "transport": 249,
+      "setter": 249
+    },
+    "max_depth": {
+      "transport": 14,
+      "setter": 13
+    },
+    "max_bytes": {
+      "transport": 4334,
+      "setter": 1469
+    },
+    "max_embedded_bytes": {
+      "transport": 17,
+      "setter": 17
+    }
+  },
+  "scope": "Neutral DTO/codec/reference acceptance; FONT bytes are opaque; no TeX parsing, rendering or native export claimed."
+}

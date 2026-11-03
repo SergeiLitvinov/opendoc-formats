@@ -1,0 +1,276 @@
+"""Reusable helpers for importing and restoring OOXML package topology."""
+
+from __future__ import annotations
+
+from collections.abc import Callable, Collection, Mapping
+from pathlib import PurePosixPath
+from typing import Any
+
+from opendoc_model.document_model import PackageGraph, PackagePart, PackageRelationship
+from opendoc_model.units import EMU_PER_POINT, points_to_emu
+
+from opendoc_formats.support.cancellation import cancellable_items, checkpoint
+
+DOCX_ROOT_PART = "/word/document.xml"
+
+OOXML_NAMESPACES = {
+    "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
+    "m": "http://schemas.openxmlformats.org/officeDocument/2006/math",
+    "pic": "http://schemas.openxmlformats.org/drawingml/2006/picture",
+    "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
+    "w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
+    "wp": "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing",
+}
+
+_RELATIONSHIP_BASE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+RELATIONSHIP_TYPE = {
+    "comments": f"{_RELATIONSHIP_BASE}/comments",
+    "comments_extended": "http://schemas.microsoft.com/office/2011/relationships/commentsExtended",
+    "comments_extensible": "http://schemas.microsoft.com/office/2018/08/relationships/commentsExtensible",
+    "people": "http://schemas.microsoft.com/office/2011/relationships/people",
+    "diagram_data": f"{_RELATIONSHIP_BASE}/diagramData",
+    "diagram_layout": f"{_RELATIONSHIP_BASE}/diagramLayout",
+    "diagram_colors": f"{_RELATIONSHIP_BASE}/diagramColors",
+    "diagram_quick_style": f"{_RELATIONSHIP_BASE}/diagramQuickStyle",
+    "diagram_drawing": "http://schemas.microsoft.com/office/2007/relationships/diagramDrawing",
+    "ole_object": f"{_RELATIONSHIP_BASE}/oleObject",
+    "package": f"{_RELATIONSHIP_BASE}/package",
+    "endnotes": f"{_RELATIONSHIP_BASE}/endnotes",
+    "footnotes": f"{_RELATIONSHIP_BASE}/footnotes",
+    "numbering": f"{_RELATIONSHIP_BASE}/numbering",
+    "styles": f"{_RELATIONSHIP_BASE}/styles",
+    "settings": f"{_RELATIONSHIP_BASE}/settings",
+    "theme": f"{_RELATIONSHIP_BASE}/theme",
+}
+
+RelationshipFilter = Callable[[Any], bool]
+
+
+def load_package_graph(
+    root_part: Any,
+    *,
+    format_name: str,
+    supported_relationships: Collection[str],
+    recursive_relationships: Collection[str] = (),
+    include: RelationshipFilter | None = None,
+) -> PackageGraph | None:
+    """Load selected root relationships and recursively preserve chosen targets."""
+
+    graph = PackageGraph(format=format_name, root=str(root_part.partname))
+    visited: set[str] = set()
+    for relationship in root_part.rels.values():
+        checkpoint()
+        if relationship.reltype not in supported_relationships or relationship.is_external:
+            continue
+        if include is not None and not include(relationship):
+            continue
+        target_part = relationship.target_part
+        target_name = _add_part(graph, target_part)
+        graph.add_relationship(
+            PackageRelationship(
+                id=relationship.rId,
+                relationship_type=relationship.reltype,
+                source=graph.root,
+                target=target_name,
+            )
+        )
+        if relationship.reltype in recursive_relationships:
+            _load_descendants(target_part, graph, visited)
+    return graph if graph.parts else None
+
+
+def package_part_for_relationship(graph: PackageGraph | None, relationship_type: str) -> PackagePart | None:
+    if graph is None:
+        return None
+    return graph.related_part(graph.root, relationship_type)
+
+
+def restore_package_graph(
+    root_part: Any, graph: PackageGraph, *, protected_roots: Collection[Any] = (),
+    source_parts: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Restore graph parts and relationships into a python-opc root part."""
+
+    if graph.root in graph.parts:
+        raise ValueError('A physical source root requires an explicit editable binding before graph restoration')
+    pack_uri_type, part_type = _opc_types(root_part)
+
+    package = root_part.package
+    source_parts = dict(source_parts or {})
+    scopes = [(graph.root, root_part, protected_roots)] + [
+        (name, part, getattr(part, "_opendoc_opaque_roots", ())) for name, part in cancellable_items(source_parts.items())
+    ]
+    for name, _, roots in scopes:
+        checkpoint()
+        source_ids = {edge.id for edge in cancellable_items(graph.relationships) if edge.source == name}
+        for root in roots:
+            checkpoint()
+            for node in root.iter():
+                checkpoint()
+                for attribute, value in cancellable_items(node.attrib.items()):
+                    if attribute.startswith("{" + _RELATIONSHIP_BASE + "}") and value not in source_ids:
+                        raise ValueError(f"Opaque OOXML refers to an unretained source relationship: {name}#{value}")
+    parts = {name: part_type(partname=pack_uri_type(part.name), content_type=part.media_type, blob=part.data, package=package)
+             for name, part in cancellable_items(graph.parts.items())}
+    parts.update(source_parts)
+    running_types = {f"{_RELATIONSHIP_BASE}/{name}" for name in ("header", "footer")}
+    root_relationship_types = {
+        relationship.relationship_type for relationship in cancellable_items(graph.relationships)
+        if relationship.source == graph.root and relationship.relationship_type not in running_types
+    }
+    for relationship_id, relationship in list(root_part.rels.items()):
+        checkpoint()
+        if relationship.reltype in root_relationship_types and relationship.reltype != f"{_RELATIONSHIP_BASE}/image":
+            _drop_relationship(root_part, relationship_id)
+    occupied = set(cancellable_items(graph.parts)) | {str(part.partname) for part in cancellable_items(package.iter_parts())}
+    for part in list(cancellable_items(package.iter_parts())):
+        checkpoint()
+        name = str(part.partname)
+        if name not in graph.parts:
+            continue
+        path = PurePosixPath(name)
+        index = 1
+        while (candidate := str(path.with_name(f"{path.stem}-opendoc{index}{path.suffix}"))) in occupied:
+            checkpoint()
+            index += 1
+        part.partname = pack_uri_type(candidate)
+        occupied.add(candidate)
+    for relationship in graph.relationships:
+        checkpoint()
+        if relationship.source == graph.root and relationship.relationship_type in running_types:
+            continue  # section content and bindings are generated from the editable model
+        source = root_part if relationship.source == graph.root else parts[relationship.source]
+        destination = relationship.target if relationship.external else parts[relationship.target]
+        if source is root_part:
+            _reserve_relationship_id(source, relationship.id, protected_roots)
+            _add_relationship(
+                source,
+                relationship.relationship_type,
+                destination,
+                relationship.id,
+                is_external=relationship.external,
+            )
+        else:
+            if relationship.source in source_parts:
+                existing = source.rels.get(relationship.id)
+                if (existing is not None and existing.reltype == relationship.relationship_type
+                        and existing.is_external == relationship.external
+                        and (existing.target_ref == destination if relationship.external
+                             else existing.target_part is destination)):
+                    continue  # This generated edge already has the exact imported binding.
+                _reserve_relationship_id(source, relationship.id, getattr(source, "_opendoc_opaque_roots", ()))
+            _add_relationship(
+                source,
+                relationship.relationship_type,
+                destination,
+                relationship.id,
+                is_external=relationship.external,
+            )
+
+    return parts
+
+
+def _reserve_relationship_id(root_part: Any, relationship_id: str, protected_roots: Collection[Any] = ()) -> None:
+    """Free an imported rId, moving a generated relationship without changing its references."""
+
+    existing = root_part.rels.get(relationship_id)
+    if existing is None:
+        return
+    replacement_id = root_part.rels._next_rId
+    _add_relationship(
+        root_part,
+        existing.reltype,
+        existing.target_ref if existing.is_external else existing.target_part,
+        replacement_id,
+        is_external=existing.is_external,
+    )
+    _drop_relationship(root_part, relationship_id)
+    element = getattr(root_part, "element", None)
+    if element is None:
+        element = getattr(root_part, "_element", None)
+    if element is None:
+        return
+    protected = {node for root in cancellable_items(protected_roots) for node in cancellable_items(root.iter())}
+    for node in element.iter():
+        checkpoint()
+        if node in protected:
+            continue
+        for attribute, value in cancellable_items(list(node.attrib.items())):
+            if value == relationship_id and attribute.startswith("{" + _RELATIONSHIP_BASE + "}"):
+                node.set(attribute, replacement_id)
+
+
+def _load_descendants(part: Any, graph: PackageGraph, visited: set[str]) -> None:
+    checkpoint()
+    source_name = str(part.partname)
+    if source_name in visited:
+        return
+    visited.add(source_name)
+    for relationship in part.rels.values():
+        checkpoint()
+        target = relationship.target_ref
+        if not relationship.is_external:
+            target_part = relationship.target_part
+            target = _add_part(graph, target_part)
+        graph.add_relationship(
+            PackageRelationship(
+                id=relationship.rId,
+                relationship_type=relationship.reltype,
+                source=source_name,
+                target=target,
+                external=relationship.is_external,
+            )
+        )
+        if not relationship.is_external:
+            _load_descendants(relationship.target_part, graph, visited)
+
+
+def _add_part(graph: PackageGraph, part: Any) -> str:
+    checkpoint()
+    name = str(part.partname)
+    graph.add_part(PackagePart(name, part.content_type, part.blob))
+    checkpoint()
+    return name
+
+
+def _add_relationship(source: Any, reltype: str, target: Any, relationship_id: str, *, is_external: bool) -> None:
+    """Keep source rIds, including distinct edges to the same target, in both engines."""
+    if source.__class__.__module__.startswith('pptx.'):
+        from pptx.opc.constants import RELATIONSHIP_TARGET_MODE
+        from pptx.opc.package import _Relationship
+
+        mode = RELATIONSHIP_TARGET_MODE.EXTERNAL if is_external else RELATIONSHIP_TARGET_MODE.INTERNAL
+        source.rels._rels[relationship_id] = _Relationship(source.partname.baseURI, relationship_id, reltype, mode, target)
+    else:
+        source.rels.add_relationship(reltype, target, relationship_id, is_external=is_external)
+
+
+def _drop_relationship(source: Any, relationship_id: str) -> None:
+    if source.__class__.__module__.startswith('pptx.'):
+        # XmlPart.drop_rel refuses multiple references before those references are
+        # remapped. Restoration owns that remap and must free the original rId.
+        source.rels.pop(relationship_id)
+    else:
+        source.drop_rel(relationship_id)
+
+
+def _opc_types(root_part: Any) -> tuple[type[Any], type[Any]]:
+    if root_part.__class__.__module__.startswith("pptx."):
+        from pptx.opc.package import Part
+        from pptx.opc.packuri import PackURI
+    else:
+        from docx.opc.packuri import PackURI
+        from docx.opc.part import Part
+    return PackURI, Part
+
+
+__all__ = [
+    "DOCX_ROOT_PART",
+    "EMU_PER_POINT",
+    "OOXML_NAMESPACES",
+    "RELATIONSHIP_TYPE",
+    "load_package_graph",
+    "package_part_for_relationship",
+    "points_to_emu",
+    "restore_package_graph",
+]

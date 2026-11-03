@@ -1,0 +1,371 @@
+{
+  "scope": "Finite physical ObjStm N/First/Length source scalar observations; not general object or historical type-2 resolution",
+  "source_sha256": {
+    "src/opendoc_formats/native/pdf_source_integers.py": "aedc9e9b7570f6c4440b644388b34bf1a3c2b3530419918d5627e0b21355a712",
+    "src/opendoc_formats/native/pdf_object_streams.py": "2780de8acfc93f6ed46842fd84421bedf24f2a7b272a14a2da812eacb991c865",
+    "src/opendoc_formats/native/pdf_xref_state.py": "157404bdbe0ae470282d94db46eb442cf005d610b8491ac4b70d4d40b40c0896",
+    "src/opendoc_formats/native/pdf_syntax.py": "38e428c0fa1077b3941eaad25aa488072efa6ce74b8a6b363bc018144f56af36"
+  },
+  "runtime": {
+    "opendoc-model": "0.19.0",
+    "pypdf": "6.19.0",
+    "pymupdf": "1.28.2"
+  },
+  "test_python": "3.12.16",
+  "tests": {
+    "native_pdf_and_dissection": 969,
+    "new_source_scalar_tests": 39
+  },
+  "installed_base_wheel": {
+    "sha256": "4bd9ef75304b7be9ca89e1804890a244cb261b4028b5caad8f66fb69b18a3796",
+    "model": "official opendoc-model 0.19.0",
+    "python": "3.15.2",
+    "pdf_and_image_engines": false,
+    "smoke": "python -I tools/pdf_source_smoke.py passed"
+  },
+  "cases": [
+    {
+      "indirect_fields": [
+        "N"
+      ],
+      "reference_generation": 0,
+      "source_sha256": "de96a3179b68e69555f8360d93e699f95123cd5f6cb7fee56a3586181ab531ab",
+      "pypdf_title": "Own indirect parameters",
+      "mupdf_title": "Own indirect parameters",
+      "mupdf_repaired": false,
+      "pages": 1,
+      "observations": {
+        "N": [
+          {
+            "object": 5,
+            "generation": 0,
+            "offset": 310,
+            "end": 326,
+            "value": 1,
+            "sha256": "2766af8b01d4aab33ee1ac62adc0359ed420bae96c17041bdaddba6ddc220a69",
+            "ownership_proven": false,
+            "context_xref": 362,
+            "primary_xref": 362,
+            "selected_xref": 362,
+            "record_range": {
+              "space": "decoded-xref",
+              "start": 35,
+              "end": 42
+            }
+          }
+        ]
+      }
+    },
+    {
+      "indirect_fields": [
+        "First"
+      ],
+      "reference_generation": 0,
+      "source_sha256": "bb8132ccd3d776dadcc3eec422c0dea5ff293fdd63041df1bac281f7bdf5bc82",
+      "pypdf_title": "Own indirect parameters",
+      "mupdf_title": "Own indirect parameters",
+      "mupdf_repaired": false,
+      "pages": 1,
+      "observations": {
+        "First": [
+          {
+            "object": 6,
+            "generation": 0,
+            "offset": 327,
+            "end": 343,
+            "value": 4,
+            "sha256": "a9b92d1cc27f79db5f170db8428cf683ba491faab24bbc52b80be7d42e461756",
+            "ownership_proven": false,
+            "context_xref": 362,
+            "primary_xref": 362,
+            "selected_xref": 362,
+            "record_range": {
+              "space": "decoded-xref",
+              "start": 42,
+              "end": 49
+            }
+          }
+        ]
+      }
+    },
+    {
+      "indirect_fields": [
+        "Length"
+      ],
+      "reference_generation": 0,
+      "source_sha256": "958985f81b2c43050d5a9ad42de5bc46e6efda5ca0c93d67c36e7bcffa794fd9",
+      "pypdf_title": "Own indirect parameters",
+      "mupdf_title": "Own indirect parameters",
+      "mupdf_repaired": false,
+      "pages": 1,
+      "observations": {
+        "Length": [
+          {
+            "object": 7,
+            "generation": 0,
+            "offset": 343,
+            "end": 360,
+            "value": 42,
+            "sha256": "fc5782c4c537b6f9fcfc253aa1fe2cb2c0f9ca0c9ae39436e867b61ee0415f08",
+            "ownership_proven": false,
+            "context_xref": 361,
+            "primary_xref": 361,
+            "selected_xref": 361,
+            "record_range": {
+              "space": "decoded-xref",
+              "start": 49,
+              "end": 56
+            }
+          }
+        ]
+      }
+    },
+    {
+      "indirect_fields": [
+        "N",
+        "First",
+        "Length"
+      ],
+      "reference_generation": 0,
+      "source_sha256": "9c519b5ca398a8b5ec0db94787fbfd4091151071b95cf39a15b794604cbca6ea",
+      "pypdf_title": "Own indirect parameters",
+      "mupdf_title": "Own indirect parameters",
+      "mupdf_repaired": false,
+      "pages": 1,
+      "observations": {
+        "N": [
+          {
+            "object": 5,
+            "generation": 0,
+            "offset": 317,
+            "end": 333,
+            "value": 1,
+            "sha256": "2766af8b01d4aab33ee1ac62adc0359ed420bae96c17041bdaddba6ddc220a69",
+            "ownership_proven": false,
+            "context_xref": 369,
+            "primary_xref": 369,
+            "selected_xref": 369,
+            "record_range": {
+              "space": "decoded-xref",
+              "start": 35,
+              "end": 42
+            }
+          }
+        ],
+        "First": [
+          {
+            "object": 6,
+            "generation": 0,
+            "offset": 334,
+            "end": 350,
+            "value": 4,
+            "sha256": "a9b92d1cc27f79db5f170db8428cf683ba491faab24bbc52b80be7d42e461756",
+            "ownership_proven": false,
+            "context_xref": 369,
+            "primary_xref": 369,
+            "selected_xref": 369,
+            "record_range": {
+              "space": "decoded-xref",
+              "start": 42,
+              "end": 49
+            }
+          }
+        ],
+        "Length": [
+          {
+            "object": 7,
+            "generation": 0,
+            "offset": 351,
+            "end": 368,
+            "value": 42,
+            "sha256": "fc5782c4c537b6f9fcfc253aa1fe2cb2c0f9ca0c9ae39436e867b61ee0415f08",
+            "ownership_proven": false,
+            "context_xref": 369,
+            "primary_xref": 369,
+            "selected_xref": 369,
+            "record_range": {
+              "space": "decoded-xref",
+              "start": 49,
+              "end": 56
+            }
+          }
+        ]
+      }
+    },
+    {
+      "indirect_fields": [
+        "N"
+      ],
+      "reference_generation": 2,
+      "source_sha256": "653564d4d9dc64c32749472794f7dda79f27822845588e79cbe5f87a08791174",
+      "pypdf_title": "Own indirect parameters",
+      "mupdf_title": "Own indirect parameters",
+      "mupdf_repaired": false,
+      "pages": 1,
+      "observations": {
+        "N": [
+          {
+            "object": 5,
+            "generation": 2,
+            "offset": 310,
+            "end": 326,
+            "value": 1,
+            "sha256": "ad30dce35fd683c25b816f0259b9252ad89a4704b4afa091593d3bca29ba894c",
+            "ownership_proven": false,
+            "context_xref": 362,
+            "primary_xref": 362,
+            "selected_xref": 362,
+            "record_range": {
+              "space": "decoded-xref",
+              "start": 35,
+              "end": 42
+            }
+          }
+        ]
+      }
+    },
+    {
+      "indirect_fields": [
+        "First"
+      ],
+      "reference_generation": 2,
+      "source_sha256": "a5cc38876a30575c6bd502e78ff99e377639e649f09d82d47e4482128cb1faae",
+      "pypdf_title": "Own indirect parameters",
+      "mupdf_title": "Own indirect parameters",
+      "mupdf_repaired": false,
+      "pages": 1,
+      "observations": {
+        "First": [
+          {
+            "object": 6,
+            "generation": 2,
+            "offset": 327,
+            "end": 343,
+            "value": 4,
+            "sha256": "8a5c86204fea8938e7c0f48bb973503e33b3e99adbe29510f5d3b433585e1413",
+            "ownership_proven": false,
+            "context_xref": 362,
+            "primary_xref": 362,
+            "selected_xref": 362,
+            "record_range": {
+              "space": "decoded-xref",
+              "start": 42,
+              "end": 49
+            }
+          }
+        ]
+      }
+    },
+    {
+      "indirect_fields": [
+        "Length"
+      ],
+      "reference_generation": 2,
+      "source_sha256": "472cdc3f3437a76069f30081e8986014d553802f3fdac5cfabbde2bc792da6b2",
+      "pypdf_title": "Own indirect parameters",
+      "mupdf_title": "Own indirect parameters",
+      "mupdf_repaired": false,
+      "pages": 1,
+      "observations": {
+        "Length": [
+          {
+            "object": 7,
+            "generation": 2,
+            "offset": 343,
+            "end": 360,
+            "value": 42,
+            "sha256": "7c37dbec37cebae62ec5a8d1750e6cfd49b878c49ed4f90c93f28fe6bd190914",
+            "ownership_proven": false,
+            "context_xref": 361,
+            "primary_xref": 361,
+            "selected_xref": 361,
+            "record_range": {
+              "space": "decoded-xref",
+              "start": 49,
+              "end": 56
+            }
+          }
+        ]
+      }
+    },
+    {
+      "indirect_fields": [
+        "N",
+        "First",
+        "Length"
+      ],
+      "reference_generation": 2,
+      "source_sha256": "24a6e2d9ea0450b29b7b4670231dc325e603cfb73c0bb250551e76d85d1c14d1",
+      "pypdf_title": "Own indirect parameters",
+      "mupdf_title": "Own indirect parameters",
+      "mupdf_repaired": false,
+      "pages": 1,
+      "observations": {
+        "N": [
+          {
+            "object": 5,
+            "generation": 2,
+            "offset": 317,
+            "end": 333,
+            "value": 1,
+            "sha256": "ad30dce35fd683c25b816f0259b9252ad89a4704b4afa091593d3bca29ba894c",
+            "ownership_proven": false,
+            "context_xref": 369,
+            "primary_xref": 369,
+            "selected_xref": 369,
+            "record_range": {
+              "space": "decoded-xref",
+              "start": 35,
+              "end": 42
+            }
+          }
+        ],
+        "First": [
+          {
+            "object": 6,
+            "generation": 2,
+            "offset": 334,
+            "end": 350,
+            "value": 4,
+            "sha256": "8a5c86204fea8938e7c0f48bb973503e33b3e99adbe29510f5d3b433585e1413",
+            "ownership_proven": false,
+            "context_xref": 369,
+            "primary_xref": 369,
+            "selected_xref": 369,
+            "record_range": {
+              "space": "decoded-xref",
+              "start": 42,
+              "end": 49
+            }
+          }
+        ],
+        "Length": [
+          {
+            "object": 7,
+            "generation": 2,
+            "offset": 351,
+            "end": 368,
+            "value": 42,
+            "sha256": "7c37dbec37cebae62ec5a8d1750e6cfd49b878c49ed4f90c93f28fe6bd190914",
+            "ownership_proven": false,
+            "context_xref": 369,
+            "primary_xref": 369,
+            "selected_xref": 369,
+            "record_range": {
+              "space": "decoded-xref",
+              "start": 49,
+              "end": 56
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "limitations": [
+    "No source ownership proof",
+    "No active type-2 occurrence or Extends resolution",
+    "Scalar bodies must be uncompressed direct nonnegative integers",
+    "Conflicting candidate declaration contexts explicitly refuse",
+    "Xref stream Length bootstrap remains direct-only"
+  ]
+}

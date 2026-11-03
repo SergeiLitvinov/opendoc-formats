@@ -1,0 +1,155 @@
+{
+  "scope": "Bindings v5: classic OOXML PPTX chart frame resizing, without rebuilding chart or workbook parts",
+  "model": "opendoc-model==0.19.0; import opendoc_model",
+  "model_contract_changes": false,
+  "dependencies_changed": false,
+  "implementation": {
+    "module": "opendoc_formats.ooxml.pptx_source_chart_frame",
+    "proof": "Unique internal classic chart relationship from the native frame, chart content type and bounded chartSpace/chart/plotArea XML",
+    "mutation": "Only graphicFrame/xfrm; existing inverse parent-frame and one-slide-EMU geometry checks apply",
+    "opaque_preservation": "Chart XML, embedded XLSX, relationships, styles, caches, axes, 3D and manual layout data remain exact original payloads",
+    "compatibility": "v1-v4 retain previous scopes; v4 table resize explicitly regression-tested; no automatic chart resize in old snapshots",
+    "scope_guard": "Data/title/rotation changes are unbound and refuse atomically; chartEx or external chart-part links do not get resize permission",
+    "limits": "Selected byte/node/depth budgets cover chart XML; cancellation checked after proof and before geometry mutation",
+    "shared_dom": "Shape text, table text/grid and chart frame edits can coexist in one slide DOM"
+  },
+  "checks": {
+    "test_file": "tests/writers/test_pptx_source_chart_frame.py",
+    "chart_cases_passed": 18,
+    "regression_command": "python -m pytest tests/readers tests/writers tests/support/test_ooxml_pptx_package.py tests/support/test_ooxml_package.py -k 'pptx or office_export_cancellation or ooxml_package' -q --tb=short",
+    "regression_passed": 494,
+    "regression_deselected": 1545,
+    "regression_seconds": 150.44,
+    "full_project_run": false,
+    "ruff": "passed",
+    "configured_strict_mypy": "41 files passed",
+    "boundary_audit_modules": 230,
+    "reviewed_license_inventory": "unchanged lockfile matches inventory",
+    "source_profiles_combined_passed": 96,
+    "source_profiles_seconds": 34.2,
+    "source_profiles_command": "python -m pytest tests/writers/test_pptx_source_chart_frame.py tests/writers/test_pptx_source_table_grid.py tests/writers/test_pptx_source_geometry.py tests/writers/test_pptx_source_cells.py tests/writers/test_pptx_source_text.py -q --tb=short",
+    "docs": "generated and strict build passed",
+    "release_archives": "0.42.0 wheel/sdist licenses, resources, metadata and required modules verified",
+    "minimal_pptx_profile": {
+      "passed": true,
+      "python": "3.12.16",
+      "script": "tools/pptx_package_smoke.py",
+      "scope": "Installed wheel; two JSON cycles; shape text/frame, merged table text/grid and chart frame edits share one slide; all other payloads unchanged",
+      "absent": [
+        "fontTools",
+        "docx",
+        "pymupdf",
+        "pypdf",
+        "bs4"
+      ],
+      "installed": [
+        "opendoc-formats==0.42.0",
+        "opendoc-model==0.19.0",
+        "python-pptx==1.0.2",
+        "lxml==6.1.3",
+        "Pillow==12.3.0",
+        "typing-extensions==4.16.0",
+        "xlsxwriter==3.3.1"
+      ],
+      "inventory_scope": "Reviewed uv.lock unchanged; minimal smoke additionally resolves xlsxwriter 3.3.1, lock pins 3.3.0"
+    }
+  },
+  "native_acceptance": {
+    "application": "Microsoft PowerPoint 16.0",
+    "script": "tools/pptx_chart_frame_powerpoint_acceptance.ps1",
+    "fixture": "tests.writers.test_pptx_source_chart_frame.own_chart",
+    "profiles": [
+      "column",
+      "manual",
+      "3d"
+    ],
+    "target_frame_pt": {
+      "x": 40,
+      "y": 40,
+      "width": 570,
+      "height": 340
+    },
+    "source_unchanged": true,
+    "dpi": 108,
+    "manual_and_3d_images_inspected": true,
+    "results": {
+      "column": {
+        "changed_payloads": [
+          "ppt/slides/slide1.xml"
+        ],
+        "mupdf": {
+          "dimensions": [
+            1080,
+            810
+          ],
+          "all_pixels_equal": true,
+          "decoded_rgb_sha256": "35a0bf1cab7e81e84e46d12c7187940d1c4d61a796a3a92b500e9354e1143856",
+          "difference_box": null
+        },
+        "poppler": {
+          "dimensions": [
+            1080,
+            810
+          ],
+          "all_pixels_equal": true,
+          "decoded_rgb_sha256": "738f3319195da01b8662613c413c481678195238171d8f8b492966260505f319",
+          "difference_box": null
+        }
+      },
+      "manual": {
+        "changed_payloads": [
+          "ppt/slides/slide1.xml"
+        ],
+        "mupdf": {
+          "dimensions": [
+            1080,
+            810
+          ],
+          "all_pixels_equal": true,
+          "decoded_rgb_sha256": "1781fc2977ddd07533e0c623d6c74c9904188ca1649902d55cc2e96914d88867",
+          "difference_box": null
+        },
+        "poppler": {
+          "dimensions": [
+            1080,
+            810
+          ],
+          "all_pixels_equal": true,
+          "decoded_rgb_sha256": "ac5d8919af189bda16906918e3f6b9da78a095ec0d6affc92b7729d17ece8c8b",
+          "difference_box": null
+        }
+      },
+      "3d": {
+        "changed_payloads": [
+          "ppt/slides/slide1.xml"
+        ],
+        "mupdf": {
+          "dimensions": [
+            1080,
+            810
+          ],
+          "all_pixels_equal": true,
+          "decoded_rgb_sha256": "b24b74ff0b063d8046ff57736672548a239b935763232f4baa6b0a7e0b369b26",
+          "difference_box": null
+        },
+        "poppler": {
+          "dimensions": [
+            1080,
+            810
+          ],
+          "all_pixels_equal": true,
+          "decoded_rgb_sha256": "7d7c9bf0d511ab8c1a8184c260f8bf1d32714f116d4fde7922ed156cc72dfab2",
+          "difference_box": null
+        }
+      }
+    },
+    "process_ownership": "Fresh app only, macros disabled, read-only source, owned decks closed, owned RCWs released and process exit awaited"
+  },
+  "limits": [
+    "Finite acceptance on own classic chart profiles, not all chart layouts",
+    "No chart data, title, cached series or embedded workbook edits",
+    "No rotation, chartEx, external chart-part references or group-frame normalization",
+    "Native/opaque data retained; no full semantic chart model claim",
+    "ZIP storage metadata, archive byte identity and arbitrary signature edits remain unsupported"
+  ]
+}

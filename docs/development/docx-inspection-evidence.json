@@ -1,0 +1,30 @@
+{
+  "scope": "Explicit native DOCX inspection-only orphan relationship profile, not full corpus or rich Model reader acceptance",
+  "python": "3.12.16",
+  "installed_distributions": {
+    "lxml": "6.1.3",
+    "opendoc-formats": "0.42.0",
+    "opendoc-model": "0.19.0"
+  },
+  "wheel_sha256": "6acfc0c12a7d6680396a49a96303b9f0cead1e539046770298febad3c4452a8e",
+  "source_sha256": {
+    "src/opendoc_formats/docx.py": "150a0d55fc495c6f921711a7a7946dd23c1f43e78d3905b59627c2345b0d13b5",
+    "src/opendoc_formats/native/docx_package.py": "b0fe82443e2b55acbdd7fe3fd8153864ee712bb822a3f621fff7351b91fb1b90",
+    "tools/docx_native_smoke.py": "574a3ec921e025c8c77f85971d0358c7a3015128219a12a798475688fb1bec29",
+    "tests/native/test_docx_inspection_only.py": "f1f77158a663a9bf901d4eb4078cec6dd171d485778c8720f45bac257be34679"
+  },
+  "checks": {
+    "native_docx_and_opc_tests_passed": 157,
+    "installed_smoke": "passed: python -I tools/docx_native_smoke.py",
+    "strict_mode": "Located rejection for missing relationship source preserved",
+    "inspection": "Snapshots and exact original ZIP bytes with immutable Model ConversionIssue ERROR per orphan part",
+    "read_only": "All writes and nonempty patches refuse before destination mutation",
+    "policies": "DTD, internal targets, duplicate Id, namespace, limits and cancellation still reject"
+  },
+  "publication": false,
+  "limitations": [
+    "No owner repair, semantic editing or OPC validity assertion",
+    "Official versioned release and original private corpus acceptance remain pending",
+    "All existing lxml license/resource qualifications remain applicable"
+  ]
+}

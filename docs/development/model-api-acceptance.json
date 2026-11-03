@@ -1,0 +1,184 @@
+{
+  "sdk_version": "0.1.0",
+  "wheel_sha256": "5ec08c4f4d2f17bb141782b0112dbf10fb7ca3d67f1af4d61e70227c9dccc01a",
+  "source_files": {
+    "opendoc_model/__init__.py": "ea2f1b4ec72907f70fc5d8479331d4ffd196e129e5f06418db0a584cfa9acc14",
+    "opendoc_model/_integration_codec.py": "3e4ffc15b34e9cf9937b622a1dd508d7fcf15d0bce6ece8437950dac07e395da",
+    "opendoc_model/_json_validation.py": "8fd7c23774c3168db0a859231e99c61ce18c63087fd1953cdfbc094663a4519f",
+    "opendoc_model/_validation.py": "c8a90bc19dad4858f7da5d598aaae3aa70193e7bf6f57d618e877ecdc33f03e7",
+    "opendoc_model/_xml.py": "ecdab7f8b8c635ea972b47f0d5add06864d6377a45393152c7988aa553c78355",
+    "opendoc_model/backgrounds.py": "0a0bb07c9971cb3b84d2a5c06aed57766348dcb545e2b0ee2527cced8aec5f54",
+    "opendoc_model/block_groups.py": "cfaf287bc84ff280775ace416f6feea42bfab30e1dd82680c2e3ce32a4a6179c",
+    "opendoc_model/checks.py": "607fc712f3eea93beaf6beb1e8e68a5aeb5dbf352e926412d575d07c4fd31ee2",
+    "opendoc_model/color.py": "669e01c625ec4ed4fe34089eb9291623d698d550a89fc0fc4938c5236b2bdd9d",
+    "opendoc_model/composition.py": "d3f58fc988b63335290c5d40eaca73fff50b5b0d80b594816f95e09731737d16",
+    "opendoc_model/diagnostics.py": "99f32b89d09c7df053544a612db97783a40917fdd28e3db12cbb45a3c8e490ea",
+    "opendoc_model/document_codec.py": "c3b2f8f6057688f93428fb454e9346f1fb5a9a2ab2ab00859e363135fb54a5ed",
+    "opendoc_model/document_model.py": "c85becf7187af8bd16a9dc465bcd16a3d54a6aa045dd9a1f34e77111e68aa9dd",
+    "opendoc_model/emphasis_quality.py": "ef49910911e51958dc7a6e031d90178b3075035f893ec1cee378447e3b441a2a",
+    "opendoc_model/extensions.py": "38c8d702333f604eb95ce5e5f0b02bc690c4d63b88dcba2629cd3bee3c367024",
+    "opendoc_model/fonts.py": "7fd623dd07ad5e5df8dc339135329b811e577c156be121ec0741de64aa4bf2c9",
+    "opendoc_model/footnotes.py": "9e914c529a8ee77b64b24a0e4f881cc0110f31c04b90165d81f2f4678d499b89",
+    "opendoc_model/formula_quality_policy.py": "2c5cae9de737dfc4d50c84a3f3114e6484ebdd513fd94bae59adbbb1ef7ad5b8",
+    "opendoc_model/graphics.py": "3dc0a7c9fc3d7f815368b1e61899395976ea384c676c01bfa7bb1407374e01e5",
+    "opendoc_model/image_geometry.py": "f1374f9931628569b5f0c533938cb909b28aea70f7fc58ec786fa417d50f0d86",
+    "opendoc_model/inspection.py": "5cc724f1e6aa0d37cf751fa80852ccaf86a107d470cd84e70763e013649c7556",
+    "opendoc_model/integration.py": "eceab2a9cfb3a62e6ceb8b99af37b17de514d242415cd90f6f48f0d83ea0ef31",
+    "opendoc_model/integration_types.py": "1c13a781a7d5e245f067d45d07d1a1dd3ddf973929ce7ed4818be2831c65d85c",
+    "opendoc_model/limits.py": "5b51df3c5ec1640f362ca62c84dc59ac031a52bc66389577dba30e136fe0741f",
+    "opendoc_model/lists.py": "fcd81bfce806d1bbe434247a946dffed344ac3ef5190f0e6dfe2ca403007087c",
+    "opendoc_model/mathml.py": "f6349ce27947e8418a6e0e2dbce2df67c3be74bf45466ae5991d87c2132fdeae",
+    "opendoc_model/object_inventory.py": "9eeb80f8355b356011156691799aac8636c344f9e78dfe067f13f98bd6ab8e34",
+    "opendoc_model/object_mapping.py": "7aa9e86d18463a8c367e557a8e2bf4dedc7249adcee7711d51e416862746a270",
+    "opendoc_model/object_matching.py": "4c29038eeeb764f0a0dd2e90450b4cdbf389864b406a9f5d8219c422698f544c",
+    "opendoc_model/object_quality_policy.py": "6703345ebef234a863aa0a7facd9a5af2c2f2fcd72ffd2550e3aab4d1b4de825",
+    "opendoc_model/operations.py": "9c67ef8840ccef9b0ada84d74beb7be3e92c5c249ac24c0c473c9168b6bb9740",
+    "opendoc_model/outline.py": "0e621efb6c7e1614fb1d7d1d6cf332de0d781b81b9bd6cf078dcf0ca05995099",
+    "opendoc_model/page_defaults.py": "b6915a72c579a6131041616fa5fbf9a676a9ccff76097a8b5dfeeb46010df089",
+    "opendoc_model/page_geometry.py": "a1a4eee6f875816b8bf2b8c1ea8d92e682857f39ec4e2819ad0e08fe39fa74b1",
+    "opendoc_model/properties.py": "2d06c66e5ed2b9fe17ff7e51dff4c156acca4930234c9a815060ceea42b61765",
+    "opendoc_model/py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "opendoc_model/quality_policy.py": "1338430059f63a5e059126990a6fd4034e8848778f24ccb3d7501469bec8db5f",
+    "opendoc_model/references.py": "0289d18b2d7fe460426fea4358b73247a1d0bda1fb82c827a9e466e0ae614d49",
+    "opendoc_model/resources.py": "e6a84a275332165490012d789c1cee406b5a3a81e19d370e3a3d483cad12153d",
+    "opendoc_model/result_types.py": "bec78d3ebb5a1ef63e6f2f24ce8e0b3aa591a70292b2d33b43b040e1ba8b0005",
+    "opendoc_model/semantics.py": "b47cc1e03b64a027aaa09029cfffcb34b0de131d03041147ee027c86a066672f",
+    "opendoc_model/spacing.py": "4d9e8279ac73dbcebf50ff65c1def92176b68c898fc3f68bf29150f2d38c5998",
+    "opendoc_model/storage.py": "bd1b34a065a4695e0b6abf0253ec7fb293a30da0d96a4bc08ea58d40b414ff8e",
+    "opendoc_model/styles.py": "0e9051518a5d42e0d4a68cc87844455e79553eec8821693ca38611a7fb9d9779",
+    "opendoc_model/table_borders.py": "a972ef7b6adf194f3bd0f0e70d0e89fed09d575edcaeeb0aebaa5edf21b32e53",
+    "opendoc_model/table_semantics.py": "2468607decda13c975e6d4904608e3d52d1a3cc4e7ea8b0ca9756c0985d9bc79",
+    "opendoc_model/text_colors.py": "431ebcb3eaf3d3582c46377c52c52a6779102db60eccb85796675cc977c9d1e3",
+    "opendoc_model/text_edit_budget.py": "e13f17a38138b56836c206ce8219e1d2bc6bd0680e9d6dc137241bbeb7f37a7b",
+    "opendoc_model/text_flow.py": "d0028621e8f2d59b46192e3dbb53a6d3df25533e7038e2cd50a7d56271bdb2aa",
+    "opendoc_model/text_flow_profile.py": "15c82ae02b80ed9bf266ee45f7babfad27ba5ea12372074a548ce2834968c3f1",
+    "opendoc_model/text_layout.py": "b05f3055cab1d9e2d6ae6a04c6cce3b23235836cf53a1671132ee67624bbae3f",
+    "opendoc_model/text_quality_policy.py": "737c3548779adc74351de12873f2358c71bda616a57ab477ca44d27cdbd6dc51",
+    "opendoc_model/traversal.py": "e6f6c547b1b7c60e3cd41f587a5b500054196a8e2742fe28eb86e74a65e73a2a",
+    "opendoc_model/units.py": "ba560d2d0a8da3589cc60de33eafdcb29852b0b3831cd0d30d6f45ffc78ca273",
+    "opendoc_model/widths.py": "9669759d59947200f4f6f150a7abd6cce3dc1dbf8782c4d8f023a5954ab5bbd0"
+  },
+  "checks": {
+    "page_model_consumer.py": [
+      "legacy getter and two official JSON cycles do not add tracking",
+      "partial source, zero, unknown and based computed values survive two official cycles",
+      "same-number assignment stays unknown; explicit same-number acceptance changes certainty",
+      "direct edits detach effective stale states; serialization and partial batches refuse atomically",
+      "stale history, deleting estimate and explicitly resolving before removal remain distinct",
+      "DTO, field, envelope and projection unknown fields survive without getter/codec aliases",
+      "all six missing snapshots, unknown version and opaque carriers refuse without repairs",
+      "contradictory projections and incomplete envelopes refuse without inferring defaults",
+      "invalid certainty/value/basis, bool/nonfinite/negative/zero sizes and consuming margins refuse",
+      "selection and node/byte/depth quotas cover getter/setter/accept/invalidate/codec atomically"
+    ],
+    "block_group_consumer.py": [
+      [
+        "two JSON cycles: ordered table/paragraph/group scopes, independent anchors, one list number",
+        "unknown group and owner fields survive codec without mutable aliasing",
+        "cell edit preserves outer quotation, list continuation and nested numbering",
+        "six invalid owner bindings and dangling-owner removal refuse atomically; whole-item removal works",
+        "invalid role, inline child, untyped binding and actual cycle refuse explicitly",
+        "nested cell groups, empty scope and repeated occurrences retain order and separate paths",
+        "merge remaps compound owners and anchors; cell extraction closes owner dependencies",
+        "selected node/depth/byte quotas: exact paired encode/decode boundary and one-below refusal"
+      ],
+      {
+        "max_nodes": 322,
+        "max_depth": 20,
+        "max_bytes": 5620
+      }
+    ],
+    "outline_label_consumer.py": [
+      [
+        "two JSON cycles retain styled/math labels, provenance, FONT/link refs; separate label walk never adds body text",
+        "unknown fields and detached getters are independent; empty/absent labels and multiple labels per heading stay distinct",
+        "plain-title mismatch refuses atomically; explicit rich update/removal remains authoritative and legacy plain wire omits label",
+        "ten invalid inline/reference/cyclic profiles refuse without changing destination metadata or wire",
+        "merge with explicit keep_last remaps body targets, internal label links, FONT and named styles; extract closes label dependencies independently",
+        "node/depth/byte/embedded quotas: exact paired transport and setter boundaries; one-below refusal is atomic"
+      ],
+      {
+        "paragraph": "outline.entries[0].label: value does not match the declared union",
+        "display": "outline.entries[0].label.content[0]: label formulas require inline display=False and a nonempty explicit fallback",
+        "no-fallback": "outline.entries[0].label.content[0]: label formulas require inline display=False and a nonempty explicit fallback",
+        "missing-font": "invalid integration: outline.entries[0].label.content[0].style.font_reference: unknown resource reference 'missing'",
+        "wrong-font-kind": "invalid integration: outline.entries[0].label.content[0].style: expected an existing FONT resource",
+        "missing-link": "invalid integration: outline.entries[0].label.content[0].internal_link: unknown anchor reference 'missing'",
+        "missing-target": "invalid integration: outline.entries[0].target: unknown anchor destination 'missing'",
+        "missing-style": "invalid integration: outline.entries[0].label.content[0].style.properties.base_style_id: unknown style reference 'missing'",
+        "private-anchor": "outline.entries[0].label.content[0]: label identities use entry ID/index; body anchors are not declared here",
+        "cycle": "$.entries[0].label.content[0].properties['cycle']: cyclic document model"
+      },
+      {
+        "max_nodes": {
+          "transport": 249,
+          "setter": 249
+        },
+        "max_depth": {
+          "transport": 14,
+          "setter": 13
+        },
+        "max_bytes": {
+          "transport": 4334,
+          "setter": 1469
+        },
+        "max_embedded_bytes": {
+          "transport": 17,
+          "setter": 17
+        }
+      }
+    ],
+    "background_gradient_consumer.py": [
+      [
+        "two document cycles and all DTO codecs retain coincident interior stops, alpha, unknown color and geometry",
+        "independent snapshots and authoritative edits/removals preserve unknown envelope; native hints stay inert",
+        "section/page scopes have no inferred cascade; separate walk creates no body nodes; CMYK/ICC/blend remain color data, not invented resources",
+        "merge retains both section declarations and explicit metadata policy; section extraction preserves paint",
+        "invalid ranges, roles, geometry, versions, opaque collision and cycle refuse; failed setters are atomic",
+        "exact paired transport, section setter, page copy and walk node/depth/byte boundaries; one-below is atomic"
+      ],
+      [
+        "gradient.stop.position: expected finite number between 0 and 1",
+        "gradient.stop.position: expected finite number",
+        "gradient.stop.position: expected finite number between 0 and 1",
+        "gradient.stops[1].position: positions must be nondecreasing; ties retain order",
+        "gradient.stops: expected at least two ordered stops or unknown",
+        "gradient.opacity: expected finite number between 0 and 1",
+        "gradient.spread: unsupported spread",
+        "gradient.interpolation: unsupported interpolation",
+        "gradient.end: linear endpoints must differ",
+        "gradient.radius: expected positive radius",
+        "background: none/unknown cannot retain paint payloads",
+        "background.solid: solid requires only existing Paint",
+        "gradient: choose at most one geometry; both absent means unknown",
+        "invalid document model: sections[0].properties['opendoc.background'].version: unsupported background version",
+        "invalid document model: sections[0].properties['opendoc.background'].version: unsupported background version",
+        "invalid document model: sections[0].properties['opendoc.background'].data.background: background.solid: solid requires only existing Paint",
+        "section.background: background key contains opaque data",
+        "$.extra['cycle']: cyclic document model"
+      ],
+      {
+        "max_nodes": {
+          "transport": 235,
+          "section-setter": 123,
+          "page-with": 73,
+          "walk": 235
+        },
+        "max_depth": {
+          "transport": 14,
+          "section-setter": 9,
+          "page-with": 9,
+          "walk": 13
+        },
+        "max_bytes": {
+          "transport": 3766,
+          "section-setter": 556,
+          "page-with": 475,
+          "walk": 805
+        }
+      }
+    ],
+    "image_source_rect": "signed/outside coordinates and extra survive two JSON cycles without changing Box/crop"
+  },
+  "scope": "Public Model API and transport only; native format projection remains subject to its own gates."
+}

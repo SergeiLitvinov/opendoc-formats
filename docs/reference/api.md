@@ -1,0 +1,1075 @@
+# Публичный API
+
+Создан автоматически из AST публичных модулей библиотеки.
+Модель и отчёты преобразования определены в обязательном пакете OpenDoc.
+Нативные снимки и результаты препарирования принадлежат Formats.
+
+## opendoc_formats.api
+
+### ImportOptions
+
+[Исходник, строка 19](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L19)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `max_input_bytes` | `int` | `10 * 1024 * 1024` |
+| `resource_root` | `str &#124; Path &#124; None` | `None` |
+| `document_limits` | `DocumentLimits` | `field(default_factory=DocumentLimits)` |
+| `pdf_mode` | `str` | `'fast'` |
+| `ocr_engine_factory` | `Callable[..., object] &#124; None` | `None` |
+| `cancelled` | `Callable[[], bool] &#124; None` | `None` |
+| `txt_profile` | `TextProfile` | `field(default_factory=TextProfile)` |
+| `epub_include_nonlinear` | `bool` | `False` |
+| `pdf_text_layouts` | `bool` | `False` |
+
+### ImportResult
+
+[Исходник, строка 52](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L52)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `document` | `DocumentModel &#124; None` | `обязательное` |
+| `format_id` | `str` | `обязательное` |
+| `issues` | `tuple[DiagnosticIssue, ...]` | `()` |
+| `document_limits` | `DocumentLimits` | `field(default_factory=DocumentLimits, repr=False, compare=False)` |
+
+### ImportResult.success
+
+[Исходник, строка 59](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L59)
+
+```python
+success(self) -> bool
+```
+
+### ImportResult.assessment_complete
+
+[Исходник, строка 63](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L63)
+
+```python
+assessment_complete(self) -> bool
+```
+
+### ImportResult.lossless
+
+[Исходник, строка 74](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L74)
+
+```python
+lossless(self) -> bool
+```
+
+### AdapterSpec
+
+[Исходник, строка 91](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L91)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `id` | `str` | `обязательное` |
+| `extensions` | `tuple[str, ...]` | `обязательное` |
+| `reader` | `Reader` | `обязательное` |
+| `requirements` | `tuple[str, ...]` | `()` |
+
+### AdapterRegistry
+
+[Исходник, строка 111](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L111)
+
+### AdapterRegistry.__init__
+
+[Исходник, строка 112](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L112)
+
+```python
+__init__(self) -> None
+```
+
+### AdapterRegistry.register
+
+[Исходник, строка 116](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L116)
+
+```python
+register(self, adapter: AdapterSpec) -> None
+```
+
+### AdapterRegistry.adapters
+
+[Исходник, строка 124](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L124)
+
+```python
+adapters(self) -> tuple[AdapterSpec, ...]
+```
+
+### AdapterRegistry.read
+
+[Исходник, строка 127](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L127)
+
+```python
+read(self, path: str | Path, *, format_id: str | None=None, options: ImportOptions | None=None) -> ImportResult
+```
+
+### default_registry
+
+[Исходник, строка 238](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L238)
+
+```python
+default_registry() -> AdapterRegistry
+```
+
+### read_document
+
+[Исходник, строка 252](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L252)
+
+```python
+read_document(path: str | Path, *, format_id: str | None=None, options: ImportOptions | None=None) -> ImportResult
+```
+
+## opendoc_formats.export
+
+### ExportOptions
+
+[Исходник, строка 24](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L24)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `document_limits` | `DocumentLimits` | `field(default_factory=DocumentLimits)` |
+| `cancelled` | `Callable[[], bool] &#124; None` | `None` |
+| `verify_output` | `bool` | `True` |
+| `txt_profile` | `TextProfile &#124; None` | `None` |
+| `quality_gate` | `Callable[[ConversionReport, Path], bool] &#124; None` | `None` |
+| `docx_profile` | `DocxProfile &#124; None` | `None` |
+| `pptx_profile` | `PptxProfile &#124; None` | `None` |
+
+### ExporterSpec
+
+[Исходник, строка 78](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L78)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `id` | `str` | `обязательное` |
+| `extensions` | `tuple[str, ...]` | `обязательное` |
+| `writer` | `Writer` | `обязательное` |
+| `requirements` | `tuple[str, ...]` | `()` |
+| `validator` | `OutputValidator &#124; None` | `None` |
+| `supports_text_layouts` | `bool` | `False` |
+| `supports_image_source_rects` | `bool` | `False` |
+
+### ExporterRegistry
+
+[Исходник, строка 107](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L107)
+
+### ExporterRegistry.__init__
+
+[Исходник, строка 108](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L108)
+
+```python
+__init__(self) -> None
+```
+
+### ExporterRegistry.register
+
+[Исходник, строка 112](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L112)
+
+```python
+register(self, exporter: ExporterSpec) -> None
+```
+
+### ExporterRegistry.exporters
+
+[Исходник, строка 120](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L120)
+
+```python
+exporters(self) -> tuple[ExporterSpec, ...]
+```
+
+### ExporterRegistry.write
+
+[Исходник, строка 123](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L123)
+
+```python
+write(self, document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport
+```
+
+### default_exporter_registry
+
+[Исходник, строка 405](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L405)
+
+```python
+default_exporter_registry() -> ExporterRegistry
+```
+
+### write_document
+
+[Исходник, строка 430](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L430)
+
+```python
+write_document(document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport
+```
+
+## opendoc_formats.text_profile
+
+### TextProfile
+
+[Исходник, строка 17](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L17)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `encoding` | `str` | `'auto'` |
+| `bom` | `str` | `'auto'` |
+| `newline` | `str` | `'preserve'` |
+
+### TextEncodingError
+
+[Исходник, строка 35](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L35)
+
+### TextEncodingError.__init__
+
+[Исходник, строка 36](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L36)
+
+```python
+__init__(self, reason: str, message: str) -> None
+```
+
+### decode_text
+
+[Исходник, строка 41](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L41)
+
+```python
+decode_text(data: bytes, profile: TextProfile) -> tuple[str, str, bool]
+```
+
+### normalize_newlines
+
+[Исходник, строка 69](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L69)
+
+```python
+normalize_newlines(text: str) -> str
+```
+
+### source_profile
+
+[Исходник, строка 74](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L74)
+
+```python
+source_profile(text: str, encoding: str, bom: bool) -> dict[str, Any]
+```
+
+### encode_text
+
+[Исходник, строка 79](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/text_profile.py#L79)
+
+```python
+encode_text(text: str, profile: TextProfile, original: dict[str, Any]) -> tuple[bytes, dict[str, Any], bool]
+```
+
+## opendoc_formats.docx_profile
+
+### DocxProfile
+
+[Исходник, строка 7](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx_profile.py#L7)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `layout` | `str` | `'preserve'` |
+
+## opendoc_formats.docx
+
+### DocxLimits
+
+[Исходник, строка 19](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L19)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `max_input_bytes` | `int` | `100 * 1024 * 1024` |
+| `max_output_bytes` | `int` | `128 * 1024 * 1024` |
+| `max_entries` | `int` | `3000` |
+| `max_uncompressed_bytes` | `int` | `200 * 1024 * 1024` |
+| `max_part_bytes` | `int` | `32 * 1024 * 1024` |
+| `max_compression_ratio` | `int` | `1000` |
+| `max_paragraphs` | `int` | `100000` |
+| `max_patches` | `int` | `10000` |
+| `max_text_chars` | `int` | `4000000` |
+| `max_relationships` | `int` | `100000` |
+
+### RunStyle
+
+[Исходник, строка 37](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L37)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `bold` | `bool &#124; None` | `None` |
+| `italic` | `bool &#124; None` | `None` |
+| `underline` | `bool &#124; None` | `None` |
+| `font_family` | `str &#124; None` | `None` |
+| `font_size` | `float &#124; None` | `None` |
+| `style_id` | `str &#124; None` | `None` |
+
+### RunSnapshot
+
+[Исходник, строка 47](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L47)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `start` | `int` | `обязательное` |
+| `end` | `int` | `обязательное` |
+| `text` | `str` | `обязательное` |
+| `style` | `RunStyle` | `обязательное` |
+
+### ParagraphSnapshot
+
+[Исходник, строка 55](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L55)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `id` | `str` | `обязательное` |
+| `part` | `str` | `обязательное` |
+| `role` | `PartRole` | `обязательное` |
+| `index` | `int` | `обязательное` |
+| `text` | `str` | `обязательное` |
+| `runs` | `tuple[RunSnapshot, ...]` | `обязательное` |
+| `is_body` | `bool` | `обязательное` |
+| `table_id` | `str &#124; None` | `обязательное` |
+| `cell_id` | `str &#124; None` | `обязательное` |
+| `has_image` | `bool` | `обязательное` |
+| `has_section_break` | `bool` | `обязательное` |
+| `has_nested_paragraphs` | `bool` | `обязательное` |
+| `has_fields` | `bool` | `обязательное` |
+| `has_revisions` | `bool` | `обязательное` |
+| `has_embedded_objects` | `bool` | `обязательное` |
+| `style_id` | `str &#124; None` | `обязательное` |
+
+### ParagraphSnapshot.in_table
+
+[Исходник, строка 74](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L74)
+
+```python
+in_table(self) -> bool
+```
+
+### BodyItem
+
+[Исходник, строка 79](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L79)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `index` | `int` | `обязательное` |
+| `kind` | `Literal['paragraph', 'table', 'section', 'other']` | `обязательное` |
+| `paragraph_id` | `str &#124; None` | `обязательное` |
+| `table_id` | `str &#124; None` | `обязательное` |
+| `text` | `str` | `обязательное` |
+
+### CellSnapshot
+
+[Исходник, строка 88](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L88)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `id` | `str` | `обязательное` |
+| `index` | `int` | `обязательное` |
+| `text` | `str` | `обязательное` |
+| `paragraph_ids` | `tuple[str, ...]` | `обязательное` |
+| `grid_span` | `int` | `обязательное` |
+| `vertical_merge` | `bool` | `обязательное` |
+| `horizontal_merge` | `bool` | `обязательное` |
+| `has_nested_tables` | `bool` | `обязательное` |
+
+### RowSnapshot
+
+[Исходник, строка 100](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L100)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `id` | `str` | `обязательное` |
+| `index` | `int` | `обязательное` |
+| `cells` | `tuple[CellSnapshot, ...]` | `обязательное` |
+| `text` | `str` | `обязательное` |
+| `paragraph_ids` | `tuple[str, ...]` | `обязательное` |
+| `has_merge` | `bool` | `обязательное` |
+| `has_nested_tables` | `bool` | `обязательное` |
+| `has_section_break` | `bool` | `обязательное` |
+| `simple` | `bool` | `обязательное` |
+
+### TableSnapshot
+
+[Исходник, строка 113](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L113)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `id` | `str` | `обязательное` |
+| `part` | `str` | `обязательное` |
+| `role` | `PartRole` | `обязательное` |
+| `index` | `int` | `обязательное` |
+| `grid_columns` | `int` | `обязательное` |
+| `rows` | `tuple[RowSnapshot, ...]` | `обязательное` |
+| `is_body` | `bool` | `обязательное` |
+| `parent_cell_id` | `str &#124; None` | `обязательное` |
+
+### PackagePartInfo
+
+[Исходник, строка 125](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L125)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `name` | `str` | `обязательное` |
+| `role` | `PartRole` | `обязательное` |
+| `size` | `int` | `обязательное` |
+| `sha256` | `str` | `обязательное` |
+
+### DocxPackageInfo
+
+[Исходник, строка 133](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L133)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `sha256` | `str` | `обязательное` |
+| `parts` | `tuple[PackagePartInfo, ...]` | `обязательное` |
+| `has_macros` | `bool` | `обязательное` |
+| `has_signatures` | `bool` | `обязательное` |
+| `inspection_only` | `bool` | `False` |
+| `issues` | `tuple[ConversionIssue, ...]` | `()` |
+
+### RelationshipSnapshot
+
+[Исходник, строка 143](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L143)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `part` | `str` | `обязательное` |
+| `index` | `int` | `обязательное` |
+| `id` | `str` | `обязательное` |
+| `type` | `str` | `обязательное` |
+| `target` | `str` | `обязательное` |
+| `target_mode` | `Literal['Internal', 'External']` | `обязательное` |
+| `nominal_source_part` | `str &#124; None` | `обязательное` |
+| `source_part` | `str &#124; None` | `обязательное` |
+| `owner_status` | `Literal['package', 'part', 'missing']` | `обязательное` |
+| `target_part` | `str &#124; None` | `обязательное` |
+| `attributes` | `tuple[tuple[str, str], ...]` | `обязательное` |
+
+### ReplaceTextSpan
+
+[Исходник, строка 160](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L160)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `paragraph_id` | `str` | `обязательное` |
+| `start` | `int` | `обязательное` |
+| `end` | `int` | `обязательное` |
+| `text` | `str` | `обязательное` |
+
+### SetParagraphText
+
+[Исходник, строка 168](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L168)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `paragraph_id` | `str` | `обязательное` |
+| `text` | `str` | `обязательное` |
+| `append` | `bool` | `False` |
+
+### InsertParagraph
+
+[Исходник, строка 175](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L175)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `anchor_id` | `str` | `обязательное` |
+| `text` | `str` | `обязательное` |
+| `position` | `Position` | `'before'` |
+
+### InsertTableRow
+
+[Исходник, строка 182](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L182)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `anchor_row_id` | `str` | `обязательное` |
+| `text` | `str` | `обязательное` |
+| `position` | `Position` | `'before'` |
+
+### SetTableRowText
+
+[Исходник, строка 189](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L189)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `row_id` | `str` | `обязательное` |
+| `text` | `str` | `обязательное` |
+
+### DocxEditResult
+
+[Исходник, строка 198](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L198)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `output` | `Path` | `обязательное` |
+| `sha256` | `str` | `обязательное` |
+| `bytes_written` | `int` | `обязательное` |
+| `changed_parts` | `tuple[str, ...]` | `обязательное` |
+
+### DocxPackage
+
+[Исходник, строка 205](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L205)
+
+### DocxPackage.__init__
+
+[Исходник, строка 208](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L208)
+
+```python
+__init__(self, source: Source, *, limits: DocxLimits=DocxLimits(), allow_macros: bool=False, inspection_only: bool=False, cancelled: Cancellation | None=None) -> None
+```
+
+### DocxPackage.close
+
+[Исходник, строка 236](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L236)
+
+```python
+close(self) -> None
+```
+
+### DocxPackage.closed
+
+[Исходник, строка 240](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L240)
+
+```python
+closed(self) -> bool
+```
+
+### DocxPackage.paragraphs
+
+[Исходник, строка 244](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L244)
+
+```python
+paragraphs(self) -> tuple[ParagraphSnapshot, ...]
+```
+
+### DocxPackage.body
+
+[Исходник, строка 249](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L249)
+
+```python
+body(self) -> tuple[BodyItem, ...]
+```
+
+### DocxPackage.tables
+
+[Исходник, строка 254](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L254)
+
+```python
+tables(self) -> tuple[TableSnapshot, ...]
+```
+
+### DocxPackage.info
+
+[Исходник, строка 259](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L259)
+
+```python
+info(self) -> DocxPackageInfo
+```
+
+### DocxPackage.relationships
+
+[Исходник, строка 264](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L264)
+
+```python
+relationships(self) -> tuple[RelationshipSnapshot, ...]
+```
+
+### DocxPackage.to_bytes
+
+[Исходник, строка 268](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L268)
+
+```python
+to_bytes(self, patches: Sequence[DocxPatch]=()) -> bytes
+```
+
+### DocxPackage.write
+
+[Исходник, строка 272](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/docx.py#L272)
+
+```python
+write(self, output: str | Path, patches: Sequence[DocxPatch]=()) -> DocxEditResult
+```
+
+## opendoc_formats.pdf
+
+### PdfLimits
+
+[Исходник, строка 25](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L25)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `max_input_bytes` | `int` | `128 * 1024 * 1024` |
+| `max_pages` | `int` | `10000` |
+| `max_dimension` | `int` | `8192` |
+| `max_pixels` | `int` | `16000000` |
+| `max_png_bytes` | `int` | `32 * 1024 * 1024` |
+| `max_text_chars` | `int` | `4000000` |
+| `cache_bytes` | `int` | `32 * 1024 * 1024` |
+| `cache_pages` | `int` | `8` |
+| `max_objects` | `int` | `100000` |
+| `max_object_bytes` | `int` | `32 * 1024 * 1024` |
+| `max_inspection_bytes` | `int` | `256 * 1024 * 1024` |
+| `max_text_spans` | `int` | `100000` |
+| `max_text_metadata_bytes` | `int` | `8 * 1024 * 1024` |
+
+### PdfPageInfo
+
+[Исходник, строка 46](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L46)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `index` | `int` | `обязательное` |
+| `width` | `float` | `обязательное` |
+| `height` | `float` | `обязательное` |
+| `rotation` | `int` | `обязательное` |
+| `text` | `str` | `обязательное` |
+
+### RenderedPage
+
+[Исходник, строка 55](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L55)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `index` | `int` | `обязательное` |
+| `png` | `bytes` | `обязательное` |
+| `width` | `int` | `обязательное` |
+| `height` | `int` | `обязательное` |
+| `effective_scale` | `float` | `обязательное` |
+
+### PdfGlyphInfo
+
+[Исходник, строка 64](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L64)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `unicode` | `int` | `обязательное` |
+| `glyph_id` | `int` | `обязательное` |
+| `origin` | `tuple[float, float]` | `обязательное` |
+| `bbox` | `tuple[float, float, float, float]` | `обязательное` |
+
+### PdfTextSpan
+
+[Исходник, строка 76](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L76)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `page_index` | `int` | `обязательное` |
+| `span_index` | `int` | `обязательное` |
+| `seqno` | `int` | `обязательное` |
+| `paint_type` | `int` | `обязательное` |
+| `font` | `str` | `обязательное` |
+| `font_size` | `float` | `обязательное` |
+| `bbox` | `tuple[float, float, float, float]` | `обязательное` |
+| `direction` | `tuple[float, float]` | `обязательное` |
+| `opacity` | `float` | `обязательное` |
+| `glyphs` | `tuple[PdfGlyphInfo, ...]` | `обязательное` |
+| `metadata` | `tuple[tuple[str, PdfTextValue], ...]` | `()` |
+
+### PdfTextSpan.text
+
+[Исходник, строка 90](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L90)
+
+```python
+text(self) -> str | None
+```
+
+### PdfPlacedGlyph
+
+[Исходник, строка 98](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L98)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `unicode` | `int` | `обязательное` |
+| `glyph_id` | `int` | `обязательное` |
+| `transform` | `tuple[float, float, float, float, float, float]` | `обязательное` |
+| `glyph_bbox` | `tuple[float, float, float, float] &#124; None` | `обязательное` |
+
+### PdfTextPlacement
+
+[Исходник, строка 106](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L106)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `page_index` | `int` | `обязательное` |
+| `occurrence_index` | `int` | `обязательное` |
+| `operation` | `str` | `обязательное` |
+| `font` | `str` | `обязательное` |
+| `font_program_sha256` | `str &#124; None` | `обязательное` |
+| `opacity` | `float &#124; None` | `обязательное` |
+| `glyphs` | `tuple[PdfPlacedGlyph, ...]` | `обязательное` |
+
+### PdfObjectInfo
+
+[Исходник, строка 117](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L117)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `xref` | `int` | `обязательное` |
+| `dictionary` | `str` | `обязательное` |
+| `raw_stream` | `bytes &#124; None` | `обязательное` |
+
+### PdfDocument
+
+[Исходник, строка 125](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L125)
+
+### PdfDocument.__init__
+
+[Исходник, строка 128](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L128)
+
+```python
+__init__(self, source: Source, *, limits: PdfLimits=PdfLimits(), cancelled: Cancellation | None=None) -> None
+```
+
+### PdfDocument.close
+
+[Исходник, строка 168](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L168)
+
+```python
+close(self) -> None
+```
+
+### PdfDocument.closed
+
+[Исходник, строка 176](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L176)
+
+```python
+closed(self) -> bool
+```
+
+### PdfDocument.page_count
+
+[Исходник, строка 185](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L185)
+
+```python
+page_count(self) -> int
+```
+
+### PdfDocument.object_count
+
+[Исходник, строка 190](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L190)
+
+```python
+object_count(self) -> int
+```
+
+### PdfDocument.trailer
+
+[Исходник, строка 199](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L199)
+
+```python
+trailer(self) -> str
+```
+
+### PdfDocument.repaired
+
+[Исходник, строка 208](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L208)
+
+```python
+repaired(self) -> bool
+```
+
+### PdfDocument.iter_objects
+
+[Исходник, строка 212](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L212)
+
+```python
+iter_objects(self) -> Iterator[PdfObjectInfo]
+```
+
+### PdfDocument.page_info
+
+[Исходник, строка 251](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L251)
+
+```python
+page_info(self, index: int) -> PdfPageInfo
+```
+
+### PdfDocument.page_text_spans
+
+[Исходник, строка 266](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L266)
+
+```python
+page_text_spans(self, index: int) -> tuple[PdfTextSpan, ...]
+```
+
+### PdfDocument.page_text_placements
+
+[Исходник, строка 283](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L283)
+
+```python
+page_text_placements(self, index: int) -> tuple[PdfTextPlacement, ...]
+```
+
+### PdfDocument.render_page
+
+[Исходник, строка 316](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/pdf.py#L316)
+
+```python
+render_page(self, index: int, *, dpi: float | None=None, scale: float | None=None, max_dimension: int | None=None, rotation: float=0) -> RenderedPage
+```
+
+## opendoc_formats.anatomy
+
+### AnatomyLimits
+
+[Исходник, строка 33](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L33)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `max_input_bytes` | `int` | `128 * 1024 * 1024` |
+| `max_items` | `int` | `100000` |
+| `max_part_bytes` | `int` | `32 * 1024 * 1024` |
+| `max_total_bytes` | `int` | `256 * 1024 * 1024` |
+| `max_ratio` | `int` | `200` |
+| `max_xml_nodes` | `int` | `100000` |
+| `max_xml_depth` | `int` | `128` |
+| `max_xml_name_chars` | `int` | `2048` |
+| `max_xml_characters` | `int` | `32 * 1024 * 1024` |
+| `max_pdf_tokens` | `int` | `200000` |
+| `max_pdf_depth` | `int` | `64` |
+
+### XmlNodeInfo
+
+[Исходник, строка 52](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L52)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `path` | `str` | `обязательное` |
+| `tag` | `str` | `обязательное` |
+| `attributes` | `tuple[tuple[str, str], ...]` | `обязательное` |
+| `text_sha256` | `str` | `обязательное` |
+| `text_characters` | `int` | `0` |
+| `start_byte` | `int` | `0` |
+| `end_event_byte` | `int` | `0` |
+
+### BinaryItem
+
+[Исходник, строка 63](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L63)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `locator` | `str` | `обязательное` |
+| `kind` | `str` | `обязательное` |
+| `size` | `int` | `обязательное` |
+| `sha256` | `str` | `обязательное` |
+| `storage_sha256` | `str &#124; None` | `None` |
+| `details` | `tuple[tuple[str, Any], ...]` | `()` |
+| `xml_nodes` | `tuple[XmlNodeInfo, ...]` | `()` |
+| `payload` | `bytes &#124; None` | `field(default=None, repr=False, compare=False)` |
+
+### OpcRelationship
+
+[Исходник, строка 75](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L75)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `location` | `str` | `обязательное` |
+| `relationship_part` | `str` | `обязательное` |
+| `owner` | `str &#124; None` | `обязательное` |
+| `attributes` | `tuple[tuple[str, str], ...]` | `обязательное` |
+| `resolved_target` | `str &#124; None` | `обязательное` |
+| `status` | `str` | `обязательное` |
+
+### OpcFinding
+
+[Исходник, строка 85](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L85)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `code` | `str` | `обязательное` |
+| `location` | `str` | `обязательное` |
+| `message` | `str` | `обязательное` |
+
+### OpcAudit
+
+[Исходник, строка 92](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L92)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `relationships` | `tuple[OpcRelationship, ...]` | `обязательное` |
+| `findings` | `tuple[OpcFinding, ...]` | `обязательное` |
+| `reachable_parts` | `tuple[str, ...]` | `обязательное` |
+| `unreached_parts` | `tuple[str, ...]` | `обязательное` |
+| `unreachable_parts` | `tuple[str, ...]` | `обязательное` |
+| `reachability_complete` | `bool` | `обязательное` |
+
+### OpcAudit.to_dict
+
+[Исходник, строка 100](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L100)
+
+```python
+to_dict(self) -> dict[str, Any]
+```
+
+### EpubManifestReference
+
+[Исходник, строка 112](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L112)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `location` | `str` | `обязательное` |
+| `package` | `str` | `обязательное` |
+| `identifier` | `str` | `обязательное` |
+| `href` | `str` | `обязательное` |
+| `media_type` | `str` | `обязательное` |
+| `resolved_target` | `str &#124; None` | `обязательное` |
+| `status` | `str` | `обязательное` |
+| `attributes` | `tuple[tuple[str, str], ...]` | `обязательное` |
+
+### EpubAudit
+
+[Исходник, строка 124](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L124)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `references` | `tuple[EpubManifestReference, ...]` | `обязательное` |
+
+### EpubAudit.to_dict
+
+[Исходник, строка 127](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L127)
+
+```python
+to_dict(self) -> dict[str, Any]
+```
+
+### BinarySnapshot
+
+[Исходник, строка 136](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L136)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `container` | `str` | `обязательное` |
+| `source_sha256` | `str` | `обязательное` |
+| `source_size` | `int` | `обязательное` |
+| `items` | `tuple[BinaryItem, ...]` | `обязательное` |
+| `details` | `tuple[tuple[str, Any], ...]` | `()` |
+| `opc` | `OpcAudit &#124; None` | `None` |
+| `epub` | `EpubAudit &#124; None` | `None` |
+
+### BinarySnapshot.to_dict
+
+[Исходник, строка 145](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L145)
+
+```python
+to_dict(self) -> dict[str, Any]
+```
+
+### compare_snapshots
+
+[Исходник, строка 164](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L164)
+
+```python
+compare_snapshots(before: BinarySnapshot, after: BinarySnapshot) -> dict[str, Any]
+```
+
+### inspect_binary
+
+[Исходник, строка 454](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L454)
+
+```python
+inspect_binary(source: Source, *, container: str | None=None, limits: AnatomyLimits=AnatomyLimits(), parse_xml: bool=True, capture: bool=False, sfnt_checksums: bool=False, sfnt_structure: bool=False, pdf_source: bool=False, pdf_decode_xrefs: bool=False, pdf_object_streams: bool=False, pdf_resolve_xrefs: bool=False, sfnt_face_index: int | None=None, cancelled: Callable[[], bool] | None=None) -> BinarySnapshot
+```
+
+## opendoc_formats.office
+
+### OfficeLimits
+
+[Исходник, строка 41](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L41)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `max_input_bytes` | `int` | `100 * 1024 * 1024` |
+| `max_output_bytes` | `int` | `128 * 1024 * 1024` |
+| `max_pages` | `int` | `10000` |
+
+### OfficeConversionResult
+
+[Исходник, строка 52](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L52)
+
+| Поле | Тип | Значение по умолчанию |
+| --- | --- | --- |
+| `output` | `Path` | `обязательное` |
+| `page_count` | `int` | `обязательное` |
+| `bytes_written` | `int` | `обязательное` |
+| `sha256` | `str` | `обязательное` |
+
+### find_libreoffice
+
+[Исходник, строка 59](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L59)
+
+```python
+find_libreoffice() -> Path | None
+```
+
+### convert_office_to_pdf
+
+[Исходник, строка 88](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L88)
+
+```python
+convert_office_to_pdf(source: str | Path, output: str | Path, *, executable: str | Path | None=None, timeout: float=180, limits: OfficeLimits=OfficeLimits(), cancelled: Cancellation | None=None) -> OfficeConversionResult
+```
+
+## opendoc_formats.package_resources
+
+### assemble_docx_package_resources
+
+[Исходник, строка 47](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/package_resources.py#L47)
+
+```python
+assemble_docx_package_resources(document: DocumentModel, resource_roles: Mapping[str, DocxResourceRole], *, consume_resources: bool=False, max_bytes: int=128 * 1024 * 1024, cancelled: Cancellation | None=None) -> DocumentModel
+```
+
+## opendoc_formats.errors
+
+### FormatError
+
+[Исходник, строка 4](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L4)
+
+### ExtractError
+
+[Исходник, строка 8](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L8)
+
+### ConvertError
+
+[Исходник, строка 12](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L12)
+
+### NativeAccessError
+
+[Исходник, строка 16](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L16)
+
+### BackendUnavailableError
+
+[Исходник, строка 22](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L22)
+
+### InvalidDocumentError
+
+[Исходник, строка 28](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L28)
+
+### EncryptedDocumentError
+
+[Исходник, строка 34](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L34)
+
+### UnsupportedDocumentError
+
+[Исходник, строка 40](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L40)
+
+### ResourceLimitError
+
+[Исходник, строка 46](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L46)
+
+### OperationCancelledError
+
+[Исходник, строка 52](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L52)
+
+### DocumentClosedError
+
+[Исходник, строка 58](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L58)
+
+### PageIndexError
+
+[Исходник, строка 64](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L64)
+
+### PatchConflictError
+
+[Исходник, строка 70](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L70)
+
+### OfficeTimeoutError
+
+[Исходник, строка 76](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/errors.py#L76)

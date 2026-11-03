@@ -1,0 +1,621 @@
+# Зависимости и движки
+
+## Можно ли удалить оставшиеся зависимости
+
+Единственная обязательная runtime-зависимость — `opendoc-model`.
+Остальные выбираются extras; установка всех extras для обычного использования
+не требуется. Количество мест импорта не измеряет объём заменяемой функции.
+
+| Зависимость | Фактическая работа | Решение для сохранения качества |
+| --- | --- | --- |
+| python-docx / python-pptx | Богатое чтение и создание офисных документов | Сохранять в соответствующих extras; нативный DOCX API имеет отдельный `docx-native` |
+| lxml | OOXML, namespace/XPath, разбор и replay XML | Сохранять; также требуется офисными backend. Лицензионный вопрос ресурсов XSL вынесен в OF16 |
+| Pillow | Конвертация WMF/EMF в HTML renderer презентаций; транзитивное требование python-pptx | Удаление строки из extra не удалит библиотеку из установки; равнозначная замена маршрута не принята |
+| BeautifulSoup / tinycss2 | XHTML/HTML DOM и CSS tokens/font-face | Сохранять в import extras; собственный EPUB writer их не требует |
+| fontTools | Subsetting и fallback за пределами собственного статического sfnt-профиля | Сохранять optional `fonts`; полный файл без subsetting поддержан лишь для описанных профилей |
+| PyMuPDF | PDF-модель, геометрия, извлечение и рендер | Сохранять в PDF extras; собственный Anatomy не заменяет PDF reader/renderer |
+| pypdf | Отдельный permissive text-only маршрут | Сохранять `pdf-text`; перенос на другой лицензируемый движок не является равноценным удалением |
+| pdfplumber | Альтернативное извлечение layout/таблиц | Сохранять `pdf-layout` до сравнения на общем корпусе; его pdfminer/PDFium/Pillow являются транзитивной цепочкой |
+| pdf2docx | Отдельный legacy PDF → DOCX converter | Сохранять `pdf-docx` до приёмки C-PDF-DOCX-01; вместе с ним можно будет убрать его OpenCV/NumPy/fire из этого профиля |
+
+Прямые импорты проверены по `src/opendoc_formats`, транзитивные требования —
+по метаданным установленных дистрибутивов. Для оставшихся runtime-пакетов
+не подтверждено безопасное полное удаление. `pyproject.toml` и `uv.lock`
+поэтому сохраняют действующие профили. Лицензии перечислены ниже и в
+[реестре](../reference/dependencies.md); ограничения сохраняются и для
+транзитивно установленных библиотек.
+
+## Совместимость версий
+
+Formats 0.1.0 использует официальный `opendoc-model==0.1.0`. Движки выбираются
+через extras; ограничения версий и URL SDK заданы в `pyproject.toml`, точный
+набор для разработки и CI — в `uv.lock`.
+
+Изменение версии зависимости требует проверки API, транзитивного состава,
+лицензий, требований безопасности и доступности wheels. Затем выполняются
+installed-profile и нативная приёмка на том же корпусе. Ограничение PyMuPDF `<2`
+сохраняет проверенный профиль без неподтверждённого major-стека.
+
+CI с `uv sync --frozen` проверяет зафиксированный набор; он не доказывает работу
+на каждой версии из диапазонов `>=`. Для обещания более старой совместимости
+нужны отдельные минимальные профили и их матрица Python/OS.
+[Управление lockfile](https://docs.astral.sh/uv/concepts/projects/sync/).
+
+**Стандартный PDF-профиль — один движок PyMuPDF.** Установка `opendoc-formats[pdf]`
+покрывает модель, геометрию, таблицы, рендер и PDF writer; `pdf-rich` — эквивалентный
+профиль. В него не входят pypdf, pdfplumber, pdf2docx, OpenCV, NumPy, PDFium,
+pdfminer, Pillow или lxml. Лицензия PyMuPDF — AGPL-3.0 либо коммерческая;
+для отдельного permissive text-only маршрута остаётся `pdf-text` с BSD-3-Clause pypdf.
+Таблица ниже перечисляет все альтернативные профили, а не обязательную общую установку.
+
+Для [физической PDF-инспекции](document-anatomy.md#исходные-pdf-секции-и-xref-streams-без-движка)
+через `pdf_source=True` PDF extra не нужен: classic xref и ограниченные
+raw/Flate/LZW/RunLength/ASCIIHex/ASCII85 xref streams (Flate с TIFF 2/PNG 10–15)
+и ObjStm читает собственный код Formats (MIT).
+Цепочки этих фильтров и Flate TIFF/PNG в ObjStm также не требуют PDF/image зависимостей.
+Flate использует stdlib `zlib`; LZW, RunLength и ASCII — собственные ограниченные decoders.
+Косвенные `N`/`First`/`Length` ObjStm и Length обычных исторических кандидатов
+также читает собственный MIT-код: приняты несжатые integer bodies с xref/generation
+проверкой и общими квотами. Базовый установленный wheel проверен только с официальным
+`opendoc-model`, без PDF/image engines; остальные scalar профили явно отклоняются.
+Это не текстовый reader или рендер;
+лицензии и назначение перечисленных PDF-движков сохраняются для их маршрутов.
+Привязка каждого source type-2 occurrence к выбранному xref-контейнеру и decoded
+member также выполняется собственным MIT-кодом без PDF-движка: проверяются контекст,
+generation, offset, index и object number; неподтверждённое владение/активность
+не объявляются доказанными.
+
+Для чтения снимков и транзакционной правки исходного DOCX через `DocxPackage`
+достаточно `docx-native`: собственный ZIP/XML-слой использует только lxml.
+python-docx, Pillow, fontTools и PDF-движки не устанавливаются. Это тот же native API,
+без изменения его ограничений и правил сохранения; богатые `read_document` /
+`write_document` для DOCX требуют прежний extra `docx`.
+Чистая установка проверяет правку Unicode-текста, стили, неизменённые opaque parts,
+метаданные ZIP, отмену и лимит вывода:
+[свидетельство минимального native-профиля](../development/docx-native-profile-evidence.json).
+
+Для [JSON → DOCX flow](../development/pdf-word-flow-contract.md) достаточно `docx`
+(python-docx: MIT, lxml: BSD-3-Clause с дополнительными notices дистрибутива);
+`fonts` добавляет fonttools (MIT) для настоящего subsetting и неохваченных
+профилей программ шрифтов. Для принятого статического TTF-профиля полный шрифт
+встраивается и восстанавливается без fontTools: подтверждены два JSON/DOCX-цикла,
+побайтное равенство программы, текст и ссылки стиля на FONT. Цена этого режима —
+полная программа вместо уменьшенного поднабора. Самому flow-экспорту
+PyMuPDF, pdf2docx, OpenCV и Pillow не нужны. Первоначальный разбор PDF использует
+отдельный PDF-профиль с его лицензией; экспорт JSON не меняет условий этого движка.
+
+CI проверяет установленный `docx`-профиль без `fonts`, fontTools, PDF-движков,
+NumPy и Pillow командой `tools/docx_flow_smoke.py --minimal` через изолированный
+Python. Проверка использует собственный TTF fixture; она не подтверждает
+произвольные variable/legacy программы, все стили Word или полную визуальную
+эквивалентность. Версии и область приёмки — в
+[свидетельстве минимального DOCX-профиля](../development/docx-minimal-evidence.json).
+
+Профили `pdf`, `pdf-rich` и `pdf-docx` ограничивают PyMuPDF веткой `>=1.24,<2`.
+В [метаданных PyMuPDF 2.0](https://pypi.org/pypi/PyMuPDF/2.0/json) обязательны
+NumPy, ONNX Runtime, networkx, PyYAML, pymupdf-layout, pymupdf4llm, psutil и tabulate.
+Эти движки не используются адаптером и не входят в проверенный минимальный
+PDF-профиль. Переход на major 2 требует отдельной проверки API, качества и лицензий.
+
+Экспорт EPUB входит в базовый профиль: собственный writer **MIT**, модель OpenDoc
+**MIT**, ZIP/XML/HTML parsing — стандартная библиотека Python (**PSF License Agreement**).
+EbookLib, lxml и BeautifulSoup для записи не используются. Extra `epub` нужен для импорта;
+богатый и текстовый readers разделяют один ZIP/OPF/XHTML parser. Текстовая проекция
+не требует Pillow, fontTools, tinycss2 или PDF/Office-движков.
+Лицензия каждого такого профиля указана ниже. Для отдельной CI-проверки подключён
+[EPUBCheck](../development/epubcheck.md): BSD-3-Clause самого checker,
+отдельные условия его JAR dependencies, включая MPL-2.0 Saxon-HE; в пакет не включается.
+
+Единственная обязательная зависимость — **OpenDoc Model 0.1.0 (MIT)**: модель,
+ресурсы, единицы, диагностика, JSON и валидация. Исходники приложений не используются.
+Базовый пакет читает и пишет TXT/JSON, читает конечный LaTeX source profile,
+пишет TeX с заголовками, структурными списками, простыми таблицами, текстовыми индексами и TeX-формулами и EPUB без дополнительных
+движков. Собственные LaTeX parser/writer — MIT; стандартная библиотека Python
+имеет PSF License Agreement. LaTeX distribution не включается. Прямоугольные таблицы
+с одним текстовым абзацем на ячейку, inline TeX-формулами и пустыми ячейками
+экспортируются собственным MIT-кодом без python-docx/lxml.
+Chapter и шесть уровней стандартных book/report также читаются/пишутся без
+DOCX-моста; используется существующий Heading закреплённого `opendoc-model`.
+Бинарный инвентарь PNG (chunks/CRC/IHDR) использует собственный MIT-код и стандартную
+библиотеку, без Pillow; декодирование пикселей и WMF/EMF rendering этим не заменяются.
+Чтение конечного исходного `tabular` l/c/r+hline также использует собственный parser
+без TeX engine и дополнительных Python-пакетов; layout проходит через JSON.
+Горизонтальные multicolumn-объединения используют TableCell.column_span и тот же
+собственный код, включая source/JSON/TeX цикл; отдельный TeX-пакет не требуется.
+Вертикальные объединения,
+заданная геометрия и остальные объекты вне нативного TeX-профиля используют прежний DOCX bridge с extra
+`docx`. Списки, текстовые индексы и формулы вне нативного профиля отклоняются:
+bridge не сохраняет их структуру.
+lxml для нативного текстового экспорта со списками не требуется.
+
+Расчёт DrawingML tint/shade и целочисленных lumMod/lumOff реализован собственным MIT-кодом Formats и работает
+в базовом пакете с XML-узлами стандартной библиотеки. Дополнительный color/image
+engine не нужен; чтение и запись самого PPTX по-прежнему используют extra `pptx`.
+Нативная приёмка цветов текста, фигур и серий диаграмм описана в
+[аудите форматов](format-audit.md#нативный-pptx).
+Редактируемые gradient backgrounds используют собственный bounded DrawingML
+parser/writer и уже входящий в `pptx` lxml; image/PDF engine для этого не добавляется.
+Собственные native hints не меняют обязательную зависимость Model и её API.
+
+## Прямые Python-зависимости
+
+Версии ниже — проверенный `uv.lock`; нижние границы extras не фиксируют эти версии
+при обычной установке pip. Для такого окружения нужен собственный lock и аудит.
+
+| Пакет / версия | Extra | Назначение | Лицензия / особенность |
+| --- | --- | --- | --- |
+| opendoc-model 0.1.0 | обязательный | Общий контракт документа; официальный release wheel | MIT |
+| pypdf 6.19.0 | pdf-text | Альтернативное извлечение текста | BSD-3-Clause |
+| PyMuPDF 1.28.2 | pdf-rich, pdf, pdf-docx | Богатый импорт, геометрия, вектор/растр, рендер и PDF writer | AGPL-3.0 или коммерческая лицензия Artifex |
+| pdf2docx 0.5.13 | pdf-docx | Отдельный прямой PDF → DOCX маршрут | MIT; зависит от AGPL/commercial PyMuPDF и OpenCV; upstream помечен как не поддерживаемый активно |
+| pdfplumber 0.11.10 | pdf-layout | Альтернативное извлечение текста/геометрии PDF | MIT; pdfminer.six, Pillow, pypdfium2 и их компоненты |
+| python-docx 1.2.0 | docx | OOXML DOCX, rich reader/writer и DOCX → TeX | MIT; использует lxml |
+| lxml 6.1.3 | docx-native, docx, pptx; транзитивно pdf-docx | XML и OOXML | BSD-3-Clause; bundled libiconv LGPL-2.1 и другие отдельные условия |
+| python-pptx 1.0.2 | pptx | Чтение/создание презентаций и отдельный HTML viewer | MIT; lxml, Pillow, XlsxWriter |
+| Pillow 12.3.0 | pptx; транзитивно pdf-layout | Обработка изображений, fallback и измерения | MIT-CMU; комплект лицензий встроенных библиотек |
+| beautifulsoup4 4.15.0 | html, epub | Разбор HTML/XHTML | MIT; soupsieve/typing-extensions |
+| tinycss2 1.5.1 | html | Токены и разбор статического CSS | BSD-3-Clause; webencodings |
+| fonttools 4.66.1 | fonts | Метаданные шрифтов, покрытие глифов и ограничения embedding | MIT; лицензия самих шрифтов отдельно |
+
+`pdf-text` обслуживает `readers.pdf.read_pdf`, а `read_document(...pdf)` использует
+PyMuPDF и требует `pdf` либо `pdf-rich`. Это не взаимозаменяемые rich readers.
+OCR передаётся фабрикой потребителя; OCR engine и модели не поставляются.
+
+HTML-экспорт исходного MathML проверяет и очищает XML собственным кодом на стандартной
+библиотеке Python: установка lxml для этой операции не требуется. Преобразование
+OMML в MathML и OOXML-маршруты имеют отдельные требования к движкам;
+это изменение не снимает XSL-вопрос с профилей, действительно устанавливающих lxml.
+
+## Разработка и документация
+
+| Группа | Прямые пакеты | Назначение |
+| --- | --- | --- |
+| dev | pytest 9.1.1 (MIT), ruff 0.16.10 (MIT), mypy 2.4.0 (MIT) | Тесты, линтинг и статическая проверка |
+| dev | twine 7.0.0 (Apache-2.0) | Проверка метаданных пакетов; сборку wheel/sdist выполняет `uv build` через изолированный setuptools backend |
+| docs | MkDocs 1.6.1 (BSD-2-Clause) | Статический сайт и локальный поиск; JavaScript поиска имеет отдельные лицензии |
+| build-system | setuptools ≥77 (MIT) | Изолированный backend сборки; точная версия не зафиксирована `uv.lock` |
+
+Транзитивные зависимости всех групп, включая platform markers, перечислены с
+назначением и первичными доказательствами в [автоматическом реестре](../reference/dependencies.md).
+Наличие GPL-файла в development-пакете не означает автоматического перелицензирования
+всего собственного кода: нужно учитывать конкретный компонент и способ использования.
+
+## Внешние программы
+
+| Инструмент | Где используется | Условия |
+| --- | --- | --- |
+| LibreOffice | `office.convert_office_to_pdf` и отдельные converter routes | MPL-2.0, LGPLv3+ и лицензии компонентов; ставится отдельно, не включён в wheel |
+| Pandoc | Отдельный DOCX → LaTeX маршрут и converters | GPL-2.0-or-later; ставится отдельно |
+| DjVuLibre / djvutxt | Текст DjVu | GPL-2.0-or-later; ставится отдельно |
+| Системные шрифты | PDF/DOCX/PPTX render/export | Условия конкретного font asset; проверка fsType не заменяет лицензию шрифта |
+
+Версию и дистрибутив внешнего инструмента фиксирует потребитель/CI. Библиотека
+не скачивает эти программы и не исполняет макросы документов.
+
+## Лицензия каждого профиля
+
+Собственный код библиотеки во всех профилях остаётся **MIT**. Extra — способ выбрать
+зависимости, а не новая лицензия пакета. Таблица указывает условия выбранного состава;
+полный граф и точные notices находятся в [реестре](../reference/dependencies.md).
+
+| Профиль | Лицензии и существенные условия зависимостей | Для открытого проекта |
+| --- | --- | --- |
+| Базовый, TXT/JSON, LaTeX reader/text writer и EPUB writer | MIT у библиотеки и OpenDoc; PSF License Agreement стандартной библиотеки Python | Сохранить MIT/copyright; разрешены permissive и совместимые copyleft-проекты; текстовый TeX и EPUB экспорт без extras |
+| Внешний EPUBCheck acceptance | MIT обёртки; BSD-3-Clause EPUBCheck; отдельные JAR notices, включая MPL-2.0 Saxon-HE; условия выбранной Java runtime | Инструмент CI/разработки, не runtime extra и не часть release assets; сохранять весь upstream distribution |
+| `pdf-text` | MIT + BSD-3-Clause у pypdf | Сохранить notices; это извлечение текста, не полный rich PDF профиль |
+| `pdf`, `pdf-rich` | MIT библиотеки; PyMuPDF AGPL-3.0 либо commercial | Чтение модели, геометрия, рендер и PDF writer. Соблюдать выбранные условия PyMuPDF; lxml и его XSL-ресурсы не устанавливаются |
+| `pdf-layout` | MIT, MIT-0, BSD-3-Clause, Apache-2.0; MIT-CMU Pillow и bundled notices; PDFium BUILD_LICENSES; CC-BY-4.0 документации pypdfium2 | Извлечение через pdfplumber, не универсальный rich reader. Сохранить notices; lxml/PyMuPDF не устанавливаются |
+| `pdf-docx` | MIT/BSD/Apache/PSF, 0BSD/Zlib/CC0; PyMuPDF AGPL-3.0 либо commercial; LGPL FFmpeg/libiconv и GCC runtime exception; условия lxml | Прямой PDF → DOCX; соблюдать AGPL и notices выбранного состава. XSL-исключение остаётся |
+| `html` | MIT, BSD-3-Clause, PSF-2.0 | Сохранить лицензии/copyright; разрешён статический HTML импорт без AGPL-движка |
+| `fonts` | MIT; права на font assets отдельно | Сохранить MIT; встраиваемые шрифты должны иметь соответствующее разрешение |
+| `docx` | MIT, BSD-3-Clause, PSF/ElementTree, Zlib; LGPL-2.1 для bundled libiconv | Сохранить условия lxml и LGPL-компонента; XSL-исключение описано ниже |
+| `docx-native` | MIT библиотеки и Model; BSD-3-Clause, PSF/ElementTree, Zlib и LGPL-2.1 для компонентов lxml | Native snapshots/правки без python-docx; условия lxml и нерешённое XSL-исключение сохраняются |
+| `pptx` | Условия `docx` плюс BSD-2-Clause XlsxWriter и MIT-CMU/third-party notices Pillow | Сохранить весь комплект notices; XSL-исключение остаётся |
+| `epub` | MIT; PSF-2.0 у typing-extensions | Собственный ZIP/OPF/spine/nav/NCX слой; BeautifulSoup/soupsieve для XHTML. Сохранить notices; lxml и EbookLib не требуются |
+| `dev` | MIT/BSD/Apache/PSF, MIT-0, MPL-2.0; docutils Public domain/BSD и GPL у отдельных tooling-файлов | Это инструменты разработки; их применение не назначает всему выходному wheel их лицензии. При распространении самого окружения учитывать все компоненты |
+| `docs` | BSD-2-Clause MkDocs; MIT/BSD/Apache и MPL-2.0 зависимостей; MIT и MPL-1.1 JavaScript поиска | Для публикуемых assets сохранить headers/полные license texts и доступность MPL source; это сделано на Pages |
+| build-system | MIT setuptools; версия выбирается из `>=77` при изолированной сборке | Фиксировать и проверять точный backend при распространении сборочного окружения |
+| Все extras вместе | Объединение перечисленных условий, включая AGPL и XSL-исключение | Не обозначать весь комплект только MIT; применять требования фактически используемых/распространяемых компонентов |
+
+**XSL-исключение:** `RNG2Schtrn.xsl` и `XSD2Schtrn.xsl` в lxml 6.1.3 не имеют
+подтверждённого разрешения на распространение. Общая BSD-лицензия lxml прямо выделяет
+их как исключение. Они входят в установленный lxml wheel, но не используются и не
+копируются в wheel OpenDoc Formats. Открытость проекта не устраняет эту неопределённость;
+перед включением полного lxml в готовую сборку решить [OF16](../development/todo.md).
+Подробные доказательства: [статус XSL](../development/lxml-xslt.md).
+
+## Совместимость открытых проектов
+
+Цель библиотеки — использование в открытых проектах, в том числе в экосистеме okidoki.
+**AGPL — свободная лицензия; её наличие само по себе не является дефектом зависимости.**
+Открытые проекты могут использовать PDF/EPUB, соблюдая её условия. При этом ярлыка
+«open source» недостаточно: GPL-2.0-only, собственная permissive лицензия и AGPL-3.0
+дают разные условия для объединённой программы.
+
+MIT позволяет включать собственный код в совместимую AGPL-сборку с сохранением MIT
+уведомлений. Это не требует автоматически менять лицензию всех самостоятельно
+распространяемых исходников библиотеки. При распространении охватываемой AGPL
+программы нужны corresponding source, права получателей и лицензии компонентов;
+для модифицированной версии с удалённым сетевым взаимодействием применяется §13.
+Само размещение кода на GitHub и установка движка отдельно не заменяют эти требования.
+Первичный текст: [AGPL-3.0](https://www.gnu.org/licenses/agpl-3.0.html).
+
+Направление развития зависимости — выбор совместимых открытых движков, устранение
+неясных прав и уменьшение лишнего состава установки. Переписывание AGPL-движков
+только из-за copyleft не является обязательной задачей. Конкретные пункты —
+[TODO](../development/todo.md).
+
+## EPUB без лишнего движка
+
+`epub` использует собственный контейнер стандартной библиотеки. Он сохраняет порядок
+spine, метаданные title/language/identifier, оглавление EPUB 3 nav и EPUB 2 NCX,
+исходные XHTML/CSS и изображения. Archive safety, проверки локальных путей и XML
+исключают выход за архив, сетевые обращения и объявления сущностей.
+Таблицы и MathML имеют конечный семантический профиль; nonlinear главы включаются
+явно. Полнота XHTML/CSS и fixed layout остаётся задачей OF08.
+
+Для импорта устанавливается только `opendoc-formats[epub]`. Контейнер разбирается
+собственным кодом, XHTML — BeautifulSoup; EbookLib не входит ни в один профиль.
+Используется `backend="native"`. Значения backend вне этого профиля отклоняются
+с явной ошибкой; отдельного EbookLib-маршрута нет.
+
+## Минимальные PDF-профили
+
+| Задача | Профиль | Публичный маршрут |
+| --- | --- | --- |
+| Текст через pypdf | `pdf-text` | `readers.pdf.read_pdf` |
+| Модель, геометрия, рендер, PDF export | `pdf` или `pdf-rich` | `read_document`, `PdfDocument`, `read_pdf_geometry`, `write_document` |
+| Текст/геометрия через pdfplumber | `pdf-layout` | `readers.pdf.read_pdf` |
+| Прямой PDF → DOCX | `pdf-docx` | `Pdf2DocxConverter` |
+| PDF → DOCX через PyMuPDF | `pdf-rich` + `docx` | `PyMuPdfConverter` |
+| Все альтернативные PDF-маршруты | `pdf,pdf-text,pdf-layout,pdf-docx` | Явный состав extras |
+
+`read_pdf` выбирает установленный маршрут в порядке pdfplumber → pypdf → PyMuPDF;
+отсутствующие альтернативы пропускаются. `validate_pdf` и `get_pdf_info` используют
+собственный небольшой слой выбора доступного движка: дополнительный pypdf для
+`pdf`/`pdf-rich` или `pdf-layout` не нужен. Извлечение Unicode Info полей и отказ
+для зашифрованных/повреждённых источников проверены для каждого отдельного движка.
+
+Прямой `Pdf2DocxConverter` требует `pdf-docx`; табличный альтернативный reader —
+`pdf-layout`; текстовый pypdf reader — `pdf-text`. Если нужны все альтернативы,
+они выбираются явно: `opendoc-formats[pdf,pdf-text,pdf-layout,pdf-docx]`.
+`read_document` для PDF требует PyMuPDF и явно сообщает отсутствие backend;
+установка `pdf-layout` или `pdf-text` не делает их равнозначными rich reader.
+Разделение не меняет алгоритмы и качество выбранного движка. Конечный профиль
+нативного векторного экспорта описан в [руководстве](formats.md#векторные-ресурсы-pdf);
+остальные пробелы спецификации остаются отдельными задачами в TODO.
+Изолированные проверки профилей в CI используют constraints из `uv.lock`, чтобы
+состав установки соответствовал проверенному лицензионному реестру.
+
+Нативная PDF-инспекция (`support.inspection.inspect_path`) использует только
+`pdf-rich`: проверку шифрования выполняет PyMuPDF, имена AcroForm обходит
+собственный ограниченный код. pypdf здесь не импортируется. Он остаётся
+полноценным независимым движком профиля `pdf-text`, поэтому удалять пакет из
+этого профиля без замены самого извлечения текста нельзя.
+
+## Для чего нужны оставшиеся зависимости
+
+| Зависимость | Использование в библиотеке | Условие замены |
+| --- | --- | --- |
+| BeautifulSoup | Структурный HTML и XHTML EPUB, обход смешанного содержимого | Равноценный разбор документов и сохранение порядка/диагностики; это не пара utility functions |
+| tinycss2 | CSS rules/declarations, selectors и значения цвета | Замена одного color helper не устраняет зависимость CSS parser |
+| python-docx и lxml | Нативное OOXML, relationships, стили, drawings и пакет DOCX | Полная приёмка нужного OOXML-профиля; спорные XSL-ресурсы рассматриваются отдельно в OF16 |
+| python-pptx и Pillow | Пакет/объекты презентаций; WMF/EMF → PNG в HTML viewer | Сохранение форматов/визуального результата; Pillow также требуется самому python-pptx, удаление одной прямой строки не убирает его из установки |
+| fontTools | Fallback для неподдержанных профилей names/cmap/metrics/GSUB и реальное subsetting; принятые sfnt/TTC-профили читаются собственным кодом | Расширять конечные native-профили с равенством прежнему reader; удаление пакета требует также равноценной замены subsetting |
+| PyMuPDF | PDF text/layout/graphics, изображения, формы и рендер | Сопоставимая полнота PDF и независимый визуальный корпус; регулярные выражения такой заменой не являются |
+| pypdf, pdfplumber, pdf2docx | Отдельные text/layout/converter профили | Приёмка соответствующего маршрута; permissive pdf-text сохраняет отдельные условия лицензии |
+
+Сокращение шрифта сохраняет прежние настройки fontTools и все copyright/license
+name records. Проверки отмены выполняются перед чтением программы и между
+открытием, populate, subset, save и закрытием. Отмена не превращается в возврат
+полного шрифта; обычная ошибка неподдержанного шрифта сохраняет прежний fallback.
+Открытый `TTFont` закрывается также при ошибке и отмене. Сам сторонний вызов
+внутри этапа не прерывается; сигнал проверяется после его возврата.
+
+Успешные результаты subsetting переиспользуются в пределах процесса при точном
+совпадении исходных bytes, набора символов и полного снимка настроек.
+Смена активных entrypoints движка сбрасывает прежнее поколение кэша.
+На повторном запросе пропускаются `populate/subset/save`; первичное построение
+и конфигурация по-прежнему используют fontTools из extra `fonts`.
+LRU удерживает не более 32 записей и 32 MiB программ, результатов и учтённых
+символьных ключей. Эти пределы относятся к сохраняемым данным кэша;
+выделения памяти самого subsetter остаются отдельной задачей C-LIMIT-01.
+Путь к файлу не является ключом: программа читается заново, смена bytes или
+настроек даёт новый расчёт. `subsettable=False` сохраняет полный шрифт.
+Ошибка не кэшируется; отмена при lookup не подавляется, а отмена после вставки
+удаляет новую запись. Неизвестные объекты настроек обходят кэш и сохраняют
+прежний engine-путь. [Проверки кэша](../development/font-subset-cache-evidence.json).
+После POSIX fork дочерний процесс получает новый кэш с теми же лимитами,
+сохраняя независимость от locks других потоков родителя. Реальный fork-тест
+добавлен для POSIX CI; на Windows он пропускается, сброс состояния проверен отдельно.
+
+Таблица описывает реальные вызовы в readers, writers, fonts и PPTX HTML viewer.
+Для расчёта baseline в Word простой standalone TTF/OTF читается собственным кодом:
+из `head`/`hhea` извлекаются `unitsPerEm`, ascent/descent и lineGap. На этом пути
+fontTools не импортируется. Прежняя формула и выбор таблиц сохраняются;
+это не новая полная модель метрик Word. Для сжатых/legacy программ и выхода
+за конечный native-профиль остаётся прежний необязательный reader fontTools.
+Лимиты sfnt-инспектора ограничивают собственный путь; вызовы fontTools требуют
+отдельного контроля работы и не объявляются ограниченными этим бюджетом.
+Отмена не превращается в неизвестные метрики и не запускает fallback.
+Кэш baseline привязан к точным байтам программы, а не к пути/mtime: файл читается
+повторно перед lookup. Замена файла, удаление и временная ошибка не возвращают
+устаревшие метрики; одинаковые программы по разным путям могут делить результат.
+LRU сохраняет не более 64 программ размером до 1 MiB каждая (до 64 MiB исходных
+байтов плюс небольшой overhead). Более крупный снимок декодируется без кэширования;
+выход за snapshot-budget сохраняет прежний lazy-file fallback. Это не квота
+внутренней памяти fontTools. Ошибки не кэшируются; отмена проверяется до чтения,
+внутри декодирования и перед возвратом, включая попадание в кэш. Для ограниченного
+снимка fallback использует те же байты через `BytesIO`, без повторного открытия пути.
+[Проверки актуальности и отмены](../development/font-metrics-cache-evidence.json).
+`fonts` extra сохраняется: неохваченные профили metadata/cmap, GSUB/ToUnicode
+вне конечного профиля и subsetting в других операциях используют движок. Удаление одного импорта из
+обычного baseline-пути не означает удаления пакета из этих профилей.
+
+Выбор family/full/PostScript/typographic имён встроенной standalone-программы
+также использует собственное чтение `name` version 0/1 для Unicode, Windows UTF-16,
+ShiftJIS/GB2312/Big5/EUC-KR/Johab, однобайтовых Macintosh и ISO ASCII/UTF-16BE/Latin-1.
+Для Mac Roman учитываются языковые варианты Icelandic/Turkish/Croatian/Latin-2/Romanian;
+отдельно читаются Mac Greek/Cyrillic/Latin-2/Turkish/Icelandic. Это стандартные
+кодеки Python, собственные таблицы перекодирования не добавлены.
+Для Macintosh Japanese (encoding 1), Traditional Chinese (2), Korean (3) и
+Simplified Chinese (25) стандартная часть читается кодеками Python
+`x_mac_japanese`, `x_mac_trad_chinese`, `x_mac_korean`, `x_mac_simp_chinese`
+без fontTools. Специальные Macintosh extension bytes, не декодируемые этими
+кодеками, сохраняют прежний fallback. Это конечный профиль чтения имён,
+без изменения glyph programs, shaping, embedding rights или subsetting.
+Эквивалентность проверена перебором всех строго декодируемых одно- и двухбайтовых
+единиц и полным чтением собственных faces с запретом импорта fontTools;
+подробности — в [свидетельстве CJK names](../development/font-cjk-names-evidence.json).
+Порядок aliases и выбор
+языковой записи сохраняются. В version 1 проверяются массив language tags,
+их UTF-16 и ссылки name records; BCP 47 не превращается в новую locale-политику.
+Для каждого ID выбирается первая декодируемая запись английского Mac либо
+Windows US в исходном порядке; при её отсутствии — последняя декодируемая запись.
+Typographic family (ID 16) имеет приоритет над family (ID 1); full name (ID 4)
+обязателен. Пустая английская запись сохраняет прежнюю семантику проверки.
+Сжатые программы, неизвестные versions/кодировки и случаи восстановления
+повреждённой строки передаются прежнему fontTools reader. Native-путь ограничен
+4096 name records, 4096 language-tag records и 8 MiB суммарного декодирования
+имён/тегов с повторным учётом общих строк;
+бюджет всего sfnt действует отдельно. Эти лимиты не ограничивают сторонний fallback.
+Отмена проверяется в обходе и на границах fallback. Таблица имени и все её notices
+остаются в исходной программе: чтение aliases не удаляет copyright и не меняет
+права embedding. Выходящие за native-профиль metadata/cmap,
+GSUB/ToUnicode вне конечного профиля и subsetting по-прежнему
+используют fontTools; extra `fonts` не удалён.
+
+В resolver покрытие символов по выбранной Unicode `cmap` 0/2/4/6/12/13 читается
+собственным кодом. Приоритет платформ/кодировок и выбор первого подходящего
+вхождения сохранены; glyph ID 0 не считается поддержкой символа. Format 0 читает
+256 byte IDs, format 6 — ограниченный BMP-массив uint16 IDs, включая U+FFFF;
+пустой массив допустим. Лишние/недостающие entries и выход за BMP сохраняют
+прежний engine fallback. Заголовки
+невыбранных legacy/variation таблиц проверяются без интерпретации их mappings.
+Неподдержанная выбранная таблица, неоднозначная структура или превышение
+native-бюджета передаётся прежнему `getBestCmap`. Native-путь ограничивает работу
+131072 объявленными codepoints, включая повторные проверки и нулевые mappings;
+этот бюджет не ограничивает сторонний fallback.
+Для ограниченного входа cmap и метаданные используют один снимок bytes; большой
+вход сохраняет прежний lazy-file маршрут. Объявленная cmap не доказывает наличие
+корректных outlines, shaping, ligatures или поддержки variation sequences.
+
+Format 2 проверяет 256 high-byte keys, массив subheaders, байтовые диапазоны
+и адреса glyph arrays. Поддержаны subheader 0 для single-byte codes, double-byte
+codes, общие массивы и delta modulo 65536; нулевой исходный или итоговый glyph ID
+не становится покрытием. Конечный профиль требует key 0 = 0 и keys, кратных 8;
+другие структуры сохраняют engine recovery. Только ранее выбранная Unicode
+запись даёт Unicode coverage: наличие format 2 в Windows ShiftJIS не запускает
+транскодирование. [Структура формата](https://learn.microsoft.com/en-us/typography/opentype/spec/cmap#format-2-high-byte-mapping-through-table),
+[проверки](../development/font-cmap2-evidence.json).
+
+Для статического standalone TTF/OTF полный набор полей `FontFace` собирается
+собственным кодом без импорта fontTools: names, cmap, `head`/`maxp`, `OS/2` 0–5,
+`post` 1/2/3. Проверяются размеры и версии таблиц, соответствие glyph-name array
+в post/maxp и границы Pascal strings. Флаги `fsType`, weight/width class,
+unitsPerEm, средняя ширина и признак ненулевого italicAngle сохраняют прежнюю интерпретацию.
+Для Apple `post` format 4 метрики и полный `FontFace` также читаются без fontTools,
+если после 32-байтового заголовка есть ровно один `uint16` на glyph из `maxp`.
+Printer character codes остаются непрозрачными: они не подменяют Unicode `cmap`,
+в том числе при `0xFFFF`, повторах и значениях из surrogate-диапазона.
+Размер вне этого профиля сохраняет прежнее восстановление fontTools.
+Это профиль метаданных, без выполнения Apple AAT. Для static TrueType с `post` 4
+также принят конечный GSUB/ToUnicode профиль ниже.
+[Спецификация Apple](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6post.html),
+[проверки метрик post 4](../development/font-post4-metrics-evidence.json).
+Нулевой average width сохраняет прежний fallback 500. Отсутствующая таблица
+прав не превращается в новое native-разрешение: используется прежний reader.
+Сжатые программы, неподтверждённые collection profiles, неизвестная версия либо структура
+вне этого профиля сохраняют fontTools fallback. Пакет `fonts` нужен для этих
+случаев, сложного GSUB/ToUnicode и настоящего subsetting; декларация cmap не подтверждает
+валидность outlines. Изменения шрифта и его лицензионных notices не выполняются.
+
+Для variable TTF с поддержанным `fvar` resolver также читает базовые поля без
+fontTools, сохраняя результат прежнего reader. Структура осей и instances
+проверяется отдельно; Fixed 16.16 остаётся точным integer. Named instance и
+произвольные координаты не выбираются, MVAR/HVAR/gvar не интерполируются.
+`read_face_metrics(..., default_variations=True)` явно включает этот профиль;
+без флага прямой reader остаётся статическим. CFF2, неподтверждённый fvar и выход
+за native-бюджет используют прежний engine-путь. Это не полная поддержка variable
+font layout; extra `fonts` сохраняется для оставшихся операций.
+
+Для TTC 1.0/2.0 собственный reader принимает явный `face_index` в
+`inspect_sfnt`, `read_face_metrics`, `read_program_names` и Unicode cmap helpers.
+Таблицы читаются по абсолютным адресам исходной коллекции, включая shared payload;
+программа не пересобирается. `_read_face` сохраняет прежний выбор face 0.
+В 15 системных TTC весь face совпал с fontTools, 14 прочитаны без его импорта;
+коллекция больше 32 MiB сохранила прежний lazy-file fallback.
+Обход системных каталогов по-прежнему отбирает TTF/OTF; автоматическое подключение
+всех коллекций, выбор других faces и embedding TTC этим изменением не добавлены.
+DSIG проверяется только по декларации диапазона, без проверки подписи.
+Границы и доказательства — в [приёмке TTC](../development/font-collection-evidence.json).
+
+Восстановление ToUnicode для PDF, созданного Story, использует собственный
+`fonts.sfnt_ligatures.read_ligature_mapping` для статического standalone TrueType
+с `post` 1/2/3/4 и GSUB 1.0 либо 1.1 с нулевым `featureVariationsOffset`.
+В [спецификации GSUB](https://learn.microsoft.com/en-us/typography/opentype/spec/gsub#gsub-header)
+этот offset допускает NULL. Для 1.1 проверяются все 14 байтов заголовка, а ссылки
+не могут указывать внутрь его расширенной части. Ненулевой offset сохраняет
+прежний engine-путь; вариативные правила не игнорируются.
+Поддержаны ligature lookup 4, extension 7→4 и coverage 1/2
+при нулевых lookup flags. Числовые IDs читаются через собственный cmap 0/2/4/6/12/13;
+имена глифов не строятся. Структура post-2 проверяется существующим собственным
+face reader: numGlyphs/maxp, индексы и границы Pascal strings. Для этой операции
+достаточно числовых glyph IDs; восстановление имён и их aliases не требуется.
+На повторяющихся/нестандартных именах и неоднозначных правилах результат
+сравнивается с прежним fontTools reader. Другие post versions и повреждённые
+post-2 структуры сохраняют fallback. Формат таблицы описан в
+[спецификации post](https://learn.microsoft.com/en-us/typography/opentype/spec/post#version-20).
+Для каждого компонента нужен единственный Unicode,
+для результата — единственная последовательность и отсутствие собственного cmap
+encoding; алиасы, неоднозначные и неизвестные компоненты не дают новой mapping.
+Это прежняя политика отбора кандидатов по всем lookups, без shaping и выбора
+script/language features. Проверяются границы и индексы metadata; native-бюджеты:
+GSUB ≤ 8 MiB, ≤ 1000 lookups, ≤ 100000 ligatures, ≤ 262144 word/coverage операций,
+2–32 компонента. Повторные ссылки учитываются повторно; работает отмена.
+Другие post/GSUB/lookup profiles, CFF/variations и выход за бюджет сохраняют
+прежний fontTools fallback; его внутренний расход этими квотами не ограничен.
+Для `post` 1.0 используются те же числовые glyph IDs: стандартные Macintosh names
+не нужны для связи cmap → GSUB. Полный 32-байтовый заголовок и число глифов ≤ 258
+проверяются общим face reader. На собственных шрифтах результат совпадает с
+fontTools; после сохранения PDF текст восстанавливается без изменения пикселей.
+Проверки описаны в [свидетельстве post 1.0](../development/font-post1-evidence.json).
+Для Apple `post` 4 используется та же числовая связь cmap → GSUB; printer codes
+не интерпретируются как Unicode и не служат именами глифов. Повторы, `0xFFFF`,
+surrogate-like codes и искусственные glyph-name aliases fontTools не меняют
+результат принятого профиля. Длина массива должна точно соответствовать `maxp`;
+восстанавливаемые движком отклонения остаются на fallback. Собственный MIT fixture
+`ligature-post4.ttf` проверяет публичный PDF writer, повторный импорт и JSON-циклы
+в установленном окружении без fontTools.
+[Приёмка post 4 GSUB](../development/font-post4-gsub-evidence.json).
+В распознанном standalone sfnt без GSUB fontTools для этой операции не нужен.
+Соседние SingleSubst lookup 1 (formats 1/2, в том числе 7→1) проверяются
+собственным reader: coverage, границы, число и IDs выходных глифов, delta modulo
+65536 и единый тип extension subtables. Они не добавляют Unicode mappings:
+сохраняется прежняя политика обхода лигатур, а выполнение подстановок и shaping
+остаются у PDF-движка. Поэтому наличие поддержанного SingleSubst больше не
+требует fontTools; flags и неподдержанные lookup profiles сохраняют fallback.
+[Спецификация SingleSubst](https://learn.microsoft.com/en-us/typography/opentype/spec/gsub#lookup-type-1-subtable-single-substitution),
+[проверки смешанного профиля](../development/font-mixed-gsub-evidence.json).
+Аналогично проверяются соседние MultipleSubst (type 2) и AlternateSubst (type 3),
+format 1, включая extension 7→2/3 и общие массивы Sequence/AlternateSet.
+Проверяются offsets, coverage count/order, размеры и каждый выходной glyph ID;
+повторные ссылки повторно расходуют общий word/coverage budget. Удаление через
+пустой MultipleSubst сохраняет прежний fallback. Эти таблицы не выполняются
+собственным reader и не создают новых Unicode mappings. Отмена внутри выходных
+последовательностей не перехватывается fallback. На собственных PDF проверены
+восстановленный текст после перезагрузки и неизменность пикселей.
+[Спецификация MultipleSubst/AlternateSubst](https://learn.microsoft.com/en-us/typography/opentype/spec/gsub#lookup-type-2-subtable-multiple-substitution),
+[проверки последовательностей](../development/font-sequence-gsub-evidence.json).
+Соседний ReverseChainSingleSubst type 8 format 1, включая extension 7→8,
+тоже проверяется собственным кодом: input/backtrack/lookahead coverage, offsets,
+совпадение числа подстановок с input coverage и каждый выходной glyph ID.
+Общие coverage допускаются и повторно расходуют тот же бюджет; отмена внутри
+контекста выходит без вызова fontTools. Reader не применяет обратные подстановки
+и не выводит из них Unicode: прежний алгоритм кандидатов лигатур сохраняется.
+Нулевые flags обязательны; непринятые contextual profiles, CFF/variations и другие
+непринятые профили остаются на прежнем fallback. Это не собственный shaping.
+Собственный MIT fixture `ligature-reverse.ttf` проверяет полный FONT resource,
+публичный PDF writer, текст, пиксели и два JSON-цикла без fontTools.
+[Спецификация type 8](https://learn.microsoft.com/en-us/typography/opentype/spec/gsub#lookup-type-8-subtable-reverse-chained-contexts-single-substitution),
+[проверки обратного контекста](../development/font-reverse-gsub-evidence.json).
+Контекстные types 5/6 format 3 (включая 7→5/6) также обходятся собственным
+структурным reader: coverage каждого input/backtrack/lookahead положения,
+offsets, размер массива SequenceLookupRecords и ссылки в LookupList проверяются
+без исполнения вложенных lookups. Общие coverage повторно расходуют бюджет;
+ссылки не обходятся рекурсивно. Порядок записей сохраняется; контекстные таблицы
+не добавляют Unicode-кандидатов. Input sequence должна быть непустой,
+sequenceIndex — внутри исходной input sequence; случаи после её расширения,
+непринятые форматы и ненулевые flags остаются на прежнем fallback. Это граница чтения
+доказательств для ToUnicode, а не проверка результатов применения подстановок.
+Два собственных MIT fixtures проверяют публичный PDF export без fontTools,
+полные программы, текст, пиксели и два JSON-цикла.
+[Спецификация контекстов](https://learn.microsoft.com/en-us/typography/opentype/spec/chapter2#sequence-context-format-3-coverage-based-glyph-contexts),
+[приёмка types 5/6](../development/font-context-gsub-evidence.json).
+Для types 5/6 также принят format 1 с явными glyph IDs, включая extension 7→5/6.
+Собственный reader проверяет coverage и соответствующее число RuleSet,
+NULL RuleSet, offsets наборов/правил, input/backtrack/lookahead glyph IDs и
+SequenceLookupRecords. Общие RuleSet и повторные ссылки на правила разрешены,
+каждое обращение расходует бюджет заново; рекурсивного исполнения lookups нет.
+Unicode policy и границы sequenceIndex те же, что у format 3. Несовпадение числа
+coverage/RuleSet остаётся на fallback, где сохраняется прежнее восстановление.
+Ненулевые flags и неизвестные профили не объявлены принятыми.
+Два собственных MIT fixtures проходят PDF export/re-import и JSON-циклы без
+fontTools с сохранением полных программ, текста и пикселей.
+[Спецификация правил](https://learn.microsoft.com/en-us/typography/opentype/spec/chapter2#sequence-context-format-1-simple-glyph-contexts),
+[приёмка format 1](../development/font-context-rules-evidence.json).
+Контексты types 5/6 format 2 и extension 7→5/6 также читаются собственным кодом.
+Проверяются ClassDef formats 1/2, границы glyph IDs, порядок и пересечения
+диапазонов, исходный coverage, индекс класса первого глифа в RuleSet array,
+классовые правила и SequenceLookupRecords. Класс 0 включает неописанные глифы;
+class labels — отдельные uint16 значения, они не трактуются как glyph IDs или
+Unicode. Допускаются NULL RuleSet и общие ClassDef; повторные ссылки и расширение
+диапазонов расходуют общий бюджет. Отмена внутри ClassDef не вызывает fallback.
+Lookup execution и shaping остаются у движка; контекстные классы не дают новых
+Unicode mappings. NULL ClassDef, непроверенные профили и sequenceIndex после
+расширения input sequence сохраняют прежний fallback. Два собственных MIT
+fixtures подтверждают публичный PDF export/re-import и два JSON-цикла без
+fontTools с теми же полными программами, текстом и пикселями.
+[Спецификация классовых контекстов](https://learn.microsoft.com/en-us/typography/opentype/spec/chapter2#sequence-context-format-2-class-based-glyph-contexts),
+[приёмка format 2](../development/font-context-classes-evidence.json).
+PDF-код меняет только Unicode map
+в прежнем конечном Identity-H/CIDFontType2/Identity-CIDToGID профиле; glyph programs
+и shaping остаются прежними. В установленном PDF-профиле с одним PyMuPDF проверены
+`fi`/`ti`, сохранённый PDF после перезагрузки и совпадение пикселей без fontTools.
+Публичный PDF writer также использует `FontReference` и FONT resources для
+standalone TTF/OTF (`font/ttf`, `font/otf`, face `None` или `0`). Выбранная программа
+встраивается целиком без fontTools и subsetting: сохраняются байты, glyph programs
+и copyright/license records. Размер PDF при этом может быть больше, чем с subset.
+Встроенный в готовый PDF файл проверяется по SHA-256 исходной программы;
+совпадения family/PostScript name недостаточно. Два разных файла с одинаковыми
+именами получают разные внутренние aliases и сохраняют отдельные paint bindings.
+Недоступная ссылка, запрещённое встраивание, непокрытые символы и неоднозначный
+выбор дают ошибку до замены целевого файла. Общий объём FONT resources проверяется
+до материализации по `DocumentLimits.max_embedded_bytes`; отмена освобождает
+временные файлы. Исходная модель не меняется.
+
+Свежий установленный `pdf`-профиль только с PyMuPDF проверяет публичный экспорт
+собственных TTF и OTF без fontTools, два JSON-цикла, текст, идентичность полных
+программ и стабильность пикселей в MuPDF. Этот gate включён в локальные изменения CI.
+Это конечная проверка собственных fixtures, а не приёмка всех OpenType/shaping
+профилей: raw CFF, коллекции и другие wrappers остаются в C-FONT-01. Для системных
+шрифтов сохраняется прежний путь subsetting с необязательным fontTools.
+Подробности — в [свидетельстве PDF-шрифтов](../development/pdf-resource-font-evidence.json).
+
+Семантический HTML writer использует тот же собственный reader и `FontReference`
+для standalone TTF/OTF. Полные программы включаются в data URI без fontTools,
+subsetting и системной подстановки; исходные copyright/license записи сохраняются.
+Для двух разных программ с одинаковыми именами строятся отдельные CSS aliases.
+Права, glyph coverage, неизвестные ссылки, неоднозначность, лимит embedded bytes
+и отмена проверяются до публикации. В CSS используются стандартные
+[`format("truetype")` / `format("opentype")`](https://www.w3.org/TR/css3-fonts/#src-desc).
+Размер HTML включает полную программу и накладные расходы base64.
+
+Этот конечный экспорт проверен из установленного базового пакета только с Model,
+без `fonts`, BeautifulSoup, tinycss2, Pillow, Office и PDF-движков.
+Браузерная проверка подтверждает загрузку собственных TTF/OTF и разные ширины
+двух одноимённых TTF. Это не приёмка всех шрифтов или произвольного shaping.
+HTML reader по-прежнему использует зависимости extra `html`.
+Границы и результаты — в [свидетельстве HTML-шрифтов](../development/html-resource-font-evidence.json).
+
+Обратный HTML reader сохраняет статические `@font-face` с одним quoted family,
+base64 data URI `font/ttf`/`font/otf`, weight normal/400/bold/700 и style normal/italic.
+Один URL может иметь `format("truetype")`/`format("opentype")` или не иметь hint.
+Программа проверяется собственным sfnt-инспектором и сохраняется как FONT resource;
+текст получает явную `FontReference` с face 0. Идентичные payload не дублируются,
+конфликтующие программы одного family/variant не угадываются. Другие descriptors,
+unicode-range, local/network sources и варианты вне профиля диагностируются;
+исходный HTML сохраняется по общей preservation policy. Программы с fvar/CFF2
+не связываются как статические шрифты. Сеть не загружается.
+Это профиль сохранения программы и привязки, не проверка glyph outlines или shaping.
+
+Бюджет — не более 1024 font-face правил и `DocumentLimits.max_embedded_bytes`;
+размер payload проверяется до декодирования base64, есть контроль отмены.
+Общий HTML input по-прежнему ограничен 10 MiB; эти ограничения не заменяют
+внутренние квоты сторонних CSS/HTML-парсеров. В установленном extra `html` без
+fontTools проверены два полных цикла HTML → Model → JSON → HTML для собственных
+TTF и OTF. Подробности — в [свидетельстве импорта](../development/html-font-import-evidence.json).
+
+Небольшие вспомогательные слои отделены от полноценных движков; удаление зависимости
+проверяется установленным минимальным профилем. Открытые замены и лицензионные
+вопросы находятся только в [TODO](../development/todo.md).

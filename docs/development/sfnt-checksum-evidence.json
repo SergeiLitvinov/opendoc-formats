@@ -1,0 +1,61 @@
+{
+  "scope": "Standalone sfnt table and whole-file checksum observations; no full structure/glyph/render validity claim",
+  "production_model": "opendoc-model==0.18.1",
+  "published": false,
+  "dependencies_changed": false,
+  "native_checksum_tests_passed": 27,
+  "affected_tests_passed": 243,
+  "test_selection": [
+    "tests/test_anatomy.py",
+    "tests/test_anatomy_cfbf.py",
+    "tests/test_anatomy_content_types.py",
+    "tests/test_anatomy_epub.py",
+    "tests/test_anatomy_opc.py",
+    "tests/test_anatomy_sfnt.py",
+    "tests/test_sfnt_inspection.py",
+    "tests/test_sfnt_checksums.py"
+  ],
+  "source_files_sha256": {
+    "src/opendoc_formats/native/sfnt.py": "dad955286ecf78d4675298137cc3cb2922d777ae3088201800078307e8b3d467",
+    "tests/test_sfnt_checksums.py": "a7bbe40068cb901761c54dcc12d74a04b2190d29893c3f1015390abfacf20a60",
+    "tools/package_smoke.py": "37ea83468fde01158aed4ef03e668db974953677485cf79e7a3f727b4cd531c2",
+    "src/opendoc_formats/anatomy.py": "ab253abdff95a57b821169cdcb5d6eaf8c5f7cb7fb4b7432728c492f6aa1c2f6",
+    "tools/document_anatomy.py": "66e65fefb41229706e3a2098aef014f15053196ebebe3bb5412581438d46aefd",
+    "tests/test_anatomy_sfnt.py": "ebb3492b01037a79e9b1a72200b83cb949d5125bff884359871b9771fba468f6"
+  },
+  "installed_base_wheel": {
+    "sha256": "05855c8e33e26d8fbb8d9213c899ac0df869d394edf3d0962edecd97980fcd48",
+    "python_files": 211,
+    "all_source_wheel_installed_files_match": true,
+    "optional_font_pdf_pillow_engines_absent": true,
+    "package_smoke_passed": true,
+    "pip_check_passed": true,
+    "common_anatomy_checksum_api_passed": true
+  },
+  "verified": [
+    "TTF/OTTO unsigned big-endian sums, conceptual zero padding, overflow and 64 KiB boundaries",
+    "head checksum excludes adjustment; whole-file checksum includes actual padding and trailing bytes",
+    "Damaged bytes remain available, no source repair",
+    "Missing head yields unknown adjustment validity; truncated adjustment rejected",
+    "Existing input/table/aggregate table budgets and cancellation inside large checksum",
+    "Owned real font accepted without fontTools imports"
+  ],
+  "limitations": [
+    "Standalone only; no TTC/WOFF/WOFF2",
+    "Common Anatomy checksum audit is explicit opt-in; generic default remains unchanged",
+    "Matching sums do not prove padding/overlap/glyph/structure correctness or license rights",
+    "No removal of fontTools for subsetting and unknown profiles"
+  ],
+  "common_api": {
+    "option": "sfnt_checksums=True",
+    "default": false,
+    "strict_boolean": true,
+    "other_containers_rejected": true,
+    "same_source_snapshot_for_capture_and_audit": true,
+    "common_limits_preserved": true,
+    "cancellation_scope_inherited_and_restored": true,
+    "cli": "--sfnt-checksums",
+    "cli_compare_and_no_payloads_passed": true,
+    "focused_sfnt_anatomy_tests_passed": 79
+  }
+}

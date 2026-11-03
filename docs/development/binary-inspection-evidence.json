@@ -1,0 +1,78 @@
+{
+  "scope": "Finite physical inspection acceptance, not full format semantics or nested aggregate traversal",
+  "platform": "Windows",
+  "python": "3.12.13",
+  "production_model": "opendoc-model==0.18.1",
+  "dependencies_changed": false,
+  "source_files_sha256": {
+    "src/opendoc_formats/anatomy.py": "0509de76da02fbec4a3cfdc06731c1158adc15da76ff237657613b73e6a39cf5",
+    "src/opendoc_formats/native/cfbf.py": "a81badcc8f64553584ea8f0812598fdde8d6ba6e82dac9c1d6a1dda7e8e4025d",
+    "src/opendoc_formats/native/sfnt.py": "060d3634a224e62605521b68c4c00214e01b113189f18c57fce8e3caef6e0ce2",
+    "src/opendoc_formats/export.py": "91e9dd19817e7d9922326058d63e02501f90ff3fbe14d8cfcbb126d94c27d9be",
+    "tests/test_anatomy_cfbf.py": "dffe031323708f25e6bbc4d6a399535cedfddb3e866fd5e0aeaeeb9697813050",
+    "tests/test_sfnt_inspection.py": "6724e63066af5e6dd1ab7bf9585580790344dfa172da4bdc35a6cbe251fd5a8b",
+    "tests/test_anatomy_sfnt.py": "f0e31c823e8a9e121df043ee16be23b227497c534d215002a55c0ce59c8f88f5",
+    "tools/document_anatomy.py": "b316e6057f01209ebf279b76651f939bb3260b588d99f860c02eb2ae1bb76251",
+    "tools/package_smoke.py": "9f6493d77994997bdbe9f40fca52ba614754d4f0c4d9b080487ccc632ca5b770",
+    "src/opendoc_formats/fonts/word_metrics.py": "05a62ab1b550e70872780c1f23b857a0451f1da7b2d8fc41877531dd97be0ea5",
+    "tests/test_word_font_metrics.py": "d9a93ebb482ac8ae9e63d80e49e4cd382f51e683a36d20ff95687803a9f66257"
+  },
+  "full_suite": {
+    "passed": 2304,
+    "skipped": 3,
+    "warnings": 1,
+    "warning": "intentional duplicate ZIP entry fixture",
+    "scope": "Export layout guard and CFBF changes; sfnt and font helper additions accepted separately"
+  },
+  "current_anatomy_suite": {
+    "passed": 203,
+    "selection": [
+      "tests/test_anatomy.py",
+      "tests/test_anatomy_opc.py",
+      "tests/test_anatomy_content_types.py",
+      "tests/test_anatomy_epub.py",
+      "tests/test_anatomy_cfbf.py",
+      "tests/test_anatomy_sfnt.py",
+      "tests/test_sfnt_inspection.py"
+    ],
+    "sfnt_native_cases": 26,
+    "sfnt_common_cases": 13
+  },
+  "installed_base_wheel": {
+    "sha256": "8433c02890e33994caf73b1230e85eeef331ad794eec500d7996de210ae481cd",
+    "all_python_files_matched_source_and_installed": true,
+    "python_files": 211,
+    "optional_font_pdf_engines_absent": true,
+    "package_smoke_passed": true,
+    "dependency_check_passed": true
+  },
+  "limitations": [
+    "CFBF name sorting and red-black rules not assessed",
+    "sfnt checksums, padding, table order, subtables and glyph programs not assessed",
+    "TTC/WOFF/WOFF2 unsupported",
+    "Automatic nested traversal and shared depth budget not implemented",
+    "No complete semantic/source/export correspondence claim"
+  ],
+  "published": false,
+  "word_baseline": {
+    "native_tests_passed": 12,
+    "affected_tests_passed": 66,
+    "selection": [
+      "tests/test_word_font_metrics.py",
+      "tests/writers/test_pdf_docx_complex.py",
+      "tests/writers/test_pdf_model_docx.py",
+      "tests/writers/test_docx_opaque_fonts.py"
+    ],
+    "existing_arithmetic_preserved": true,
+    "standalone_sfnt_without_fonttools_import": true,
+    "fonttools_fallback_preserved": true,
+    "cancellation_propagates_without_fallback": true,
+    "installed_minimal_wheel_metrics_passed": true,
+    "dependency_removed": false,
+    "scope": "Same default head/hhea arithmetic only; not a new Word layout or variable-font metrics model"
+  },
+  "font_name_acceptance": "font-names-evidence.json",
+  "font_cmap_acceptance": "font-cmap-evidence.json",
+  "font_face_acceptance": "font-face-evidence.json",
+  "base_fvar_acceptance": "font-fvar-evidence.json"
+}

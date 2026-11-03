@@ -1,0 +1,123 @@
+"""UTF-8 plain-text export with explicit flattening diagnostics."""
+
+from __future__ import annotations
+
+from collections.abc import Callable, Iterable
+from pathlib import Path
+
+import opendoc_model as od
+from opendoc_model.diagnostics import ConversionReport, IssueSeverity
+from opendoc_model.document_model import Formula, Image, PageSettings, Paragraph, Table, TextRun, TextStyle
+
+from opendoc_formats.support.cancellation import cancellable_items, cancellation_scope, checkpoint
+from opendoc_formats.support.io import atomic_write_bytes
+from opendoc_formats.text_profile import TextProfile, encode_text
+
+
+def write_txt_model(
+    document: od.DocumentModel, output_path: str | Path, *, profile: TextProfile | None = None,
+    cancelled: Callable[[], bool] | None = None,
+) -> od.ConversionReport:
+    with cancellation_scope(cancelled, 'TXT export', check_on_exit=False):
+        return _write_txt_model(document, output_path, profile=profile)
+
+
+def _write_txt_model(
+    document: od.DocumentModel, output_path: str | Path, *, profile: TextProfile | None,
+) -> od.ConversionReport:
+    profile = TextProfile("utf-8", "forbid", "lf") if profile is None else profile
+    if not isinstance(profile, TextProfile):
+        raise ValueError("profile must be TextProfile")
+    report = ConversionReport(Path(output_path))
+    losses = set()
+    labels = {
+        "styles": "оформление",
+        "hyperlinks": "адреса ссылок",
+        "formulas": "формулы",
+        "images": "изображения",
+        "tables": "таблицы",
+        "sections": "секции",
+        "resources": "встроенные ресурсы",
+        "page_geometry": "геометрия страниц",
+    }
+
+    def loss(feature: str) -> None:
+        if feature not in losses:
+            losses.add(feature)
+            report.add(
+                IssueSeverity.LOSS, feature, f"В TXT не сохраняются: {labels[feature]}. Доступный основной текст перенесён."
+            )
+
+    def inline(item: od.Inline) -> str:
+        checkpoint()
+        if isinstance(item, TextRun):
+            if item.style != TextStyle() or item.properties:
+                loss("styles")
+            if item.link:
+                loss("hyperlinks")
+            return item.text
+        if isinstance(item, Formula):
+            loss("formulas")
+            return item.fallback_text or item.value
+        if isinstance(item, Image):
+            loss("images")
+            return item.alt_text
+        raise ValueError(f"Unsupported text element: {type(item).__name__}")
+
+    def blocks(items: Iterable[od.Block]) -> str:
+        lines = []
+        for block in items:
+            checkpoint()
+            if block.box is not None:
+                loss("page_geometry")
+            if isinstance(block, Paragraph):
+                if block.style_id or block.alignment or block.properties:
+                    loss("styles")
+                lines.append("".join(inline(item) for item in block.content))
+            elif isinstance(block, Table):
+                loss("tables")
+                lines.extend("\t".join(blocks(cell.blocks) for cell in cancellable_items(row.cells))
+                             for row in cancellable_items(block.rows))
+            else:
+                lines.append(inline(block))
+        return "\n".join(lines)
+
+    try:
+        sections = []
+        for section in document.sections:
+            checkpoint()
+            if section.page != PageSettings():
+                loss("page_geometry")
+            if any(
+                (
+                    section.headers,
+                    section.footers,
+                    section.first_page_headers,
+                    section.first_page_footers,
+                    section.even_page_headers,
+                    section.even_page_footers,
+                )
+            ):
+                report.add(IssueSeverity.LOSS, "running_content", "Колонтитулы не включены в основной текст TXT.")
+            if section.properties:
+                loss("sections")
+            sections.append(blocks(section.blocks))
+        if len(sections) > 1:
+            loss("sections")
+        if document.package or document.resources:
+            loss("resources")
+        if document.styles:
+            loss("styles")
+        text = "\n".join(sections)
+        original = document.metadata.get("txt", {})
+        if not isinstance(original, dict):
+            raise ValueError("Invalid source TXT profile")
+        data, metrics, changed = encode_text(text, profile, original)
+        if changed:
+            report.add(IssueSeverity.LOSS, "txt-newlines", "Line count changed; original mixed newlines replaced by LF")
+        checkpoint()
+        atomic_write_bytes(report.output_path, data, before_replace=checkpoint)
+        report.metrics.update(characters=len(text), line_separator="\n", **metrics)
+    except (OSError, ValueError, TypeError) as error:
+        report.add(IssueSeverity.ERROR, "txt-write", str(error))
+    return report

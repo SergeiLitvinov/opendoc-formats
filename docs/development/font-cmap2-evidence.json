@@ -1,0 +1,57 @@
+{
+  "scope": "Finite selected Unicode cmap format 2 numeric glyph declarations; no legacy transcoding or shaping",
+  "model": "opendoc-model==0.19.0",
+  "published": false,
+  "dependencies_changed": false,
+  "checks": {
+    "cmap_tests_passed": 68,
+    "new_format2_cases": 24,
+    "affected_font_and_pdf_suite_passed": 475,
+    "mypy_files_passed": 39
+  },
+  "profile": {
+    "keys": 256,
+    "key0": 0,
+    "keys_divisible_by": 8,
+    "subheader0": "single-byte mappings",
+    "other_subheaders": "high-byte plus declared low-byte range",
+    "shared_subheaders_and_arrays": true,
+    "delta": "modulo 65536, applied only to nonzero raw IDs",
+    "zero_final_gid": "not coverage",
+    "metadata_and_mapping_bounds_checked": true,
+    "unknown_or_noncanonical_profile": "established fontTools fallback retained",
+    "Unicode_selection": "unchanged platform/encoding priority and first matching record"
+  },
+  "quality": {
+    "full_FontFace_equality_against_fonttools_without_import_cases": 10,
+    "distinct_headers_sharing_glyph_storage_matches_oracle": true,
+    "noncanonical_key_engine_recovery": true,
+    "invalid_ranges_and_offsets_never_return_partial_mapping": true,
+    "budget_counts_shared_and_zero_mappings": true,
+    "cancel_inside_mapping_does_not_import_fonttools": true,
+    "legacy_ShiftJIS_not_promoted_to_Unicode": true,
+    "source_font_bytes_unchanged": true
+  },
+  "installed_acceptance": {
+    "packages": [
+      "opendoc-formats==0.42.0",
+      "opendoc-model==0.19.0"
+    ],
+    "command": "python -I tools/package_smoke.py",
+    "fonttools_PDF_Office_HTML_Pillow_absent": true,
+    "direct_mapping_and_full_native_resolver_passed": true,
+    "runtime_source_wheel_installed_files_identical": 216,
+    "tested_wheel_sha256": "8c0253bf369a20545a418e4f8cfd68f3e0725f740dfe70404a36e175de20cae5"
+  },
+  "source_files_sha256": {
+    "src/opendoc_formats/fonts/sfnt_cmap.py": "4002f367afa8ba358ec094ccd94b4d39575d6462c14053c3590b607aef1d9c9d",
+    "tests/test_native_font_cmap.py": "d700837de27c2a46b65950bac9fc3e1705dc9fedd5cf34b9d882b2fbcdf1126d",
+    "tools/package_smoke.py": "e7dcecf74489e6653f9297d8626abd0dba01404abbea01401fdb439ca81f37e3"
+  },
+  "limitations": [
+    "Format 2 in a non-Unicode record is not a promise to decode its legacy character set",
+    "No changes to shaping, variable interpolation, outlines, real subsetting or Model",
+    "Unsupported font profiles and fontTools fallback allocation remain outside native budgets",
+    "Synthetic finite fixtures do not prove acceptance of every independent font"
+  ]
+}

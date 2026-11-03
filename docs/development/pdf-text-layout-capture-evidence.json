@@ -1,0 +1,66 @@
+{
+  "scope": "Opt-in production PDF observations with exact single-owner logical bindings; complete paint state unassessed",
+  "model": "opendoc-model==0.19.0",
+  "published": false,
+  "dependencies_changed": false,
+  "capture_tests_passed": 49,
+  "affected_PDF_native_Model_API_cancellation_tests_passed": 221,
+  "source_files_sha256": {
+    "src/opendoc_formats/readers/pdf_text_layout.py": "d56a5b8370e3801064e751cb5735bf11bfc5a7d8269e17e101fea6541b226f62",
+    "src/opendoc_formats/readers/pdf_font_bindings.py": "4ffde79ecda294c24d75146503e17b66e08b459fbf5f84138cba8dd94fb754ea",
+    "src/opendoc_formats/readers/pdf_model.py": "8017b66ac03b76557ef4248f223b89678453d40e9233867938cae40163be3596",
+    "src/opendoc_formats/api.py": "56bf886cff99925db3648dc17032d14e1e10aa642c3f9068593864dcc7ac1d45",
+    "tests/readers/test_pdf_text_layout.py": "8906ed658ce3f79fed2976770bf777e9c4261e72032584bf8883b1f52cb7a4f9",
+    "tools/pdf_ligature_smoke.py": "ba45479b5a286717aadbde706ca164cec990ffe2291758720746dc3fa9ce7716",
+    "src/opendoc_formats/readers/pdf_layout_bindings.py": "0329ef0e5d20206572e93a6191d2f3e806b0c2b649a13b98e7632df5eb8dd790",
+    "src/opendoc_formats/readers/pdf_styles.py": "8b24aeec4a106072035e2557ecfef2dec22d7563baf5f22b8265ebd2f2fa5c0d",
+    "tests/readers/test_pdf_layout_bindings.py": "0c1f2c7ece27888d4608b2beaf795a49d915ae8b7c2a14bae87c38f0814f2a4c"
+  },
+  "profile": {
+    "public_option": "ImportOptions(pdf_text_layouts=True)",
+    "direct_option": "read_pdf_model(capture_text_layouts=True)",
+    "default_enabled": false,
+    "separate_native_paint_occurrences": true,
+    "known_static_TTF_OTF_faces_explicit_zero": true,
+    "unknown_or_ambiguous_program_face_gid_not_invented": true,
+    "state": "verified for exact logical mappings; other observations unknown",
+    "logical_clusters_and_ranges": "Unique full Unicode, exact origin, full style and explicit face-0 program identity; continuation -1 at identical transform; fi 2:1",
+    "negative_native_gids": "not converted to placed glyphs; retained source PDF and native indices preserve evidence",
+    "retained_source_resource": "ATTACHMENT, byte-exact snapshot used by native decoder, SHA256 recorded",
+    "crop_rotation_frame": "native crop-local coordinates translated to canonical PDF x, -PDF y",
+    "unsupported_frame": "page_id None, native local matrices only",
+    "native_budgets": "per-page and aggregate spans/records; public Model setters enforce complete budget",
+    "atomic_prepared_copy_and_late_cancellation": true,
+    "repeat_capture_is_idempotent": true,
+    "source_pixels_and_JSON_transport": true,
+    "unsupported_writer_rejects_before_replacing_target": true,
+    "private_Model_codec_or_format_parser_in_Model": false,
+    "snapshot_binding_version": 2,
+    "paint_state": "unassessed",
+    "text_or_style_edit_makes_snapshot_stale": true,
+    "recapture_does_not_reverify_changed_owner": true,
+    "other_producers_and_unknown_extra_preserved": true
+  },
+  "installed_acceptance": {
+    "packages": [
+      "opendoc-formats==0.42.0",
+      "opendoc-model==0.19.0",
+      "pymupdf==1.28.2"
+    ],
+    "fonttools_Pillow_Office_HTML_other_PDF_engines_absent": true,
+    "command": "python -I tools/pdf_ligature_smoke.py",
+    "public_TTF_post2_post3_OTF_capture_two_Model_JSON_cycles_passed": true,
+    "runtime_source_wheel_installed_files_identical": 216,
+    "tested_wheel_sha256": "d4c07e472ed3374ca6c3bbc2223b7d1bafe61cf9c262bb969b9a2ed0e18a79ed",
+    "existing_CI_gate_extended_not_dispatched": true,
+    "verified_logical_bindings_and_stale_after_style_edit_passed": true
+  },
+  "remaining": [
+    "Split/merge/remap, other logical profiles and native PDF/DOCX writer projection remain C-PDF-01",
+    "Full reading order, visibility, clipping/group paint state and font/shaping acceptance",
+    "Hard bounds on native allocations before callbacks and arbitrary native-call interruption",
+    "Unknown coordinate frames, variable/font-set face profiles and ambiguous source mappings",
+    "Invalid shared ranges after text deletion/shortening require explicit caller remap; never removed to bypass validation"
+  ],
+  "logical_binding_tests_passed": 20
+}

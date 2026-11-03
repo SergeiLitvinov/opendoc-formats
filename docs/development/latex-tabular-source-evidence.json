@@ -1,0 +1,177 @@
+{
+  "scope": "Independent source tabular originals, two TeX to Model to JSON to TeX cycles with reimport",
+  "dpi": 108,
+  "pixel_tolerance": 0,
+  "masks": null,
+  "image_objects": 0,
+  "originals": [
+    {
+      "case": 0,
+      "sha256": "f68b3e5ab817d8f610c55ec58b4fe5d4169f99e920ba2f3c1a07cd5d852110f1",
+      "body": "\\begin{tabular}{|l|r|}\\hline A \\& B & \\textbf{7\\%}\\\\\\hline\\(x^2\\) & H\\textsubscript{2}O\\\\\\hline\\end{tabular}",
+      "layout": {
+        "version": 1,
+        "columns": "|l|r|",
+        "rules": [
+          1,
+          1,
+          1
+        ],
+        "trailing_break": true
+      },
+      "source_unchanged": true
+    },
+    {
+      "case": 1,
+      "sha256": "dbc6ddfb229d58a223c3f047464f2fd09d0d1a16abcf76a71fda753d24f45776",
+      "body": "\\begin{tabular}{lc}A & B\\\\C & D\\end{tabular}",
+      "layout": {
+        "version": 1,
+        "columns": "lc",
+        "rules": [
+          0,
+          0,
+          0
+        ],
+        "trailing_break": false
+      },
+      "source_unchanged": true
+    },
+    {
+      "case": 2,
+      "sha256": "863ebc5d6d9ebad1e72eb1aebec71729c3fc9f424a264aefe0157dad885a968f",
+      "body": "\\begin{tabular}{|| c | r ||}\\hline\\hline A & B\\\\ C & D\\\\\\hline\\end{tabular}",
+      "layout": {
+        "version": 1,
+        "columns": "||c|r||",
+        "rules": [
+          2,
+          0,
+          1
+        ],
+        "trailing_break": true
+      },
+      "source_unchanged": true
+    },
+    {
+      "case": 3,
+      "sha256": "2a8e9cd4b38ce5542ce3a648098b5248fd5b5042e4e5f665429f7d2252cdfa27",
+      "body": "\\begin{tabular}{|l|l|}\\hline & \\\\\\hline \\textit{Кириллица} & \\(\\begin{pmatrix}1&2\\\\3&4\\end{pmatrix}\\)\\\\\\hline\\end{tabular}",
+      "layout": {
+        "version": 1,
+        "columns": "|l|l|",
+        "rules": [
+          1,
+          1,
+          1
+        ],
+        "trailing_break": true
+      },
+      "source_unchanged": true
+    }
+  ],
+  "comparisons": [
+    {
+      "case": 0,
+      "cycle": 1,
+      "shape_equal": true,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_sha256": "1a594fb679928c827219a88415b0743cb0f7a542f93a1e30453cb095d301b0be",
+      "poppler_sha256": "a2ed2724278c58cb50a5ee7cee90814ef3455e85613cc97ac87be706c0af02e0"
+    },
+    {
+      "case": 0,
+      "cycle": 2,
+      "shape_equal": true,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_sha256": "1a594fb679928c827219a88415b0743cb0f7a542f93a1e30453cb095d301b0be",
+      "poppler_sha256": "a2ed2724278c58cb50a5ee7cee90814ef3455e85613cc97ac87be706c0af02e0"
+    },
+    {
+      "case": 1,
+      "cycle": 1,
+      "shape_equal": true,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_sha256": "40dbdb5cb337396931237191647e2554bc37a7a5fe65c54e740d8ea5643989f1",
+      "poppler_sha256": "23a79d20126fa7db21c548035d601478b9cd88966200d381571c30575fc2692b"
+    },
+    {
+      "case": 1,
+      "cycle": 2,
+      "shape_equal": true,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_sha256": "40dbdb5cb337396931237191647e2554bc37a7a5fe65c54e740d8ea5643989f1",
+      "poppler_sha256": "23a79d20126fa7db21c548035d601478b9cd88966200d381571c30575fc2692b"
+    },
+    {
+      "case": 2,
+      "cycle": 1,
+      "shape_equal": true,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_sha256": "f00d4c117fd8796badc0556047ff6135082cdc3a7b8cbd3065147bd32dec42e9",
+      "poppler_sha256": "ec77639102ffc4964243c707fa97b67fc0e6fa3db9ea7a50d605c8aebf39bb5b"
+    },
+    {
+      "case": 2,
+      "cycle": 2,
+      "shape_equal": true,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_sha256": "f00d4c117fd8796badc0556047ff6135082cdc3a7b8cbd3065147bd32dec42e9",
+      "poppler_sha256": "ec77639102ffc4964243c707fa97b67fc0e6fa3db9ea7a50d605c8aebf39bb5b"
+    },
+    {
+      "case": 3,
+      "cycle": 1,
+      "shape_equal": true,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_sha256": "035123cb0d3358a26087f66680c3ed18c41b3ce6941f56d585f016e7d9ca680a",
+      "poppler_sha256": "6cf18ea2d6113ad32932e48b17acb4ab9c1aff02b51d8d6d63327e119aed8fac"
+    },
+    {
+      "case": 3,
+      "cycle": 2,
+      "shape_equal": true,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_sha256": "035123cb0d3358a26087f66680c3ed18c41b3ce6941f56d585f016e7d9ca680a",
+      "poppler_sha256": "6cf18ea2d6113ad32932e48b17acb4ab9c1aff02b51d8d6d63327e119aed8fac"
+    }
+  ],
+  "source_sha256": {
+    "src/opendoc_formats/tex_tables.py": "e2046d0a7305f65dad1a287a558aa5172c4321f4a47eec72b2e930f834150755",
+    "src/opendoc_formats/readers/tex_model.py": "5eea3e08c09bbda24b8f64400d35ce18957c4ff0c42ac2304b6e9db770dd0806",
+    "src/opendoc_formats/writers/latex_tables.py": "e0c965d0a5929d792773a4b6d831d251bedbce06a1401c26033f02a892e4c81d",
+    "src/opendoc_formats/writers/latex_writer.py": "c0a792acf8e9d52a9745f27d3fdc1e74d8d5e3b1af4de1f8c29a2f3549d80a37"
+  },
+  "runtime": {
+    "opendoc-model": "0.19.0",
+    "pymupdf": "1.28.2",
+    "pillow": "12.3.0"
+  },
+  "pdflatex": "pdfTeX 3.141592653-2.6-1.40.29 (TeX Live 2026)",
+  "limitations": [
+    "Finite l/c/r and hline declarations only",
+    "No paragraph columns, merging, floats or nested tabular",
+    "No refs/labels in cells",
+    "Opaque source scopes preserved without claiming semantic support",
+    "No general measured page layout or full assessment claim"
+  ],
+  "tests": {
+    "tex_and_related_text": 431,
+    "new_source_tabular_cases": 32
+  },
+  "installed_base_wheel": {
+    "sha256": "877e3d6f9638ca49024731f530e252368b96318996e3c71a380d5941147e1927",
+    "python": "3.12.16",
+    "model": "official opendoc-model 0.19.0",
+    "office_pdf_and_font_engines": false,
+    "smoke": "python -I tools/package_smoke.py passed including source table reimport"
+  }
+}

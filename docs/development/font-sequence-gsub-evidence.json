@@ -1,0 +1,30 @@
+{
+  "scope": "Adjacent MultipleSubst/AlternateSubst format 1 and extensions 7->2/3 in static standalone TrueType post 1/2/3; structural validation only",
+  "model": "opendoc-model==0.19.0; import opendoc_model",
+  "published": false,
+  "dependencies_changed": false,
+  "specification": "https://learn.microsoft.com/en-us/typography/opentype/spec/gsub#lookup-type-2-subtable-multiple-substitution",
+  "checks": {
+    "focused_ligature_tests_passed": 258,
+    "equivalence": "Owned byte-encoded lookup types 2/3, coverage 1/2, direct/extension, before/after ligatures, separate/shared sequence storage; identical fontTools _ligature_map output with fontTools import forbidden during native read",
+    "damage": "Unsupported format, invalid coverage offsets/count/order, invalid sequence pointers/counts and out-of-maxp glyphs never return partial native mapping",
+    "budget": "1000 lookup references to shared sequence storage exhaust the existing 262144 word/coverage work budget",
+    "cancellation": "Cancellation inside sequence glyph iteration propagates without entering fontTools",
+    "fallback": "Empty MultipleSubst deletion preserves previous engine recovery",
+    "pdf": "GSUB 1.0/1.1, post 1/2/3, adjacent MultipleSubst/AlternateSubst: saved/reopened PDF text restored, identical page pixels, no fontTools import",
+    "font_regression_passed": 832,
+    "font_regression_skipped": 1,
+    "skip_reason": "Real POSIX fork unavailable on Windows",
+    "regression_scope": "All tests/**/*.py filenames containing font/sfnt/fvar/ligature; not a new full-project regression",
+    "strict_mypy_files": 41,
+    "ruff": "passed",
+    "documentation": "strict build passed",
+    "license_inventory": "passed",
+    "boundary_audit_modules": 217
+  },
+  "boundary": "Formats owns parsing and ToUnicode evidence; Model unchanged. No execution of MultipleSubst/AlternateSubst, no new shaping or Unicode inference. Existing flags/context/CFF/variations fallback and real fontTools subsetting remain.",
+  "source_sha256": {
+    "src/opendoc_formats/fonts/sfnt_ligatures.py": "62ac3c4f2eac3a5288e91cfd3ac5bfb49a683c2b68594bf11284585c9f235a68",
+    "tests/test_native_font_ligatures.py": "ccd6a0c2caa3c9f292bee01f47b2ffc8c4e469ad572140b459d3efb5448245dd"
+  }
+}

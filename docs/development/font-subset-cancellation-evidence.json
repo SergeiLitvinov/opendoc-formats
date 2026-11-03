@@ -1,0 +1,33 @@
+{
+  "scope": "Cooperative cancellation at fontTools stage boundaries; not interruption inside third-party calls",
+  "production_model": "opendoc-model==0.18.1",
+  "published": false,
+  "dependencies_changed": false,
+  "new_tests_passed": 15,
+  "affected_tests_passed": 76,
+  "test_selection": [
+    "tests/test_font_subset_cancellation.py",
+    "tests/writers/test_office_export_cancellation.py",
+    "tests/writers/test_pdf_docx_complex.py",
+    "tests/writers/test_docx_opaque_fonts.py",
+    "tests/writers/test_pdf_unicode.py"
+  ],
+  "source_files_sha256": {
+    "src/opendoc_formats/fonts/embedding.py": "2840d3c7625e837b6956c46b58be750e8cff0e2ef55b097df904fbfb1dbf6fc5",
+    "tests/test_font_subset_cancellation.py": "7f4b0d4b4c8a75151a9de26e5c0e2021ad36525abe3ba8960a928cab730be993"
+  },
+  "verified": [
+    "Cancellation after populate/subset/save/close, including pending cancellation with backend failure",
+    "Font handles closed on error/cancellation",
+    "Unsupported noncancelled program returns original bytes",
+    "Full-program paths avoid fontTools import",
+    "Pending cancellation prevents source read",
+    "Public/direct DOCX writers preserve model, source font and existing destination after cancellation during real subsetting",
+    "Existing glyph-outline and license-notice regression tests pass"
+  ],
+  "limitations": [
+    "No replacement of real fontTools subsetting",
+    "No preemption inside third-party call",
+    "No new font input/work quota guarantee"
+  ]
+}

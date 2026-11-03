@@ -1,0 +1,75 @@
+{
+  "scope": "Independent original tabular and two Model/JSON exports; not source tabular parsing",
+  "dpi": 108,
+  "masks": null,
+  "pixel_tolerance": 0,
+  "source_unchanged": true,
+  "documents": [
+    {
+      "name": "original.tex",
+      "sha256": "a1d2ce80e1d3e288ce4570a1e053865a4baafc7d0f9e785e8fee8162dc886a30",
+      "text": "Before\nOwn A\nB & 7%\nx2\nH2O\nAfter\n1\n",
+      "pages": 1,
+      "image_objects": 0
+    },
+    {
+      "name": "cycle-1.tex",
+      "sha256": "e81799b59b3997187ff904c5e5da42880a25204cbe2ac67e156796a24583ee8a",
+      "text": "Before\nOwn A\nB & 7%\nx2\nH2O\nAfter\n1\n",
+      "pages": 1,
+      "image_objects": 0
+    },
+    {
+      "name": "cycle-2.tex",
+      "sha256": "e81799b59b3997187ff904c5e5da42880a25204cbe2ac67e156796a24583ee8a",
+      "text": "Before\nOwn A\nB & 7%\nx2\nH2O\nAfter\n1\n",
+      "pages": 1,
+      "image_objects": 0
+    }
+  ],
+  "comparisons": [
+    {
+      "cycle": 1,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_sha256": "e0e430898573470be0fbff30916e029df7125f92cf0e43e9ee29157013a4f03a",
+      "poppler_sha256": "1399b091ab89c735c2cbd099f8fed98f8261b15e6c4d434bb0f36abb41237ed0"
+    },
+    {
+      "cycle": 2,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_sha256": "e0e430898573470be0fbff30916e029df7125f92cf0e43e9ee29157013a4f03a",
+      "poppler_sha256": "1399b091ab89c735c2cbd099f8fed98f8261b15e6c4d434bb0f36abb41237ed0"
+    }
+  ],
+  "source_sha256": {
+    "src/opendoc_formats/writers/latex_tables.py": "915a1b57c78e900a9c010107499fcc357963b344c649d8c39a67c37f8825cf91",
+    "src/opendoc_formats/writers/latex_text.py": "78920a78b80ccd4ec630a7c96c11be561d0038ec43379e898912cac5fabb74f6",
+    "src/opendoc_formats/writers/latex_writer.py": "93d58000d08a2cf363ea47e34075411cf3aa7209f33a66e245bb74b2bfeef6dc"
+  },
+  "runtime": {
+    "opendoc-model": "0.19.0",
+    "pymupdf": "1.28.2",
+    "pillow": "12.3.0"
+  },
+  "pdflatex": "pdfTeX 3.141592653-2.6-1.40.29 (TeX Live 2026)",
+  "installed_base_wheel": {
+    "sha256": "5786dc7fc1f986a93ea79f1b768142e7fd2650eff2aa9a69d17bc4a58a42b0a1",
+    "python": "3.12.16",
+    "model": "official opendoc-model 0.19.0",
+    "office_and_font_engines": false,
+    "smoke": "python -I tools/package_smoke.py passed"
+  },
+  "limitations": [
+    "No source tabular reader acceptance",
+    "No merged or multi-paragraph cells",
+    "No explicit table geometry or styles",
+    "No measured source page layout claim",
+    "Assessment incomplete and latex-layout LOSS retained"
+  ],
+  "tests": {
+    "tex_and_related_text": 399,
+    "native_table_cases": 14
+  }
+}

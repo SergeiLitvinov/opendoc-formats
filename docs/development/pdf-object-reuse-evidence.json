@@ -1,0 +1,631 @@
+{
+  "scope": "Physical historical candidates, not active body/reference resolution or arbitrary PDF conformance",
+  "producer": "Own byte-built incremental PDF originals; no Formats/PDF writer",
+  "versions": {
+    "pypdf": "6.19.0",
+    "mupdf": "1.28.2"
+  },
+  "originals": [
+    {
+      "kind": "dictionary",
+      "generation": 1,
+      "source_sha256": "bf685664a6cbfc1b69edc2995090be1176921977e07eaadbffcd7b97e63cffcc",
+      "candidate_sha256": "bb64401e5b50622df71031a13f0d3a86b5133c567a6d66a0eddea82901acf885",
+      "candidate": {
+        "object": 4,
+        "generation": 1,
+        "offset": 755,
+        "end": 803,
+        "syntax_kind": "<<",
+        "candidate_status": "not-object-stream",
+        "declared_type": "Example",
+        "xref_sections": [
+          804
+        ],
+        "active_resolution": false,
+        "ownership_proven": false
+      },
+      "historical_container_offset": 186,
+      "pypdf": {
+        "pages": 1,
+        "selected_offset": 755,
+        "warnings": [
+          "Xref table not zero-indexed. ID numbers for objects will be corrected.",
+          "Xref table not zero-indexed. ID numbers for objects will be corrected."
+        ]
+      },
+      "mupdf": {
+        "pages": 1,
+        "repaired": false
+      }
+    },
+    {
+      "kind": "string",
+      "generation": 1,
+      "source_sha256": "ee59c307398a816d18bb9e919930fc63553cdd24927ce94c777b4dcd99146d04",
+      "candidate_sha256": "d6de88f73d8ff044cfc7fadb1474d6fce6b39fc1565ecc0cfa6200fd69be792e",
+      "candidate": {
+        "object": 4,
+        "generation": 1,
+        "offset": 755,
+        "end": 787,
+        "syntax_kind": "string",
+        "candidate_status": "not-object-stream",
+        "declared_type": null,
+        "xref_sections": [
+          788
+        ],
+        "active_resolution": false,
+        "ownership_proven": false
+      },
+      "historical_container_offset": 186,
+      "pypdf": {
+        "pages": 1,
+        "selected_offset": 755,
+        "warnings": [
+          "Xref table not zero-indexed. ID numbers for objects will be corrected.",
+          "Xref table not zero-indexed. ID numbers for objects will be corrected."
+        ]
+      },
+      "mupdf": {
+        "pages": 1,
+        "repaired": false
+      }
+    },
+    {
+      "kind": "integer",
+      "generation": 1,
+      "source_sha256": "658916dc558aa611afd26a252569c71af7dc3a83d76e4458513532edd071397e",
+      "candidate_sha256": "8192eb460e4a43cc8dd70e5a728e1ffbc24fad4959cec4f5838b8d9e1faf3041",
+      "candidate": {
+        "object": 4,
+        "generation": 1,
+        "offset": 755,
+        "end": 772,
+        "syntax_kind": "integer",
+        "candidate_status": "not-object-stream",
+        "declared_type": null,
+        "xref_sections": [
+          773
+        ],
+        "active_resolution": false,
+        "ownership_proven": false
+      },
+      "historical_container_offset": 186,
+      "pypdf": {
+        "pages": 1,
+        "selected_offset": 755,
+        "warnings": [
+          "Xref table not zero-indexed. ID numbers for objects will be corrected.",
+          "Xref table not zero-indexed. ID numbers for objects will be corrected."
+        ]
+      },
+      "mupdf": {
+        "pages": 1,
+        "repaired": false
+      }
+    },
+    {
+      "kind": "null",
+      "generation": 1,
+      "source_sha256": "3ac146cc536066e9a365332fea479750fd7d29033253ebe9443d307c4947b7fe",
+      "candidate_sha256": "ae8f3c7f1823cfbc95904b8de718ce842de1d5dd376fe47cfe62ddf2b86ec3b0",
+      "candidate": {
+        "object": 4,
+        "generation": 1,
+        "offset": 755,
+        "end": 774,
+        "syntax_kind": "keyword",
+        "candidate_status": "not-object-stream",
+        "declared_type": null,
+        "xref_sections": [
+          775
+        ],
+        "active_resolution": false,
+        "ownership_proven": false
+      },
+      "historical_container_offset": 186,
+      "pypdf": {
+        "pages": 1,
+        "selected_offset": 755,
+        "warnings": [
+          "Xref table not zero-indexed. ID numbers for objects will be corrected.",
+          "Xref table not zero-indexed. ID numbers for objects will be corrected."
+        ]
+      },
+      "mupdf": {
+        "pages": 1,
+        "repaired": false
+      }
+    },
+    {
+      "kind": "array",
+      "generation": 1,
+      "source_sha256": "f357741d167813a8474cfa14d6b5780d264c4cad36eebe6e679f3e5d3b32772f",
+      "candidate_sha256": "af9fd98a361a1e230694b9a0b603190fe571bdc4f28ceea303bc795d2f2541c9",
+      "candidate": {
+        "object": 4,
+        "generation": 1,
+        "offset": 755,
+        "end": 785,
+        "syntax_kind": "[",
+        "candidate_status": "not-object-stream",
+        "declared_type": null,
+        "xref_sections": [
+          786
+        ],
+        "active_resolution": false,
+        "ownership_proven": false
+      },
+      "historical_container_offset": 186,
+      "pypdf": {
+        "pages": 1,
+        "selected_offset": 755,
+        "warnings": [
+          "Xref table not zero-indexed. ID numbers for objects will be corrected.",
+          "Xref table not zero-indexed. ID numbers for objects will be corrected."
+        ]
+      },
+      "mupdf": {
+        "pages": 1,
+        "repaired": false
+      }
+    },
+    {
+      "kind": "stream",
+      "generation": 1,
+      "source_sha256": "248b635629c340884c32ee39d37cbe89b5d1ce3196de897ca1c6712005514962",
+      "candidate_sha256": "2901f83c90b2d93fb3b3333f524151acbdd4082880f2e8765da060080fa4ea81",
+      "candidate": {
+        "object": 4,
+        "generation": 1,
+        "offset": 755,
+        "end": 849,
+        "syntax_kind": "<<",
+        "candidate_status": "not-object-stream",
+        "declared_type": null,
+        "xref_sections": [
+          850
+        ],
+        "active_resolution": false,
+        "ownership_proven": false,
+        "encoded_start": 809,
+        "encoded_end": 832
+      },
+      "historical_container_offset": 186,
+      "pypdf": {
+        "pages": 1,
+        "selected_offset": 755,
+        "warnings": [
+          "Xref table not zero-indexed. ID numbers for objects will be corrected.",
+          "Xref table not zero-indexed. ID numbers for objects will be corrected."
+        ],
+        "raw_stream_sha256": "10cfe4294be1d6d23e66dae84255bd90695724d71b5ad48fb95e46f96f578a82"
+      },
+      "mupdf": {
+        "pages": 1,
+        "repaired": false,
+        "raw_stream_sha256": "10cfe4294be1d6d23e66dae84255bd90695724d71b5ad48fb95e46f96f578a82"
+      }
+    },
+    {
+      "kind": "dictionary",
+      "generation": 5,
+      "source_sha256": "b7a329c8fb1b7eb88d2226c058b33abe64581c791e02ccc31f8ba242c89bba1a",
+      "candidate_sha256": "4d50126a4516efa4c8f604c18ee1552fab6a57c14fbdeff229e115dbf26d29de",
+      "candidate": {
+        "object": 4,
+        "generation": 5,
+        "offset": 755,
+        "end": 803,
+        "syntax_kind": "<<",
+        "candidate_status": "not-object-stream",
+        "declared_type": "Example",
+        "xref_sections": [
+          804
+        ],
+        "active_resolution": false,
+        "ownership_proven": false
+      },
+      "historical_container_offset": 186,
+      "pypdf": {
+        "pages": 1,
+        "selected_offset": 755,
+        "warnings": [
+          "Xref table not zero-indexed. ID numbers for objects will be corrected.",
+          "Xref table not zero-indexed. ID numbers for objects will be corrected."
+        ]
+      },
+      "mupdf": {
+        "pages": 1,
+        "repaired": false
+      }
+    },
+    {
+      "kind": "string",
+      "generation": 5,
+      "source_sha256": "1f6bf5799fbf8feb5a396a125b2144e8cc2f26dda0e13e8224a97c90205dc6cc",
+      "candidate_sha256": "de7fd00c9aa2359d94ef94069c815db97469289e0c00d73100a92552766d5332",
+      "candidate": {
+        "object": 4,
+        "generation": 5,
+        "offset": 755,
+        "end": 787,
+        "syntax_kind": "string",
+        "candidate_status": "not-object-stream",
+        "declared_type": null,
+        "xref_sections": [
+          788
+        ],
+        "active_resolution": false,
+        "ownership_proven": false
+      },
+      "historical_container_offset": 186,
+      "pypdf": {
+        "pages": 1,
+        "selected_offset": 755,
+        "warnings": [
+          "Xref table not zero-indexed. ID numbers for objects will be corrected.",
+          "Xref table not zero-indexed. ID numbers for objects will be corrected."
+        ]
+      },
+      "mupdf": {
+        "pages": 1,
+        "repaired": false
+      }
+    },
+    {
+      "kind": "integer",
+      "generation": 5,
+      "source_sha256": "980f46c9473308fff2417d41e6865090289c36f798a997d7c883b60c77ec3e77",
+      "candidate_sha256": "9adeaacdb9aeebc135c9e052a142f97677ae27c93ab0cc3d23a588e80d85098d",
+      "candidate": {
+        "object": 4,
+        "generation": 5,
+        "offset": 755,
+        "end": 772,
+        "syntax_kind": "integer",
+        "candidate_status": "not-object-stream",
+        "declared_type": null,
+        "xref_sections": [
+          773
+        ],
+        "active_resolution": false,
+        "ownership_proven": false
+      },
+      "historical_container_offset": 186,
+      "pypdf": {
+        "pages": 1,
+        "selected_offset": 755,
+        "warnings": [
+          "Xref table not zero-indexed. ID numbers for objects will be corrected.",
+          "Xref table not zero-indexed. ID numbers for objects will be corrected."
+        ]
+      },
+      "mupdf": {
+        "pages": 1,
+        "repaired": false
+      }
+    },
+    {
+      "kind": "null",
+      "generation": 5,
+      "source_sha256": "f45009e0ff734fc3df3cf94095aecfb53dd0db1499967fd348ee3e50783bbb94",
+      "candidate_sha256": "c2056f1f98c7fb9da96f939d447e50a6c04655e0bc08c388fd61a4825e9d4fe6",
+      "candidate": {
+        "object": 4,
+        "generation": 5,
+        "offset": 755,
+        "end": 774,
+        "syntax_kind": "keyword",
+        "candidate_status": "not-object-stream",
+        "declared_type": null,
+        "xref_sections": [
+          775
+        ],
+        "active_resolution": false,
+        "ownership_proven": false
+      },
+      "historical_container_offset": 186,
+      "pypdf": {
+        "pages": 1,
+        "selected_offset": 755,
+        "warnings": [
+          "Xref table not zero-indexed. ID numbers for objects will be corrected.",
+          "Xref table not zero-indexed. ID numbers for objects will be corrected."
+        ]
+      },
+      "mupdf": {
+        "pages": 1,
+        "repaired": false
+      }
+    },
+    {
+      "kind": "array",
+      "generation": 5,
+      "source_sha256": "74ed91d732cdc58ee48ff8529bd86847b2249451b2d5b030c9c6dc19299c52df",
+      "candidate_sha256": "45e025d0f4ad770baad1f9990cc6fae6b3cd38f515bfdb10c307befd801ad983",
+      "candidate": {
+        "object": 4,
+        "generation": 5,
+        "offset": 755,
+        "end": 785,
+        "syntax_kind": "[",
+        "candidate_status": "not-object-stream",
+        "declared_type": null,
+        "xref_sections": [
+          786
+        ],
+        "active_resolution": false,
+        "ownership_proven": false
+      },
+      "historical_container_offset": 186,
+      "pypdf": {
+        "pages": 1,
+        "selected_offset": 755,
+        "warnings": [
+          "Xref table not zero-indexed. ID numbers for objects will be corrected.",
+          "Xref table not zero-indexed. ID numbers for objects will be corrected."
+        ]
+      },
+      "mupdf": {
+        "pages": 1,
+        "repaired": false
+      }
+    },
+    {
+      "kind": "stream",
+      "generation": 5,
+      "source_sha256": "811cb83d9fdc2f625f2c3e165fe14cf5a9b0e6185366f88b87fd53c57351cda0",
+      "candidate_sha256": "58494cdc4f68b8ef9f110ed3303b5ca6955f7dbd6eedcaf386c196670fe5cf49",
+      "candidate": {
+        "object": 4,
+        "generation": 5,
+        "offset": 755,
+        "end": 849,
+        "syntax_kind": "<<",
+        "candidate_status": "not-object-stream",
+        "declared_type": null,
+        "xref_sections": [
+          850
+        ],
+        "active_resolution": false,
+        "ownership_proven": false,
+        "encoded_start": 809,
+        "encoded_end": 832
+      },
+      "historical_container_offset": 186,
+      "pypdf": {
+        "pages": 1,
+        "selected_offset": 755,
+        "warnings": [
+          "Xref table not zero-indexed. ID numbers for objects will be corrected.",
+          "Xref table not zero-indexed. ID numbers for objects will be corrected."
+        ],
+        "raw_stream_sha256": "10cfe4294be1d6d23e66dae84255bd90695724d71b5ad48fb95e46f96f578a82"
+      },
+      "mupdf": {
+        "pages": 1,
+        "repaired": false,
+        "raw_stream_sha256": "10cfe4294be1d6d23e66dae84255bd90695724d71b5ad48fb95e46f96f578a82"
+      }
+    },
+    {
+      "kind": "dictionary",
+      "generation": 65535,
+      "source_sha256": "19ad3e7ca2c1ad83c2acbe6292ed9bb18b2d3baaedb3b39173c8243a97200d38",
+      "candidate_sha256": "775e4eebf7e9f33ecab4e1e67ef24c8ad419b2ebb7d9ad8e4cd31867b54caf2e",
+      "candidate": {
+        "object": 4,
+        "generation": 65535,
+        "offset": 755,
+        "end": 807,
+        "syntax_kind": "<<",
+        "candidate_status": "not-object-stream",
+        "declared_type": "Example",
+        "xref_sections": [
+          808
+        ],
+        "active_resolution": false,
+        "ownership_proven": false
+      },
+      "historical_container_offset": 186,
+      "pypdf": {
+        "pages": 1,
+        "selected_offset": 755,
+        "warnings": [
+          "Xref table not zero-indexed. ID numbers for objects will be corrected.",
+          "Xref table not zero-indexed. ID numbers for objects will be corrected."
+        ]
+      },
+      "mupdf": {
+        "pages": 1,
+        "repaired": false
+      }
+    },
+    {
+      "kind": "string",
+      "generation": 65535,
+      "source_sha256": "e96ef45978525288cedbe6f6ec3591f7f92871cfa09fda8820a849a7f76bbe6b",
+      "candidate_sha256": "666df4b1c8f0228360dd4d960ee29941f302cfe12bd2a1c5d36ea5078e737cbc",
+      "candidate": {
+        "object": 4,
+        "generation": 65535,
+        "offset": 755,
+        "end": 791,
+        "syntax_kind": "string",
+        "candidate_status": "not-object-stream",
+        "declared_type": null,
+        "xref_sections": [
+          792
+        ],
+        "active_resolution": false,
+        "ownership_proven": false
+      },
+      "historical_container_offset": 186,
+      "pypdf": {
+        "pages": 1,
+        "selected_offset": 755,
+        "warnings": [
+          "Xref table not zero-indexed. ID numbers for objects will be corrected.",
+          "Xref table not zero-indexed. ID numbers for objects will be corrected."
+        ]
+      },
+      "mupdf": {
+        "pages": 1,
+        "repaired": false
+      }
+    },
+    {
+      "kind": "integer",
+      "generation": 65535,
+      "source_sha256": "70273cdff985f31ba180dbd1ef5cdad6cf3e5e9272fbb9212782a1b1e39e5499",
+      "candidate_sha256": "356d973e7e62ae5233417b13f8099bc7680f4b21aa986c4edf816580c79d7c0f",
+      "candidate": {
+        "object": 4,
+        "generation": 65535,
+        "offset": 755,
+        "end": 776,
+        "syntax_kind": "integer",
+        "candidate_status": "not-object-stream",
+        "declared_type": null,
+        "xref_sections": [
+          777
+        ],
+        "active_resolution": false,
+        "ownership_proven": false
+      },
+      "historical_container_offset": 186,
+      "pypdf": {
+        "pages": 1,
+        "selected_offset": 755,
+        "warnings": [
+          "Xref table not zero-indexed. ID numbers for objects will be corrected.",
+          "Xref table not zero-indexed. ID numbers for objects will be corrected."
+        ]
+      },
+      "mupdf": {
+        "pages": 1,
+        "repaired": false
+      }
+    },
+    {
+      "kind": "null",
+      "generation": 65535,
+      "source_sha256": "1e0a5e3779e93a42ddfde7093972936161daa146c42c9f2ea9fee5eb2ca5f306",
+      "candidate_sha256": "3c9aa6b0de90f88bfda0fea24e75839700b685fa29ea443cc52f40cf659a8e62",
+      "candidate": {
+        "object": 4,
+        "generation": 65535,
+        "offset": 755,
+        "end": 778,
+        "syntax_kind": "keyword",
+        "candidate_status": "not-object-stream",
+        "declared_type": null,
+        "xref_sections": [
+          779
+        ],
+        "active_resolution": false,
+        "ownership_proven": false
+      },
+      "historical_container_offset": 186,
+      "pypdf": {
+        "pages": 1,
+        "selected_offset": 755,
+        "warnings": [
+          "Xref table not zero-indexed. ID numbers for objects will be corrected.",
+          "Xref table not zero-indexed. ID numbers for objects will be corrected."
+        ]
+      },
+      "mupdf": {
+        "pages": 1,
+        "repaired": false
+      }
+    },
+    {
+      "kind": "array",
+      "generation": 65535,
+      "source_sha256": "132a3ae3571a53f484497b418e09053aba58bb428702e08cef64bbc12553c0ab",
+      "candidate_sha256": "1dd2622194a14c2d8e1d724306e56ba56084606cad6b145014f94580e58a6a29",
+      "candidate": {
+        "object": 4,
+        "generation": 65535,
+        "offset": 755,
+        "end": 789,
+        "syntax_kind": "[",
+        "candidate_status": "not-object-stream",
+        "declared_type": null,
+        "xref_sections": [
+          790
+        ],
+        "active_resolution": false,
+        "ownership_proven": false
+      },
+      "historical_container_offset": 186,
+      "pypdf": {
+        "pages": 1,
+        "selected_offset": 755,
+        "warnings": [
+          "Xref table not zero-indexed. ID numbers for objects will be corrected.",
+          "Xref table not zero-indexed. ID numbers for objects will be corrected."
+        ]
+      },
+      "mupdf": {
+        "pages": 1,
+        "repaired": false
+      }
+    },
+    {
+      "kind": "stream",
+      "generation": 65535,
+      "source_sha256": "3973886a557b5963cf82798c02250e263ee916374f995a20f6a302d3b0a99079",
+      "candidate_sha256": "a3521768fa6903ae08a4d7e32799a46a50305d04921b48c9dd9bb3c01917328a",
+      "candidate": {
+        "object": 4,
+        "generation": 65535,
+        "offset": 755,
+        "end": 853,
+        "syntax_kind": "<<",
+        "candidate_status": "not-object-stream",
+        "declared_type": null,
+        "xref_sections": [
+          854
+        ],
+        "active_resolution": false,
+        "ownership_proven": false,
+        "encoded_start": 813,
+        "encoded_end": 836
+      },
+      "historical_container_offset": 186,
+      "pypdf": {
+        "pages": 1,
+        "selected_offset": 755,
+        "warnings": [
+          "Xref table not zero-indexed. ID numbers for objects will be corrected.",
+          "Xref table not zero-indexed. ID numbers for objects will be corrected."
+        ],
+        "raw_stream_sha256": "10cfe4294be1d6d23e66dae84255bd90695724d71b5ad48fb95e46f96f578a82"
+      },
+      "mupdf": {
+        "pages": 1,
+        "repaired": false,
+        "raw_stream_sha256": "10cfe4294be1d6d23e66dae84255bd90695724d71b5ad48fb95e46f96f578a82"
+      }
+    }
+  ],
+  "tests": {
+    "passed": 28,
+    "limits": [
+      "shared item/byte boundary",
+      "syntax token/depth budgets",
+      "cancellation",
+      "atomic CLI refusal"
+    ]
+  },
+  "limitations": [
+    "nonzero ObjStm generations unsupported",
+    "indirect Length unsupported",
+    "generation boundary fixtures test parsing, not full revision conformance",
+    "no ownership proof or type-2 occurrence links"
+  ]
+}

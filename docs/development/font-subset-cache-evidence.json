@@ -1,0 +1,69 @@
+{
+  "scope": "Process-local bounded reuse of complete successful fontTools subsets; engine remains required for initial subsetting",
+  "model": "opendoc-model==0.19.0",
+  "published": false,
+  "dependencies_changed": false,
+  "checks": {
+    "focused_cache_and_cancellation_passed": 29,
+    "skipped": 1,
+    "skip_reason": "Real POSIX fork unavailable on Windows; child-reset behavior tested separately",
+    "strict_mypy_files_passed": 41,
+    "full_regression": {
+      "evidence": "regression-evidence.json",
+      "combined_passed": 3146,
+      "skipped": 3,
+      "current_collection_exactly_covered": true,
+      "main_plus_focused_recheck": true
+    }
+  },
+  "cache": {
+    "maximum_retained_bytes": 33554432,
+    "maximum_entries": 32,
+    "budget_includes": "Source/result bytes and conservative four-byte-per-character charge for text/settings keys",
+    "key": "Exact program bytes, sorted characters and complete JSON-serializable options snapshot",
+    "engine_epoch": "Changed active constructor/populate/subset/save/close entrypoints clear previous cache generation",
+    "miss": "Existing fontTools algorithm and copyright/license-preserving settings",
+    "hit": "No populate/subset/save; input file still read and cancellation checked",
+    "unsupported_option_objects": "Use normal engine without caching",
+    "errors": "Never retained",
+    "cancel_after_insert": "New entry removed before propagation",
+    "fork": "Child process resets cache/lock with same limits; real fork test reserved for POSIX runner"
+  },
+  "quality": {
+    "cold_vs_cached_subset_byte_equality": true,
+    "all_name_records_preserved": true,
+    "source_characters_settings_and_no_subset_policy_tested": true,
+    "concurrent_access_and_LRU_budget_tested": true,
+    "DOCX_cold_first_cached_embedded_programs_font_table_body_XML_identical": true,
+    "PDF_cold_first_cached_font_programs_text_and_pixels_identical": true,
+    "Model_input_unchanged": true,
+    "warm_repeat_subsetter_calls": 0
+  },
+  "installed_acceptance": {
+    "packages": [
+      "opendoc-formats==0.42.0",
+      "opendoc-model==0.19.0",
+      "fonttools==4.66.1"
+    ],
+    "command": "python -I tools/package_smoke.py --fonts",
+    "Office_HTML_PDF_Pillow_engines_absent": true,
+    "byte_equality_coverage_notices_and_single_engine_call_passed": true,
+    "runtime_source_wheel_installed_files_identical": 217,
+    "tested_wheel_sha256": "d83ae309381f6e99765250de5599a21a88ec979e920f9f0e1eb037a2b0d603a1",
+    "CI_profile_added_not_dispatched": true
+  },
+  "source_files_sha256": {
+    "src/opendoc_formats/fonts/subset_cache.py": "cbd9ae3c63510d24bc4345cfd98b3c24fbe2faba4ab8443e0bfbb1b42118fb9b",
+    "src/opendoc_formats/fonts/embedding.py": "7ad6ff0434d9ffdca4da9a27d171612b643057f72b4fdd269dcbfd73e0a750c6",
+    "tests/test_font_subset_cache.py": "783306481c8798b8faa03aadde9dfbeb214abb235ce0a63ef2e5ff990c702da2",
+    "tests/test_font_subset_cancellation.py": "7f4b0d4b4c8a75151a9de26e5c0e2021ad36525abe3ba8960a928cab730be993",
+    "tools/package_smoke.py": "fb942618c3f839ecd05abc037fef72472c68037ad75108b6d8b5e466ebe4178c",
+    ".github/workflows/ci.yml": "a085ce6d0a69632d8c401f1841df84c6ad2c64681f971a6078d4190f94e17fd5"
+  },
+  "limitations": [
+    "Retention limits do not bound source reads or memory/work inside fontTools",
+    "No replacement of subsetting, shaping, rendering or embedding-rights policy",
+    "Real fork case is not executed on this Windows host",
+    "No changes to OpenDoc Model or package license profile"
+  ]
+}

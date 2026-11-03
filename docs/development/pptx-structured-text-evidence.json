@@ -1,0 +1,119 @@
+{
+  "scope": "Bindings v7: ordinary runs around protected native fields, line breaks and paragraph separators in shapes and tables",
+  "model": "opendoc-model==0.19.0; import opendoc_model",
+  "model_contract_changes": false,
+  "dependencies_changed": false,
+  "implementation": {
+    "module": "opendoc_formats.ooxml.pptx_text_slots",
+    "reuse": "One native paragraph slot parser/matcher replaces duplicated shape and table-cell parsing",
+    "editable": "Existing ordinary a:r/a:t slots only; exact position/count matching, not value-based native lookup",
+    "protected": "Field ID/type/cache/style, line break rPr/topology, paragraph separators and package payloads remain protected by native slots and official Model digest",
+    "empty_cache": "Empty a:fld creates no Model run and remains native opaque content",
+    "diagnostics": "Located pptx.field / cached-field-text record explicitly marks cached-only projection as opaque",
+    "compatibility": "v1-v6 retain original scopes; structured slots enabled only in v7",
+    "atomicity": "Unknown children and protected edits refuse; cancellation preserves source, Model and existing destination"
+  },
+  "checks": {
+    "test_file": "tests/writers/test_pptx_structured_text.py",
+    "structured_text_cases_passed": 24,
+    "full_project_run": false,
+    "ruff": "passed",
+    "configured_strict_mypy": "41 files passed",
+    "boundary_audit_modules": 232,
+    "reviewed_license_inventory": "unchanged lockfile matches inventory",
+    "regression_command": "python -m pytest tests/readers tests/writers tests/support/test_ooxml_pptx_package.py tests/support/test_ooxml_package.py -k 'pptx or office_export_cancellation or ooxml_package' -q --tb=short",
+    "regression_passed": 539,
+    "regression_deselected": 1545,
+    "regression_seconds": 184.06,
+    "docs": "generated and strict build passed",
+    "release_archives": "0.42.0 wheel/sdist, licenses, metadata, resources and required modules verified",
+    "installed_pptx_only_smoke": {
+      "passed": true,
+      "python": "3.12.16",
+      "script": "tools/pptx_package_smoke.py",
+      "scope": "Two JSON cycles; text around field/break in shape and table alongside native frames/grid/crop; protected field/break XML exact and all other payloads unchanged",
+      "absent": [
+        "fontTools",
+        "docx",
+        "pymupdf",
+        "pypdf",
+        "bs4"
+      ],
+      "installed": [
+        "opendoc-formats==0.42.0",
+        "opendoc-model==0.19.0",
+        "python-pptx==1.0.2",
+        "lxml==6.1.3",
+        "Pillow==12.3.0",
+        "typing-extensions==4.16.0",
+        "xlsxwriter==3.3.1"
+      ],
+      "inventory_scope": "Reviewed uv.lock unchanged; smoke additionally resolves xlsxwriter 3.3.1, lock pins 3.3.0"
+    }
+  },
+  "native_acceptance": {
+    "application": "Microsoft PowerPoint 16.0",
+    "script": "tools/pptx_structured_text_powerpoint_acceptance.ps1",
+    "fixture": "tests.writers.test_pptx_structured_text.own_structured_text",
+    "profiles": [
+      "shape",
+      "table"
+    ],
+    "source_unchanged": true,
+    "field_and_break_nodes_unchanged": true,
+    "dpi": 108,
+    "textbox_image_inspected": true,
+    "results": {
+      "shape": {
+        "changed_payloads": [
+          "ppt/slides/slide1.xml"
+        ],
+        "mupdf": {
+          "dimensions": [
+            1080,
+            810
+          ],
+          "all_pixels_equal": true,
+          "decoded_rgb_sha256": "d6b2bde7f534ed2cfc23bcc75a954daa8cde26b19fbcf9daf6656abf0b360390"
+        },
+        "poppler": {
+          "dimensions": [
+            1080,
+            810
+          ],
+          "all_pixels_equal": true,
+          "decoded_rgb_sha256": "ddb408730d83675fb5e16d8db1d935a51c7481930e0d9a18be71d07033431018"
+        }
+      },
+      "table": {
+        "changed_payloads": [
+          "ppt/slides/slide1.xml"
+        ],
+        "mupdf": {
+          "dimensions": [
+            1080,
+            810
+          ],
+          "all_pixels_equal": true,
+          "decoded_rgb_sha256": "e6b6f49cf5d3c3e92d39fd57c6941bb4e79f67f0bf9cf247fba277bdcf2f8feb"
+        },
+        "poppler": {
+          "dimensions": [
+            1080,
+            810
+          ],
+          "all_pixels_equal": true,
+          "decoded_rgb_sha256": "88c5748c4af1eefbc71d599bf3f669b061b361e3e07bf27ef6c6dd5da043a166"
+        }
+      }
+    },
+    "ownership": "Read-only source, macros disabled, fresh owned COM app only; only owned decks and RCWs closed, own process exit awaited"
+  },
+  "limits": [
+    "No field creation, editing or evaluation in Model; cached text is not a semantic field DTO",
+    "No line-break/paragraph topology editing or arbitrary run insertion/removal",
+    "Unsupported native inline children remain outside editable text profile",
+    "Finite source acceptance on own slidenum field; not all field/rendering/layout profiles",
+    "No full general PPTX fidelity, ZIP metadata or signature editing claim"
+  ]
+}

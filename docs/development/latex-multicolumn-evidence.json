@@ -1,0 +1,160 @@
+{
+  "scope": "Four independent multicolumn originals and one independently authored span/text edit reference; two full source/Model/JSON/TeX cycles",
+  "dpi": 108,
+  "pixel_tolerance": 0,
+  "masks": null,
+  "image_objects": 0,
+  "originals": [
+    {
+      "case": 0,
+      "sha256": "e2cf22180995828225a0e8722f6807377fc32fced8dad92d0761b46d5800b2de",
+      "body": "\\begin{tabular}{|l|c|r|}\\hline\\multicolumn{2}{|c|}{\\textbf{Merged \\& A}} & 7\\%\\\\\\hline Left & mid & right\\\\\\hline\\end{tabular}",
+      "source_unchanged": true
+    },
+    {
+      "case": 1,
+      "sha256": "b1311064551b12b27e448a0c82a685d88fbdcb2c5b1027a3698d6c2eba85b979",
+      "body": "\\begin{tabular}{lcr}A & \\multicolumn{2}{r}{\\(x^2\\)}\\\\B & C & D\\end{tabular}",
+      "source_unchanged": true
+    },
+    {
+      "case": 2,
+      "sha256": "132f71f161b2e686aa87d73f9a9366ebc01381f3fe2cf808b2940996794ec7c9",
+      "body": "\\begin{tabular}{|l|r|}\\hline\\multicolumn{1}{||r|}{One} & Two\\\\\\multicolumn{2}{|c|}{}\\\\\\hline\\end{tabular}",
+      "source_unchanged": true
+    },
+    {
+      "case": 3,
+      "sha256": "289c049c052312f0dbffea9e45ffc66e03682896479384a739f20bd0eb7f9717",
+      "body": "\\begin{tabular}{||l|c|r||}\\hline\\multicolumn{3}{||c||}{Заголовок}\\\\\\hline\\hline A & H\\textsubscript{2}O & \\(\\begin{pmatrix}1&2\\\\3&4\\end{pmatrix}\\)\\\\\\hline\\end{tabular}",
+      "source_unchanged": true
+    },
+    {
+      "case": "independent-edited-reference",
+      "sha256": "edc6f66121174729604498687743977ee1cb888bef41fea42e949c2f493eb16c",
+      "body": "\\begin{tabular}{|l|r|}\\hline\\multicolumn{2}{||r|}{Edited \\& merged}\\\\\\multicolumn{2}{|c|}{}\\\\\\hline\\end{tabular}",
+      "source_unchanged": true
+    }
+  ],
+  "comparisons": [
+    {
+      "case": 0,
+      "cycle": 1,
+      "shape_equal": true,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_sha256": "17ec5bcf33505bb44ffed4bc5f9aa226c90b79727aeedc1e1388d7aca5c108fa",
+      "poppler_sha256": "5e5a6247fa17c5e0c2bbe8ea508962be96a58083ac1ab138a84bec8c825acfa0"
+    },
+    {
+      "case": 0,
+      "cycle": 2,
+      "shape_equal": true,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_sha256": "17ec5bcf33505bb44ffed4bc5f9aa226c90b79727aeedc1e1388d7aca5c108fa",
+      "poppler_sha256": "5e5a6247fa17c5e0c2bbe8ea508962be96a58083ac1ab138a84bec8c825acfa0"
+    },
+    {
+      "case": 1,
+      "cycle": 1,
+      "shape_equal": true,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_sha256": "19afa7acdfb578b1b45eb9c8d77c629322e12e922869af79853f00f50cba5645",
+      "poppler_sha256": "72db89586dce4293a0c57973518a1289499a3adb12a5511058a313fd8c648ae9"
+    },
+    {
+      "case": 1,
+      "cycle": 2,
+      "shape_equal": true,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_sha256": "19afa7acdfb578b1b45eb9c8d77c629322e12e922869af79853f00f50cba5645",
+      "poppler_sha256": "72db89586dce4293a0c57973518a1289499a3adb12a5511058a313fd8c648ae9"
+    },
+    {
+      "case": 2,
+      "cycle": 1,
+      "shape_equal": true,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_sha256": "67490558e61378c19be5de43101a2257a400ae59de9e5cd27740f198baeb2c82",
+      "poppler_sha256": "02c00294b22dd3907778a9bfb8b1592941e2e6f81132a7dcb6366f0b9c4b257e"
+    },
+    {
+      "case": 2,
+      "cycle": 2,
+      "shape_equal": true,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_sha256": "67490558e61378c19be5de43101a2257a400ae59de9e5cd27740f198baeb2c82",
+      "poppler_sha256": "02c00294b22dd3907778a9bfb8b1592941e2e6f81132a7dcb6366f0b9c4b257e"
+    },
+    {
+      "case": 3,
+      "cycle": 1,
+      "shape_equal": true,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_sha256": "bce110e0887865bc08c7243832ae9b0c42380ba46e7ddfad7fd5356dcad0b0de",
+      "poppler_sha256": "9f2f3999b6209a6b023957cb18d8834aa34d800be4e2b1c9ad96273b8fb822d5"
+    },
+    {
+      "case": 3,
+      "cycle": 2,
+      "shape_equal": true,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_sha256": "bce110e0887865bc08c7243832ae9b0c42380ba46e7ddfad7fd5356dcad0b0de",
+      "poppler_sha256": "9f2f3999b6209a6b023957cb18d8834aa34d800be4e2b1c9ad96273b8fb822d5"
+    },
+    {
+      "case": "span-and-text-edit",
+      "cycle": 1,
+      "common_span_authoritative": true,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_sha256": "eee64a47a35e8d62408319651eaba0953e690ad27ac6b4d8f3f4357e0e0ae4fc",
+      "poppler_sha256": "26172ff4df80fbdde093e7d9b5af76ae181f1afa40e35c5fb7392c9abbb751a3"
+    },
+    {
+      "case": "span-and-text-edit",
+      "cycle": 2,
+      "common_span_authoritative": true,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_sha256": "eee64a47a35e8d62408319651eaba0953e690ad27ac6b4d8f3f4357e0e0ae4fc",
+      "poppler_sha256": "26172ff4df80fbdde093e7d9b5af76ae181f1afa40e35c5fb7392c9abbb751a3"
+    }
+  ],
+  "source_sha256": {
+    "src/opendoc_formats/tex_tables.py": "7d632afbc94cd0c4e62dd382520ee14644a7b1784d94beebcd6e7b2bafe1c512",
+    "src/opendoc_formats/readers/tex_model.py": "e11179e7627a4a8e9a1dc1375bffcf53da107f515fd104ce0881e87c0cea41cb",
+    "src/opendoc_formats/writers/latex_tables.py": "d539219e143f52cab910885c70d7bd84e0d26158210d82fa7a8c63b9664b2a35",
+    "src/opendoc_formats/writers/latex_text.py": "98555edd49ffe7ad7e2049f801ac5c8ed6c350e70a21b43653753752091a0e86"
+  },
+  "runtime": {
+    "opendoc-model": "0.19.0",
+    "pymupdf": "1.28.2",
+    "pillow": "12.3.0"
+  },
+  "pdflatex": "pdfTeX 3.141592653-2.6-1.40.29 (TeX Live 2026)",
+  "limitations": [
+    "Horizontal column_span only; no multirow",
+    "Literal n and exactly one l/c/r override only",
+    "No paragraph columns, nested or floating tables",
+    "No complete assessment or arbitrary page layout claim"
+  ],
+  "installed_base_wheel": {
+    "sha256": "4f87b69c4a4b4d7bd3b6629fe52f2c9c470f39a48d0c71784f771c7bcc21f978",
+    "python": "3.12.16",
+    "model": "official opendoc-model 0.19.0",
+    "office_pdf_font_engines": false,
+    "smoke": "python -I tools/package_smoke.py passed with common column_span and source reimport"
+  },
+  "tests": {
+    "tex_and_related_text": 460,
+    "new_multicolumn_cases": 29
+  }
+}

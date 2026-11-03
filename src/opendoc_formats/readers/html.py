@@ -1,0 +1,365 @@
+"""Static HTML to editable document blocks, without browser or network execution."""
+
+from __future__ import annotations
+
+import re
+from collections import Counter
+from collections.abc import Callable
+from pathlib import Path
+from typing import Any
+from urllib.parse import urlsplit
+
+import opendoc_model as od
+from opendoc_model import (
+    DocumentModel,
+    Formula,
+    FormulaFormat,
+    Paragraph,
+    Provenance,
+    Section,
+    Table,
+    TableCell,
+    TableRow,
+    TextRun,
+    TextStyle,
+)
+
+from opendoc_formats.html_tables import import_caption_semantics, import_table_semantics
+from opendoc_formats.readers.html_css import Cascade
+from opendoc_formats.readers.html_diagnostics import HtmlDiagnostics
+from opendoc_formats.readers.html_fonts import FontFaces
+from opendoc_formats.readers.html_resources import LIMIT, Resources, clean_xml
+from opendoc_formats.support.cancellation import check_cancelled
+
+PARAGRAPHS = {"p", "h1", "h2", "h3", "h4", "h5", "h6", "pre", "blockquote", "figcaption", "dt", "dd"}
+CONTAINERS = {"html", "body", "main", "section", "article", "div", "header", "footer", "nav", "aside", "figure"}
+INLINE = {"span", "a", "b", "strong", "i", "em", "u", "sup", "sub", "code", "small", "label", "abbr"}
+SKIP = {"head", "style", "script", "link", "meta", "base", "iframe", "object", "embed", "template"}
+
+
+def read_html_model(path: str | Path, *, resource_root: str | Path | None = None,
+                    limits: od.DocumentLimits | None = None, cancelled: Callable[[], bool] | None = None) -> DocumentModel:
+    from bs4 import BeautifulSoup
+
+    check_cancelled(cancelled, 'HTML import')
+    source = Path(path)
+    if source.stat().st_size > LIMIT:
+        raise ValueError("HTML exceeds 10 MiB")
+    with source.open("rb") as stream:
+        data = stream.read(LIMIT + 1)
+    if len(data) > LIMIT:
+        raise ValueError("HTML exceeds 10 MiB")
+    soup = BeautifulSoup(data, "html.parser")
+    check_cancelled(cancelled, 'HTML parsing')
+    reader = HtmlReader(soup, source, resource_root, limits=limits, cancelled=cancelled)
+    for node in soup.find_all(["script", "iframe", "object", "embed", "link", "base"]):
+        reader.warn("html-content", f"Не исполнен или не загружен элемент: {node.name}", node)
+    for node in soup.find_all(True):
+        check_cancelled(cancelled, 'HTML content inventory')
+        if any(key.lower().startswith("on") for key in node.attrs):
+            reader.warn("html-content", f"Обработчики событий не перенесены: {node.name}", node)
+        if node.name == "img" and any(key in node.attrs for key in ("srcset", "width", "height")):
+            reader.warn("html-resource", "Размеры и адаптивный выбор img не перенесены; используется исходное изображение.", node)
+        if any(key == "role" or key == "dir" or key.startswith("aria-") for key in node.attrs
+               if not (node.name == "svg" and key == "aria-label")):
+            reader.warn("html-accessibility", "ARIA/role/dir вне статического профиля не перенесены.", node)
+    blocks = reader.blocks(soup.body or soup)
+    document = DocumentModel(
+        sections=[Section(blocks=blocks)],
+        resources=reader.resources.items,
+        styles=reader.styles,
+        source_format="html",
+        metadata={
+            "title": soup.title.get_text() if soup.title else "",
+            "source_name": source.name,
+            "engine": "bs4+tinycss2",
+            "html": reader.diagnostics.finish(),
+        },
+    )
+    language = reader.language(soup.html or soup)
+    document.metadata["language"] = language if language is not None else ""
+    reader.diagnostics.attach(document, source, data, limits=limits)
+    check_cancelled(cancelled, 'HTML import completion')
+    return document
+
+
+class HtmlReader:
+    def __init__(self, soup: Any, source: Path, resource_root: str | Path | None, *,
+                 limits: od.DocumentLimits | None = None, cancelled: Callable[[], bool] | None = None) -> None:
+        self.source, self.list_count = source, 0
+        self.cancelled = cancelled
+        self.diagnostics = HtmlDiagnostics(cancelled=cancelled)
+        self.warn = self.diagnostics.warn
+        self.resources = Resources(self.warn, resource_root, cancelled=cancelled)
+        fonts = FontFaces(self.resources.items, self.warn, limits=limits, cancelled=cancelled)
+        self.css = Cascade(soup, self.warn, fonts=fonts, cancelled=cancelled)
+        self.styles = {}
+        source_ids = Counter()
+        for node in soup.find_all(id=True):
+            check_cancelled(cancelled, 'HTML source anchor')
+            source_ids[str(node['id'])] += 1
+        self.semantic_ids = set(source_ids)
+        self.ambiguous_ids = frozenset(identifier for identifier, count in source_ids.items() if count > 1)
+        self.semantic_count = 0
+
+    def semantic_id(self) -> str:
+        while True:
+            self.semantic_count += 1
+            identifier = f"opendoc-html-{self.semantic_count}"
+            if identifier not in self.semantic_ids:
+                self.semantic_ids.add(identifier)
+                return identifier
+
+    @staticmethod
+    def language(node: Any) -> str | None:
+        for owner in [node, *node.parents]:
+            if owner.has_attr("lang"):
+                return str(owner["lang"])
+        return None
+
+    def blocks(self, root: Any) -> list[od.Block]:
+        check_cancelled(self.cancelled, 'HTML block')
+        from bs4 import Comment, NavigableString, Tag
+
+        result, content, content_nodes = [], [], []
+
+        def flush() -> None:
+            has_image = any(getattr(node, "name", None) == "img" for node in content_nodes)
+            empty_anchor = bool(root.get("id")) and root.name in PARAGRAPHS | {"caption"} and not result
+            if not content and not has_image and not empty_anchor:
+                return
+            preserve = self.css.style(root).get("white-space") in {"pre", "pre-wrap"}
+            visible = [item for item in content if not (isinstance(item, TextRun) and not item.text)]
+            if not preserve:
+                if visible and isinstance(visible[0], TextRun) and not visible[0].properties.get("html_preserve_space"):
+                    visible[0].text = visible[0].text.lstrip(" \t\r\n")
+                if visible and isinstance(visible[-1], TextRun) and not visible[-1].properties.get("html_preserve_space"):
+                    visible[-1].text = visible[-1].text.rstrip(" \t\r\n")
+            has_anchor = any(isinstance(item, TextRun) and item.properties.get("anchor_id") for item in content)
+            if has_image or has_anchor or empty_anchor or any(not isinstance(item, TextRun) or item.text for item in content):
+                css = self.css.style(root)
+                props = {"html": {"tag": root.name}}
+                if root.get("id") and not result:
+                    props["anchor_id"] = root["id"]
+                heading_style = None
+                if root.name in {"h1", "h2", "h3", "h4", "h5", "h6"}:
+                    heading_style = f"Heading{root.name[1]}"
+                    self.styles.setdefault(heading_style, TextStyle(properties={"style_type": "paragraph"}))
+                result.append(
+                    Paragraph(
+                        list(content),
+                        style_id=heading_style,
+                        alignment=css.get("text-align"),
+                        properties=props,
+                        provenance=Provenance("html", str(self.source), object_id=root.get("id")),
+                    )
+                )
+                self.diagnostics.bind(result[-1], root, content_nodes)
+            content.clear()
+            content_nodes.clear()
+
+        def visit(node: Any) -> None:
+            check_cancelled(self.cancelled, 'HTML node')
+            with self.diagnostics.at(node.parent if isinstance(node, NavigableString) else node):
+                visit_node(node)
+
+        def visit_node(node: Any) -> None:
+            if isinstance(node, Comment):
+                return
+            if isinstance(node, NavigableString):
+                css = self.css.style(node.parent)
+                value = str(node)
+                if css.get("white-space") not in {"pre", "pre-wrap"}:
+                    value = re.sub(r"[\t\r\n\f ]+", " ", value)
+                    previous = next((item for item in reversed(content) if not isinstance(item, TextRun) or item.text), None)
+                    if previous is None or (isinstance(previous, TextRun) and previous.text.endswith((" ", "\n"))):
+                        value = value.lstrip(" ")
+                if value:
+                    content_nodes.append(node)
+                    anchor = node.find_parent("a")
+                    href = self.link(anchor.get("href")) if anchor else None
+                    style = self.css.text_style(css, node.parent)
+                    style.language = self.language(node.parent)
+                    content.append(
+                        TextRun(
+                            value,
+                            style,
+                            link=href,
+                            properties={"html_preserve_space": css.get("white-space") in {"pre", "pre-wrap"}},
+                        )
+                    )
+                return
+            if not isinstance(node, Tag) or node.name in SKIP:
+                return
+            if self.css.style(node).get("display") == "none" or node.has_attr("hidden"):
+                return
+            if node.name in PARAGRAPHS | CONTAINERS:
+                flush()
+                result.extend(self.blocks(node))
+            elif node.name in {"ul", "ol"}:
+                flush()
+                result.extend(self.list_blocks(node))
+            elif node.name == "table":
+                flush()
+                caption = node.find("caption", recursive=False)
+                caption_blocks = []
+                if caption is not None:
+                    caption_blocks = self.blocks(caption) or [Paragraph()]
+                    for block in caption_blocks:
+                        block.properties["html_table_caption"] = True
+                    result.extend(caption_blocks)
+                table = self.table(node)
+                if caption is not None:
+                    error = import_caption_semantics(
+                        table, caption_blocks, identifier=self.semantic_id, resources=self.resources.items, styles=self.styles,
+                        ambiguous_ids=self.ambiguous_ids,
+                    )
+                    if error:
+                        self.warn("html-table-semantics", f"Общая подпись таблицы не заполнена: {error}", caption)
+                result.append(table)
+            elif node.name == "br":
+                content.append(TextRun("\n"))
+            elif node.name == "img":
+                content_nodes.append(node)
+                image = self.resources.image(node.get("src", ""), node.get("alt", ""))
+                if image:
+                    content.append(image)
+                elif node.get("alt"):
+                    content.append(TextRun(node["alt"]))
+            elif node.name == "svg":
+                content_nodes.append(node)
+                image = self.resources.svg(str(node), node.get("aria-label", ""))
+                if image:
+                    content.append(image)
+            elif node.name == "math":
+                content_nodes.append(node)
+                safe = clean_xml(str(node), "math", self.warn, cancelled=self.cancelled)
+                if safe:
+                    content.append(
+                        Formula(safe, FormulaFormat.MATHML, display=node.get("display") == "block", fallback_text=node.get_text())
+                    )
+            else:
+                if node.name not in INLINE:
+                    self.warn("html-content", f"Элемент сохранён как содержимое: {node.name}")
+                if node.get("id"):
+                    content.append(TextRun("", properties={"anchor_id": node["id"]}))
+                    content_nodes.append(node)
+                for child in node.children:
+                    visit(child)
+
+        for child in root.children:
+            visit(child)
+        flush()
+        return result
+
+    def link(self, href: str | None) -> str | None:
+        if not href:
+            return None
+        if href.startswith("#") or urlsplit(href).scheme.lower() in {"http", "https", "mailto"}:
+            return href
+        self.warn("html-links", f"Ссылка не перенесена: {href[:160]}")
+        return None
+
+    def list_blocks(self, node: Any) -> list[od.Block]:
+        self.list_count += 1
+        list_id = self.list_count
+        depth = len(node.find_parents(["ul", "ol"]))
+        try:
+            start = int(node.get("start", 1))
+        except ValueError:
+            start = 1
+            self.warn("html-list", "Некорректный start списка заменён единицей.")
+        if node.has_attr("reversed") or node.get("type"):
+            self.warn("html-list", "Особый тип или обратная нумерация списка не перенесены.")
+        result = []
+        for index, item in enumerate(node.find_all("li", recursive=False)):
+            check_cancelled(self.cancelled, 'HTML list item')
+            blocks = self.blocks(item)
+            if not blocks or not isinstance(blocks[0], Paragraph) or "html_list_id" in blocks[0].properties:
+                blocks.insert(0, Paragraph())
+                self.diagnostics.bind(blocks[0], item)
+            if any(not isinstance(block, Paragraph) or "html_list_id" not in block.properties for block in blocks[1:]):
+                self.warn("html-list", "Многоабзацный пункт списка представлен последовательностью блоков.", item)
+            blocks[0].properties.update(
+                {
+                    "html_list_id": list_id,
+                    "list_level": depth,
+                    "list_kind": "ordered" if node.name == "ol" else "unordered",
+                    "list_start": start,
+                    "list_value": start + index,
+                }
+            )
+            if item.get("value"):
+                self.warn("html-list", "Индивидуальный номер li не перенесён.", item)
+            result.extend(blocks)
+        return result
+
+    def table(self, node: Any) -> od.Table:
+        rows = []
+        groups = {}
+        for row in node.find_all("tr"):
+            check_cancelled(self.cancelled, 'HTML table row')
+            if row.find_parent("table") is not node:
+                continue
+            cells = []
+            for cell in row.find_all(["td", "th"], recursive=False):
+                check_cancelled(self.cancelled, 'HTML table cell')
+                spans = []
+                for key in ("rowspan", "colspan"):
+                    try:
+                        span = int(cell.get(key, 1))
+                        if not 1 <= span <= 100:
+                            raise ValueError
+                    except ValueError:
+                        span = 1
+                        self.warn("html-table", f"Некорректное {key} заменено единицей.", cell)
+                    spans.append(span)
+                props = {"html_cell_tag": cell.name}
+                if cell.get("id"):
+                    props["anchor_id"] = str(cell["id"])
+                if cell.has_attr("headers"):
+                    headers = cell["headers"]
+                    props["html_headers"] = " ".join(headers) if isinstance(headers, list) else str(headers)
+                if cell.has_attr("scope"):
+                    if cell.name == "th" and cell["scope"] in {"row", "col", "rowgroup", "colgroup"}:
+                        props["html_scope"] = cell["scope"]
+                    else:
+                        self.warn("html-accessibility", "Scope ячейки вне поддержанного профиля не перенесён.", cell)
+                cell_blocks = self.blocks(cell)
+                for block in cell_blocks:
+                    if block.properties.get("html", {}).get("tag") == cell.name:
+                        block.properties.pop("anchor_id", None)
+                cells.append(TableCell(cell_blocks, row_span=spans[0], column_span=spans[1], properties=props))
+            group = row.parent.name if row.parent.name in {"thead", "tbody", "tfoot"} else "tbody"
+            group_id = groups.setdefault(id(row.parent), len(groups))
+            rows.append(TableRow(cells, properties={"html_row_group": group, "html_row_group_id": group_id}))
+        table = Table(rows, properties={"anchor_id": node["id"]} if node.get("id") else {})
+        columns = []
+        column = 0
+        for group in node.find_all(['colgroup', 'col'], recursive=False):
+            children = group.find_all('col', recursive=False) if group.name == 'colgroup' else []
+            try:
+                spans = [int(child.get('span', 1)) for child in children] if children else [int(group.get('span', 1))]
+                if any(not 1 <= span <= 10_000 for span in spans) or column + sum(spans) > 10_000:
+                    raise ValueError
+            except (ValueError, TypeError):
+                self.warn('html-table-semantics', 'Некорректная или чрезмерная группа столбцов не перенесена.', group)
+                table.properties['html_column_groups_invalid'] = True
+                break
+            if group.name == 'colgroup':
+                columns.append({'id': str(group.get('id') or self.semantic_id()), 'start': column, 'span': sum(spans)})
+            for element in [group, *children]:
+                if any(key not in {'span', 'id'} for key in element.attrs) or (element is not group and element.get('id')):
+                    self.warn('html-table', 'Оформление и отдельные ID столбцов вне профиля не перенесены.', element)
+            column += sum(spans)
+        if columns:
+            table.properties['html_column_groups'] = columns
+        error = import_table_semantics(
+            table, identifier=self.semantic_id, resources=self.resources.items, styles=self.styles,
+            ambiguous_ids=self.ambiguous_ids,
+        )
+        table.properties['html_table_semantics_migration_attempted'] = True
+        if error:
+            self.warn("html-table-semantics", f"Общая семантика таблицы не заполнена: {error}", node)
+        self.diagnostics.bind(table, node)
+        return table

@@ -1,0 +1,128 @@
+{
+  "profile": "native-literal-documentclass-options-v1",
+  "cases": [
+    {
+      "case": "columns",
+      "class": "article",
+      "dpi": 108,
+      "pixel_tolerance": 0,
+      "masks": null,
+      "source_sha256": "36af2e814969dd814ffcda3126e3939a88b18c1724487c0ff09db33afdb5841f",
+      "reference_sha256": "36af2e814969dd814ffcda3126e3939a88b18c1724487c0ff09db33afdb5841f",
+      "cycles": [
+        {
+          "source_sha256": "db934a4871415cbd63f021478c5151e1908a50a3bb4e93385602742378a817dd",
+          "mupdf_exact_pages": 1,
+          "poppler_exact_pages": 1,
+          "image_objects": 0
+        },
+        {
+          "source_sha256": "db934a4871415cbd63f021478c5151e1908a50a3bb4e93385602742378a817dd",
+          "mupdf_exact_pages": 1,
+          "poppler_exact_pages": 1,
+          "image_objects": 0
+        }
+      ],
+      "source_unchanged": true
+    },
+    {
+      "case": "book",
+      "class": "book",
+      "dpi": 108,
+      "pixel_tolerance": 0,
+      "masks": null,
+      "source_sha256": "155f53bb31737deeac6fc752ac4f10ddcfd8bade00c214efe0262fcff77cef68",
+      "reference_sha256": "155f53bb31737deeac6fc752ac4f10ddcfd8bade00c214efe0262fcff77cef68",
+      "cycles": [
+        {
+          "source_sha256": "780f5e3eabf37cc00f4dbbaf31b0e77345d944fceda2f1f51f3e62bab69d9429",
+          "mupdf_exact_pages": 4,
+          "poppler_exact_pages": 4,
+          "image_objects": 0
+        },
+        {
+          "source_sha256": "780f5e3eabf37cc00f4dbbaf31b0e77345d944fceda2f1f51f3e62bab69d9429",
+          "mupdf_exact_pages": 4,
+          "poppler_exact_pages": 4,
+          "image_objects": 0
+        }
+      ],
+      "source_unchanged": true
+    },
+    {
+      "case": "empty",
+      "class": "report",
+      "dpi": 108,
+      "pixel_tolerance": 0,
+      "masks": null,
+      "source_sha256": "3f4a8ecbb2cccd5ba2b2c28d28adc55764a09ddb39f7c5dc3a341490de87ccb5",
+      "reference_sha256": "3f4a8ecbb2cccd5ba2b2c28d28adc55764a09ddb39f7c5dc3a341490de87ccb5",
+      "cycles": [
+        {
+          "source_sha256": "d2db9c2685f3e0720af32f6ed4d0cf5d0a98ddb2518c65835692f2b1c1dcae75",
+          "mupdf_exact_pages": 1,
+          "poppler_exact_pages": 1,
+          "image_objects": 0
+        },
+        {
+          "source_sha256": "d2db9c2685f3e0720af32f6ed4d0cf5d0a98ddb2518c65835692f2b1c1dcae75",
+          "mupdf_exact_pages": 1,
+          "poppler_exact_pages": 1,
+          "image_objects": 0
+        }
+      ],
+      "source_unchanged": true
+    },
+    {
+      "case": "bom-crlf",
+      "class": "article",
+      "dpi": 108,
+      "pixel_tolerance": 0,
+      "masks": null,
+      "source_sha256": "0a2a121526a952bc5e568e5db60a682b7366ba09d9af1d79e647aceb18d92d12",
+      "reference_sha256": "0a2a121526a952bc5e568e5db60a682b7366ba09d9af1d79e647aceb18d92d12",
+      "cycles": [
+        {
+          "source_sha256": "f75a446dc58592d75fb823b443659c85505046c069dad0aeabfef079b7cc70e6",
+          "mupdf_exact_pages": 1,
+          "poppler_exact_pages": 1,
+          "image_objects": 0
+        },
+        {
+          "source_sha256": "f75a446dc58592d75fb823b443659c85505046c069dad0aeabfef079b7cc70e6",
+          "mupdf_exact_pages": 1,
+          "poppler_exact_pages": 1,
+          "image_objects": 0
+        }
+      ],
+      "source_unchanged": true
+    },
+    {
+      "case": "edit",
+      "class": "article",
+      "dpi": 108,
+      "pixel_tolerance": 0,
+      "masks": null,
+      "source_sha256": "986a033623f022fa033378e4a0677563613ef3cb9beec1b6ade5ae98ccf76f14",
+      "reference_sha256": "dc11e003195b4624eecef9e18e375ae2ffdb46fabdf8d277ab0a5e5a41c17d0d",
+      "cycles": [
+        {
+          "source_sha256": "64c6501fbae73db0a72153f8f99aa1611eb31e527d736a9812a0b605fcae447e",
+          "mupdf_exact_pages": 1,
+          "poppler_exact_pages": 1,
+          "image_objects": 0
+        },
+        {
+          "source_sha256": "64c6501fbae73db0a72153f8f99aa1611eb31e527d736a9812a0b605fcae447e",
+          "mupdf_exact_pages": 1,
+          "poppler_exact_pages": 1,
+          "image_objects": 0
+        }
+      ],
+      "source_unchanged": true
+    }
+  ],
+  "mupdf_exact_pages": 16,
+  "poppler_exact_pages": 16,
+  "quality_scope": "Independent finite originals and authored option edit, full pages, two JSON/TeX cycles; no general preamble or page geometry claim"
+}

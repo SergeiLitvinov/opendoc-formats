@@ -1,0 +1,79 @@
+{
+  "scope": "Validated adjacent SingleSubst in static TrueType GSUB ligature extraction; not a shaping engine or subsetting replacement",
+  "model": "opendoc-model==0.19.0",
+  "published": false,
+  "dependencies_changed": false,
+  "checks": {
+    "native_ligature_tests_passed": 189,
+    "affected_font_and_PDF_tests_passed": 451,
+    "strict_mypy_files_passed": 39,
+    "ruff_passed": true
+  },
+  "profile": {
+    "post_versions": [
+      1,
+      2,
+      3
+    ],
+    "GSUB_versions": [
+      "1.0",
+      "1.1 with NULL FeatureVariations"
+    ],
+    "ligature_lookups": [
+      4,
+      "7 wrapping 4"
+    ],
+    "adjacent_single_lookups": [
+      1,
+      "7 wrapping 1"
+    ],
+    "single_formats": [
+      1,
+      2
+    ],
+    "coverage_formats": [
+      1,
+      2
+    ],
+    "lookup_flags": 0
+  },
+  "preservation": [
+    "Existing Unicode candidate policy matches independent fontTools oracle",
+    "Single substitutions are structurally validated, not applied or used to invent Unicode",
+    "Negative delta uses modulo 65536; input and output glyph IDs validated against maxp",
+    "Malformed coverage/counts/offsets/output IDs and inconsistent extension types never return partial native mappings",
+    "Cancellation and aggregate word/coverage work budget are retained",
+    "Saved PDF text and pixels checked across post 1/2/3 and GSUB 1.0/1.1 finite profiles"
+  ],
+  "fixture": {
+    "path": "tests/native/data/ligature-mixed.ttf",
+    "license": "MIT; owned synthetic glyphs, copyright and license name records",
+    "size": 1344,
+    "sha256": "a2493afa1a04e7b420679022188ff30763f6417fb34c8a86ffe84de4a777c0f0",
+    "generator": "program(tmp_path, table=mixed_gsub(single_substitution(delta=0)))"
+  },
+  "source_files_sha256": {
+    "src/opendoc_formats/fonts/sfnt_ligatures.py": "275860134e4c5d3b345d5d3e56e057aa778632ed014e7fa46c36fbc1d89ec273",
+    "tests/test_native_font_ligatures.py": "6892a97b78c9e85f2e459be19471563823f8f0a1a80558320f3126dd1015b531",
+    "tools/pdf_ligature_smoke.py": "f15b37cd4645222fb85d9ca76e3a637b3e8505654602c4cae158c1edab881215"
+  },
+  "installed_acceptance": {
+    "packages": [
+      "opendoc-formats==0.42.0",
+      "opendoc-model==0.19.0",
+      "pymupdf==1.28.2"
+    ],
+    "command": "python -I tools/pdf_ligature_smoke.py",
+    "fonttools_Office_HTML_Pillow_other_PDF_engines_absent": true,
+    "public_full_font_program_text_pixels_two_JSON_cycles_passed": true,
+    "verified_TextLayout_and_stale_after_edit_passed": true,
+    "runtime_source_wheel_installed_files_identical": 216,
+    "tested_wheel_sha256": "2d755abdb14832c76bd757276f28a784153ece90fab5da2e7bbe38865cd6013c"
+  },
+  "limitations": [
+    "No removal of optional fonts extra: actual subsetting and uncovered font profiles still need fontTools",
+    "Flags/context, other lookup kinds, variations and CFF retain established fallback",
+    "Finite synthetic corpus and one renderer do not prove arbitrary font/shaping or independent-renderer acceptance",
+    "No Model parser/codec changes"
+  ]
+}

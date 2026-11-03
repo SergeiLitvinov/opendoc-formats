@@ -1,0 +1,131 @@
+{
+  "version": "16.0",
+  "pdf_profile": "Word standard PDF export",
+  "program": "Microsoft Word",
+  "process_id": 36536,
+  "build": "16.0.17932",
+  "distinct_owned_process": true,
+  "observations": [
+    {
+      "name": "mode-14",
+      "sha256": "15A8282C15B53BD3CD396D2359A53DE4766DD5A0E71B95F27AB400CDE1C1A948",
+      "pages": 1,
+      "text": "Independent table position control\rItem\r\u0007Amount\r\u0007\r\u0007Own entry\r\u00077\r\u0007\r\u0007\r",
+      "compatibility_mode": 14,
+      "file": "mode-14.docx"
+    },
+    {
+      "name": "mode-14-cycle-1",
+      "sha256": "6E18ABB15C0F588952AE86B02622B094A678DECA4A2B25361F4E4FF969D9F80C",
+      "pages": 1,
+      "text": "Independent table position control\rItem\r\u0007Amount\r\u0007\r\u0007Own entry\r\u00077\r\u0007\r\u0007\r",
+      "compatibility_mode": 14,
+      "file": "mode-14-cycle-1.docx"
+    },
+    {
+      "name": "mode-14-cycle-2",
+      "sha256": "16A2FA13296BE7875280153B584734222E5A9AD84C8E2155DB2363C3344EC5A9",
+      "pages": 1,
+      "text": "Independent table position control\rItem\r\u0007Amount\r\u0007\r\u0007Own entry\r\u00077\r\u0007\r\u0007\r",
+      "compatibility_mode": 14,
+      "file": "mode-14-cycle-2.docx"
+    },
+    {
+      "name": "mode-15",
+      "sha256": "8076FC5CF4C818B8E921D7D0E84001E92DDAFC8A25BEC298CFCC68EF21864BF5",
+      "pages": 1,
+      "text": "Independent table position control\rItem\r\u0007Amount\r\u0007\r\u0007Own entry\r\u00077\r\u0007\r\u0007\r",
+      "compatibility_mode": 15,
+      "file": "mode-15.docx"
+    },
+    {
+      "name": "mode-15-cycle-1",
+      "sha256": "B69848D1BD66F119E9551A1EED8595511011726BB547E1D09B495F3841214588",
+      "pages": 1,
+      "text": "Independent table position control\rItem\r\u0007Amount\r\u0007\r\u0007Own entry\r\u00077\r\u0007\r\u0007\r",
+      "compatibility_mode": 15,
+      "file": "mode-15-cycle-1.docx"
+    },
+    {
+      "name": "mode-15-cycle-2",
+      "sha256": "DB8EAB2C2203F201D88310B20868DAD37173087B354AFF4861EBA5A8A03F3881",
+      "pages": 1,
+      "text": "Independent table position control\rItem\r\u0007Amount\r\u0007\r\u0007Own entry\r\u00077\r\u0007\r\u0007\r",
+      "compatibility_mode": 15,
+      "file": "mode-15-cycle-2.docx"
+    }
+  ],
+  "scope": "Own text and standard 2x2 table; explicit Word modes 14 and 15; two JSON/DOCX cycles",
+  "dpi": 108,
+  "pixel_tolerance": 0,
+  "masks": null,
+  "comparisons": [
+    {
+      "mode": "14",
+      "cycle": 1,
+      "settings_equal": true,
+      "native_mode_equal": true,
+      "text_equal": true,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_source_sha256": "d1e82aea6b5a9a66c6a0d4aca672ae932799e6c98ef91eff10504fe8b7e407f8",
+      "mupdf_output_sha256": "d1e82aea6b5a9a66c6a0d4aca672ae932799e6c98ef91eff10504fe8b7e407f8",
+      "poppler_source_sha256": "4fcfa3bcd638c7b7cbce52dd12dd809c333794c61620f76c6e4f962113353ec8",
+      "poppler_output_sha256": "4fcfa3bcd638c7b7cbce52dd12dd809c333794c61620f76c6e4f962113353ec8"
+    },
+    {
+      "mode": "14",
+      "cycle": 2,
+      "settings_equal": true,
+      "native_mode_equal": true,
+      "text_equal": true,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_source_sha256": "d1e82aea6b5a9a66c6a0d4aca672ae932799e6c98ef91eff10504fe8b7e407f8",
+      "mupdf_output_sha256": "d1e82aea6b5a9a66c6a0d4aca672ae932799e6c98ef91eff10504fe8b7e407f8",
+      "poppler_source_sha256": "4fcfa3bcd638c7b7cbce52dd12dd809c333794c61620f76c6e4f962113353ec8",
+      "poppler_output_sha256": "4fcfa3bcd638c7b7cbce52dd12dd809c333794c61620f76c6e4f962113353ec8"
+    },
+    {
+      "mode": "15",
+      "cycle": 1,
+      "settings_equal": true,
+      "native_mode_equal": true,
+      "text_equal": true,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_source_sha256": "9f26939cd18e8755fe1eb0f3f674c4f8e5826f6cfcdefe13f6fe894f066b70ed",
+      "mupdf_output_sha256": "9f26939cd18e8755fe1eb0f3f674c4f8e5826f6cfcdefe13f6fe894f066b70ed",
+      "poppler_source_sha256": "0a5f8d01a10d1bd6130ac7a185da8b377158399d7291f90679207de754d87688",
+      "poppler_output_sha256": "0a5f8d01a10d1bd6130ac7a185da8b377158399d7291f90679207de754d87688"
+    },
+    {
+      "mode": "15",
+      "cycle": 2,
+      "settings_equal": true,
+      "native_mode_equal": true,
+      "text_equal": true,
+      "mupdf_exact": true,
+      "poppler_exact": true,
+      "mupdf_source_sha256": "9f26939cd18e8755fe1eb0f3f674c4f8e5826f6cfcdefe13f6fe894f066b70ed",
+      "mupdf_output_sha256": "9f26939cd18e8755fe1eb0f3f674c4f8e5826f6cfcdefe13f6fe894f066b70ed",
+      "poppler_source_sha256": "0a5f8d01a10d1bd6130ac7a185da8b377158399d7291f90679207de754d87688",
+      "poppler_output_sha256": "0a5f8d01a10d1bd6130ac7a185da8b377158399d7291f90679207de754d87688"
+    }
+  ],
+  "runtime": {
+    "opendoc-model": "0.19.0",
+    "python-docx": "1.2.0",
+    "pymupdf": "1.28.2",
+    "pillow": "12.3.0"
+  },
+  "formats_source_sha256": {
+    "src/opendoc_formats/readers/docx.py": "84eef47f2251a765a0a93a9a83f0393fc33de3082a315650a2557f8aef06cb7a",
+    "src/opendoc_formats/ooxml/docx_defaults.py": "5f5a0ff20f8fc93b201fcc66decfd6fbfd4867d096e13fcf74d87a7826773c3f",
+    "src/opendoc_formats/writers/docx_writer.py": "3162d5cc3577dca62b8f0906f11ba50a2471976a6a02be71abd621f96678437a"
+  },
+  "limitations": [
+    "No arbitrary table geometry or conditional style acceptance",
+    "No causal claim about compatibility mode and private table shifts"
+  ]
+}

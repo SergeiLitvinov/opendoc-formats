@@ -1,0 +1,33 @@
+{
+  "scope": "GSUB types 5/6 format 2 and extension 7->5/6; ClassDef 1/2; structural validation only",
+  "model": "opendoc-model==0.19.0; import opendoc_model",
+  "published": false,
+  "dependencies_changed": false,
+  "specification": "https://learn.microsoft.com/en-us/typography/opentype/spec/chapter2#sequence-context-format-2-class-based-glyph-contexts",
+  "checks": {
+    "font_regression_passed": 1368,
+    "font_regression_skipped": 1,
+    "skip_reason": "POSIX fork unavailable on Windows",
+    "scope": "All test_*.py filenames containing font/sfnt/fvar/ligature, not full-project regression",
+    "equivalence": "Owned binary ClassDef 1/2, coverage 1/2, direct/extension, order, shared storage, class zero and implicit glyphs match previous engine mapping with fontTools imports forbidden",
+    "damage": "All table truncations, malformed offsets/counts/glyphs, class range order/overlap and lookup references reject partial results",
+    "budget": "Repeated shared rule references exhaust existing 262144 word/coverage budget",
+    "cancellation": "Inside ClassDef value-array and expanded-range iteration; no fallback",
+    "pdf": "Story GSUB 1.0/1.1 and post 1/2/3/4: restored text and identical pixels after save/reload",
+    "installed": "Isolated Formats + Model 0.19.0 + PyMuPDF 1.28.2 only; 12 owned TTF/OTF programs, full embedded bytes, text, pixels, two JSON cycles, re-import and TextLayout; fontTools absent",
+    "ruff": "passed",
+    "strict_mypy_files": 41,
+    "license_inventory": "passed",
+    "boundary_audit_modules": 217
+  },
+  "boundary": "Formats owns binary parsing and ToUnicode evidence. Model unchanged. No shaping or nested lookup execution. Unsupported profiles, nonzero flags, NULL ClassDef and sequence indices requiring changed-input interpretation retain engine fallback; actual subsetting still requires fontTools. Further font work deferred in favor of conversion quality.",
+  "fixture_license": "MIT; own outlines and raw GSUB, copyright Sergei Litvinov, deterministic timestamps/license records, reproducibility tested",
+  "source_sha256": {
+    "src/opendoc_formats/fonts/sfnt_ligatures.py": "e853bf6dbf00a59dc013e4c98b178ab99706e72ea29278dcb82afb26ea5a5926",
+    "tests/test_native_font_context_classes.py": "247b5c482c43c62d9831d05f3505347c142bc5b9705e418073a9692bf19f357b",
+    "tests/test_native_font_ligatures.py": "2c96b4b6603b573ee7d7844ea5feba9dd1bff96db536b140be3e0a3e5f712a89",
+    "tools/pdf_ligature_smoke.py": "dc3beec9fbd012caf65f19a6b0968c66bb883b063a6b9a503ab7d85c3b73a405",
+    "tests/native/data/ligature-classes5.ttf": "8831814d5192b76ae75afaa2613357662fa3b7548a49d9599f72246ce4714a16",
+    "tests/native/data/ligature-classes6.ttf": "a57897217bda12c1b89ee7de2c81acd5d2e99936a0d5e87d365e8f008e93a804"
+  }
+}

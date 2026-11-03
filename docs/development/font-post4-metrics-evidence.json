@@ -1,0 +1,28 @@
+{
+  "scope": "Apple post format 4 fixed-header face metrics with exactly one opaque uint16 printer code per maxp glyph; no glyph names or Unicode inference",
+  "published": false,
+  "dependencies_changed": false,
+  "model": "opendoc-model==0.19.0; import opendoc_model",
+  "specification": "https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6post.html",
+  "checks": {
+    "focused_face_tests_passed": 68,
+    "equivalence": "15 complete owned-font cases compare all FontFace fields to fontTools with imports blocked during native reads; permissions, italic angle, repeated/sentinel/surrogate-like printer codes and source-byte preservation checked",
+    "fallback": "Short/empty/extra character-code arrays reject native metrics and preserve previous lazy engine result",
+    "installed_gate": "Passed complete base wheel smoke in isolated Python with only Formats and Model installed; independent byte-built post 4 face equals post 3 metadata and source bytes remain unchanged",
+    "font_regression_passed": 850,
+    "font_regression_skipped": 1,
+    "skip_reason": "Real POSIX fork unavailable on Windows",
+    "regression_scope": "All tests/**/*.py filenames containing font/sfnt/fvar/ligature; not a new full-project run",
+    "strict_mypy_files": 41,
+    "ruff": "passed",
+    "documentation": "strict build passed",
+    "license_inventory": "passed",
+    "boundary_audit_modules": 217
+  },
+  "boundary": "Formats metadata parser only; Model, subsetting, AAT layout and outline validation unchanged. The finite GSUB consumer is documented separately in font-post4-gsub-evidence.json.",
+  "source_sha256": {
+    "src/opendoc_formats/native/sfnt.py": "2d6becf3e6c46e0557451cb559c52ff518ea7d5d95262c75ba9f367611b7bfea",
+    "tests/test_native_font_face.py": "ef1417a8905b1de88ec810fb1cc0429b7a914704ba8775b870399562f6a870d7",
+    "tools/package_smoke.py": "ade5f08bb2c5ad900ca86cbed055632b0df37b8238fe3b1a1c371a93b747b8cd"
+  }
+}

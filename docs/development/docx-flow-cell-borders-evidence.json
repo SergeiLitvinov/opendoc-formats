@@ -1,0 +1,1008 @@
+{
+  "scope": "Source-measured PDF cell-specific borders -> Model -> native DOCX flow, merged cells and rectangular crops",
+  "model": "opendoc-model==0.19.0; import opendoc_model",
+  "published": false,
+  "dependencies_changed": false,
+  "checks": {
+    "initial_flow_regression_passed": 71,
+    "final_border_and_adjacent_pdf_regression_passed": 85,
+    "note": "Two overlapping targeted commands; not a full-project regression",
+    "binary_verification": "Actual native table baseline, four tcBorders per physical cell, exact style/color/width/attributes, gridSpan and vMerge checked against plan before publication",
+    "atomicity": "Width/color substitution, duplicate border and painted merge continuation refuse while old target and source Model stay unchanged",
+    "profile_boundary": "Single style and complete measured coverage per logical cell side; no SVG/raster replacement; manual incompatible cell border declarations refuse",
+    "budgets": "At most 1000000 cell-edge/source comparisons, cancellation checked",
+    "installed_docx": "Fresh isolated wheel with only Model, python-docx 1.2.0, lxml 6.1.3 and typing-extensions; public/direct API, two JSON/DOCX cycles, all 24 source occurrences (12 excluded by crop), owned full font bytes; no fontTools, PDF, Pillow, NumPy",
+    "ruff": "passed",
+    "strict_mypy_files": 41,
+    "boundary_audit_modules": 218,
+    "license_inventory": "passed",
+    "visual_review": "Both Poppler first-page PNGs inspected, no extra internal merge edges"
+  },
+  "word_acceptance": {
+    "crop": {
+      "word": {
+        "version": "16.0",
+        "success": true,
+        "edit_source": "R2C1",
+        "build": "16.0.17932",
+        "program": "Microsoft Word",
+        "observations": [
+          {
+            "cells": [
+              {
+                "borders": [
+                  {
+                    "color": 16711935,
+                    "size": 6,
+                    "side": "top"
+                  },
+                  {
+                    "color": 16711935,
+                    "size": 6,
+                    "side": "left"
+                  },
+                  {
+                    "color": 0,
+                    "size": 8,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 0,
+                    "size": 8,
+                    "side": "right"
+                  }
+                ],
+                "text": "R2C1",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "top"
+                  },
+                  {
+                    "color": 0,
+                    "size": 8,
+                    "side": "left"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "right"
+                  }
+                ],
+                "text": "R2C2",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 0,
+                    "size": 8,
+                    "side": "top"
+                  },
+                  {
+                    "color": 0,
+                    "size": 8,
+                    "side": "left"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "right"
+                  }
+                ],
+                "text": "R3C1",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "top"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "left"
+                  },
+                  {
+                    "color": 16711680,
+                    "size": 24,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "right"
+                  }
+                ],
+                "text": "R3C2",
+                "width": 100.0
+              }
+            ],
+            "file": "flow",
+            "pages": 2
+          },
+          {
+            "cells": [
+              {
+                "borders": [
+                  {
+                    "color": 16711935,
+                    "size": 6,
+                    "side": "top"
+                  },
+                  {
+                    "color": 16711935,
+                    "size": 6,
+                    "side": "left"
+                  },
+                  {
+                    "color": 0,
+                    "size": 8,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 0,
+                    "size": 8,
+                    "side": "right"
+                  }
+                ],
+                "text": "R2C1",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "top"
+                  },
+                  {
+                    "color": 0,
+                    "size": 8,
+                    "side": "left"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "right"
+                  }
+                ],
+                "text": "R2C2",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 0,
+                    "size": 8,
+                    "side": "top"
+                  },
+                  {
+                    "color": 0,
+                    "size": 8,
+                    "side": "left"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "right"
+                  }
+                ],
+                "text": "R3C1",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "top"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "left"
+                  },
+                  {
+                    "color": 16711680,
+                    "size": 24,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "right"
+                  }
+                ],
+                "text": "R3C2",
+                "width": 100.0
+              }
+            ],
+            "file": "native-0",
+            "pages": 2
+          },
+          {
+            "cells": [
+              {
+                "borders": [
+                  {
+                    "color": 16711935,
+                    "size": 6,
+                    "side": "top"
+                  },
+                  {
+                    "color": 16711935,
+                    "size": 6,
+                    "side": "left"
+                  },
+                  {
+                    "color": 0,
+                    "size": 8,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 0,
+                    "size": 8,
+                    "side": "right"
+                  }
+                ],
+                "text": "R2C1",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "top"
+                  },
+                  {
+                    "color": 0,
+                    "size": 8,
+                    "side": "left"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "right"
+                  }
+                ],
+                "text": "R2C2",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 0,
+                    "size": 8,
+                    "side": "top"
+                  },
+                  {
+                    "color": 0,
+                    "size": 8,
+                    "side": "left"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "right"
+                  }
+                ],
+                "text": "R3C1",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "top"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "left"
+                  },
+                  {
+                    "color": 16711680,
+                    "size": 24,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "right"
+                  }
+                ],
+                "text": "R3C2",
+                "width": 100.0
+              }
+            ],
+            "file": "native-1",
+            "pages": 2
+          }
+        ]
+      },
+      "render_hashes": {
+        "flow": {
+          "mupdf": [
+            "cfb58228c0bb30d1c975a27131278de7843716f62c118ad762ce814ac7bb11cf",
+            "e9adfe8060bef08a8331fe8f2b9ff6700afc46b2b3c0c4cb5707c8021cc6964a"
+          ],
+          "poppler": [
+            "b48e6edf867eea41e0d8cffbbc95b1178ed42003570a082f2aa7c81dbb75ab84",
+            "4d6c959998f0b2ee79773c409f3dcec1ebde0d9edf1741f011dae455c8b6ddc6"
+          ]
+        },
+        "native-0": {
+          "mupdf": [
+            "cfb58228c0bb30d1c975a27131278de7843716f62c118ad762ce814ac7bb11cf",
+            "e9adfe8060bef08a8331fe8f2b9ff6700afc46b2b3c0c4cb5707c8021cc6964a"
+          ],
+          "poppler": [
+            "b48e6edf867eea41e0d8cffbbc95b1178ed42003570a082f2aa7c81dbb75ab84",
+            "4d6c959998f0b2ee79773c409f3dcec1ebde0d9edf1741f011dae455c8b6ddc6"
+          ]
+        },
+        "native-1": {
+          "mupdf": [
+            "cfb58228c0bb30d1c975a27131278de7843716f62c118ad762ce814ac7bb11cf",
+            "e9adfe8060bef08a8331fe8f2b9ff6700afc46b2b3c0c4cb5707c8021cc6964a"
+          ],
+          "poppler": [
+            "b48e6edf867eea41e0d8cffbbc95b1178ed42003570a082f2aa7c81dbb75ab84",
+            "4d6c959998f0b2ee79773c409f3dcec1ebde0d9edf1741f011dae455c8b6ddc6"
+          ]
+        }
+      },
+      "native_edit_borders_and_topology_retained": true
+    },
+    "merged": {
+      "word": {
+        "version": "16.0",
+        "success": true,
+        "edit_source": "Top merge",
+        "build": "16.0.17932",
+        "program": "Microsoft Word",
+        "observations": [
+          {
+            "cells": [
+              {
+                "borders": [
+                  {
+                    "color": 0,
+                    "size": 8,
+                    "side": "top"
+                  },
+                  {
+                    "color": 255,
+                    "size": 4,
+                    "side": "left"
+                  },
+                  {
+                    "color": 255,
+                    "size": 4,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "right"
+                  }
+                ],
+                "text": "Top merge",
+                "width": 200.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 0,
+                    "size": 8,
+                    "side": "top"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "left"
+                  },
+                  {
+                    "color": 255,
+                    "size": 4,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "right"
+                  }
+                ],
+                "text": "R1C3",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 255,
+                    "size": 4,
+                    "side": "top"
+                  },
+                  {
+                    "color": 255,
+                    "size": 4,
+                    "side": "left"
+                  },
+                  {
+                    "color": 16711680,
+                    "size": 24,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 16711935,
+                    "size": 6,
+                    "side": "right"
+                  }
+                ],
+                "text": "Tall merge",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 255,
+                    "size": 4,
+                    "side": "top"
+                  },
+                  {
+                    "color": 16711935,
+                    "size": 6,
+                    "side": "left"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "right"
+                  }
+                ],
+                "text": "R2C2",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 255,
+                    "size": 4,
+                    "side": "top"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "left"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "right"
+                  }
+                ],
+                "text": "R2C3",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "top"
+                  },
+                  {
+                    "color": 16711935,
+                    "size": 6,
+                    "side": "left"
+                  },
+                  {
+                    "color": 16711680,
+                    "size": 24,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "right"
+                  }
+                ],
+                "text": "R3C2",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "top"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "left"
+                  },
+                  {
+                    "color": 16711680,
+                    "size": 24,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "right"
+                  }
+                ],
+                "text": "R3C3",
+                "width": 100.0
+              }
+            ],
+            "file": "flow",
+            "pages": 1
+          },
+          {
+            "cells": [
+              {
+                "borders": [
+                  {
+                    "color": 0,
+                    "size": 8,
+                    "side": "top"
+                  },
+                  {
+                    "color": 255,
+                    "size": 4,
+                    "side": "left"
+                  },
+                  {
+                    "color": 255,
+                    "size": 4,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "right"
+                  }
+                ],
+                "text": "Top merge",
+                "width": 200.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 0,
+                    "size": 8,
+                    "side": "top"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "left"
+                  },
+                  {
+                    "color": 255,
+                    "size": 4,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "right"
+                  }
+                ],
+                "text": "R1C3",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 255,
+                    "size": 4,
+                    "side": "top"
+                  },
+                  {
+                    "color": 255,
+                    "size": 4,
+                    "side": "left"
+                  },
+                  {
+                    "color": 16711680,
+                    "size": 24,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 16711935,
+                    "size": 6,
+                    "side": "right"
+                  }
+                ],
+                "text": "Tall merge",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 255,
+                    "size": 4,
+                    "side": "top"
+                  },
+                  {
+                    "color": 16711935,
+                    "size": 6,
+                    "side": "left"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "right"
+                  }
+                ],
+                "text": "R2C2",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 255,
+                    "size": 4,
+                    "side": "top"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "left"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "right"
+                  }
+                ],
+                "text": "R2C3",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "top"
+                  },
+                  {
+                    "color": 16711935,
+                    "size": 6,
+                    "side": "left"
+                  },
+                  {
+                    "color": 16711680,
+                    "size": 24,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "right"
+                  }
+                ],
+                "text": "R3C2",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "top"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "left"
+                  },
+                  {
+                    "color": 16711680,
+                    "size": 24,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "right"
+                  }
+                ],
+                "text": "R3C3",
+                "width": 100.0
+              }
+            ],
+            "file": "native-0",
+            "pages": 1
+          },
+          {
+            "cells": [
+              {
+                "borders": [
+                  {
+                    "color": 0,
+                    "size": 8,
+                    "side": "top"
+                  },
+                  {
+                    "color": 255,
+                    "size": 4,
+                    "side": "left"
+                  },
+                  {
+                    "color": 255,
+                    "size": 4,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "right"
+                  }
+                ],
+                "text": "Top merge",
+                "width": 200.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 0,
+                    "size": 8,
+                    "side": "top"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "left"
+                  },
+                  {
+                    "color": 255,
+                    "size": 4,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "right"
+                  }
+                ],
+                "text": "R1C3",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 255,
+                    "size": 4,
+                    "side": "top"
+                  },
+                  {
+                    "color": 255,
+                    "size": 4,
+                    "side": "left"
+                  },
+                  {
+                    "color": 16711680,
+                    "size": 24,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 16711935,
+                    "size": 6,
+                    "side": "right"
+                  }
+                ],
+                "text": "Tall merge",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 255,
+                    "size": 4,
+                    "side": "top"
+                  },
+                  {
+                    "color": 16711935,
+                    "size": 6,
+                    "side": "left"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "right"
+                  }
+                ],
+                "text": "R2C2",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 255,
+                    "size": 4,
+                    "side": "top"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "left"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "right"
+                  }
+                ],
+                "text": "R2C3",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "top"
+                  },
+                  {
+                    "color": 16711935,
+                    "size": 6,
+                    "side": "left"
+                  },
+                  {
+                    "color": 16711680,
+                    "size": 24,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "right"
+                  }
+                ],
+                "text": "R3C2",
+                "width": 100.0
+              },
+              {
+                "borders": [
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "top"
+                  },
+                  {
+                    "color": 16776960,
+                    "size": 18,
+                    "side": "left"
+                  },
+                  {
+                    "color": 16711680,
+                    "size": 24,
+                    "side": "bottom"
+                  },
+                  {
+                    "color": 65280,
+                    "size": 12,
+                    "side": "right"
+                  }
+                ],
+                "text": "R3C3",
+                "width": 100.0
+              }
+            ],
+            "file": "native-1",
+            "pages": 1
+          }
+        ]
+      },
+      "render_hashes": {
+        "flow": {
+          "mupdf": [
+            "7c7a2b5d2dba8a0178aec5f06d6f5da339e49b1ef17a8ff618fca1610c0da24f"
+          ],
+          "poppler": [
+            "559e22365ba57d3f67fde1ab9b6a027be989f5978ec1b73bdf9cc22cf73b2d8b"
+          ]
+        },
+        "native-0": {
+          "mupdf": [
+            "7c7a2b5d2dba8a0178aec5f06d6f5da339e49b1ef17a8ff618fca1610c0da24f"
+          ],
+          "poppler": [
+            "559e22365ba57d3f67fde1ab9b6a027be989f5978ec1b73bdf9cc22cf73b2d8b"
+          ]
+        },
+        "native-1": {
+          "mupdf": [
+            "7c7a2b5d2dba8a0178aec5f06d6f5da339e49b1ef17a8ff618fca1610c0da24f"
+          ],
+          "poppler": [
+            "559e22365ba57d3f67fde1ab9b6a027be989f5978ec1b73bdf9cc22cf73b2d8b"
+          ]
+        }
+      },
+      "native_edit_borders_and_topology_retained": true
+    }
+  },
+  "boundary": "Flow intentionally discards original PDF coordinates/pagination via explicit LOSS docx.flow-layout. No claim of original-PDF page pixel equality or full pdf2docx replacement. Each logical side must be representable by one native border. Other vectors, transparency, nonrectangular source edits and finer per-side transitions remain open. Formats owns PDF evidence and DOCX projection; existing Model BorderSet DTOs/codecs unchanged.",
+  "source_sha256": {
+    "src/opendoc_formats/writers/docx_flow.py": "e9667c60d81d7f13bec4ddcfb8953be9113997e7869a2f9bd9a15981d0978e27",
+    "src/opendoc_formats/writers/docx_flow_borders.py": "94fd2147984927869b2a41f487c48aba0853ec1e3b31666c49b0d7dc1d6ce2ef",
+    "tests/writers/test_docx_flow.py": "a68630294098908d50121d6335d3cfbcf9800af0c3cdb6e823d0f1d723373070",
+    "tests/writers/test_docx_flow_borders.py": "4e4720a3854acfb283273865bf97c352c2648c4a483d8954bcae8f339bb23551",
+    "tools/docx_flow_smoke.py": "2b5de10976d42fa7cd92054da3465fd231b223da042a7d5478f65b2257824893",
+    "tools/docx_flow_cell_word_acceptance.ps1": "4565f37d74f50c0a586b62c438e6e8216dcb8f474b1dba7707b903e8d58cbc16"
+  }
+}

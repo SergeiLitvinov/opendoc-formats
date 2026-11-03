@@ -1,0 +1,148 @@
+{
+  "scope": "Bindings v4: source PPTX table proportional Box resizing and explicit local column/row dimensions",
+  "model": "opendoc-model==0.19.0; import opendoc_model",
+  "model_contract_changes": false,
+  "dependencies_changed": false,
+  "implementation": {
+    "module": "opendoc_formats.ooxml.pptx_source_table_grid",
+    "eligibility": "Validated native rectangular merge ownership, explicit local frame, positive dimensions with exact sums matching original extents; logical Table with dimension arrays of unchanged shape",
+    "freshness": "Official Model digest masks only eligible point/twip widths and row heights in v4; structure, styles, continuations and package payloads remain protected",
+    "box_resize": "Original local proportions scaled to the projected local extents; cumulative integer rounding keeps exact grid/frame equality",
+    "explicit_dimensions": "Finite positive dimensions, point/twip agreement to twip resolution when both change, exact native sums required",
+    "preservation": "Only changed width/height attributes and explicit frame coordinates are modified; shared source DOM retains text edits, spans, caret/style/links and opaque neighbors",
+    "compatibility": "v1/v2/v3 retain previous text/geometry/cell scopes; old table resize remains refused",
+    "atomicity": "Selected source XML limits and cancellation retained; refusal/cancellation keeps Model, source and existing destination unchanged"
+  },
+  "checks": {
+    "table_grid_file": "tests/writers/test_pptx_source_table_grid.py",
+    "table_grid_cases_passed": 20,
+    "regression_command": "python -m pytest tests/readers tests/writers tests/support/test_ooxml_pptx_package.py tests/support/test_ooxml_package.py -k 'pptx or office_export_cancellation or ooxml_package' -q --tb=short",
+    "regression_passed": 473,
+    "regression_deselected": 1545,
+    "regression_seconds": 140.3,
+    "full_project_run": false,
+    "ruff": "passed",
+    "configured_strict_mypy": "41 files passed",
+    "boundary_audit_modules": 229,
+    "reviewed_license_inventory": "matches unchanged lockfile",
+    "release_archives": "0.42.0 wheel/sdist, metadata, licenses and resources verified",
+    "installed_pptx_only_smoke": {
+      "passed": true,
+      "script": "tools/pptx_package_smoke.py",
+      "python": "3.12.16",
+      "package_count": 7,
+      "absent": [
+        "fontTools",
+        "docx",
+        "pymupdf",
+        "pypdf",
+        "bs4"
+      ],
+      "installed": [
+        "opendoc-formats==0.42.0",
+        "opendoc-model==0.19.0",
+        "python-pptx==1.0.2",
+        "lxml==6.1.3",
+        "Pillow==12.3.0",
+        "typing-extensions==4.16.0",
+        "xlsxwriter==3.3.1"
+      ],
+      "inventory_scope": "Reviewed uv.lock unchanged; additional smoke resolves xlsxwriter 3.3.1, lock pins 3.3.0"
+    },
+    "source_profiles_combined_passed": 77,
+    "source_profiles_command": "python -m pytest tests/writers/test_pptx_source_table_grid.py tests/writers/test_pptx_source_geometry.py tests/writers/test_pptx_source_cells.py tests/writers/test_pptx_source_text.py -q --tb=short",
+    "source_profiles_seconds": 27.2
+  },
+  "native_acceptance": {
+    "application": "Microsoft PowerPoint 16.0",
+    "script": "tools/pptx_table_grid_powerpoint_acceptance.ps1",
+    "fixture": "tests.writers.test_pptx_logical_grid.merged_source",
+    "source_unchanged": true,
+    "profile": "Read-only original; macros disabled; fresh owned COM app; only owned RCWs released",
+    "image_inspected": true,
+    "dpi": 108,
+    "results": {
+      "resize": {
+        "native_dimensions": {
+          "widths_emu": [
+            1219200,
+            1828800,
+            2133600,
+            2438400
+          ],
+          "heights_emu": [
+            914400,
+            914400,
+            914400,
+            914400,
+            914400
+          ],
+          "frame": {
+            "cx": "7620000",
+            "cy": "4572000"
+          }
+        },
+        "mupdf": {
+          "dimensions": [
+            1080,
+            810
+          ],
+          "all_pixels_equal": true,
+          "decoded_rgb_sha256": "0f1880302bf2be86e5a60126437faec47119d1e79e0aa661712ebec1c15f8421"
+        },
+        "poppler": {
+          "dimensions": [
+            1080,
+            810
+          ],
+          "all_pixels_equal": true,
+          "decoded_rgb_sha256": "71afd5c6518099790ffd5c1dad33d0e63b86b00dc03c0a21780374b553112abc"
+        }
+      },
+      "redistribute": {
+        "native_dimensions": {
+          "widths_emu": [
+            1143000,
+            1397000,
+            1778000,
+            2032000
+          ],
+          "heights_emu": [
+            889000,
+            635000,
+            762000,
+            762000,
+            762000
+          ],
+          "frame": {
+            "cx": "6350000",
+            "cy": "3810000"
+          }
+        },
+        "mupdf": {
+          "dimensions": [
+            1080,
+            810
+          ],
+          "all_pixels_equal": true,
+          "decoded_rgb_sha256": "a2ac390d93e569ef58774343d69568f2d08e232bec46939c9d36833e2b47ae5b"
+        },
+        "poppler": {
+          "dimensions": [
+            1080,
+            810
+          ],
+          "all_pixels_equal": true,
+          "decoded_rgb_sha256": "1ee1be5724148eaac7eed8d00cf26c6db5aa7954098aff86501d831c37d9ec6e"
+        }
+      }
+    }
+  },
+  "limits": [
+    "No automatic/minimum row heights or full text reflow proof",
+    "Table rotation, chart geometry and placeholder/group frame normalization remain outside profile",
+    "Unproved original grids are not repaired or guessed",
+    "No full general table/layout/theme fidelity claim",
+    "ZIP storage metadata, archive byte identity and arbitrary signature edits remain unsupported"
+  ]
+}

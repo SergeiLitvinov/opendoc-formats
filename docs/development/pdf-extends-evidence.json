@@ -1,0 +1,912 @@
+{
+  "profile": "context-selected-object-stream-collection-declarations",
+  "cases": [
+    {
+      "case": "chain",
+      "source_sha256": "70dedd4a79e643f005cec06beb22711afb5c97d6926360f4e657f8394c5af8ab",
+      "source_bytes": 769,
+      "declared_links": [
+        {
+          "source_object": 4,
+          "source_generation": 0,
+          "source_offset": 186,
+          "context_xref": 528,
+          "target_object": 5,
+          "target_generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "members_inherited": false,
+          "in_cycle": false,
+          "primary_xref": 528,
+          "target_xref": 528,
+          "target_record_range": {
+            "space": "decoded-xref",
+            "start": 35,
+            "end": 42
+          },
+          "target_offset": 305,
+          "status": "matched-declared-extends"
+        },
+        {
+          "source_object": 5,
+          "source_generation": 0,
+          "source_offset": 305,
+          "context_xref": 528,
+          "target_object": 6,
+          "target_generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "members_inherited": false,
+          "in_cycle": false,
+          "primary_xref": 528,
+          "target_xref": 528,
+          "target_record_range": {
+            "space": "decoded-xref",
+            "start": 42,
+            "end": 49
+          },
+          "target_offset": 424,
+          "status": "matched-declared-extends"
+        }
+      ],
+      "dag_valid": true,
+      "decoded_containers": 3,
+      "work_items": 38,
+      "current_projection": {
+        "object_stream_current_extends_assessed": true,
+        "object_stream_current_extends_xref": 528,
+        "object_stream_current_extends_roots": [
+          {
+            "object": 100,
+            "object_stream": 4,
+            "index": 0,
+            "context_xref": 528,
+            "reference_xref": 528,
+            "reference_record_range": {
+              "space": "decoded-xref",
+              "start": 49,
+              "end": 56
+            },
+            "ownership_proven": false,
+            "object_resolved": false,
+            "container_xref": 528,
+            "container_record_range": {
+              "space": "decoded-xref",
+              "start": 28,
+              "end": 35
+            },
+            "container_state": "uncompressed",
+            "container_generation": 0,
+            "status": "selected-container",
+            "container_offset": 186
+          }
+        ],
+        "object_stream_current_extends_links": [
+          {
+            "source_object": 4,
+            "source_generation": 0,
+            "source_offset": 186,
+            "context_xref": 528,
+            "target_object": 5,
+            "target_generation": 0,
+            "ownership_proven": false,
+            "object_resolved": false,
+            "members_inherited": false,
+            "in_cycle": false,
+            "primary_xref": 528,
+            "target_xref": 528,
+            "target_record_range": {
+              "space": "decoded-xref",
+              "start": 35,
+              "end": 42
+            },
+            "target_offset": 305,
+            "status": "matched-declared-extends"
+          },
+          {
+            "source_object": 5,
+            "source_generation": 0,
+            "source_offset": 305,
+            "context_xref": 528,
+            "target_object": 6,
+            "target_generation": 0,
+            "ownership_proven": false,
+            "object_resolved": false,
+            "members_inherited": false,
+            "in_cycle": false,
+            "primary_xref": 528,
+            "target_xref": 528,
+            "target_record_range": {
+              "space": "decoded-xref",
+              "start": 42,
+              "end": 49
+            },
+            "target_offset": 424,
+            "status": "matched-declared-extends"
+          }
+        ],
+        "object_stream_current_extends_dag_valid": true,
+        "object_stream_current_extends_work_items": 24
+      },
+      "independent_reader": {
+        "name": "pypdf",
+        "version": "6.19.0",
+        "strict": true,
+        "pages": 1,
+        "title": "Own 0"
+      }
+    },
+    {
+      "case": "hybrid",
+      "source_sha256": "cd059312d4e9c8937951cb0c6844301a9ce09636d1d92a41eea0e4f37136119f",
+      "source_bytes": 882,
+      "declared_links": [
+        {
+          "source_object": 4,
+          "source_generation": 0,
+          "source_offset": 186,
+          "context_xref": 528,
+          "target_object": 5,
+          "target_generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "members_inherited": false,
+          "in_cycle": false,
+          "primary_xref": 769,
+          "target_xref": 528,
+          "target_record_range": {
+            "space": "decoded-xref",
+            "start": 35,
+            "end": 42
+          },
+          "target_offset": 305,
+          "status": "matched-declared-extends"
+        },
+        {
+          "source_object": 5,
+          "source_generation": 0,
+          "source_offset": 305,
+          "context_xref": 528,
+          "target_object": 6,
+          "target_generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "members_inherited": false,
+          "in_cycle": false,
+          "primary_xref": 769,
+          "target_xref": 528,
+          "target_record_range": {
+            "space": "decoded-xref",
+            "start": 42,
+            "end": 49
+          },
+          "target_offset": 424,
+          "status": "matched-declared-extends"
+        }
+      ],
+      "dag_valid": true,
+      "decoded_containers": 3,
+      "work_items": 38,
+      "current_projection": {
+        "object_stream_current_extends_assessed": true,
+        "object_stream_current_extends_xref": 769,
+        "object_stream_current_extends_roots": [
+          {
+            "object": 100,
+            "object_stream": 4,
+            "index": 0,
+            "context_xref": 769,
+            "reference_xref": 528,
+            "reference_record_range": {
+              "space": "decoded-xref",
+              "start": 49,
+              "end": 56
+            },
+            "ownership_proven": false,
+            "object_resolved": false,
+            "container_xref": 528,
+            "container_record_range": {
+              "space": "decoded-xref",
+              "start": 28,
+              "end": 35
+            },
+            "container_state": "uncompressed",
+            "container_generation": 0,
+            "status": "selected-container",
+            "container_offset": 186
+          }
+        ],
+        "object_stream_current_extends_links": [
+          {
+            "source_object": 4,
+            "source_generation": 0,
+            "source_offset": 186,
+            "context_xref": 769,
+            "target_object": 5,
+            "target_generation": 0,
+            "ownership_proven": false,
+            "object_resolved": false,
+            "members_inherited": false,
+            "in_cycle": false,
+            "primary_xref": 769,
+            "target_xref": 528,
+            "target_record_range": {
+              "space": "decoded-xref",
+              "start": 35,
+              "end": 42
+            },
+            "target_offset": 305,
+            "status": "matched-declared-extends"
+          },
+          {
+            "source_object": 5,
+            "source_generation": 0,
+            "source_offset": 305,
+            "context_xref": 769,
+            "target_object": 6,
+            "target_generation": 0,
+            "ownership_proven": false,
+            "object_resolved": false,
+            "members_inherited": false,
+            "in_cycle": false,
+            "primary_xref": 769,
+            "target_xref": 528,
+            "target_record_range": {
+              "space": "decoded-xref",
+              "start": 42,
+              "end": 49
+            },
+            "target_offset": 424,
+            "status": "matched-declared-extends"
+          }
+        ],
+        "object_stream_current_extends_dag_valid": true,
+        "object_stream_current_extends_work_items": 24
+      }
+    },
+    {
+      "case": "self-cycle",
+      "source_sha256": "1c9e204557170e15d387245ff476c3c16120d1633669a248b348f5c36fbceb15",
+      "source_bytes": 524,
+      "declared_links": [
+        {
+          "source_object": 4,
+          "source_generation": 0,
+          "source_offset": 186,
+          "context_xref": 305,
+          "target_object": 4,
+          "target_generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "members_inherited": false,
+          "in_cycle": true,
+          "primary_xref": 305,
+          "target_xref": 305,
+          "target_record_range": {
+            "space": "decoded-xref",
+            "start": 28,
+            "end": 35
+          },
+          "target_offset": 186,
+          "status": "matched-declared-extends"
+        }
+      ],
+      "dag_valid": false,
+      "decoded_containers": 1,
+      "work_items": 26,
+      "current_projection": {
+        "object_stream_current_extends_assessed": true,
+        "object_stream_current_extends_xref": 305,
+        "object_stream_current_extends_roots": [
+          {
+            "object": 100,
+            "object_stream": 4,
+            "index": 0,
+            "context_xref": 305,
+            "reference_xref": 305,
+            "reference_record_range": {
+              "space": "decoded-xref",
+              "start": 35,
+              "end": 42
+            },
+            "ownership_proven": false,
+            "object_resolved": false,
+            "container_xref": 305,
+            "container_record_range": {
+              "space": "decoded-xref",
+              "start": 28,
+              "end": 35
+            },
+            "container_state": "uncompressed",
+            "container_generation": 0,
+            "status": "selected-container",
+            "container_offset": 186
+          }
+        ],
+        "object_stream_current_extends_links": [
+          {
+            "source_object": 4,
+            "source_generation": 0,
+            "source_offset": 186,
+            "context_xref": 305,
+            "target_object": 4,
+            "target_generation": 0,
+            "ownership_proven": false,
+            "object_resolved": false,
+            "members_inherited": false,
+            "in_cycle": true,
+            "primary_xref": 305,
+            "target_xref": 305,
+            "target_record_range": {
+              "space": "decoded-xref",
+              "start": 28,
+              "end": 35
+            },
+            "target_offset": 186,
+            "status": "matched-declared-extends"
+          }
+        ],
+        "object_stream_current_extends_dag_valid": false,
+        "object_stream_current_extends_work_items": 17
+      }
+    },
+    {
+      "case": "two-cycle",
+      "source_sha256": "97d3db30342b00712b109f6edf100ffe30758414474a056f5daa414ec362443d",
+      "source_bytes": 654,
+      "declared_links": [
+        {
+          "source_object": 4,
+          "source_generation": 0,
+          "source_offset": 186,
+          "context_xref": 424,
+          "target_object": 5,
+          "target_generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "members_inherited": false,
+          "in_cycle": true,
+          "primary_xref": 424,
+          "target_xref": 424,
+          "target_record_range": {
+            "space": "decoded-xref",
+            "start": 35,
+            "end": 42
+          },
+          "target_offset": 305,
+          "status": "matched-declared-extends"
+        },
+        {
+          "source_object": 5,
+          "source_generation": 0,
+          "source_offset": 305,
+          "context_xref": 424,
+          "target_object": 4,
+          "target_generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "members_inherited": false,
+          "in_cycle": true,
+          "primary_xref": 424,
+          "target_xref": 424,
+          "target_record_range": {
+            "space": "decoded-xref",
+            "start": 28,
+            "end": 35
+          },
+          "target_offset": 186,
+          "status": "matched-declared-extends"
+        }
+      ],
+      "dag_valid": false,
+      "decoded_containers": 2,
+      "work_items": 33,
+      "current_projection": {
+        "object_stream_current_extends_assessed": true,
+        "object_stream_current_extends_xref": 424,
+        "object_stream_current_extends_roots": [
+          {
+            "object": 100,
+            "object_stream": 4,
+            "index": 0,
+            "context_xref": 424,
+            "reference_xref": 424,
+            "reference_record_range": {
+              "space": "decoded-xref",
+              "start": 42,
+              "end": 49
+            },
+            "ownership_proven": false,
+            "object_resolved": false,
+            "container_xref": 424,
+            "container_record_range": {
+              "space": "decoded-xref",
+              "start": 28,
+              "end": 35
+            },
+            "container_state": "uncompressed",
+            "container_generation": 0,
+            "status": "selected-container",
+            "container_offset": 186
+          }
+        ],
+        "object_stream_current_extends_links": [
+          {
+            "source_object": 4,
+            "source_generation": 0,
+            "source_offset": 186,
+            "context_xref": 424,
+            "target_object": 5,
+            "target_generation": 0,
+            "ownership_proven": false,
+            "object_resolved": false,
+            "members_inherited": false,
+            "in_cycle": true,
+            "primary_xref": 424,
+            "target_xref": 424,
+            "target_record_range": {
+              "space": "decoded-xref",
+              "start": 35,
+              "end": 42
+            },
+            "target_offset": 305,
+            "status": "matched-declared-extends"
+          },
+          {
+            "source_object": 5,
+            "source_generation": 0,
+            "source_offset": 305,
+            "context_xref": 424,
+            "target_object": 4,
+            "target_generation": 0,
+            "ownership_proven": false,
+            "object_resolved": false,
+            "members_inherited": false,
+            "in_cycle": true,
+            "primary_xref": 424,
+            "target_xref": 424,
+            "target_record_range": {
+              "space": "decoded-xref",
+              "start": 28,
+              "end": 35
+            },
+            "target_offset": 186,
+            "status": "matched-declared-extends"
+          }
+        ],
+        "object_stream_current_extends_dag_valid": false,
+        "object_stream_current_extends_work_items": 21
+      }
+    },
+    {
+      "case": "missing",
+      "source_sha256": "d7c547169447426f15b301fe8e64cd78e32979585466c303fad170cb98ba212e",
+      "source_bytes": 525,
+      "declared_links": [
+        {
+          "source_object": 4,
+          "source_generation": 0,
+          "source_offset": 186,
+          "context_xref": 306,
+          "target_object": 99,
+          "target_generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "members_inherited": false,
+          "in_cycle": false,
+          "primary_xref": 306,
+          "status": "missing-target"
+        }
+      ],
+      "dag_valid": null,
+      "decoded_containers": 1,
+      "work_items": 26,
+      "current_projection": {
+        "object_stream_current_extends_assessed": true,
+        "object_stream_current_extends_xref": 306,
+        "object_stream_current_extends_roots": [
+          {
+            "object": 100,
+            "object_stream": 4,
+            "index": 0,
+            "context_xref": 306,
+            "reference_xref": 306,
+            "reference_record_range": {
+              "space": "decoded-xref",
+              "start": 35,
+              "end": 42
+            },
+            "ownership_proven": false,
+            "object_resolved": false,
+            "container_xref": 306,
+            "container_record_range": {
+              "space": "decoded-xref",
+              "start": 28,
+              "end": 35
+            },
+            "container_state": "uncompressed",
+            "container_generation": 0,
+            "status": "selected-container",
+            "container_offset": 186
+          }
+        ],
+        "object_stream_current_extends_links": [
+          {
+            "source_object": 4,
+            "source_generation": 0,
+            "source_offset": 186,
+            "context_xref": 306,
+            "target_object": 99,
+            "target_generation": 0,
+            "ownership_proven": false,
+            "object_resolved": false,
+            "members_inherited": false,
+            "in_cycle": false,
+            "primary_xref": 306,
+            "status": "missing-target"
+          }
+        ],
+        "object_stream_current_extends_dag_valid": null,
+        "object_stream_current_extends_work_items": 17
+      }
+    },
+    {
+      "case": "free",
+      "source_sha256": "a0565387027e0cd4b57d377f7c9138606c7b6e94cd6efb4f0872b79461696ae4",
+      "source_bytes": 639,
+      "declared_links": [
+        {
+          "source_object": 4,
+          "source_generation": 0,
+          "source_offset": 186,
+          "context_xref": 409,
+          "target_object": 5,
+          "target_generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "members_inherited": false,
+          "in_cycle": false,
+          "primary_xref": 409,
+          "status": "missing-target"
+        }
+      ],
+      "dag_valid": null,
+      "decoded_containers": 1,
+      "work_items": 29,
+      "current_projection": {
+        "object_stream_current_extends_assessed": true,
+        "object_stream_current_extends_xref": 409,
+        "object_stream_current_extends_roots": [
+          {
+            "object": 100,
+            "object_stream": 4,
+            "index": 0,
+            "context_xref": 409,
+            "reference_xref": 409,
+            "reference_record_range": {
+              "space": "decoded-xref",
+              "start": 42,
+              "end": 49
+            },
+            "ownership_proven": false,
+            "object_resolved": false,
+            "container_xref": 409,
+            "container_record_range": {
+              "space": "decoded-xref",
+              "start": 28,
+              "end": 35
+            },
+            "container_state": "uncompressed",
+            "container_generation": 0,
+            "status": "selected-container",
+            "container_offset": 186
+          }
+        ],
+        "object_stream_current_extends_links": [
+          {
+            "source_object": 4,
+            "source_generation": 0,
+            "source_offset": 186,
+            "context_xref": 409,
+            "target_object": 5,
+            "target_generation": 0,
+            "ownership_proven": false,
+            "object_resolved": false,
+            "members_inherited": false,
+            "in_cycle": false,
+            "primary_xref": 409,
+            "status": "missing-target"
+          }
+        ],
+        "object_stream_current_extends_dag_valid": null,
+        "object_stream_current_extends_work_items": 19
+      }
+    },
+    {
+      "case": "ordinary",
+      "source_sha256": "3d4a56b0ee681b2a60efd43547c079693728ac8446d231fddfaace5b258c62b5",
+      "source_bytes": 572,
+      "declared_links": [
+        {
+          "source_object": 4,
+          "source_generation": 0,
+          "source_offset": 186,
+          "context_xref": 342,
+          "target_object": 5,
+          "target_generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "members_inherited": false,
+          "in_cycle": false,
+          "primary_xref": 342,
+          "target_xref": 342,
+          "target_record_range": {
+            "space": "decoded-xref",
+            "start": 35,
+            "end": 42
+          },
+          "target_offset": 305,
+          "status": "target-not-object-stream"
+        }
+      ],
+      "dag_valid": null,
+      "decoded_containers": 1,
+      "work_items": 31,
+      "current_projection": {
+        "object_stream_current_extends_assessed": true,
+        "object_stream_current_extends_xref": 342,
+        "object_stream_current_extends_roots": [
+          {
+            "object": 100,
+            "object_stream": 4,
+            "index": 0,
+            "context_xref": 342,
+            "reference_xref": 342,
+            "reference_record_range": {
+              "space": "decoded-xref",
+              "start": 42,
+              "end": 49
+            },
+            "ownership_proven": false,
+            "object_resolved": false,
+            "container_xref": 342,
+            "container_record_range": {
+              "space": "decoded-xref",
+              "start": 28,
+              "end": 35
+            },
+            "container_state": "uncompressed",
+            "container_generation": 0,
+            "status": "selected-container",
+            "container_offset": 186
+          }
+        ],
+        "object_stream_current_extends_links": [
+          {
+            "source_object": 4,
+            "source_generation": 0,
+            "source_offset": 186,
+            "context_xref": 342,
+            "target_object": 5,
+            "target_generation": 0,
+            "ownership_proven": false,
+            "object_resolved": false,
+            "members_inherited": false,
+            "in_cycle": false,
+            "primary_xref": 342,
+            "target_xref": 342,
+            "target_record_range": {
+              "space": "decoded-xref",
+              "start": 35,
+              "end": 42
+            },
+            "target_offset": 305,
+            "status": "target-not-object-stream"
+          }
+        ],
+        "object_stream_current_extends_dag_valid": null,
+        "object_stream_current_extends_work_items": 20
+      }
+    },
+    {
+      "case": "compressed",
+      "source_sha256": "e714a893c1288444f7460d53633a94a72cf4c9c2b1dcfeec3aff22b0842d91a3",
+      "source_bytes": 639,
+      "declared_links": [
+        {
+          "source_object": 4,
+          "source_generation": 0,
+          "source_offset": 186,
+          "context_xref": 409,
+          "target_object": 5,
+          "target_generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "members_inherited": false,
+          "in_cycle": false,
+          "primary_xref": 409,
+          "target_xref": 409,
+          "target_record_range": {
+            "space": "decoded-xref",
+            "start": 35,
+            "end": 42
+          },
+          "status": "target-not-uncompressed"
+        }
+      ],
+      "dag_valid": null,
+      "decoded_containers": 1,
+      "work_items": 30,
+      "current_projection": {
+        "object_stream_current_extends_assessed": true,
+        "object_stream_current_extends_xref": 409,
+        "object_stream_current_extends_roots": [
+          {
+            "object": 5,
+            "object_stream": 4,
+            "index": 0,
+            "context_xref": 409,
+            "reference_xref": 409,
+            "reference_record_range": {
+              "space": "decoded-xref",
+              "start": 35,
+              "end": 42
+            },
+            "ownership_proven": false,
+            "object_resolved": false,
+            "container_xref": 409,
+            "container_record_range": {
+              "space": "decoded-xref",
+              "start": 28,
+              "end": 35
+            },
+            "container_state": "uncompressed",
+            "container_generation": 0,
+            "status": "selected-container",
+            "container_offset": 186
+          },
+          {
+            "object": 100,
+            "object_stream": 4,
+            "index": 0,
+            "context_xref": 409,
+            "reference_xref": 409,
+            "reference_record_range": {
+              "space": "decoded-xref",
+              "start": 42,
+              "end": 49
+            },
+            "ownership_proven": false,
+            "object_resolved": false,
+            "container_xref": 409,
+            "container_record_range": {
+              "space": "decoded-xref",
+              "start": 28,
+              "end": 35
+            },
+            "container_state": "uncompressed",
+            "container_generation": 0,
+            "status": "selected-container",
+            "container_offset": 186
+          }
+        ],
+        "object_stream_current_extends_links": [
+          {
+            "source_object": 4,
+            "source_generation": 0,
+            "source_offset": 186,
+            "context_xref": 409,
+            "target_object": 5,
+            "target_generation": 0,
+            "ownership_proven": false,
+            "object_resolved": false,
+            "members_inherited": false,
+            "in_cycle": false,
+            "primary_xref": 409,
+            "target_xref": 409,
+            "target_record_range": {
+              "space": "decoded-xref",
+              "start": 35,
+              "end": 42
+            },
+            "status": "target-not-uncompressed"
+          }
+        ],
+        "object_stream_current_extends_dag_valid": null,
+        "object_stream_current_extends_work_items": 20
+      }
+    },
+    {
+      "case": "generation",
+      "source_sha256": "a46900edd80d9d4c9c9d16c8bb3bf697a48bdc5f2690f1c52efdf22bc4276de0",
+      "source_bytes": 639,
+      "declared_links": [
+        {
+          "source_object": 4,
+          "source_generation": 0,
+          "source_offset": 186,
+          "context_xref": 409,
+          "target_object": 5,
+          "target_generation": 0,
+          "ownership_proven": false,
+          "object_resolved": false,
+          "members_inherited": false,
+          "in_cycle": false,
+          "primary_xref": 409,
+          "target_xref": 409,
+          "target_record_range": {
+            "space": "decoded-xref",
+            "start": 35,
+            "end": 42
+          },
+          "status": "generation-mismatch"
+        }
+      ],
+      "dag_valid": null,
+      "decoded_containers": 1,
+      "work_items": 29,
+      "current_projection": {
+        "object_stream_current_extends_assessed": true,
+        "object_stream_current_extends_xref": 409,
+        "object_stream_current_extends_roots": [
+          {
+            "object": 100,
+            "object_stream": 4,
+            "index": 0,
+            "context_xref": 409,
+            "reference_xref": 409,
+            "reference_record_range": {
+              "space": "decoded-xref",
+              "start": 42,
+              "end": 49
+            },
+            "ownership_proven": false,
+            "object_resolved": false,
+            "container_xref": 409,
+            "container_record_range": {
+              "space": "decoded-xref",
+              "start": 28,
+              "end": 35
+            },
+            "container_state": "uncompressed",
+            "container_generation": 0,
+            "status": "selected-container",
+            "container_offset": 186
+          }
+        ],
+        "object_stream_current_extends_links": [
+          {
+            "source_object": 4,
+            "source_generation": 0,
+            "source_offset": 186,
+            "context_xref": 409,
+            "target_object": 5,
+            "target_generation": 0,
+            "ownership_proven": false,
+            "object_resolved": false,
+            "members_inherited": false,
+            "in_cycle": false,
+            "primary_xref": 409,
+            "target_xref": 409,
+            "target_record_range": {
+              "space": "decoded-xref",
+              "start": 35,
+              "end": 42
+            },
+            "status": "generation-mismatch"
+          }
+        ],
+        "object_stream_current_extends_dag_valid": null,
+        "object_stream_current_extends_work_items": 19
+      }
+    }
+  ],
+  "test_fixture_sha256": "094ff1293eedc57c85a41099c24d874869c3d1be34ca680e286ccfc05857fbcd",
+  "consumer_sha256": "68ce52525d18b612bd3ae8f27f04027f4fa1efa4a86f00d9027406e5a10319d9",
+  "current_fixture_sha256": "c99c2645f6a191936c58723fe2d7d0729855f99dbf82c7efe1cd55c178ea6e39",
+  "limitations": [
+    "No member inheritance, object ownership or active-body resolution",
+    "Current collection declarations are separate from historical links; parameter contexts must agree",
+    "Independent reader checks valid chain/replacement only; damaged and hybrid use literal source assertions"
+  ]
+}

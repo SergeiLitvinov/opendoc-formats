@@ -1,0 +1,75 @@
+{
+  "scope": "Finite standalone TTF/OTF FontReference and full-program PDF export, not general shaping acceptance",
+  "model": "opendoc-model==0.19.0",
+  "published": false,
+  "dependencies_changed": false,
+  "resource_font_tests_passed": 37,
+  "affected_font_pdf_docx_tests_passed": 356,
+  "additional_pdf_flow_interaction_geometry_outline_raster_tests_passed": 87,
+  "total_focused_tests_passed": 443,
+  "source_files_sha256": {
+    "src/opendoc_formats/fonts/resource_fonts.py": "2f9c0f4d118a6f2492213c856c264fe7512255be19ec1e93911eab68aa42b0d8",
+    "src/opendoc_formats/fonts/html_embedding.py": "8c4b5d72d82fa4cc295a5498b90eb1baa8da050ca18af1d676e6c308710d8bde",
+    "src/opendoc_formats/writers/pdf_writer.py": "f2255a6300a1b5285e9bc90a6db52eb9bd17e0865a8b5bce9118ad951758da63",
+    "tests/writers/test_pdf_resource_fonts.py": "6d290f54b27e84a1195c8462a867cf24068fff162df9321ee78fc0c4b0ed8e69",
+    "tools/pdf_ligature_smoke.py": "0c33fda2800d91b1f1195a1d8c9e961f24d8272f0245f688a038a53efb7cdf57"
+  },
+  "profile": {
+    "media_types": [
+      "font/ttf",
+      "font/otf"
+    ],
+    "face_indices": [
+      null,
+      0
+    ],
+    "resource_program_subsetting": false,
+    "native_names_coverage_permissions_metrics": true,
+    "full_program_sha256_verified_from_saved_pdf": true,
+    "identically_named_distinct_fonts_actual_paint_bindings_verified": true,
+    "two_json_cycles_text_pixels_model_immutability": true,
+    "restricted_bitmap_embedding_and_missing_glyphs_rejected": true,
+    "invalid_face_corrupt_or_unsupported_program_rejected": true,
+    "ambiguity_requires_explicit_reference": true,
+    "quota_before_materialization": "DocumentLimits.max_embedded_bytes",
+    "cancellation_cleans_temporary_resources": true,
+    "failure_preserves_existing_target": true
+  },
+  "installed_acceptance": {
+    "packages": [
+      "opendoc-formats==0.42.0",
+      "opendoc-model==0.19.0",
+      "pymupdf==1.28.2"
+    ],
+    "fonttools_pillow_office_html_other_pdf_engines_absent": true,
+    "command": "python -I tools/pdf_ligature_smoke.py",
+    "TTF_and_OTF_public_export_passed": true,
+    "pip_check_passed": true,
+    "runtime_source_wheel_installed_files_identical": 212,
+    "tested_wheel_sha256": "7e344231917773e4e2e57c06a0624ad97abf208e7103c0d6f504326137513768",
+    "CI_not_dispatched": true
+  },
+  "owned_fixtures": [
+    {
+      "path": "tests/native/data/ligature-post3.ttf",
+      "bytes": 1320,
+      "sha256": "002ab3822db7196c8ba23fa443d5d4e7026301fdee7f89883045d6b4f70528ad",
+      "license": "MIT",
+      "third_party_glyph_data": false
+    },
+    {
+      "path": "tests/native/data/own-cff.otf",
+      "bytes": 904,
+      "sha256": "e102a71e4f21274983d96af916138915772aec68f0a82c821e575b5f1f9c01f8",
+      "license": "MIT",
+      "third_party_glyph_data": false
+    }
+  ],
+  "remaining": [
+    "TTC collection faces, raw CFF and other wrappers require separate explicit profile acceptance",
+    "Full OpenType shaping and independent renderer comparison remain open",
+    "fontTools extra retained for real subsetting and uncovered parser profiles",
+    "Full program embedding may increase PDF size",
+    "No Model changes: existing FontReference contract is used"
+  ]
+}
