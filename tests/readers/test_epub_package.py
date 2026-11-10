@@ -2,10 +2,14 @@
 
 import builtins
 import zipfile
+from random import Random
 
 import pytest
 
 from opendoc_formats import read_document
+from opendoc_formats.anatomy import inspect_binary
+from opendoc_formats.errors import OperationCancelledError
+from opendoc_formats.readers.epub import read_epub_metadata
 from opendoc_formats.readers.epub_package import read_epub_package
 
 
@@ -33,14 +37,59 @@ def _package(path, *, href="text/chapter%20one.xhtml", extra_manifest="", contai
           </navPoint></navMap></ncx>''')
 
 
-def test_repeated_dc_values_and_source_snapshot(tmp_path):
+def test_repeated_dc_values_and_source_snapshot(tmp_path, monkeypatch):
     source = tmp_path / "metadata.epub"
     _package(source, metadata_extra='<dc:creator id="author">One</dc:creator><dc:creator>Two</dc:creator>'
              '<dc:subject>Books</dc:subject><dc:rights>Own rights</dc:rights>')
+    reads = []
+    opened = []
+    original_read = zipfile.ZipFile.open
+    original_init = zipfile.ZipFile.__init__
+
+    def observe(archive, name, *args, **kwargs):
+        reads.append(name)
+        return original_read(archive, name, *args, **kwargs)
+
+    def observe_open(archive, *args, **kwargs):
+        opened.append(archive)
+        original_init(archive, *args, **kwargs)
+
+    monkeypatch.setattr(zipfile.ZipFile, 'open', observe)
+    monkeypatch.setattr(zipfile.ZipFile, '__init__', observe_open)
+    metadata = read_epub_metadata(source)
+    assert reads == ['mimetype', 'META-INF/container.xml', 'OPS/book.opf']
+    assert len(opened) == 1 and opened[0].fp is None
+    reads.clear()
     native = read_epub_package(source)
+    assert len(opened) == 2 and opened[1].fp is None
+    assert metadata == native.dc_values
+    assert len(reads) == len(set(reads))
     assert native.dc_values["creator"] == ("One", "Two")
     assert native.dc_values["subject"] == ("Books",) and native.dc_values["rights"] == ("Own rights",)
     assert any('id="author"' in value for value in native.metadata_entries)
+
+
+@pytest.mark.parametrize('reader', [inspect_binary, read_epub_package])
+def test_cancel_inside_large_compressed_member(tmp_path, monkeypatch, reader):
+    source = tmp_path / 'cancel.epub'
+    _package(source, extra_manifest='<item id="blob" href="blob.bin" media-type="application/octet-stream"/>')
+    with zipfile.ZipFile(source, 'a', compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr('OPS/blob.bin', Random(42).randbytes(800_000))
+    original = source.read_bytes()
+    reads = []
+    read = zipfile.ZipExtFile.read
+
+    def stop_after_chunk(stream, *args, **kwargs):
+        result = read(stream, *args, **kwargs)
+        if stream.name == 'OPS/blob.bin':
+            reads.append(len(result))
+        return result
+
+    monkeypatch.setattr(zipfile.ZipExtFile, 'read', stop_after_chunk)
+    with pytest.raises(OperationCancelledError):
+        reader(source, cancelled=lambda: bool(reads))
+    assert len(reads) == 1 and 0 < reads[0] < 800_000
+    assert source.read_bytes() == original
 
 
 @pytest.mark.parametrize("nav", [True, False])
@@ -60,7 +109,7 @@ def test_native_spine_nav_ncx_and_metadata_without_ebooklib_or_lxml(tmp_path, mo
     assert package.titles["text/chapter one.xhtml"] == "Название"
     result = read_document(source)
     assert result.success, result.issues
-    assert result.document.metadata["engine"] == "native-epub+bs4"
+    assert result.document.metadata["engine"] == "native-epub-xhtml"
     assert result.document.sections[0].properties["epub"]["title"] == "Название"
     assert result.document.sections[0].blocks[1].plain_text == "Текст"
 

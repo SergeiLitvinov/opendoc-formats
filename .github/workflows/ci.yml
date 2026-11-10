@@ -31,7 +31,7 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python }}
-      - run: uv sync --frozen --all-extras
+      - run: uv sync --frozen --all-extras --no-extra release
       - name: Install office converter for real acceptance
         if: matrix.os == 'ubuntu-latest' && matrix.python == '3.12'
         run: >-
@@ -58,7 +58,7 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
-      - run: uv sync --frozen --extra dev
+      - run: uv sync --frozen --extra release
       - run: |
           mkdir -p .opendoc-formats
           uv export --frozen --all-extras --no-emit-project --no-hashes --output-file .opendoc-formats/profile-constraints.txt
@@ -73,7 +73,7 @@ jobs:
           uv pip install --python .opendoc-formats/model-api/bin/python "$sdk_wheel"
           .opendoc-formats/model-api/bin/python -I tools/model_api_consumer.py --wheel "$sdk_wheel" --sha256 "$sdk_sha" --output .opendoc-formats/model-api-evidence.json
       - run: uv run --frozen python -m tools.release check
-      - run: uv run --frozen twine check .opendoc-formats/dist/*.whl .opendoc-formats/dist/*.tar.gz
+      - run: uv run --frozen --extra release twine check .opendoc-formats/dist/*.whl .opendoc-formats/dist/*.tar.gz
       - name: Rebuild wheel from the source distribution
         run: uv build --wheel .opendoc-formats/dist/*.tar.gz --out-dir .opendoc-formats/from-sdist
       - name: Install base wheel outside the checkout
@@ -110,6 +110,12 @@ jobs:
           uv venv .opendoc-formats/html-profile
           uv pip install --constraint .opendoc-formats/profile-constraints.txt --python .opendoc-formats/html-profile/bin/python 'opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.1.0/opendoc_model-0.1.0-py3-none-any.whl' ".opendoc-formats/from-sdist/opendoc_formats-${version}-py3-none-any.whl[html]"
           .opendoc-formats/html-profile/bin/python -I tools/html_profile_smoke.py
+      - name: Exercise minimal HTML without tinycss2 in a fresh environment
+        run: |
+          version=$(python -m tools.release version)
+          uv venv .opendoc-formats/html-dom-profile
+          uv pip install --constraint .opendoc-formats/profile-constraints.txt --python .opendoc-formats/html-dom-profile/bin/python 'opendoc-model @ https://github.com/SergeiLitvinov/opendoc-model/releases/download/v0.1.0/opendoc_model-0.1.0-py3-none-any.whl' ".opendoc-formats/from-sdist/opendoc_formats-${version}-py3-none-any.whl[html-dom]"
+          .opendoc-formats/html-dom-profile/bin/python -I tools/html_profile_smoke.py --dom-only
       - name: Exercise native DOCX flow and owned fonts without fontTools or PDF engines
         run: |
           version=$(python -m tools.release version)

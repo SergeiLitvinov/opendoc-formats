@@ -13,7 +13,7 @@ from PIL import Image as PillowImage
 from opendoc_formats.readers.epub import read_epub, read_epub_model
 
 
-def _rich_epub(path):
+def _rich_epub(path, *, css=None):
     buffer = BytesIO()
     PillowImage.new("RGB", (12, 8), "green").save(buffer, format="PNG")
     first = """<html><head><link href="../styles/main.css" rel="stylesheet" type="text/css"/></head>
@@ -42,8 +42,30 @@ def _rich_epub(path):
         archive.writestr("chapters/first.xhtml", first)
         archive.writestr("chapters/second.xhtml", second)
         archive.writestr("images/picture.png", buffer.getvalue())
-        archive.writestr("styles/main.css", ".accent { color: #123456; font-weight: 700 } "
+        archive.writestr("styles/main.css", css if css is not None else
+                         ".accent { color: #123456; font-weight: 700 } "
                          "p.note { font-size: 16px; background-color: #ffeecc }")
+
+
+def test_css_keeps_quoted_text_and_does_not_apply_nested_declarations(tmp_path):
+    source = tmp_path / "rich.epub"
+    _rich_epub(source, css='''
+        /* before rule */ p.note {
+            /* before declaration */ font-family: "Face; /* literal */ { Regular }";
+            font-size: /* before value */ 16px;
+            background-image: url("data:example; background-color: #000000;{}");
+            broken-prefix color: #ffffff;
+        }
+        .accent { color: #123456 }
+    ''')
+    blocks = read_epub_model(source).sections[1].blocks
+    note = next(block for block in blocks if block.plain_text.startswith("До "))
+    assert note.content[0].style.font_family == "Face; /* literal */ { Regular }"
+    assert note.content[0].style.font_size.pt == 12
+    assert note.content[0].style.color is None
+    assert note.content[0].style.background is None
+    styled = next(item for block in blocks for item in block.content if isinstance(item, TextRun) and item.text == "Пункт")
+    assert styled.style.color == "#123456"
 
 
 def test_spine_links_media_css_and_json_roundtrip(tmp_path):

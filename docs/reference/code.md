@@ -7,7 +7,7 @@
 Document format readers and writers built on the OpenDoc model.
 
 
-Импорты: `api`, `docx_profile`, `export`, `importlib.metadata`, `pptx_profile`, `support.mapping_composition`, `support.object_mapping`, `support.pdf_mapping_history`, `text_profile`
+Импорты: `api`, `docx_profile`, `export`, `importlib.metadata`, `native.ooxml_metadata`, `native.pdf_metadata`, `pptx_profile`, `support.mapping_composition`, `support.object_mapping`, `support.pdf_mapping_history`, `text_profile`
 
 ## src/opendoc_formats/anatomy.py
 
@@ -26,11 +26,11 @@ Read-only inventories: ZIP/XML, PDF, CFBF, Ole10Native envelopes, PNG chunks and
 - `BinarySnapshot` — [строка 136](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L136)
 - `to_dict(self) -> dict[str, Any]` — [строка 145](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L145)
 - `compare_snapshots(before: BinarySnapshot, after: BinarySnapshot) -> dict[str, Any]` — [строка 164](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L164)
-- `inspect_binary(source: Source, *, container: str | None=None, limits: AnatomyLimits=AnatomyLimits(), parse_xml: bool=True, capture: bool=False, sfnt_checksums: bool=False, sfnt_structure: bool=False, pdf_source: bool=False, pdf_decode_xrefs: bool=False, pdf_object_streams: bool=False, pdf_resolve_xrefs: bool=False, sfnt_face_index: int | None=None, cancelled: Callable[[], bool] | None=None) -> BinarySnapshot` — [строка 454](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L454)
+- `inspect_binary(source: Source, *, container: str | None=None, limits: AnatomyLimits=AnatomyLimits(), parse_xml: bool=True, capture: bool=False, sfnt_checksums: bool=False, sfnt_structure: bool=False, pdf_source: bool=False, pdf_decode_xrefs: bool=False, pdf_object_streams: bool=False, pdf_resolve_xrefs: bool=False, sfnt_face_index: int | None=None, cancelled: Callable[[], bool] | None=None) -> BinarySnapshot` — [строка 451](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L451)
 
 Импорты: `__future__`, `collections.abc`, `copy`, `dataclasses`, `opendoc_formats.errors`, `opendoc_formats.native.cfbf`, `opendoc_formats.native.common`, `opendoc_formats.native.epub`, `opendoc_formats.native.ole_native`, `opendoc_formats.native.opc`, `opendoc_formats.native.opc_audit`, `opendoc_formats.native.pdf_revisions`, `opendoc_formats.native.png`, `opendoc_formats.native.sfnt`, `opendoc_formats.pdf`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.io`, `typing`, `xml.parsers`
 
-Тесты: [test_binary_compatibility.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_binary_compatibility.py#L1), [test_cfbf_colors.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_cfbf_colors.py#L1), [test_cfbf_fields.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_cfbf_fields.py#L1), [test_cfbf_header_fields.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_cfbf_header_fields.py#L1), [test_cfbf_names.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_cfbf_names.py#L1), [test_cfbf_windows.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_cfbf_windows.py#L1), [test_pdf_ascii.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_ascii.py#L1), [test_pdf_current_extends.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_current_extends.py#L1), [test_pdf_current_object_links.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_current_object_links.py#L1), [test_pdf_current_parameters.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_current_parameters.py#L1), [test_pdf_extends.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_extends.py#L1), [test_pdf_filter_pipeline.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_filter_pipeline.py#L1), [test_pdf_lzw.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_lzw.py#L1), [test_pdf_member_references.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_member_references.py#L1), [test_pdf_object_links.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_object_links.py#L1), [test_pdf_object_reuse.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_object_reuse.py#L1), [test_pdf_object_streams.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_object_streams.py#L1), [test_pdf_predictors.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_predictors.py#L1), [test_pdf_revisions.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_revisions.py#L1), [test_pdf_runlength.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_runlength.py#L1), [test_pdf_source_integers.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_source_integers.py#L1), [test_pdf_tiff_predictor.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_tiff_predictor.py#L1), [test_pdf_xref_state.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_xref_state.py#L1), [test_pdf_xref_streams.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_xref_streams.py#L1), [test_pdf_xref_work_budget.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_xref_work_budget.py#L1), [test_pptx_source_package.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pptx_source_package.py#L1), [test_anatomy.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy.py#L1), [test_anatomy_cfbf.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_cfbf.py#L1), [test_anatomy_content_types.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_content_types.py#L1), [test_anatomy_epub.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_epub.py#L1), [test_anatomy_font_collection.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_font_collection.py#L1), [test_anatomy_ole_native.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_ole_native.py#L1), [test_anatomy_opc.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_opc.py#L1), [test_anatomy_png.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_png.py#L1), [test_anatomy_png_metadata.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_png_metadata.py#L1), [test_anatomy_sfnt.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_sfnt.py#L1), [test_anatomy_tree.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_tree.py#L1), [test_sfnt_structure.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_sfnt_structure.py#L1)
+Тесты: [test_binary_compatibility.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_binary_compatibility.py#L1), [test_cfbf_colors.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_cfbf_colors.py#L1), [test_cfbf_fields.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_cfbf_fields.py#L1), [test_cfbf_header_fields.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_cfbf_header_fields.py#L1), [test_cfbf_names.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_cfbf_names.py#L1), [test_cfbf_windows.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_cfbf_windows.py#L1), [test_pdf_ascii.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_ascii.py#L1), [test_pdf_current_extends.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_current_extends.py#L1), [test_pdf_current_object_links.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_current_object_links.py#L1), [test_pdf_current_parameters.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_current_parameters.py#L1), [test_pdf_extends.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_extends.py#L1), [test_pdf_filter_pipeline.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_filter_pipeline.py#L1), [test_pdf_lzw.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_lzw.py#L1), [test_pdf_member_references.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_member_references.py#L1), [test_pdf_object_links.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_object_links.py#L1), [test_pdf_object_reuse.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_object_reuse.py#L1), [test_pdf_object_streams.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_object_streams.py#L1), [test_pdf_predictors.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_predictors.py#L1), [test_pdf_revisions.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_revisions.py#L1), [test_pdf_runlength.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_runlength.py#L1), [test_pdf_source_integers.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_source_integers.py#L1), [test_pdf_tiff_predictor.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_tiff_predictor.py#L1), [test_pdf_xref_state.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_xref_state.py#L1), [test_pdf_xref_streams.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_xref_streams.py#L1), [test_pdf_xref_work_budget.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_xref_work_budget.py#L1), [test_epub_package.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_package.py#L1), [test_pptx_source_package.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pptx_source_package.py#L1), [test_pdf_probe.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_pdf_probe.py#L1), [test_anatomy.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy.py#L1), [test_anatomy_cfbf.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_cfbf.py#L1), [test_anatomy_content_types.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_content_types.py#L1), [test_anatomy_epub.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_epub.py#L1), [test_anatomy_font_collection.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_font_collection.py#L1), [test_anatomy_ole_native.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_ole_native.py#L1), [test_anatomy_opc.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_opc.py#L1), [test_anatomy_png.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_png.py#L1), [test_anatomy_png_metadata.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_png_metadata.py#L1), [test_anatomy_sfnt.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_sfnt.py#L1), [test_anatomy_tree.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_tree.py#L1), [test_sfnt_structure.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_sfnt_structure.py#L1)
 
 ## src/opendoc_formats/anatomy_tree.py
 
@@ -61,8 +61,8 @@ Format reader registry using the OpenDoc model and validation contract.
 - `register(self, adapter: AdapterSpec) -> None` — [строка 116](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L116)
 - `adapters(self) -> tuple[AdapterSpec, ...]` — [строка 124](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L124)
 - `read(self, path: str | Path, *, format_id: str | None=None, options: ImportOptions | None=None) -> ImportResult` — [строка 127](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L127)
-- `default_registry() -> AdapterRegistry` — [строка 238](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L238)
-- `read_document(path: str | Path, *, format_id: str | None=None, options: ImportOptions | None=None) -> ImportResult` — [строка 252](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L252)
+- `default_registry() -> AdapterRegistry` — [строка 240](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L240)
+- `read_document(path: str | Path, *, format_id: str | None=None, options: ImportOptions | None=None) -> ImportResult` — [строка 254](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L254)
 
 Импорты: `__future__`, `collections.abc`, `dataclasses`, `importlib`, `opendoc_formats.errors`, `opendoc_formats.html_tables`, `opendoc_formats.ooxml.widths`, `opendoc_formats.pdf_outline`, `opendoc_formats.readers.tex_model`, `opendoc_formats.support.backends`, `opendoc_formats.support.document_limits`, `opendoc_formats.text_profile`, `opendoc_model`, `pathlib`, `typing`
 
@@ -144,23 +144,23 @@ Format-specific errors, independent of consumers.
 
 Импорты: отсутствуют
 
-Тесты: [test_cfbf_colors.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_cfbf_colors.py#L1), [test_cfbf_fields.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_cfbf_fields.py#L1), [test_cfbf_header_fields.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_cfbf_header_fields.py#L1), [test_cfbf_names.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_cfbf_names.py#L1), [test_docx_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_access.py#L1), [test_docx_consumer_contract.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_consumer_contract.py#L1), [test_docx_inspection_only.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_inspection_only.py#L1), [test_docx_relationship_snapshots.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_relationship_snapshots.py#L1), [test_docx_target_encoding.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_target_encoding.py#L1), [test_docx_uri_aliases.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_uri_aliases.py#L1), [test_office_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_office_access.py#L1), [test_package_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_package_resources.py#L1), [test_pdf_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_access.py#L1), [test_pdf_ascii.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_ascii.py#L1), [test_pdf_current_extends.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_current_extends.py#L1), [test_pdf_current_object_links.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_current_object_links.py#L1), [test_pdf_current_parameters.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_current_parameters.py#L1), [test_pdf_extends.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_extends.py#L1), [test_pdf_filter_pipeline.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_filter_pipeline.py#L1), [test_pdf_lzw.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_lzw.py#L1), [test_pdf_member_references.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_member_references.py#L1), [test_pdf_object_links.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_object_links.py#L1), [test_pdf_object_reuse.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_object_reuse.py#L1), [test_pdf_object_streams.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_object_streams.py#L1), [test_pdf_placements.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_placements.py#L1), [test_pdf_predictors.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_predictors.py#L1), [test_pdf_revisions.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_revisions.py#L1), [test_pdf_runlength.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_runlength.py#L1), [test_pdf_source_integers.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_source_integers.py#L1), [test_pdf_text_spans.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_text_spans.py#L1), [test_pdf_tiff_predictor.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_tiff_predictor.py#L1), [test_pdf_xref_state.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_xref_state.py#L1), [test_pdf_xref_streams.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_xref_streams.py#L1), [test_pdf_xref_work_budget.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_xref_work_budget.py#L1), [test_djvu_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_djvu_text.py#L1), [test_docx_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_diagnostics.py#L1), [test_docx_heading_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_heading_cancellation.py#L1), [test_docx_layout_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_layout_roundtrip.py#L1), [test_docx_page_geometry.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_page_geometry.py#L1), [test_docx_whitespace.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_whitespace.py#L1), [test_epub_anchor_identity.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_anchor_identity.py#L1), [test_epub_diagnostic_limits.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_diagnostic_limits.py#L1), [test_epub_interactive_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_interactive_diagnostics.py#L1), [test_epub_parser_limits.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_parser_limits.py#L1), [test_epub_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_text.py#L1), [test_epub_uri_binding.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_uri_binding.py#L1), [test_fix_encoding.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_fix_encoding.py#L1), [test_html_fonts.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_html_fonts.py#L1), [test_office_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_office_import_cancellation.py#L1), [test_pdf_font_bindings.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_font_bindings.py#L1), [test_pdf_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_import_cancellation.py#L1), [test_pdf_layout_bindings.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_layout_bindings.py#L1), [test_pdf_layout_budget.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_layout_budget.py#L1), [test_pdf_model_ocr_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_model_ocr_diagnostics.py#L1), [test_pdf_paint_matching.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_paint_matching.py#L1), [test_pdf_resource_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_resource_diagnostics.py#L1), [test_pdf_table_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_table_diagnostics.py#L1), [test_pdf_text_fallback.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_text_fallback.py#L1), [test_pdf_text_layout.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_text_layout.py#L1), [test_pptx_background_styles.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pptx_background_styles.py#L1), [test_pptx_chart_themes.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pptx_chart_themes.py#L1), [test_pptx_inheritance.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pptx_inheritance.py#L1), [test_pptx_source_package.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pptx_source_package.py#L1), [test_tex_clines.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_tex_clines.py#L1), [test_tex_model.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_tex_model.py#L1), [test_tex_optional_arguments.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_tex_optional_arguments.py#L1), [test_tex_tables.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_tex_tables.py#L1), [test_web_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_web_import_cancellation.py#L1), [test_ooxml_package.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_ooxml_package.py#L1), [test_anatomy.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy.py#L1), [test_anatomy_cfbf.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_cfbf.py#L1), [test_anatomy_content_types.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_content_types.py#L1), [test_anatomy_epub.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_epub.py#L1), [test_anatomy_font_collection.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_font_collection.py#L1), [test_anatomy_ole_native.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_ole_native.py#L1), [test_anatomy_opc.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_opc.py#L1), [test_anatomy_png.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_png.py#L1), [test_anatomy_png_metadata.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_png_metadata.py#L1), [test_anatomy_sfnt.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_sfnt.py#L1), [test_anatomy_tree.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_tree.py#L1), [test_font_subset_cache.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_font_subset_cache.py#L1), [test_font_subset_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_font_subset_cancellation.py#L1), [test_native_font_cmap.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_native_font_cmap.py#L1), [test_native_font_collection.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_native_font_collection.py#L1), [test_native_font_context_classes.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_native_font_context_classes.py#L1), [test_native_font_context_gsub.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_native_font_context_gsub.py#L1), [test_native_font_context_rules.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_native_font_context_rules.py#L1), [test_native_font_face.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_native_font_face.py#L1), [test_native_font_ligatures.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_native_font_ligatures.py#L1), [test_native_font_names.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_native_font_names.py#L1), [test_native_font_reverse_gsub.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_native_font_reverse_gsub.py#L1), [test_native_fvar.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_native_fvar.py#L1), [test_opc_orphans.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_opc_orphans.py#L1), [test_opc_reference_paths.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_opc_reference_paths.py#L1), [test_sfnt_checksums.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_sfnt_checksums.py#L1), [test_sfnt_inspection.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_sfnt_inspection.py#L1), [test_sfnt_structure.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_sfnt_structure.py#L1), [test_text_projection.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_text_projection.py#L1), [test_txt_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_txt_cancellation.py#L1), [test_word_font_metrics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_word_font_metrics.py#L1), [test_docx_flow.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_docx_flow.py#L1), [test_html_resource_fonts.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_resource_fonts.py#L1), [test_latex_lists.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_lists.py#L1), [test_latex_math.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_math.py#L1), [test_office_export_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_office_export_cancellation.py#L1), [test_office_nested_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_office_nested_cancellation.py#L1), [test_pdf_docx_preparation_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_docx_preparation_cancellation.py#L1), [test_pdf_resource_fonts.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_resource_fonts.py#L1), [test_web_tex_export_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_web_tex_export_cancellation.py#L1)
+Тесты: [test_cfbf_colors.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_cfbf_colors.py#L1), [test_cfbf_fields.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_cfbf_fields.py#L1), [test_cfbf_header_fields.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_cfbf_header_fields.py#L1), [test_cfbf_names.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_cfbf_names.py#L1), [test_docx_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_access.py#L1), [test_docx_consumer_contract.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_consumer_contract.py#L1), [test_docx_inspection_only.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_inspection_only.py#L1), [test_docx_relationship_snapshots.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_relationship_snapshots.py#L1), [test_docx_target_encoding.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_target_encoding.py#L1), [test_docx_uri_aliases.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_docx_uri_aliases.py#L1), [test_office_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_office_access.py#L1), [test_ooxml_metadata.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_ooxml_metadata.py#L1), [test_package_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_package_resources.py#L1), [test_pdf_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_access.py#L1), [test_pdf_ascii.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_ascii.py#L1), [test_pdf_current_extends.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_current_extends.py#L1), [test_pdf_current_object_links.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_current_object_links.py#L1), [test_pdf_current_parameters.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_current_parameters.py#L1), [test_pdf_extends.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_extends.py#L1), [test_pdf_filter_pipeline.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_filter_pipeline.py#L1), [test_pdf_lzw.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_lzw.py#L1), [test_pdf_member_references.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_member_references.py#L1), [test_pdf_object_links.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_object_links.py#L1), [test_pdf_object_reuse.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_object_reuse.py#L1), [test_pdf_object_streams.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_object_streams.py#L1), [test_pdf_placements.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_placements.py#L1), [test_pdf_predictors.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_predictors.py#L1), [test_pdf_revisions.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_revisions.py#L1), [test_pdf_runlength.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_runlength.py#L1), [test_pdf_source_integers.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_source_integers.py#L1), [test_pdf_text_spans.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_text_spans.py#L1), [test_pdf_tiff_predictor.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_tiff_predictor.py#L1), [test_pdf_xmp.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_xmp.py#L1), [test_pdf_xref_state.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_xref_state.py#L1), [test_pdf_xref_streams.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_xref_streams.py#L1), [test_pdf_xref_work_budget.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_xref_work_budget.py#L1), [test_djvu_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_djvu_text.py#L1), [test_docx_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_diagnostics.py#L1), [test_docx_heading_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_heading_cancellation.py#L1), [test_docx_layout_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_layout_roundtrip.py#L1), [test_docx_page_geometry.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_page_geometry.py#L1), [test_docx_whitespace.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_whitespace.py#L1), [test_epub_anchor_identity.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_anchor_identity.py#L1), [test_epub_diagnostic_limits.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_diagnostic_limits.py#L1), [test_epub_interactive_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_interactive_diagnostics.py#L1), [test_epub_package.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_package.py#L1), [test_epub_parser_limits.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_parser_limits.py#L1), [test_epub_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_text.py#L1), [test_epub_uri_binding.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_uri_binding.py#L1), [test_fix_encoding.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_fix_encoding.py#L1), [test_html_fonts.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_html_fonts.py#L1), [test_office_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_office_import_cancellation.py#L1), [test_pdf_font_bindings.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_font_bindings.py#L1), [test_pdf_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_import_cancellation.py#L1), [test_pdf_layout_bindings.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_layout_bindings.py#L1), [test_pdf_layout_budget.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_layout_budget.py#L1), [test_pdf_model_ocr_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_model_ocr_diagnostics.py#L1), [test_pdf_paint_matching.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_paint_matching.py#L1), [test_pdf_resource_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_resource_diagnostics.py#L1), [test_pdf_table_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_table_diagnostics.py#L1), [test_pdf_text_fallback.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_text_fallback.py#L1), [test_pdf_text_layout.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_text_layout.py#L1), [test_pptx_background_styles.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pptx_background_styles.py#L1), [test_pptx_chart_themes.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pptx_chart_themes.py#L1), [test_pptx_inheritance.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pptx_inheritance.py#L1), [test_pptx_source_package.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pptx_source_package.py#L1), [test_tex_clines.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_tex_clines.py#L1), [test_tex_model.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_tex_model.py#L1), [test_tex_optional_arguments.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_tex_optional_arguments.py#L1), [test_tex_tables.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_tex_tables.py#L1), [test_web_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_web_import_cancellation.py#L1), [test_ooxml_package.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_ooxml_package.py#L1), [test_pdf_probe.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_pdf_probe.py#L1), [test_anatomy.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy.py#L1), [test_anatomy_cfbf.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_cfbf.py#L1), [test_anatomy_content_types.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_content_types.py#L1), [test_anatomy_epub.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_epub.py#L1), [test_anatomy_font_collection.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_font_collection.py#L1), [test_anatomy_ole_native.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_ole_native.py#L1), [test_anatomy_opc.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_opc.py#L1), [test_anatomy_png.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_png.py#L1), [test_anatomy_png_metadata.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_png_metadata.py#L1), [test_anatomy_sfnt.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_sfnt.py#L1), [test_anatomy_tree.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_tree.py#L1), [test_font_subset_cache.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_font_subset_cache.py#L1), [test_font_subset_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_font_subset_cancellation.py#L1), [test_native_font_cmap.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_native_font_cmap.py#L1), [test_native_font_collection.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_native_font_collection.py#L1), [test_native_font_context_classes.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_native_font_context_classes.py#L1), [test_native_font_context_gsub.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_native_font_context_gsub.py#L1), [test_native_font_context_rules.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_native_font_context_rules.py#L1), [test_native_font_face.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_native_font_face.py#L1), [test_native_font_ligatures.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_native_font_ligatures.py#L1), [test_native_font_names.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_native_font_names.py#L1), [test_native_font_reverse_gsub.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_native_font_reverse_gsub.py#L1), [test_native_fvar.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_native_fvar.py#L1), [test_opc_orphans.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_opc_orphans.py#L1), [test_opc_reference_paths.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_opc_reference_paths.py#L1), [test_sfnt_checksums.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_sfnt_checksums.py#L1), [test_sfnt_inspection.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_sfnt_inspection.py#L1), [test_sfnt_structure.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_sfnt_structure.py#L1), [test_text_projection.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_text_projection.py#L1), [test_txt_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_txt_cancellation.py#L1), [test_word_font_metrics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_word_font_metrics.py#L1), [test_docx_flow.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_docx_flow.py#L1), [test_html_resource_fonts.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_resource_fonts.py#L1), [test_latex_lists.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_lists.py#L1), [test_latex_math.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_latex_math.py#L1), [test_office_export_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_office_export_cancellation.py#L1), [test_office_nested_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_office_nested_cancellation.py#L1), [test_pdf_docx_preparation_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_docx_preparation_cancellation.py#L1), [test_pdf_resource_fonts.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_resource_fonts.py#L1), [test_web_tex_export_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_web_tex_export_cancellation.py#L1)
 
 ## src/opendoc_formats/export.py
 
 Extensible model export with validation and atomic publication.
 
-- `ExportOptions` — [строка 24](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L24)
-- `ExporterSpec` — [строка 78](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L78)
-- `ExporterRegistry` — [строка 107](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L107)
-- `__init__(self) -> None` — [строка 108](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L108)
-- `register(self, exporter: ExporterSpec) -> None` — [строка 112](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L112)
-- `exporters(self) -> tuple[ExporterSpec, ...]` — [строка 120](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L120)
-- `write(self, document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport` — [строка 123](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L123)
-- `default_exporter_registry() -> ExporterRegistry` — [строка 405](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L405)
-- `write_document(document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport` — [строка 430](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L430)
+- `ExportOptions` — [строка 25](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L25)
+- `ExporterSpec` — [строка 79](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L79)
+- `ExporterRegistry` — [строка 108](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L108)
+- `__init__(self) -> None` — [строка 109](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L109)
+- `register(self, exporter: ExporterSpec) -> None` — [строка 113](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L113)
+- `exporters(self) -> tuple[ExporterSpec, ...]` — [строка 121](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L121)
+- `write(self, document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport` — [строка 124](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L124)
+- `default_exporter_registry() -> ExporterRegistry` — [строка 409](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L409)
+- `write_document(document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport` — [строка 434](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L434)
 
-Импорты: `__future__`, `collections.abc`, `dataclasses`, `importlib`, `opendoc_formats.docx_profile`, `opendoc_formats.errors`, `opendoc_formats.ooxml.page_geometry`, `opendoc_formats.ooxml.paragraph_flow`, `opendoc_formats.ooxml.paragraph_indent`, `opendoc_formats.pptx_profile`, `opendoc_formats.support.backends`, `opendoc_formats.support.document_limits`, `opendoc_formats.support.object_mapping`, `opendoc_formats.support.output_validation`, `opendoc_formats.text_profile`, `opendoc_formats.writers.txt_writer`, `opendoc_model`, `pathlib`, `tempfile`, `typing`
+Импорты: `__future__`, `collections.abc`, `dataclasses`, `importlib`, `opendoc_formats.docx_profile`, `opendoc_formats.errors`, `opendoc_formats.ooxml.page_geometry`, `opendoc_formats.ooxml.paragraph_flow`, `opendoc_formats.ooxml.paragraph_indent`, `opendoc_formats.pptx_profile`, `opendoc_formats.support.backends`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.document_limits`, `opendoc_formats.support.object_mapping`, `opendoc_formats.support.output_validation`, `opendoc_formats.text_profile`, `opendoc_formats.writers.txt_writer`, `opendoc_model`, `pathlib`, `tempfile`, `typing`
 
 Тесты: [test_docx_layout_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_layout_roundtrip.py#L1), [test_import_limits.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_import_limits.py#L1), [test_text_layout_export.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_text_layout_export.py#L1)
 
@@ -366,14 +366,17 @@ Bounded inputs, cooperative cancellation and atomic publication.
 
 Private ZIP/XML implementation of immutable DOCX snapshots and patches.
 
-- `parse_xml(data: bytes, engine: Any) -> Any` — [строка 66](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/docx_package.py#L66)
-- `NativePackage` — [строка 161](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/docx_package.py#L161)
-- `__init__(self, source: Source, limits: DocxLimits, allow_macros: bool, cancelled: Cancellation | None, *, inspection_only: bool=False) -> None` — [строка 162](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/docx_package.py#L162)
-- `check_open(self) -> None` — [строка 178](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/docx_package.py#L178)
-- `close(self) -> None` — [строка 183](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/docx_package.py#L183)
-- `edit(self, patches: Sequence[DocxPatch]) -> tuple[bytes, tuple[str, ...]]` — [строка 601](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/docx_package.py#L601)
+- `parse_xml(data: bytes, engine: Any) -> Any` — [строка 69](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/docx_package.py#L69)
+- `NativePackage` — [строка 218](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/docx_package.py#L218)
+- `__init__(self, source: Source, limits: DocxLimits, allow_macros: bool, cancelled: Cancellation | None, *, inspection_only: bool=False, build_snapshot: bool=True) -> None` — [строка 219](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/docx_package.py#L219)
+- `check_open(self) -> None` — [строка 237](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/docx_package.py#L237)
+- `flat_text(self, *, include_tables: bool) -> tuple[list[str], list[list[list[str]]]]` — [строка 242](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/docx_package.py#L242)
+- `close(self) -> None` — [строка 308](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/docx_package.py#L308)
+- `edit(self, patches: Sequence[DocxPatch]) -> tuple[bytes, tuple[str, ...]]` — [строка 736](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/docx_package.py#L736)
 
-Импорты: `__future__`, `collections`, `collections.abc`, `opendoc_formats.docx`, `opendoc_formats.errors`, `opendoc_formats.native.common`, `opendoc_formats.native.docx_uri`, `opendoc_model`, `pathlib`, `typing`
+Импорты: `__future__`, `collections`, `collections.abc`, `opendoc_formats.docx`, `opendoc_formats.errors`, `opendoc_formats.native.common`, `opendoc_formats.native.docx_uri`, `opendoc_formats.ooxml.docx_whitespace`, `opendoc_formats.support.io`, `opendoc_model`, `pathlib`, `typing`, `weakref`
+
+Тесты: [test_docx_whitespace.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_whitespace.py#L1)
 
 ## src/opendoc_formats/native/docx_uri.py
 
@@ -388,8 +391,10 @@ Finite native DOCX URI-to-ZIP bindings; never lossy decoding or an alias guess.
 
 Local EPUB paths and manifest inspection, without XHTML or Office backends.
 
-- `local_path(base: str, href: str) -> str` — [строка 22](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/epub.py#L22)
-- `inspection_content_types(read_xml: Callable[[str], tuple[XmlNodeInfo, ...]]) -> tuple[dict[str, str], tuple[str, ...], EpubAudit]` — [строка 75](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/epub.py#L75)
+- `idpf_font_key(identifier: str) -> bytes` — [строка 27](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/epub.py#L27)
+- `xor_idpf_font(data: bytes, key: bytes) -> bytes` — [строка 34](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/epub.py#L34)
+- `local_path(base: str, href: str) -> str` — [строка 39](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/epub.py#L39)
+- `inspection_content_types(read_xml: Callable[[str], tuple[XmlNodeInfo, ...]]) -> tuple[dict[str, str], tuple[str, ...], EpubAudit]` — [строка 92](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/epub.py#L92)
 
 Импорты: `__future__`, `collections.abc`, `opendoc_formats.anatomy`, `opendoc_formats.errors`, `opendoc_formats.support.cancellation`, `typing`, `urllib.parse`
 
@@ -413,6 +418,14 @@ Strict MS-OLEDS 2.3.6 envelope; application-specific NativeData stays inert.
 - `inspect_ole_native(data: bytes, limits: AnatomyLimits, capture: bool) -> tuple[tuple[BinaryItem, ...], dict[str, Any]]` — [строка 16](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/ole_native.py#L16)
 
 Импорты: `__future__`, `opendoc_formats.anatomy`, `opendoc_formats.errors`, `opendoc_formats.support.cancellation`, `typing`
+
+## src/opendoc_formats/native/ooxml_metadata.py
+
+Read physical OOXML core properties without loading an Office backend.
+
+- `read_ooxml_core_properties(path: str | Path, *, cancelled: Callable[[], bool] | None=None) -> dict[str, str]` — [строка 67](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/ooxml_metadata.py#L67)
+
+Импорты: `__future__`, `collections.abc`, `opendoc_formats.errors`, `opendoc_formats.native.opc`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.io`, `pathlib`, `zipfile`
 
 ## src/opendoc_formats/native/opc.py
 
@@ -450,9 +463,10 @@ Bounded parameterless PDF byte filters, without PDF/image backends or input rewr
 
 ## src/opendoc_formats/native/pdf_current_parameters.py
 
-Current scalar witnesses for previously decoded containers, without cross-context body reuse.
+Revision-specific scalar witnesses for previously decoded containers.
 
-- `assess(parameters: dict[Key, dict[str, tuple[Reference, int]]], integers: SourceIntegers, *, item_limit: int, byte_limit: int) -> dict[Key, dict[str, Any]]` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_current_parameters.py#L15)
+- `assess_context(parameters: Parameters, integers: SourceIntegers, context: int, *, item_limit: int, byte_limit: int, scope: str) -> dict[str, Any]` — [строка 17](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_current_parameters.py#L17)
+- `assess(parameters: dict[Key, Parameters], integers: SourceIntegers, *, item_limit: int, byte_limit: int) -> dict[Key, dict[str, Any]]` — [строка 48](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_current_parameters.py#L48)
 
 Импорты: `__future__`, `opendoc_formats.errors`, `opendoc_formats.native.pdf_source_integers`, `opendoc_formats.native.pdf_syntax`, `opendoc_formats.support.cancellation`, `typing`
 
@@ -485,19 +499,31 @@ Bounded PDF LZWDecode with a fixed prefix table; no PDF/image dependencies.
 
 Тесты: [test_pdf_lzw.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_pdf_lzw.py#L1)
 
+## src/opendoc_formats/native/pdf_metadata.py
+
+Bounded fallback for xref-addressed PDF metadata and page trees.
+
+- `read_page_count(source: Source) -> int` — [строка 119](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_metadata.py#L119)
+- `read_pdf_xmp(path: str | Path, *, cancelled: Callable[[], bool] | None=None) -> bytes | None` — [строка 205](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_metadata.py#L205)
+- `read_info(path: str | Path) -> dict[str, str]` — [строка 289](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_metadata.py#L289)
+
+Импорты: `__future__`, `bisect`, `collections.abc`, `opendoc_formats.anatomy`, `opendoc_formats.errors`, `opendoc_formats.native.common`, `opendoc_formats.native.pdf_object_streams`, `opendoc_formats.native.pdf_revisions`, `opendoc_formats.native.pdf_stream_decode`, `opendoc_formats.native.pdf_syntax`, `opendoc_formats.support.cancellation`, `pathlib`, `typing`
+
+Тесты: [test_office_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_office_access.py#L1)
+
 ## src/opendoc_formats/native/pdf_object_links.py
 
 Context-specific declared ObjStm links, without claiming source ownership or active bodies.
 
-- `declared_object_links(sections: list[dict[str, Any]], references: list[dict[str, int]], items: list[BinaryItem], budget: SyntaxBudget, maximum: int, *, current_parameters: dict[tuple[int, int, int], dict[str, Any]] | None=None) -> dict[str, Any]` — [строка 18](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_object_links.py#L18)
+- `declared_object_links(sections: list[dict[str, Any]], references: list[dict[str, int]], items: list[BinaryItem], budget: SyntaxBudget, maximum: int, *, current_parameters: dict[Key, dict[str, Any]], parameters: dict[Key, Parameters], integers: SourceIntegers, byte_limit: int) -> dict[str, Any]` — [строка 21](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_object_links.py#L21)
 
-Импорты: `__future__`, `collections.abc`, `itertools`, `opendoc_formats.anatomy`, `opendoc_formats.errors`, `opendoc_formats.native.pdf_syntax`, `opendoc_formats.native.pdf_xref_state`, `opendoc_formats.support.cancellation`, `typing`
+Импорты: `__future__`, `collections.abc`, `itertools`, `opendoc_formats.anatomy`, `opendoc_formats.errors`, `opendoc_formats.native.pdf_current_parameters`, `opendoc_formats.native.pdf_source_integers`, `opendoc_formats.native.pdf_syntax`, `opendoc_formats.native.pdf_xref_state`, `opendoc_formats.support.cancellation`, `typing`
 
 ## src/opendoc_formats/native/pdf_object_streams.py
 
 Physical xref-addressed ObjStm containers; historical candidates are never active resolution.
 
-- `inspect_object_streams(data: bytes, sections: list[dict[str, Any]], limits: AnatomyLimits, capture: bool, budget: SyntaxBudget, remaining_items: int, remaining_bytes: int) -> tuple[tuple[BinaryItem, ...], dict[str, Any]]` — [строка 43](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_object_streams.py#L43)
+- `inspect_object_streams(data: bytes, sections: list[dict[str, Any]], limits: AnatomyLimits, capture: bool, budget: SyntaxBudget, remaining_items: int, remaining_bytes: int, *, info_member: tuple[int, int, int] | None=None, capture_scalar_members: bool=False, page_members: dict[str, Any] | None=None) -> tuple[tuple[BinaryItem, ...], dict[str, Any]]` — [строка 37](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_object_streams.py#L37)
 
 Импорты: `__future__`, `collections.abc`, `opendoc_formats.anatomy`, `opendoc_formats.errors`, `opendoc_formats.native.pdf_current_parameters`, `opendoc_formats.native.pdf_extends`, `opendoc_formats.native.pdf_object_links`, `opendoc_formats.native.pdf_source_integers`, `opendoc_formats.native.pdf_stream_decode`, `opendoc_formats.native.pdf_syntax`, `opendoc_formats.support.cancellation`, `typing`
 
@@ -529,7 +555,7 @@ PDF TIFF/PNG predictor rows, decoded in place without image/PDF dependencies.
 
 Physical xref/trailer links and classic entries; no backend normalization.
 
-- `inspect_pdf_source(data: bytes, limits: AnatomyLimits, capture: bool, *, decode_streams: bool=False, object_streams: bool=False, resolve_records: bool=False) -> tuple[tuple[BinaryItem, ...], dict[str, Any]]` — [строка 17](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_revisions.py#L17)
+- `inspect_pdf_source(data: bytes, limits: AnatomyLimits, capture: bool, *, decode_streams: bool=False, object_streams: bool=False, resolve_records: bool=False, budget: SyntaxBudget | None=None) -> tuple[tuple[BinaryItem, ...], dict[str, Any]]` — [строка 17](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_revisions.py#L17)
 
 Импорты: `__future__`, `opendoc_formats.anatomy`, `opendoc_formats.errors`, `opendoc_formats.native.pdf_object_streams`, `opendoc_formats.native.pdf_syntax`, `opendoc_formats.native.pdf_xref_state`, `opendoc_formats.native.pdf_xref_streams`, `opendoc_formats.support.cancellation`, `typing`
 
@@ -547,10 +573,12 @@ Bounded PDF RunLengthDecode; no image/PDF backend and no input rewriting.
 
 Bounded scalar observations at a container's declared xref contexts, not global object resolution.
 
-- `SourceIntegers` — [строка 14](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_source_integers.py#L14)
-- `__init__(self, data: bytes, sections: list[dict[str, Any]], part_limit: int, budget: SyntaxBudget) -> None` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_source_integers.py#L15)
-- `selection(self, context: int, *, item_limit: int, location: str, explicit_primary: bool=False) -> tuple[int, dict[int, dict[str, Any]]]` — [строка 35](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_source_integers.py#L35)
-- `read(self, reference: Reference, contexts: set[int], *, item_limit: int, byte_limit: int, location: str, explicit_primary: bool=False) -> tuple[int, list[dict[str, Any]]]` — [строка 49](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_source_integers.py#L49)
+- `SourceIntegers` — [строка 30](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_source_integers.py#L30)
+- `__init__(self, data: bytes, sections: list[dict[str, Any]], part_limit: int, budget: SyntaxBudget) -> None` — [строка 31](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_source_integers.py#L31)
+- `selection(self, context: int, *, item_limit: int, location: str, explicit_primary: bool=False) -> tuple[int, dict[int, dict[str, Any]]]` — [строка 51](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_source_integers.py#L51)
+- `read(self, reference: Reference, contexts: set[int], *, item_limit: int, byte_limit: int, location: str, explicit_primary: bool=False) -> tuple[int, list[dict[str, Any]]]` — [строка 65](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_source_integers.py#L65)
+- `read_name(self, reference: Reference, contexts: set[int], *, item_limit: int, byte_limit: int, location: str, explicit_primary: bool=False) -> tuple[str, list[dict[str, Any]]]` — [строка 70](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_source_integers.py#L70)
+- `read_parameters(self, reference: Reference, contexts: set[int], *, item_limit: int, byte_limit: int, location: str, explicit_primary: bool=False) -> tuple[FilterParameters, list[dict[str, Any]]]` — [строка 75](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_source_integers.py#L75)
 
 Импорты: `__future__`, `opendoc_formats.errors`, `opendoc_formats.native.pdf_syntax`, `opendoc_formats.native.pdf_xref_state`, `opendoc_formats.support.cancellation`, `typing`
 
@@ -560,7 +588,7 @@ Bounded scalar observations at a container's declared xref contexts, not global 
 
 Physical PDF filter pipelines with shared work quotas and explicit stage coordinates.
 
-- `decode(raw: memoryview, encoding: Any, parameters: Any, *, source_start: int, part_limit: int, byte_limit: int, location: str, budget: SyntaxBudget, expected: int | None=None) -> tuple[bytearray, dict[str, Any]]` — [строка 58](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_stream_decode.py#L58)
+- `decode(raw: memoryview, encoding: Any, parameters: Any, *, source_start: int, part_limit: int, byte_limit: int, location: str, budget: SyntaxBudget, expected: int | None=None) -> tuple[bytearray, dict[str, Any]]` — [строка 65](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_stream_decode.py#L65)
 
 Импорты: `__future__`, `opendoc_formats.errors`, `opendoc_formats.native.pdf_byte_filters`, `opendoc_formats.native.pdf_flate`, `opendoc_formats.native.pdf_lzw`, `opendoc_formats.native.pdf_predictors`, `opendoc_formats.native.pdf_syntax`, `opendoc_formats.support.cancellation`, `typing`
 
@@ -570,18 +598,19 @@ Physical PDF filter pipelines with shared work quotas and explicit stage coordin
 
 Bounded PDF object syntax for source dictionaries, never execution or repair.
 
-- `Name` — [строка 20](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L20)
-- `Reference` — [строка 25](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L25)
-- `Token` — [строка 31](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L31)
-- `SyntaxBudget` — [строка 39](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L39)
-- `Parser` — [строка 45](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L45)
-- `__init__(self, data: bytes | bytearray, start: int, window: int, budget: SyntaxBudget, *, stop: int | None=None, window_quota: str='max_part_bytes', reference_observer: Callable[[Reference, int, int], None] | None=None) -> None` — [строка 46](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L46)
-- `error(self, message: str) -> NoReturn` — [строка 58](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L58)
-- `bounded(self) -> None` — [строка 61](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L61)
-- `skip(self) -> None` — [строка 69](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L69)
-- `peek(self, index: int=0) -> Token` — [строка 154](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L154)
-- `take(self, kind: str | None=None) -> Token` — [строка 159](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L159)
-- `value(self, depth: int=0) -> Any` — [строка 165](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L165)
+- `Name` — [строка 21](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L21)
+- `Reference` — [строка 26](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L26)
+- `Token` — [строка 32](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L32)
+- `SyntaxBudget` — [строка 40](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L40)
+- `Parser` — [строка 46](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L46)
+- `__init__(self, data: bytes | bytearray, start: int, window: int, budget: SyntaxBudget, *, stop: int | None=None, window_quota: str='max_part_bytes', reference_observer: Callable[[Reference, int, int], None] | None=None) -> None` — [строка 47](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L47)
+- `error(self, message: str) -> NoReturn` — [строка 59](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L59)
+- `bounded(self) -> None` — [строка 62](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L62)
+- `skip(self) -> None` — [строка 70](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L70)
+- `peek(self, index: int=0) -> Token` — [строка 155](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L155)
+- `take(self, kind: str | None=None) -> Token` — [строка 160](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L160)
+- `value(self, depth: int=0, *, allow_duplicate_keys: bool=False) -> Any` — [строка 166](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L166)
+- `finish_stream(parser: Parser, length: int) -> dict[str, int]` — [строка 205](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_syntax.py#L205)
 
 Импорты: `__future__`, `collections.abc`, `dataclasses`, `opendoc_formats.errors`, `opendoc_formats.support.cancellation`, `typing`
 
@@ -607,7 +636,8 @@ Select declared PDF xref records: current table, hybrid supplement, then Prev.
 
 Bounded, opt-in decoding of physical PDF xref records, never object streams.
 
-- `decode_xref(data: bytes, start: int, dictionary: dict[str, Any], *, part_limit: int, byte_limit: int, item_limit: int, budget: SyntaxBudget) -> tuple[list[dict[str, Any]], int, dict[str, Any]]` — [строка 13](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_xref_streams.py#L13)
+- `hybrid_length(data: bytes, reference: Reference, table: dict[str, Any], *, part_limit: int, budget: SyntaxBudget) -> dict[str, int]` — [строка 13](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_xref_streams.py#L13)
+- `decode_xref(data: bytes, start: int, dictionary: dict[str, Any], *, part_limit: int, byte_limit: int, item_limit: int, budget: SyntaxBudget, length_source: dict[str, int] | None=None) -> tuple[list[dict[str, Any]], int, dict[str, Any]]` — [строка 41](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/native/pdf_xref_streams.py#L41)
 
 Импорты: `__future__`, `opendoc_formats.errors`, `opendoc_formats.native.pdf_stream_decode`, `opendoc_formats.native.pdf_syntax`, `opendoc_formats.support.cancellation`, `typing`
 
@@ -654,12 +684,12 @@ Bounded, inert table inventories for standalone OpenType and explicitly selected
 
 Managed LibreOffice conversion into validated PDF with atomic publication.
 
-- `OfficeLimits` — [строка 41](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L41)
-- `OfficeConversionResult` — [строка 52](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L52)
-- `find_libreoffice() -> Path | None` — [строка 59](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L59)
-- `convert_office_to_pdf(source: str | Path, output: str | Path, *, executable: str | Path | None=None, timeout: float=180, limits: OfficeLimits=OfficeLimits(), cancelled: Cancellation | None=None) -> OfficeConversionResult` — [строка 88](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L88)
+- `OfficeLimits` — [строка 48](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L48)
+- `OfficeConversionResult` — [строка 59](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L59)
+- `find_libreoffice() -> Path | None` — [строка 66](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L66)
+- `convert_office_to_pdf(source: str | Path, output: str | Path, *, executable: str | Path | None=None, timeout: float=180, limits: OfficeLimits=OfficeLimits(), cancelled: Cancellation | None=None) -> OfficeConversionResult` — [строка 95](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L95)
 
-Импорты: `__future__`, `dataclasses`, `hashlib`, `opendoc_formats.errors`, `opendoc_formats.native.common`, `opendoc_formats.pdf`, `pathlib`
+Импорты: `__future__`, `dataclasses`, `hashlib`, `opendoc_formats.errors`, `opendoc_formats.native.common`, `opendoc_formats.native.pdf_metadata`, `opendoc_formats.pdf`, `opendoc_formats.support.cancellation`, `pathlib`
 
 Тесты: [test_office_access.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_office_access.py#L1)
 
@@ -708,11 +738,12 @@ Preserve absent Word defaults/settings without inventing template declarations.
 
 Word-observed visible w:t text; raw native snapshots keep their original strings.
 
-- `visible_text(node: Any) -> str` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/docx_whitespace.py#L15)
-- `source_text_profile(element: Any, text: str) -> dict[str, Any] | None` — [строка 32](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/docx_whitespace.py#L32)
-- `write_text_profile(run: Any, text: str, properties: Any, report: Any, location: str) -> bool` — [строка 59](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/docx_whitespace.py#L59)
-- `run_text(element: Any) -> str` — [строка 84](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/docx_whitespace.py#L84)
-- `paragraph_text(paragraph: Any) -> str` — [строка 94](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/docx_whitespace.py#L94)
+- `visible_text(node: Any, root: Any=None) -> str` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/docx_whitespace.py#L15)
+- `source_text_profile(element: Any, text: str) -> dict[str, Any] | None` — [строка 33](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/docx_whitespace.py#L33)
+- `write_text_profile(run: Any, text: str, properties: Any, report: Any, location: str) -> bool` — [строка 60](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/docx_whitespace.py#L60)
+- `run_text(element: Any, root: Any=None) -> str` — [строка 85](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/docx_whitespace.py#L85)
+- `paragraph_text(paragraph: Any) -> str` — [строка 104](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/docx_whitespace.py#L104)
+- `paragraph_element_text(paragraph: Any, root: Any=None) -> str` — [строка 109](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/ooxml/docx_whitespace.py#L109)
 
 Импорты: `__future__`, `docx.oxml`, `opendoc_formats.support.cancellation`, `opendoc_model`, `typing`
 
@@ -1166,14 +1197,23 @@ Plain-text input without application types or optional dependencies.
 
 Импорты: `collections.abc`, `opendoc_formats.support.cancellation`, `opendoc_formats.text_profile`, `opendoc_model`, `pathlib`
 
+## src/opendoc_formats/readers/css_selectors.py
+
+Shared bounded selectors for static HTML and EPUB CSS.
+
+- `parse_selector(selector: str, *, compound: re.Pattern[str]=SIMPLE_SELECTOR) -> tuple[Selector, Specificity] | None` — [строка 24](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/css_selectors.py#L24)
+- `matches_selector(node: Any, selector: Selector, cancelled: Callable[[], bool] | None) -> bool` — [строка 38](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/css_selectors.py#L38)
+
+Импорты: `collections.abc`, `opendoc_formats.support.cancellation`, `typing`
+
 ## src/opendoc_formats/readers/docx.py
 
 DOCX readers for extracted text and editable OpenDoc documents.
 
-- `read_docx(path: Union[str, Path], *, include_tables: bool=True, cancelled: Callable[[], bool] | None=None) -> Text` — [строка 43](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx.py#L43)
-- `read_docx_model(path: Union[str, Path], *, mode: ConversionMode=ConversionMode.BALANCED, limits: DocumentLimits | None=None, cancelled: Callable[[], bool] | None=None) -> DocumentModel` — [строка 91](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx.py#L91)
+- `read_docx(path: Union[str, Path], *, include_tables: bool=True, cancelled: Callable[[], bool] | None=None) -> Text` — [строка 42](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx.py#L42)
+- `read_docx_model(path: Union[str, Path], *, mode: ConversionMode=ConversionMode.BALANCED, limits: DocumentLimits | None=None, cancelled: Callable[[], bool] | None=None) -> DocumentModel` — [строка 115](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/docx.py#L115)
 
-Импорты: `__future__`, `collections.abc`, `docx`, `docx.oxml.ns`, `docx.oxml.table`, `docx.oxml.text.paragraph`, `docx.table`, `docx.text.paragraph`, `lxml`, `opendoc_formats.native.common`, `opendoc_formats.ooxml.docx_defaults`, `opendoc_formats.ooxml.docx_whitespace`, `opendoc_formats.ooxml.orphans`, `opendoc_formats.ooxml.package`, `opendoc_formats.readers.docx_diagnostics`, `opendoc_formats.readers.docx_features`, `opendoc_formats.readers.docx_fonts`, `opendoc_formats.readers.docx_groups`, `opendoc_formats.readers.docx_section`, `opendoc_formats.readers.docx_style`, `opendoc_formats.readers.docx_table`, `opendoc_formats.readers.docx_text`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.io`, `opendoc_formats.types`, `opendoc_model`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
+Импорты: `__future__`, `collections.abc`, `docx`, `docx.oxml.ns`, `docx.oxml.table`, `docx.oxml.text.paragraph`, `docx.table`, `docx.text.paragraph`, `lxml`, `opendoc_formats.docx`, `opendoc_formats.native.common`, `opendoc_formats.native.docx_package`, `opendoc_formats.ooxml.docx_defaults`, `opendoc_formats.ooxml.docx_whitespace`, `opendoc_formats.ooxml.orphans`, `opendoc_formats.ooxml.package`, `opendoc_formats.readers.docx_diagnostics`, `opendoc_formats.readers.docx_features`, `opendoc_formats.readers.docx_fonts`, `opendoc_formats.readers.docx_groups`, `opendoc_formats.readers.docx_section`, `opendoc_formats.readers.docx_style`, `opendoc_formats.readers.docx_table`, `opendoc_formats.readers.docx_text`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.io`, `opendoc_formats.types`, `opendoc_model`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `typing`
 
 Тесты: [test_binary_compatibility.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_binary_compatibility.py#L1), [test_format_audit.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_format_audit.py#L1), [test_docx_layout_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_layout_roundtrip.py#L1), [test_docx_model.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_model.py#L1), [test_docx_typed_widths.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_typed_widths.py#L1), [test_docx_whitespace.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_docx_whitespace.py#L1), [test_anatomy_opc.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_opc.py#L1), [test_full_contract.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_full_contract.py#L1), [test_opc_orphans.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_opc_orphans.py#L1), [test_docx_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_docx_writer.py#L1), [test_html_normalize.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_normalize.py#L1), [test_pdf_flow_pagination.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_flow_pagination.py#L1)
 
@@ -1275,11 +1315,11 @@ DOCX table importer for spans, geometry, fills, margins, and styles.
 EPUB → Text.
 
 - `read_epub(path: Union[str, Path], *, backend: str='native', include_nonlinear: bool=False, limits: od.DocumentLimits | None=None, cancelled: Callable[[], bool] | None=None) -> Text` — [строка 20](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub.py#L20)
-- `read_epub_model(path: Union[str, Path], *, backend: str='native', include_nonlinear: bool=False, limits: od.DocumentLimits | None=None, cancelled: Callable[[], bool] | None=None) -> od.DocumentModel` — [строка 50](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub.py#L50)
+- `read_epub_model(path: Union[str, Path], *, backend: str='native', include_nonlinear: bool=False, limits: od.DocumentLimits | None=None, cancelled: Callable[[], bool] | None=None) -> od.DocumentModel` — [строка 37](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub.py#L37)
 
-Импорты: `__future__`, `collections.abc`, `opendoc_formats.readers.epub_model`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.document_adapters`, `opendoc_formats.support.text_diagnostics`, `opendoc_formats.types`, `pathlib`, `typing`
+Импорты: `__future__`, `collections.abc`, `opendoc_formats.readers.epub_model`, `opendoc_formats.readers.epub_package`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.document_adapters`, `opendoc_formats.types`, `pathlib`, `typing`
 
-Тесты: [test_epub_interactive_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_interactive_diagnostics.py#L1), [test_epub_model.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_model.py#L1), [test_epub_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_text.py#L1), [test_epub_uri_binding.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_uri_binding.py#L1), [test_web_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_web_import_cancellation.py#L1), [test_text_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_text_diagnostics.py#L1)
+Тесты: [test_epub_interactive_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_interactive_diagnostics.py#L1), [test_epub_model.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_model.py#L1), [test_epub_package.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_package.py#L1), [test_epub_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_text.py#L1), [test_epub_uri_binding.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_uri_binding.py#L1), [test_web_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_web_import_cancellation.py#L1), [test_text_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_text_diagnostics.py#L1)
 
 ## src/opendoc_formats/readers/epub_anchors.py
 
@@ -1287,7 +1327,8 @@ Import-local EPUB source identities; this is not a Model transport or general ID
 
 - `EpubAnchors` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_anchors.py#L15)
 - `__init__(self, maximum: int, cancelled: Callable[[], bool] | None=None, *, root_directory: str='') -> None` — [строка 16](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_anchors.py#L16)
-- `get(self, chapter: str, fragment: str='') -> str` — [строка 23](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_anchors.py#L23)
+- `begin_chapter(self, chapter: str) -> None` — [строка 29](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_anchors.py#L29)
+- `get(self, chapter: str, fragment: str='') -> str` — [строка 36](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_anchors.py#L36)
 
 Импорты: `__future__`, `collections.abc`, `opendoc_formats.support.cancellation`, `opendoc_model`
 
@@ -1297,17 +1338,20 @@ Import-local EPUB source identities; this is not a Model transport or general ID
 
 Located, partial EPUB preservation assessment using the OpenDoc contract.
 
-- `EpubDiagnostics` — [строка 32](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L32)
-- `__init__(self, source: Path, root_directory: str='', resources: dict[str, Resource] | None=None, *, source_chapters: dict[str, bytes] | None=None, limits: DocumentLimits | None=None, cancelled: Callable[[], bool] | None=None) -> None` — [строка 33](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L33)
-- `claim_table_cell(self, part: str) -> None` — [строка 53](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L53)
-- `retain_chapter(self, part: str) -> str | None` — [строка 62](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L62)
-- `checkpoint(self) -> None` — [строка 85](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L85)
-- `lost(self, feature: str, reason: str, message: str, part: str, node: Any=None, *, measurement: dict[str, Any] | None=None, attribute: str | None=None) -> None` — [строка 88](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L88)
-- `opaque(self, feature: str, reason: str, message: str, part: str, resource_id: str, node: Any=None) -> None` — [строка 93](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L93)
-- `attach(self, document: DocumentModel, *, limits: DocumentLimits | None=None) -> None` — [строка 132](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L132)
-- `chapter(self, body: Any, part: str, blocks: set[str]) -> None` — [строка 144](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L144)
+- `EpubDiagnostics` — [строка 36](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L36)
+- `__init__(self, source: Path, root_directory: str='', resources: dict[str, Resource] | None=None, *, source_chapters: dict[str, bytes] | None=None, limits: DocumentLimits | None=None, cancelled: Callable[[], bool] | None=None) -> None` — [строка 37](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L37)
+- `claim_table_cell(self, part: str) -> None` — [строка 61](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L61)
+- `retain_chapter(self, part: str) -> str | None` — [строка 70](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L70)
+- `checkpoint(self) -> None` — [строка 93](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L93)
+- `lost(self, feature: str, reason: str, message: str, part: str, node: Any=None, *, measurement: dict[str, Any] | None=None, attribute: str | None=None) -> None` — [строка 96](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L96)
+- `opaque(self, feature: str, reason: str, message: str, part: str, resource_id: str, node: Any=None) -> None` — [строка 101](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L101)
+- `internal_link(self, target: str, part: str, node: Any) -> None` — [строка 149](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L149)
+- `bind_mathml_anchors(self, root: Any, part: str) -> bool` — [строка 157](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L157)
+- `bind_embedded_anchors(self, root: Any, part: str) -> dict[str, str]` — [строка 166](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L166)
+- `attach(self, document: DocumentModel, *, limits: DocumentLimits | None=None) -> None` — [строка 213](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L213)
+- `chapter(self, body: Any, part: str, blocks: set[str]) -> None` — [строка 226](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_diagnostics.py#L226)
 
-Импорты: `__future__`, `collections.abc`, `itertools`, `opendoc_formats.readers.epub_anchors`, `opendoc_formats.support.cancellation`, `opendoc_model`, `pathlib`, `typing`, `urllib.parse`
+Импорты: `__future__`, `collections`, `collections.abc`, `itertools`, `opendoc_formats.readers.epub_anchors`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.mathml`, `opendoc_model`, `pathlib`, `typing`, `urllib.parse`
 
 Тесты: [test_epub_compound_source.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_compound_source.py#L1), [test_epub_diagnostic_limits.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_diagnostic_limits.py#L1), [test_epub_interactive_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_interactive_diagnostics.py#L1), [test_epub_uri_binding.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_uri_binding.py#L1), [test_web_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_web_import_cancellation.py#L1)
 
@@ -1315,9 +1359,9 @@ Located, partial EPUB preservation assessment using the OpenDoc contract.
 
 Rich EPUB spine importer with links, media, and a small deterministic CSS cascade.
 
-- `read_epub_model(path: str | Path, *, backend: str='native', include_nonlinear: bool=False, limits: od.DocumentLimits | None=None, cancelled: Callable[[], bool] | None=None) -> DocumentModel` — [строка 45](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_model.py#L45)
+- `read_epub_model(path: str | Path, *, backend: str='native', include_nonlinear: bool=False, limits: od.DocumentLimits | None=None, cancelled: Callable[[], bool] | None=None) -> DocumentModel` — [строка 72](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_model.py#L72)
 
-Импорты: `__future__`, `bs4`, `collections.abc`, `opendoc_formats.readers.epub_anchors`, `opendoc_formats.readers.epub_diagnostics`, `opendoc_formats.readers.epub_package`, `opendoc_formats.readers.html_resources`, `opendoc_formats.support.cancellation`, `opendoc_model.document_model`, `pathlib`, `typing`, `urllib.parse`
+Импорты: `__future__`, `collections.abc`, `math`, `opendoc_formats.native.epub`, `opendoc_formats.readers.css_selectors`, `opendoc_formats.readers.epub_anchors`, `opendoc_formats.readers.epub_diagnostics`, `opendoc_formats.readers.epub_package`, `opendoc_formats.readers.epub_xhtml`, `opendoc_formats.readers.html_fonts`, `opendoc_formats.readers.html_resources`, `opendoc_formats.readers.svg_color`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.inline_svg`, `opendoc_model.document_model`, `pathlib`, `typing`, `urllib.parse`
 
 Тесты: [test_epub_anchor_identity.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_anchor_identity.py#L1), [test_epub_diagnostic_limits.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_diagnostic_limits.py#L1), [test_epub_interactive_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_interactive_diagnostics.py#L1), [test_epub_parser_limits.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_parser_limits.py#L1), [test_epub_structure.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_structure.py#L1), [test_epub_uri_binding.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_uri_binding.py#L1), [test_web_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_web_import_cancellation.py#L1), [test_source_coverage.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_source_coverage.py#L1)
 
@@ -1325,13 +1369,38 @@ Rich EPUB spine importer with links, media, and a small deterministic CSS cascad
 
 Original, bounded EPUB container reader; no network or XML entity expansion.
 
-- `EpubItem` — [строка 29](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L29)
-- `EpubPackage` — [строка 38](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L38)
-- `read_epub_package(path: str | Path, *, cancelled: Callable[[], bool] | None=None) -> EpubPackage` — [строка 126](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L126)
+- `EpubItem` — [строка 31](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L31)
+- `EpubPackage` — [строка 40](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L40)
+- `read_epub_metadata(path: str | Path, *, cancelled: Callable[[], bool] | None=None) -> dict[str, tuple[str, ...]]` — [строка 202](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L202)
+- `read_epub_package(path: str | Path, *, cancelled: Callable[[], bool] | None=None) -> EpubPackage` — [строка 210](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_package.py#L210)
 
-Импорты: `__future__`, `collections.abc`, `dataclasses`, `opendoc_formats.epub_metadata`, `opendoc_formats.errors`, `opendoc_formats.native.epub`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.io`, `pathlib`, `urllib.parse`
+Импорты: `__future__`, `collections.abc`, `dataclasses`, `opendoc_formats.epub_metadata`, `opendoc_formats.errors`, `opendoc_formats.native.epub`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.io`, `pathlib`, `urllib.parse`, `xml.parsers`
 
 Тесты: [test_epub_package.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_package.py#L1), [test_epub_parser_limits.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_parser_limits.py#L1), [test_web_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_web_import_cancellation.py#L1), [test_anatomy_epub.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_anatomy_epub.py#L1), [test_epub_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_epub_writer.py#L1)
+
+## src/opendoc_formats/readers/epub_xhtml.py
+
+Strict XHTML tree and compatibility recovery for EPUB chapters.
+
+- `XhtmlTag` — [строка 45](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_xhtml.py#L45)
+- `__init__(self, element: ET.Element, cancelled: Callable[[], bool] | None, positions: dict[ET.Element, tuple[int, int]], parent: XhtmlTag | None=None) -> None` — [строка 48](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_xhtml.py#L48)
+- `body(self) -> XhtmlTag | None` — [строка 67](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_xhtml.py#L67)
+- `parents(self) -> Iterator[XhtmlTag]` — [строка 71](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_xhtml.py#L71)
+- `previous_siblings(self) -> Iterator[XhtmlTag | str]` — [строка 78](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_xhtml.py#L78)
+- `next_siblings(self) -> Iterator[XhtmlTag | str]` — [строка 84](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_xhtml.py#L84)
+- `get(self, name: str, default: str | list[str] | None=None) -> str | list[str] | None` — [строка 92](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_xhtml.py#L92)
+- `has_attr(self, name: str) -> bool` — [строка 95](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_xhtml.py#L95)
+- `find_all(self, names: str | Collection[str] | Literal[True], *, recursive: bool=True, href: bool=False) -> Iterator[XhtmlTag]` — [строка 106](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_xhtml.py#L106)
+- `find(self, names: str | Collection[str], *, recursive: bool=True) -> XhtmlTag | None` — [строка 113](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_xhtml.py#L113)
+- `find_parents(self, names: str | Collection[str]) -> list[XhtmlTag]` — [строка 116](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_xhtml.py#L116)
+- `find_parent(self, names: str | Collection[str]) -> XhtmlTag | None` — [строка 119](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_xhtml.py#L119)
+- `get_text(self) -> str` — [строка 122](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_xhtml.py#L122)
+- `parse_xhtml(payload: bytes, *, cancelled: Callable[[], bool] | None=None) -> XhtmlTag` — [строка 135](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_xhtml.py#L135)
+- `parse_chapter(payload: bytes, *, cancelled: Callable[[], bool] | None=None) -> XhtmlTag | BeautifulSoup` — [строка 331](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/epub_xhtml.py#L331)
+
+Импорты: `__future__`, `bisect`, `bs4`, `codecs`, `collections.abc`, `copy`, `html.entities`, `html.parser`, `opendoc_formats.errors`, `opendoc_formats.readers.epub_package`, `opendoc_formats.support.cancellation`, `typing`, `xml.etree`, `xml.parsers.expat`
+
+Тесты: [test_epub_text.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_text.py#L1)
 
 ## src/opendoc_formats/readers/fix_encoding.py
 
@@ -1363,14 +1432,16 @@ Static HTML to editable document blocks, without browser or network execution.
 
 Bounded static CSS cascade; unsupported syntax is never silently accepted.
 
-- `Cascade` — [строка 29](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_css.py#L29)
-- `__init__(self, soup: Any, warn: Callable[..., None], *, fonts: FontFaces, cancelled: Callable[[], bool] | None=None) -> None` — [строка 30](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_css.py#L30)
-- `declarations(self, raw: Any, warn: Callable[..., None] | None=None) -> list[tuple[str, str, bool]]` — [строка 60](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_css.py#L60)
-- `style(self, node: Any) -> dict[str, str]` — [строка 86](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_css.py#L86)
-- `matches(node: Any, selector: str) -> bool` — [строка 149](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_css.py#L149)
-- `text_style(self, css: dict[str, str], node: Any=None) -> od.TextStyle` — [строка 158](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_css.py#L158)
+- `Cascade` — [строка 72](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_css.py#L72)
+- `__init__(self, soup: Any, warn: Callable[..., None], *, fonts: FontFaces, cancelled: Callable[[], bool] | None=None) -> None` — [строка 73](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_css.py#L73)
+- `declarations(self, raw: Any, warn: Callable[..., None] | None=None) -> list[tuple[str, str, bool]]` — [строка 261](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_css.py#L261)
+- `style(self, node: Any) -> dict[str, str]` — [строка 297](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_css.py#L297)
+- `matches(self, node: Any, selector: Selector) -> bool` — [строка 362](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_css.py#L362)
+- `text_style(self, css: dict[str, str], node: Any=None) -> od.TextStyle` — [строка 365](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_css.py#L365)
 
-Импорты: `__future__`, `collections.abc`, `opendoc_formats.readers.html_fonts`, `opendoc_formats.support.cancellation`, `opendoc_model`, `tinycss2.color3`, `typing`
+Импорты: `__future__`, `collections.abc`, `opendoc_formats.native.common`, `opendoc_formats.readers.css_selectors`, `opendoc_formats.readers.html_fonts`, `opendoc_formats.readers.svg_color`, `opendoc_formats.support.cancellation`, `opendoc_model`, `types`, `typing`
+
+Тесты: [test_html_fonts.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_html_fonts.py#L1), [test_html_model.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_html_model.py#L1)
 
 ## src/opendoc_formats/readers/html_diagnostics.py
 
@@ -1393,10 +1464,13 @@ Resolve source-node diagnostics to stable, JSON-persisted imported blocks.
 
 Inert, bounded data-URI font-face bindings for the static HTML profile.
 
-- `FontFaces` — [строка 23](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_fonts.py#L23)
-- `__init__(self, resources: dict[str, Resource], warn: Callable[..., None], *, limits: DocumentLimits | None=None, cancelled: Callable[[], bool] | None=None) -> None` — [строка 24](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_fonts.py#L24)
-- `read(self, rule: Any, node: Any) -> None` — [строка 34](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_fonts.py#L34)
-- `bind(self, style: TextStyle, node: Any) -> None` — [строка 139](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_fonts.py#L139)
+- `simple_font_face(block: str, *, allow_local: bool=False) -> tuple[str, str, str, str] | None` — [строка 38](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_fonts.py#L38)
+- `FontFaces` — [строка 71](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_fonts.py#L71)
+- `__init__(self, resources: dict[str, Resource], warn: Callable[..., None], *, limits: DocumentLimits | None=None, cancelled: Callable[[], bool] | None=None) -> None` — [строка 72](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_fonts.py#L72)
+- `read(self, rule: Any, node: Any) -> None` — [строка 82](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_fonts.py#L82)
+- `read_simple(self, face: tuple[str, str, str, str], node: Any) -> None` — [строка 143](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_fonts.py#L143)
+- `read_local(self, face: tuple[str, str, str, str], resource: Resource | None, node: Any) -> None` — [строка 149](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_fonts.py#L149)
+- `bind(self, style: TextStyle, node: Any) -> None` — [строка 228](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_fonts.py#L228)
 
 Импорты: `__future__`, `collections.abc`, `opendoc_formats.errors`, `opendoc_formats.native.sfnt`, `opendoc_formats.support.cancellation`, `opendoc_model`, `typing`
 
@@ -1405,10 +1479,10 @@ Inert, bounded data-URI font-face bindings for the static HTML profile.
 Embedded HTML resources with explicit opt-in for a bounded local directory.
 
 - `clean_xml(value: str, kind: str, warn: Callable[..., None], *, cancelled: Callable[[], bool] | None=None) -> str | None` — [строка 24](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_resources.py#L24)
-- `Resources` — [строка 71](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_resources.py#L71)
-- `__init__(self, warn: Callable[..., None], root: str | Path | None=None, *, cancelled: Callable[[], bool] | None=None) -> None` — [строка 72](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_resources.py#L72)
-- `image(self, src: str, alt: str='') -> od.Image | None` — [строка 78](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_resources.py#L78)
-- `svg(self, xml: str, alt: str='') -> od.Image | None` — [строка 118](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_resources.py#L118)
+- `Resources` — [строка 72](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_resources.py#L72)
+- `__init__(self, warn: Callable[..., None], root: str | Path | None=None, *, cancelled: Callable[[], bool] | None=None) -> None` — [строка 73](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_resources.py#L73)
+- `image(self, src: str, alt: str='') -> od.Image | None` — [строка 79](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_resources.py#L79)
+- `svg(self, xml: str, alt: str='') -> od.Image | None` — [строка 119](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/html_resources.py#L119)
 
 Импорты: `__future__`, `collections.abc`, `opendoc_formats.support.cancellation`, `opendoc_model`, `pathlib`, `urllib.parse`
 
@@ -1520,20 +1594,21 @@ Preserve embedded PDF font programs as bounded public Model resources.
 
 Геометрический слой импорта PDF без семантических эвристик.
 
-- `PdfSpanGeometry` — [строка 21](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L21)
-- `PdfLineGeometry` — [строка 34](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L34)
-- `text(self) -> str` — [строка 42](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L42)
-- `PdfTextBlockGeometry` — [строка 47](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L47)
-- `text(self) -> str` — [строка 53](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L53)
-- `PdfImageGeometry` — [строка 58](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L58)
-- `PdfTableCellGeometry` — [строка 68](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L68)
-- `PdfTableGeometry` — [строка 76](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L76)
-- `text(self) -> str` — [строка 86](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L86)
-- `row_count(self) -> int` — [строка 90](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L90)
-- `column_count(self) -> int` — [строка 94](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L94)
-- `PdfPageGeometry` — [строка 99](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L99)
-- `PdfGeometryDocument` — [строка 112](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L112)
-- `extract_pdf_geometry(path: str | Path, *, exclude_interactions: bool=False, cancelled: Callable[[], bool] | None=None) -> PdfGeometryDocument` — [строка 120](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L120)
+- `PdfSpanGeometry` — [строка 22](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L22)
+- `PdfLineGeometry` — [строка 35](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L35)
+- `text(self) -> str` — [строка 43](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L43)
+- `PdfTextBlockGeometry` — [строка 48](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L48)
+- `text(self) -> str` — [строка 54](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L54)
+- `PdfImageGeometry` — [строка 59](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L59)
+- `PdfTableCellGeometry` — [строка 69](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L69)
+- `PdfTableGeometry` — [строка 77](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L77)
+- `text(self) -> str` — [строка 87](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L87)
+- `row_count(self) -> int` — [строка 91](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L91)
+- `column_count(self) -> int` — [строка 95](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L95)
+- `PdfPageGeometry` — [строка 100](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L100)
+- `content_size(self) -> tuple[float, float]` — [строка 110](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L110)
+- `PdfGeometryDocument` — [строка 118](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L118)
+- `extract_pdf_geometry(path: str | Path, *, exclude_interactions: bool=False, cancelled: Callable[[], bool] | None=None) -> PdfGeometryDocument` — [строка 126](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_geometry.py#L126)
 
 Импорты: `__future__`, `bisect`, `collections.abc`, `dataclasses`, `opendoc_formats.errors`, `opendoc_formats.readers.pdf_content`, `opendoc_formats.support.cancellation`, `opendoc_model`, `pathlib`, `statistics`, `typing`
 
@@ -1631,25 +1706,25 @@ PDF → модель OpenDoc: геометрия, семантические б�
 Объединение текстового слоя PDF и OCR с координатами и уверенностью.
 
 - `merge_pdf_with_ocr(geometry: PdfGeometryDocument, ocr_pages: list[OcrPageResult] | None=None, *, use_text_layer: bool=True, cancelled: Callable[[], bool] | None=None, source_path: str | None=None, mode: str='direct', ocr_failures: tuple[tuple[str, str, int], ...]=()) -> Text` — [строка 152](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_ocr_merge.py#L152)
-- `read_pdf_scenario(path: str, mode: str=PDF_SCENARIO_STRUCTURE, ocr_engine: Any=None, scale: int=3, handwriting: bool=False, *, cancelled: Callable[[], bool] | None=None) -> Text` — [строка 318](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_ocr_merge.py#L318)
-- `read_pdf_with_ocr(path: str, ocr_engine: Any=None, scale: int=3, handwriting: bool=False, *, cancelled: Callable[[], bool] | None=None) -> Text` — [строка 384](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_ocr_merge.py#L384)
+- `read_pdf_scenario(path: str, mode: str=PDF_SCENARIO_STRUCTURE, ocr_engine: Any=None, scale: int=3, handwriting: bool=False, *, cancelled: Callable[[], bool] | None=None) -> Text` — [строка 319](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_ocr_merge.py#L319)
+- `read_pdf_with_ocr(path: str, ocr_engine: Any=None, scale: int=3, handwriting: bool=False, *, cancelled: Callable[[], bool] | None=None) -> Text` — [строка 385](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_ocr_merge.py#L385)
 
 Импорты: `__future__`, `collections.abc`, `opendoc_formats.errors`, `opendoc_formats.readers.pdf_classify`, `opendoc_formats.readers.pdf_diagnostics`, `opendoc_formats.readers.pdf_geometry`, `opendoc_formats.readers.pdf_layout`, `opendoc_formats.readers.pdf_ocr_types`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.text_diagnostics`, `opendoc_formats.types`, `opendoc_model`, `typing`
 
-Тесты: [test_binary_compatibility.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_binary_compatibility.py#L1), [test_pdf_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_import_cancellation.py#L1), [test_pdf_model_ocr_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_model_ocr_diagnostics.py#L1), [test_pdf_ocr_merge.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_ocr_merge.py#L1)
+Тесты: [test_binary_compatibility.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/native/test_binary_compatibility.py#L1), [test_pdf_geometry.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_geometry.py#L1), [test_pdf_import_cancellation.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_import_cancellation.py#L1), [test_pdf_model_ocr_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_model_ocr_diagnostics.py#L1), [test_pdf_ocr_merge.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_ocr_merge.py#L1)
 
 ## src/opendoc_formats/readers/pdf_ocr_types.py
 
 Типы для OCR-блоков с координатами и уверенностью.
 
 - `OcrBlockGeometry` — [строка 14](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_ocr_types.py#L14)
-- `OcrPageResult` — [строка 25](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_ocr_types.py#L25)
-- `plain(self) -> str` — [строка 32](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_ocr_types.py#L32)
-- `MergedTextBlock` — [строка 40](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_ocr_types.py#L40)
+- `OcrPageResult` — [строка 27](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_ocr_types.py#L27)
+- `plain(self) -> str` — [строка 34](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_ocr_types.py#L34)
+- `MergedTextBlock` — [строка 42](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pdf_ocr_types.py#L42)
 
 Импорты: `__future__`, `dataclasses`, `typing`
 
-Тесты: [test_pdf_model_ocr_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_model_ocr_diagnostics.py#L1), [test_pdf_ocr_merge.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_ocr_merge.py#L1), [test_pdf_table_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_table_diagnostics.py#L1)
+Тесты: [test_pdf_geometry.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_geometry.py#L1), [test_pdf_model_ocr_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_model_ocr_diagnostics.py#L1), [test_pdf_ocr_merge.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_ocr_merge.py#L1), [test_pdf_table_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pdf_table_diagnostics.py#L1)
 
 ## src/opendoc_formats/readers/pdf_paint.py
 
@@ -1714,9 +1789,9 @@ Source-backed native glyph observations in the public Model layout registry.
 PPTX → Text / DocumentModel импортёры.
 
 - `read_pptx(path: Union[str, Path], *, include_tables: bool=True, cancelled: Callable[[], bool] | None=None) -> Text` — [строка 352](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx.py#L352)
-- `read_pptx_model(path: Union[str, Path], *, mode: ConversionMode=ConversionMode.BALANCED, limits: DocumentLimits | None=None, cancelled: Callable[[], bool] | None=None) -> DocumentModel` — [строка 404](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx.py#L404)
+- `read_pptx_model(path: Union[str, Path], *, mode: ConversionMode=ConversionMode.BALANCED, limits: DocumentLimits | None=None, cancelled: Callable[[], bool] | None=None) -> DocumentModel` — [строка 411](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx.py#L411)
 
-Импорты: `__future__`, `collections.abc`, `dataclasses`, `io`, `lxml`, `opendoc_formats.native.common`, `opendoc_formats.ooxml.color`, `opendoc_formats.ooxml.pptx_gradient`, `opendoc_formats.ooxml.pptx_source_text`, `opendoc_formats.ooxml.pptx_transforms`, `opendoc_formats.readers.pptx_background`, `opendoc_formats.readers.pptx_chart_data`, `opendoc_formats.readers.pptx_diagnostics`, `opendoc_formats.readers.pptx_geometry`, `opendoc_formats.readers.pptx_inheritance`, `opendoc_formats.readers.pptx_numeric_cache`, `opendoc_formats.readers.pptx_package`, `opendoc_formats.readers.pptx_paragraph`, `opendoc_formats.readers.pptx_picture`, `opendoc_formats.readers.pptx_placeholder`, `opendoc_formats.readers.pptx_table`, `opendoc_formats.readers.pptx_theme_colors`, `opendoc_formats.readers.pptx_theme_fonts`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.io`, `opendoc_formats.types`, `opendoc_model`, `opendoc_model.color`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `pptx`, `typing`
+Импорты: `__future__`, `collections.abc`, `dataclasses`, `io`, `lxml`, `opendoc_formats.native.common`, `opendoc_formats.ooxml.color`, `opendoc_formats.ooxml.pptx_gradient`, `opendoc_formats.ooxml.pptx_source_text`, `opendoc_formats.ooxml.pptx_transforms`, `opendoc_formats.readers.pptx_background`, `opendoc_formats.readers.pptx_chart_data`, `opendoc_formats.readers.pptx_diagnostics`, `opendoc_formats.readers.pptx_flat`, `opendoc_formats.readers.pptx_geometry`, `opendoc_formats.readers.pptx_inheritance`, `opendoc_formats.readers.pptx_numeric_cache`, `opendoc_formats.readers.pptx_package`, `opendoc_formats.readers.pptx_paragraph`, `opendoc_formats.readers.pptx_picture`, `opendoc_formats.readers.pptx_placeholder`, `opendoc_formats.readers.pptx_table`, `opendoc_formats.readers.pptx_theme_colors`, `opendoc_formats.readers.pptx_theme_fonts`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.io`, `opendoc_formats.types`, `opendoc_model`, `opendoc_model.color`, `opendoc_model.document_model`, `opendoc_model.units`, `pathlib`, `pptx`, `typing`
 
 Тесты: [test_pptx_inheritance.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pptx_inheritance.py#L1), [test_pptx_source_package.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pptx_source_package.py#L1), [test_pptx_visual_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_pptx_visual_roundtrip.py#L1), [test_source_coverage.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_source_coverage.py#L1), [test_mathml_decorations.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_mathml_decorations.py#L1), [test_mathml_pptx.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_mathml_pptx.py#L1), [test_pptx_chart_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_chart_roundtrip.py#L1), [test_pptx_combo_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_combo_roundtrip.py#L1), [test_pptx_custom_errors.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_custom_errors.py#L1), [test_pptx_error_directions.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_error_directions.py#L1), [test_pptx_geometry_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_geometry_roundtrip.py#L1), [test_pptx_label_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_label_roundtrip.py#L1), [test_pptx_multiple_trends.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_multiple_trends.py#L1), [test_pptx_office_regressions.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_office_regressions.py#L1), [test_pptx_placeholder_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_placeholder_roundtrip.py#L1), [test_pptx_plot_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_plot_roundtrip.py#L1), [test_pptx_point_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_point_roundtrip.py#L1), [test_pptx_statistics_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_statistics_roundtrip.py#L1), [test_pptx_table_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_table_roundtrip.py#L1), [test_pptx_text_roundtrip.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_text_roundtrip.py#L1), [test_pptx_theme_fonts.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_theme_fonts.py#L1), [test_pptx_trend_forecast.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_trend_forecast.py#L1), [test_pptx_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_writer.py#L1)
 
@@ -1753,6 +1828,14 @@ Partial, source-located PPTX preservation diagnostics; never execute content.
 - `attach(self, document: DocumentModel, *, limits: DocumentLimits | None=None) -> None` — [строка 89](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_diagnostics.py#L89)
 
 Импорты: `__future__`, `opendoc_formats.support.cancellation`, `opendoc_model`, `pathlib`, `typing`
+
+## src/opendoc_formats/readers/pptx_flat.py
+
+Flat text from the physical PPTX package in presentation order.
+
+- `read_pptx_flat(source: Path, *, include_tables: bool) -> Text` — [строка 37](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/pptx_flat.py#L37)
+
+Импорты: `opendoc_formats.errors`, `opendoc_formats.native.common`, `opendoc_formats.readers.pptx_package`, `opendoc_formats.support.cancellation`, `opendoc_formats.types`, `opendoc_model`, `pathlib`, `xml.etree`
 
 ## src/opendoc_formats/readers/pptx_geometry.py
 
@@ -1860,10 +1943,11 @@ Effective consumer-slide theme, overrides and color map; cached only within one 
 
 Safe SVG color discovery for canonical resource metadata.
 
-- `parse_svg_color(value: str, *, opacity: float | None=None) -> ColorValue | None` — [строка 17](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/svg_color.py#L17)
-- `svg_color_catalog(data: bytes) -> list[dict[str, object]]` — [строка 33](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/svg_color.py#L33)
+- `parse_static_css_color(token: str) -> ColorValue | None` — [строка 91](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/svg_color.py#L91)
+- `parse_svg_color(value: str, *, opacity: float | None=None) -> ColorValue | None` — [строка 126](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/svg_color.py#L126)
+- `svg_color_catalog(data: bytes) -> list[dict[str, object]]` — [строка 140](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/svg_color.py#L140)
 
-Импорты: `__future__`, `opendoc_model.color`, `xml.etree`
+Импорты: `__future__`, `colorsys`, `opendoc_model.color`, `xml.etree`
 
 Тесты: [test_svg_color.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_svg_color.py#L1)
 
@@ -1871,7 +1955,7 @@ Safe SVG color discovery for canonical resource metadata.
 
 Finite source LaTeX parsing into OpenDoc, with inert original bytes and located losses.
 
-- `read_tex_model(path: str | Path, *, max_input_bytes: int=10 * 1024 * 1024, cancelled: Callable[[], bool] | None=None, limits: DocumentLimits | None=None) -> DocumentModel` — [строка 779](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/tex_model.py#L779)
+- `read_tex_model(path: str | Path, *, max_input_bytes: int=10 * 1024 * 1024, cancelled: Callable[[], bool] | None=None, limits: DocumentLimits | None=None) -> DocumentModel` — [строка 789](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/readers/tex_model.py#L789)
 
 Импорты: `__future__`, `dataclasses`, `opendoc_formats.errors`, `opendoc_formats.readers.tex_source`, `opendoc_formats.support.cancellation`, `opendoc_formats.tex_headings`, `opendoc_formats.tex_lists`, `opendoc_formats.tex_math`, `opendoc_formats.tex_tables`, `opendoc_model`, `pathlib`, `typing`
 
@@ -1976,6 +2060,18 @@ Located SDK quota failures, preserving unknown error text without guessed fields
 
 Тесты: [test_import_limits.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_import_limits.py#L1)
 
+## src/opendoc_formats/support/inline_svg.py
+
+Finite inert SVG profile for exposing shape anchors in HTML and EPUB.
+
+- `inline_svg_tree(value: str) -> ET.Element` — [строка 29](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/inline_svg.py#L29)
+- `remap_svg_paint(root: ET.Element, identifiers: dict[str, str]) -> None` — [строка 141](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/inline_svg.py#L141)
+- `serialize_inline_svg(root: ET.Element) -> str` — [строка 150](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/inline_svg.py#L150)
+
+Импорты: `opendoc_formats.support.cancellation`, `xml.etree`
+
+Тесты: [test_epub_anchor_identity.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/readers/test_epub_anchor_identity.py#L1)
+
 ## src/opendoc_formats/support/inspection.py
 
 Структурная инспекция документов и промежуточной модели.
@@ -1990,32 +2086,35 @@ Located SDK quota failures, preserving unknown error text without guessed fields
 
 Файловые утилиты: хеширование, безопасные архивы и атомарная запись.
 
-- `ArchiveSafetyError` — [строка 27](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L27)
-- `ArchiveLimitError` — [строка 31](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L31)
-- `__init__(self, message: str, *, quota: str | None=None, maximum: int | None=None, path: str | None=None) -> None` — [строка 34](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L34)
-- `check_archive_safety(path: PathLike | io.BytesIO, *, max_entries: int=DEFAULT_MAX_ARCHIVE_ENTRIES, max_total_size: int=DEFAULT_MAX_ARCHIVE_SIZE, max_ratio: int=DEFAULT_MAX_COMPRESSION_RATIO) -> None` — [строка 40](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L40)
-- `compute_hash(path: PathLike, algorithm: str='sha256', chunk: int=65536) -> str` — [строка 98](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L98)
-- `find_duplicates_by_paths(paths: Iterable[PathLike]) -> list[set[Path]]` — [строка 108](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L108)
-- `find_duplicates_in_folder(folder: PathLike) -> dict[Path, list[Path]]` — [строка 118](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L118)
-- `sanitize_filename(name: str, replacement: str='_') -> str` — [строка 136](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L136)
-- `sanitize_path(path: str) -> str` — [строка 143](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L143)
-- `ensure_dir(path: PathLike) -> Path` — [строка 148](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L148)
-- `ensure_folder(folder: PathLike) -> Path` — [строка 155](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L155)
-- `read_text_file(path: PathLike) -> str` — [строка 160](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L160)
-- `write_text_file(path: PathLike, content: str) -> None` — [строка 169](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L169)
-- `atomic_write_text(path: PathLike, content: str, encoding: str='utf-8', *, max_bytes: int | None=100 * 1024 * 1024) -> Path` — [строка 181](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L181)
-- `atomic_write_bytes(path: PathLike, data: bytes, *, max_bytes: int | None=100 * 1024 * 1024, before_replace: Callable[[], None] | None=None) -> Path` — [строка 205](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L205)
-- `atomic_copy(src: PathLike, dst: PathLike, *, max_bytes: int | None=100 * 1024 * 1024, before_replace: Callable[[], None] | None=None) -> Path` — [строка 224](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L224)
-- `atomic_replace_directory(src: PathLike, dst: PathLike) -> Path` — [строка 258](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L258)
-- `progress_bar(current: int, total: int, width: int=30) -> str` — [строка 298](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L298)
-- `validate_pdf(file_path: PathLike) -> bool` — [строка 305](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L305)
-- `get_file_info(file_path: PathLike) -> dict` — [строка 316](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L316)
-- `list_files(folder: PathLike, extensions: Optional[list[str]]=None, recursive: bool=False) -> list[dict]` — [строка 330](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L330)
-- `create_zip_archive(files: list[Path], output_path: Path) -> Path` — [строка 348](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L348)
+- `ArchiveSafetyError` — [строка 29](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L29)
+- `ArchiveLimitError` — [строка 33](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L33)
+- `__init__(self, message: str, *, quota: str | None=None, maximum: int | None=None, path: str | None=None) -> None` — [строка 36](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L36)
+- `open_checked_archive(path: PathLike | io.BytesIO, *, max_entries: int=DEFAULT_MAX_ARCHIVE_ENTRIES, max_total_size: int=DEFAULT_MAX_ARCHIVE_SIZE, max_ratio: int=DEFAULT_MAX_COMPRESSION_RATIO, check: Callable[[], None]=checkpoint) -> Iterator[zipfile.ZipFile]` — [строка 43](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L43)
+- `iter_archive_member(archive: zipfile.ZipFile, member: str | zipfile.ZipInfo, *, check: Callable[[], None]=checkpoint) -> Iterator[bytes]` — [строка 100](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L100)
+- `read_archive_member(archive: zipfile.ZipFile, member: str | zipfile.ZipInfo, *, check: Callable[[], None]=checkpoint) -> bytes` — [строка 112](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L112)
+- `check_archive_safety(path: PathLike | io.BytesIO, *, max_entries: int=DEFAULT_MAX_ARCHIVE_ENTRIES, max_total_size: int=DEFAULT_MAX_ARCHIVE_SIZE, max_ratio: int=DEFAULT_MAX_COMPRESSION_RATIO) -> None` — [строка 121](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L121)
+- `compute_hash(path: PathLike, algorithm: str='sha256', chunk: int=65536) -> str` — [строка 133](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L133)
+- `find_duplicates_by_paths(paths: Iterable[PathLike]) -> list[set[Path]]` — [строка 143](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L143)
+- `find_duplicates_in_folder(folder: PathLike) -> dict[Path, list[Path]]` — [строка 153](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L153)
+- `sanitize_filename(name: str, replacement: str='_') -> str` — [строка 171](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L171)
+- `sanitize_path(path: str) -> str` — [строка 178](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L178)
+- `ensure_dir(path: PathLike) -> Path` — [строка 183](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L183)
+- `ensure_folder(folder: PathLike) -> Path` — [строка 190](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L190)
+- `read_text_file(path: PathLike) -> str` — [строка 195](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L195)
+- `write_text_file(path: PathLike, content: str) -> None` — [строка 204](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L204)
+- `atomic_write_text(path: PathLike, content: str, encoding: str='utf-8', *, max_bytes: int | None=100 * 1024 * 1024) -> Path` — [строка 216](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L216)
+- `atomic_write_bytes(path: PathLike, data: bytes, *, max_bytes: int | None=100 * 1024 * 1024, before_replace: Callable[[], None] | None=None) -> Path` — [строка 240](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L240)
+- `atomic_copy(src: PathLike, dst: PathLike, *, max_bytes: int | None=100 * 1024 * 1024, before_replace: Callable[[], None] | None=None) -> Path` — [строка 259](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L259)
+- `atomic_replace_directory(src: PathLike, dst: PathLike) -> Path` — [строка 293](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L293)
+- `progress_bar(current: int, total: int, width: int=30) -> str` — [строка 333](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L333)
+- `validate_pdf(file_path: PathLike) -> bool` — [строка 340](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L340)
+- `get_file_info(file_path: PathLike) -> dict` — [строка 351](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L351)
+- `list_files(folder: PathLike, extensions: Optional[list[str]]=None, recursive: bool=False) -> list[dict]` — [строка 365](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L365)
+- `create_zip_archive(files: list[Path], output_path: Path) -> Path` — [строка 383](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/io.py#L383)
 
-Импорты: `__future__`, `collections`, `collections.abc`, `opendoc_formats.errors`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.pdf_probe`, `pathlib`, `typing`
+Импорты: `__future__`, `collections`, `collections.abc`, `contextlib`, `opendoc_formats.errors`, `opendoc_formats.support.artifacts`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.pdf_probe`, `pathlib`, `typing`
 
-Тесты: [test_io.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_io.py#L1), [test_pdf_probe.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_pdf_probe.py#L1)
+Тесты: [test_io.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_io.py#L1), [test_pdf_probe.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/support/test_pdf_probe.py#L1), [test_text_diagnostics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_text_diagnostics.py#L1)
 
 ## src/opendoc_formats/support/latex.py
 
@@ -2034,6 +2133,13 @@ Bounded composition of explicit occurrence relations using OpenDoc's public code
 - `compose_object_mappings(first: ObjectMapping, second: ObjectMapping, bridges: Mapping[str, tuple[str, ...] | None], *, source: DocumentModel | None=None, target: DocumentModel | None=None) -> ObjectMapping` — [строка 26](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/mapping_composition.py#L26)
 
 Импорты: `__future__`, `collections.abc`, `dataclasses`, `opendoc_model`
+
+## src/opendoc_formats/support/mathml.py
+
+MathML vocabulary shared by import and HTML rendering.
+
+
+Импорты: отсутствуют
 
 ## src/opendoc_formats/support/object_mapping.py
 
@@ -2062,9 +2168,9 @@ Measured PDF fallback occurrences using the public OpenDoc mapping contract.
 
 Readability checks for staged exports; these do not measure visual fidelity.
 
-- `validate_output(path: Path, format_id: str) -> None` — [строка 20](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/output_validation.py#L20)
+- `validate_output(path: Path, format_id: str) -> None` — [строка 33](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/output_validation.py#L33)
 
-Импорты: `__future__`, `docx`, `html.parser`, `opendoc_formats.readers.epub_package`, `opendoc_model`, `pathlib`, `pptx`, `zipfile`
+Импорты: `__future__`, `docx`, `html.parser`, `opendoc_formats.readers.epub_package`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.io`, `opendoc_model`, `pathlib`, `pptx`, `zipfile`
 
 Тесты: [test_release_contracts.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/test_release_contracts.py#L1)
 
@@ -2087,9 +2193,9 @@ Bounded inert vector-origin declarations, bound anew to measured native rasters.
 
 Small PDF checks use an already installed profile instead of requiring another parser.
 
-- `probe_pdf(path: str | Path, *, metadata: bool=False) -> tuple[int | None, dict[str, str]]` — [строка 11](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/pdf_probe.py#L11)
+- `probe_pdf(path: str | Path, *, metadata: bool=False) -> tuple[int | None, dict[str, str]]` — [строка 17](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/support/pdf_probe.py#L17)
 
-Импорты: `__future__`, `importlib`, `opendoc_formats.errors`, `pathlib`
+Импорты: `__future__`, `importlib`, `opendoc_formats.errors`, `opendoc_formats.native.pdf_metadata`, `pathlib`
 
 ## src/opendoc_formats/support/text_diagnostics.py
 
@@ -2151,16 +2257,18 @@ Finite native TeX formula syntax and inert fallback metadata; no math conversion
 
 Finite tabular layout and source boundaries; never TeX expansion or execution.
 
-- `TableProfileError` — [строка 15](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_tables.py#L15)
-- `column_spec(value: str) -> str | None` — [строка 19](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_tables.py#L19)
-- `layout(value: Any, rows: int, columns: int) -> tuple[str, list[list[list[int] | None]], bool]` — [строка 24](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_tables.py#L24)
-- `multicolumn_layout(value: Any) -> str` — [строка 54](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_tables.py#L54)
-- `CellSpan` — [строка 64](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_tables.py#L64)
-- `CellContent` — [строка 72](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_tables.py#L72)
-- `multicolumn(text: str, tokens: list[TexToken], span: CellSpan) -> CellContent | None` — [строка 99](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_tables.py#L99)
-- `TabularSource` — [строка 127](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_tables.py#L127)
-- `declaration(self, columns: str) -> dict[str, Any]` — [строка 134](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_tables.py#L134)
-- `split_tabular(tokens: list[TexToken], index: int, start: int, columns: int, maximum: int) -> TabularSource | None` — [строка 150](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_tables.py#L150)
+- `TableProfileError` — [строка 18](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_tables.py#L18)
+- `column_tokens(value: str) -> list[str] | None` — [строка 22](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_tables.py#L22)
+- `column_spec(value: str) -> str | None` — [строка 46](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_tables.py#L46)
+- `column_count(value: str) -> int` — [строка 51](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_tables.py#L51)
+- `layout(value: Any, rows: int, columns: int) -> tuple[str, list[list[list[int] | None]], bool]` — [строка 55](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_tables.py#L55)
+- `multicolumn_layout(value: Any) -> str` — [строка 85](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_tables.py#L85)
+- `CellSpan` — [строка 95](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_tables.py#L95)
+- `CellContent` — [строка 103](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_tables.py#L103)
+- `multicolumn(text: str, tokens: list[TexToken], span: CellSpan) -> CellContent | None` — [строка 130](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_tables.py#L130)
+- `TabularSource` — [строка 158](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_tables.py#L158)
+- `declaration(self, columns: str) -> dict[str, Any]` — [строка 165](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_tables.py#L165)
+- `split_tabular(tokens: list[TexToken], index: int, start: int, columns: int, maximum: int) -> TabularSource | None` — [строка 181](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/tex_tables.py#L181)
 
 Импорты: `dataclasses`, `opendoc_formats.errors`, `opendoc_formats.readers.tex_source`, `opendoc_formats.support.cancellation`, `typing`
 
@@ -2373,9 +2481,9 @@ DOCX table exporter for spans, geometry, fills, margins, and styles.
 
 Finite EPUB 3 export using the shared HTML renderer and Python's standard library.
 
-- `write_epub_model(document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None=None, cancelled: Callable[[], bool] | None=None) -> ConversionReport` — [строка 211](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/epub_writer.py#L211)
+- `write_epub_model(document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None=None, cancelled: Callable[[], bool] | None=None) -> ConversionReport` — [строка 267](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/epub_writer.py#L267)
 
-Импорты: `__future__`, `collections.abc`, `copy`, `dataclasses`, `datetime`, `html.parser`, `opendoc_formats.epub_metadata`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.io`, `opendoc_formats.writers.html_resources`, `opendoc_formats.writers.html_writer`, `opendoc_model`, `pathlib`, `tempfile`, `urllib.parse`, `zipfile`
+Импорты: `__future__`, `collections.abc`, `copy`, `dataclasses`, `datetime`, `html.parser`, `opendoc_formats.epub_metadata`, `opendoc_formats.native.epub`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.inline_svg`, `opendoc_formats.support.io`, `opendoc_formats.writers.html_resources`, `opendoc_formats.writers.html_writer`, `opendoc_model`, `pathlib`, `tempfile`, `urllib.parse`, `zipfile`
 
 Тесты: [test_epub_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_epub_writer.py#L1)
 
@@ -2463,9 +2571,9 @@ Serialize model list paragraphs as nested semantic HTML lists.
 
 Экспорт богатой промежуточной модели в самодостаточный HTML.
 
-- `write_html_model(document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None=None, cancelled: Callable[[], bool] | None=None) -> ConversionReport` — [строка 97](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/html_writer.py#L97)
+- `write_html_model(document: DocumentModel, output_path: str | Path, *, limits: DocumentLimits | None=None, cancelled: Callable[[], bool] | None=None) -> ConversionReport` — [строка 71](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/writers/html_writer.py#L71)
 
-Импорты: `__future__`, `html`, `opendoc_formats.fonts.html_embedding`, `opendoc_formats.fonts.resource_fonts`, `opendoc_formats.html_tables`, `opendoc_formats.support.cancellation`, `opendoc_formats.writers.color_inheritance`, `opendoc_formats.writers.color_preflight`, `opendoc_formats.writers.font_preflight`, `opendoc_formats.writers.html_borders`, `opendoc_formats.writers.html_layout`, `opendoc_formats.writers.html_lists`, `opendoc_formats.writers.html_normalize`, `opendoc_formats.writers.html_resources`, `opendoc_formats.writers.html_verify`, `opendoc_formats.writers.pptx_to_html._omml`, `opendoc_formats.writers.pptx_to_html._pptx_lib`, `opendoc_formats.writers.stages`, `opendoc_model`, `opendoc_model.color`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `opendoc_model.limits`, `opendoc_model.units`, `pathlib`, `typing`, `urllib.parse`
+Импорты: `__future__`, `html`, `opendoc_formats.fonts.html_embedding`, `opendoc_formats.fonts.resource_fonts`, `opendoc_formats.html_tables`, `opendoc_formats.support.cancellation`, `opendoc_formats.support.inline_svg`, `opendoc_formats.support.mathml`, `opendoc_formats.writers.color_inheritance`, `opendoc_formats.writers.color_preflight`, `opendoc_formats.writers.font_preflight`, `opendoc_formats.writers.html_borders`, `opendoc_formats.writers.html_layout`, `opendoc_formats.writers.html_lists`, `opendoc_formats.writers.html_normalize`, `opendoc_formats.writers.html_resources`, `opendoc_formats.writers.html_verify`, `opendoc_formats.writers.pptx_to_html._omml`, `opendoc_formats.writers.pptx_to_html._pptx_lib`, `opendoc_formats.writers.stages`, `opendoc_model`, `opendoc_model.color`, `opendoc_model.diagnostics`, `opendoc_model.document_model`, `opendoc_model.limits`, `opendoc_model.units`, `pathlib`, `typing`, `urllib.parse`
 
 Тесты: [test_html_chart_statistics.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_chart_statistics.py#L1), [test_html_layout.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_layout.py#L1), [test_html_normalize.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_normalize.py#L1), [test_html_resource_fonts.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_resource_fonts.py#L1), [test_html_resources.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_resources.py#L1), [test_html_writer.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_html_writer.py#L1), [test_pdf_cell_images.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pdf_cell_images.py#L1), [test_pptx_custom_errors.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_custom_errors.py#L1), [test_pptx_error_directions.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_error_directions.py#L1), [test_pptx_multiple_trends.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_multiple_trends.py#L1), [test_pptx_trend_forecast.py](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/tests/writers/test_pptx_trend_forecast.py#L1)
 

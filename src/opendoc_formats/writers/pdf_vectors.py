@@ -199,7 +199,7 @@ def prepare_vectors(
 
 
 def draw_vectors(page: Any, vectors: list[PdfVector], cancelled: Callable[[], bool]) -> None:
-    import fitz
+    import pymupdf as fitz
 
     for vector in vectors:
         props, box = vector.resource.properties, vector.image.box

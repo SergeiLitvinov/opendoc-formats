@@ -15,6 +15,54 @@ from opendoc_formats.errors import InvalidDocumentError, ResourceLimitError, Uns
 from opendoc_formats.native.sfnt import inspect_sfnt
 from opendoc_formats.support.cancellation import check_cancelled
 
+_SPACE = r'[ \t\r\n\f]*'
+_TRIVIA = r'(?:[ \t\r\n\f]++|/\*[^*]*\*+(?:[^/*][^*]*\*+)*/)*+'
+_FACE_OPEN = re.compile(rf'{_TRIVIA}(?ai:@font-face){_TRIVIA}\{{{_TRIVIA}')
+_DESCRIPTOR = re.compile(rf'(?ai:(font-family|src|font-weight|font-style)){_TRIVIA}:{_TRIVIA}')
+# Punctuation that cannot be mistaken for a CSS declaration or comment boundary.
+SIMPLE_QUOTED_FAMILY = re.compile(r"""(["'])([\w .&+!@#:=~-]+)\1""")
+_FORMAT = rf'''(?:{_TRIVIA}(?ai:format)\({_TRIVIA}(?P<hint>["']?)(?:truetype|opentype)(?P=hint){_TRIVIA}\))?'''
+_SOURCE = re.compile(
+    rf'''(?ai:url)\({_SPACE}(?P<quote>["']?)(?P<uri>data:font/(?:ttf|otf);base64,[A-Za-z0-9+/]*={{0,2}})'''
+    rf'''(?P=quote){_SPACE}\){_FORMAT}'''
+)
+_LOCAL_SOURCE = re.compile(
+    rf'''(?ai:url)\({_SPACE}(?P<quote>["']?)(?P<uri>[A-Za-z0-9_.%/-]+)(?P=quote){_SPACE}\){_FORMAT}'''
+)
+_WEIGHT = re.compile(r'(?ai:normal|bold|400|700)')
+_SLANT = re.compile(r'(?ai:normal|italic)')
+_VALUES = {'font-family': SIMPLE_QUOTED_FAMILY, 'src': _SOURCE, 'font-weight': _WEIGHT, 'font-style': _SLANT}
+_END_VALUE = re.compile(rf'{_TRIVIA}(?:;{_TRIVIA}|\Z)')
+
+
+def simple_font_face(block: str, *, allow_local: bool = False) -> tuple[str, str, str, str] | None:
+    """Recognize an unescaped static font-face with a single embedded program."""
+    opening = _FACE_OPEN.match(block)
+    if opening is None:
+        return None
+    values: dict[str, re.Match[str]] = {}
+    cursor = opening.end()
+    while cursor < len(block):
+        descriptor = _DESCRIPTOR.match(block, cursor)
+        if descriptor is None:
+            return None
+        name = descriptor[1].lower()
+        value = _VALUES[name].match(block, descriptor.end())
+        if value is None and name == 'src' and allow_local:
+            value = _LOCAL_SOURCE.match(block, descriptor.end())
+        if value is None or name in values:
+            return None
+        end = _END_VALUE.match(block, value.end())
+        if end is None:
+            return None
+        values[name] = value
+        cursor = end.end()
+    family, source = values.get('font-family'), values.get('src')
+    if family is None or source is None or not family[2].strip():
+        return None
+    weight, slant = values.get('font-weight'), values.get('font-style')
+    return family[2], source['uri'], weight[0].lower() if weight else 'normal', slant[0].lower() if slant else 'normal'
+
 
 def _tokens(values: Any) -> list[Any]:
     return [token for token in values if token.type not in {'whitespace', 'comment'}]
@@ -34,10 +82,7 @@ class FontFaces:
     def read(self, rule: Any, node: Any) -> None:
         import tinycss2
 
-        check_cancelled(self.cancelled, 'HTML font-face')
-        self.count += 1
-        if self.count > 1024:
-            raise ResourceLimitError('HTML font-face rule budget exceeded')
+        self._count_rule()
         family = None
         try:
             if _tokens(rule.prelude) or rule.content is None:
@@ -86,14 +131,55 @@ class FontFaces:
                 if (len(arguments) != 1 or arguments[0].type not in {'string', 'ident'}
                         or arguments[0].value not in {'truetype', 'opentype'}):
                     raise ValueError('unsupported font format hint')
-            identifier = self._program(uri)
-            self.faces.setdefault((family.casefold(), weight in {'bold', '700'}, slant == 'italic'), set()).add(identifier)
         except (ArtifactLimitError, ResourceLimitError):
             raise
         except (ValueError, InvalidDocumentError, UnsupportedDocumentError) as error:
             if family is not None:
                 self.blocked.add(family.casefold())
             self.warn('html-font', f'Font-face not bound: {error}', node)
+        else:
+            self._register(family, uri, weight, slant, node)
+
+    def read_simple(self, face: tuple[str, str, str, str], node: Any) -> None:
+        self._count_rule()
+        family, uri, weight, slant = face
+        self.families.add(family.casefold())
+        self._register(family, uri, weight, slant, node)
+
+    def read_local(self, face: tuple[str, str, str, str], resource: Resource | None, node: Any) -> None:
+        self._count_rule()
+        family, _, weight, slant = face
+        self.families.add(family.casefold())
+        try:
+            if resource is None or resource.media_type not in {'font/ttf', 'font/otf'} or resource.data is None:
+                raise ValueError('local font must be a manifest TTF or OTF resource')
+            if resource.kind is not ResourceKind.FONT:
+                self._validate_program(resource.data, resource.media_type)
+        except (ArtifactLimitError, ResourceLimitError):
+            raise
+        except (ValueError, InvalidDocumentError, UnsupportedDocumentError) as error:
+            self.blocked.add(family.casefold())
+            self.warn('html-font', f'Font-face not bound: {error}', node)
+            return
+        resource.kind = ResourceKind.FONT
+        self.faces.setdefault((family.casefold(), weight in {'bold', '700'}, slant == 'italic'), set()).add(resource.id)
+
+    def _count_rule(self) -> None:
+        check_cancelled(self.cancelled, 'HTML font-face')
+        self.count += 1
+        if self.count > 1024:
+            raise ResourceLimitError('HTML font-face rule budget exceeded')
+
+    def _register(self, family: str, uri: str, weight: str, slant: str, node: Any) -> None:
+        try:
+            identifier = self._program(uri)
+        except (ArtifactLimitError, ResourceLimitError):
+            raise
+        except (ValueError, InvalidDocumentError, UnsupportedDocumentError) as error:
+            self.blocked.add(family.casefold())
+            self.warn('html-font', f'Font-face not bound: {error}', node)
+            return
+        self.faces.setdefault((family.casefold(), weight in {'bold', '700'}, slant == 'italic'), set()).add(identifier)
 
     @staticmethod
     def _value(descriptors: dict[str, Any], name: str, default: str) -> str:
@@ -124,17 +210,20 @@ class FontFaces:
         except binascii.Error as error:
             raise ValueError('invalid base64 font payload') from error
         check_cancelled(self.cancelled, 'HTML font program decoding')
-        if not data.startswith(b'OTTO' if media == 'font/otf' else b'\0\1\0\0'):
-            raise ValueError('font wrapper does not match declared media type')
-        inventory = inspect_sfnt(data, cancelled=self.cancelled)
-        if any(table.tag in {'fvar', 'CFF2'} for table in inventory.tables):
-            raise UnsupportedDocumentError('variable/CFF2 font programs require a separate binding profile')
+        self._validate_program(data, media)
         identifier = 'html-font-'+hashlib.sha256(data).hexdigest()
         if identifier not in self.resources:
             self.resources[identifier] = Resource(identifier, ResourceKind.FONT, media, data=data)
             self.bytes += len(data)
         self.payloads[uri] = identifier
         return identifier
+
+    def _validate_program(self, data: bytes, media: str) -> None:
+        if not data.startswith(b'OTTO' if media == 'font/otf' else b'\0\1\0\0'):
+            raise ValueError('font wrapper does not match declared media type')
+        inventory = inspect_sfnt(data, cancelled=self.cancelled)
+        if any(table.tag in {'fvar', 'CFF2'} for table in inventory.tables):
+            raise UnsupportedDocumentError('variable/CFF2 font programs require a separate binding profile')
 
     def bind(self, style: TextStyle, node: Any) -> None:
         check_cancelled(self.cancelled, 'HTML font binding')

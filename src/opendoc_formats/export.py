@@ -16,6 +16,7 @@ from opendoc_formats.docx_profile import DocxProfile
 from opendoc_formats.errors import OperationCancelledError
 from opendoc_formats.pptx_profile import PptxProfile
 from opendoc_formats.support.backends import missing_backends
+from opendoc_formats.support.cancellation import cancellation_scope
 from opendoc_formats.support.object_mapping import get_object_mapping, mapping_publication, mapping_result_matches
 from opendoc_formats.text_profile import TextProfile, decode_text
 
@@ -346,7 +347,10 @@ class ExporterRegistry:
 
                         load_document(staged, limits=options.document_limits)
                     else:
-                        exporter.validator(staged)
+                        with cancellation_scope(options.cancelled, "Export verification", inherit=True):
+                            exporter.validator(staged)
+                except OperationCancelledError:
+                    return fail("export.cancelled", "Export cancelled during verification; staged result discarded")
                 except Exception as error:  # noqa: BLE001 - third-party validators are a diagnostic boundary
                     return fail("export.invalid-output", str(error))
                 report.metrics["output_verified"] = True
@@ -410,7 +414,7 @@ def default_exporter_registry() -> ExporterRegistry:
         ("epub", (".epub",), ()),
         ("docx", (".docx",), ("docx",)),
         ("pptx", (".pptx",), ("pptx",)),
-        ("pdf", (".pdf",), ("fitz",)),
+        ("pdf", (".pdf",), ("pymupdf",)),
         ("latex", (".tex",), ()),
     ):
         registry.register(

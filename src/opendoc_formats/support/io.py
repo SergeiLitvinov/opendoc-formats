@@ -11,11 +11,13 @@ import time
 import uuid
 import zipfile
 from collections import defaultdict
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterable, Optional, Union
 
 from opendoc_formats.errors import ResourceLimitError
+from opendoc_formats.support.cancellation import checkpoint
 
 PathLike = Union[str, Path]
 
@@ -37,6 +39,85 @@ class ArchiveLimitError(ArchiveSafetyError, ResourceLimitError):
         self.quota, self.maximum, self.path = quota, maximum, path
 
 
+@contextmanager
+def open_checked_archive(
+    path: PathLike | io.BytesIO,
+    *,
+    max_entries: int = DEFAULT_MAX_ARCHIVE_ENTRIES,
+    max_total_size: int = DEFAULT_MAX_ARCHIVE_SIZE,
+    max_ratio: int = DEFAULT_MAX_COMPRESSION_RATIO,
+    check: Callable[[], None] = checkpoint,
+) -> Iterator[zipfile.ZipFile]:
+    """Check the central directory and yield the same open ZIP for reading."""
+    check()
+    p = path if isinstance(path, io.BytesIO) else Path(path)
+    try:
+        zf = zipfile.ZipFile(p)
+    except (zipfile.BadZipFile, OSError) as error:
+        raise ArchiveSafetyError(f"Некорректный zip-архив: {error}") from error
+    with zf:
+        infos = zf.infolist()
+        if len(infos) > max_entries:
+            raise ArchiveLimitError(f"Слишком много записей в архиве: {len(infos)} > {max_entries}",
+                                    quota="entries", maximum=max_entries)
+        total_size = 0
+        total_compressed = 0
+        seen: set[str] = set()
+        for info in infos:
+            check()
+            name = info.filename
+            if name in seen:
+                raise ArchiveSafetyError(f"Дубликат записи в архиве: {name}")
+            seen.add(name)
+            normalized = name.replace("\\", "/")
+            if normalized.startswith(("/", "//")):
+                raise ArchiveSafetyError(f"Абсолютный путь в архиве: {name}")
+            if re.match(r"^[a-zA-Z]:", normalized):
+                raise ArchiveSafetyError(f"Путь с буквой диска в архиве: {name}")
+            if any(part == ".." for part in normalized.split("/")):
+                raise ArchiveSafetyError(f"Path traversal в архиве: {name}")
+            if info.file_size > max_total_size:
+                raise ArchiveLimitError(f"Запись слишком большая: {name} {info.file_size} байт",
+                                        quota="uncompressed bytes", maximum=max_total_size, path=name)
+            total_size += info.file_size
+            total_compressed += info.compress_size
+            if info.compress_size == 0:
+                if info.file_size > 0:
+                    raise ArchiveSafetyError(f"Запись имеет нулевой сжатый размер: {name}")
+            elif info.file_size > info.compress_size * max_ratio:
+                raise ArchiveLimitError(f"Подозрительный коэффициент сжатия записи: {name}",
+                                        quota="compression ratio", maximum=max_ratio, path=name)
+        if total_size > max_total_size:
+            raise ArchiveLimitError(f"Суммарный размер архива превышает лимит: {total_size} байт",
+                                    quota="uncompressed bytes", maximum=max_total_size)
+        if total_compressed > 0 and total_size > total_compressed * max_ratio:
+            raise ArchiveLimitError(f"Подозрительный коэффициент сжатия: {total_size} / {total_compressed}",
+                                    quota="compression ratio", maximum=max_ratio)
+        check()
+        yield zf
+
+
+def iter_archive_member(
+    archive: zipfile.ZipFile, member: str | zipfile.ZipInfo, *, check: Callable[[], None] = checkpoint,
+) -> Iterator[bytes]:
+    """Yield bounded reads from a preflighted ZIP member, including its CRC check at EOF."""
+    check()
+    with archive.open(member) as stream:
+        while chunk := stream.read(256 * 1024):
+            check()
+            yield chunk
+        check()
+
+
+def read_archive_member(
+    archive: zipfile.ZipFile, member: str | zipfile.ZipInfo, *, check: Callable[[], None] = checkpoint,
+) -> bytes:
+    with io.BytesIO() as payload:
+        for chunk in iter_archive_member(archive, member, check=check):
+            payload.write(chunk)
+        return payload.getvalue()
+
+
 def check_archive_safety(
     path: PathLike | io.BytesIO,
     *,
@@ -44,55 +125,9 @@ def check_archive_safety(
     max_total_size: int = DEFAULT_MAX_ARCHIVE_SIZE,
     max_ratio: int = DEFAULT_MAX_COMPRESSION_RATIO,
 ) -> None:
-    """Проверить zip/OOXML/EPUB перед распаковкой; поднимает ``ArchiveSafetyError``.
-
-    Читает только центральный каталог (без извлечения данных) и проверяет:
-      * число записей и суммарный размер не превышают лимиты;
-      * коэффициент сжатия не указывает на zip-бомбу;
-      * имена записей безопасны для извлечения: без ``..``, абсолютных путей
-        и дубликатов (защита от path traversal / zip-slip).
-    """
-    p = path if isinstance(path, io.BytesIO) else Path(path)
-    try:
-        with zipfile.ZipFile(p) as zf:
-            infos = zf.infolist()
-            if len(infos) > max_entries:
-                raise ArchiveLimitError(f"Слишком много записей в архиве: {len(infos)} > {max_entries}",
-                                        quota="entries", maximum=max_entries)
-            total_size = 0
-            total_compressed = 0
-            seen: set[str] = set()
-            for info in infos:
-                name = info.filename
-                if name in seen:
-                    raise ArchiveSafetyError(f"Дубликат записи в архиве: {name}")
-                seen.add(name)
-                normalized = name.replace("\\", "/")
-                if normalized.startswith(("/", "//")):
-                    raise ArchiveSafetyError(f"Абсолютный путь в архиве: {name}")
-                if re.match(r"^[a-zA-Z]:", normalized):
-                    raise ArchiveSafetyError(f"Путь с буквой диска в архиве: {name}")
-                if any(part == ".." for part in normalized.split("/")):
-                    raise ArchiveSafetyError(f"Path traversal в архиве: {name}")
-                if info.file_size > max_total_size:
-                    raise ArchiveLimitError(f"Запись слишком большая: {name} {info.file_size} байт",
-                                            quota="uncompressed bytes", maximum=max_total_size, path=name)
-                total_size += info.file_size
-                total_compressed += info.compress_size
-                if info.compress_size == 0:
-                    if info.file_size > 0:
-                        raise ArchiveSafetyError(f"Запись имеет нулевой сжатый размер: {name}")
-                elif info.file_size > info.compress_size * max_ratio:
-                    raise ArchiveLimitError(f"Подозрительный коэффициент сжатия записи: {name}",
-                                            quota="compression ratio", maximum=max_ratio, path=name)
-            if total_size > max_total_size:
-                raise ArchiveLimitError(f"Суммарный размер архива превышает лимит: {total_size} байт",
-                                        quota="uncompressed bytes", maximum=max_total_size)
-            if total_compressed > 0 and total_size > total_compressed * max_ratio:
-                raise ArchiveLimitError(f"Подозрительный коэффициент сжатия: {total_size} / {total_compressed}",
-                                        quota="compression ratio", maximum=max_ratio)
-    except (zipfile.BadZipFile, OSError) as e:
-        raise ArchiveSafetyError(f"Некорректный zip-архив: {e}") from e
+    """Проверить центральный каталог ZIP без извлечения данных."""
+    with open_checked_archive(path, max_entries=max_entries, max_total_size=max_total_size, max_ratio=max_ratio):
+        pass
 
 
 def compute_hash(path: PathLike, algorithm: str = "sha256", chunk: int = 65536) -> str:
@@ -303,7 +338,7 @@ def progress_bar(current: int, total: int, width: int = 30) -> str:
 
 
 def validate_pdf(file_path: PathLike) -> bool:
-    """Можно ли прочитать PDF выбранным установленным движком."""
+    """Можно ли прочитать страницы PDF движком или ограниченным бинарным разбором."""
     try:
         from opendoc_formats.support.pdf_probe import probe_pdf
 

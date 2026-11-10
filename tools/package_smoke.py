@@ -626,14 +626,31 @@ def main() -> None:
     if not args.all_formats:
         absent = tuple(name for name in engines if not ((name == 'bs4' and args.epub) or (name == 'fontTools' and args.fonts)))
         assert all(importlib.util.find_spec(name) is None for name in absent)
-        for constructor in (DocxPackage, PdfDocument):
-            try:
-                constructor(b"missing engine")
-            except BackendUnavailableError:
-                pass
-            else:
-                raise AssertionError("Native access should diagnose absent optional backend")
+        try:
+            PdfDocument(b"missing engine")
+        except BackendUnavailableError:
+            pass
+        else:
+            raise AssertionError("Native PDF access should diagnose absent optional backend")
         find_libreoffice()
+        docx_source = Path(__file__).resolve().parents[1] / "tests/corpus/native/native-edit.docx"
+        with DocxPackage(docx_source) as package:
+            assert not package.info.inspection_only and package.paragraphs and package.relationships
+            assert package.to_bytes() == docx_source.read_bytes()
+        from opendoc_formats.readers.docx import read_docx
+        from opendoc_formats.readers.pptx import read_pptx
+        from opendoc_formats.readers.text import extract_text
+
+        text = read_docx(docx_source)
+        assert text.engine == "native-docx" and text.blocks[0].text == "Before {{ value }} after"
+        assert text.tables[0].rows[1] == ["Merged cell", "Merged cell"]
+        assert extract_text(docx_source) == text.plain
+        pptx_source = docx_source.parents[1] / "office/libreoffice-scientific-slides.pptx"
+        slides = read_pptx(pptx_source)
+        assert slides.engine == "native-pptx" and slides.pages == 2
+        assert slides.blocks[0].text == "Scientific conversion quality" and slides.blocks[-1].page == 2
+        assert slides.tables[0].rows[1] == ["Text", "Editability", "Exact"]
+        assert all(name not in sys.modules for name in ("docx", "pptx", "lxml", "PIL"))
     if args.fonts:
         font_subset_smoke()
     document = DocumentModel(
@@ -769,14 +786,24 @@ def main() -> None:
                 (r'\frac{x}{2}', False, 'own fraction'), (r'\begin{pmatrix}1&2\\3&4\end{pmatrix}', True, ''),
             ]
         book = root / "base-writer.epub"
+        from opendoc_formats.readers.epub import read_epub, read_epub_metadata
         from opendoc_formats.readers.epub_package import read_epub_package
 
         book_report = write_document(DocumentModel(metadata={"creator": ["Own author"], "identifier": "urn:example:installed"},
                                                     sections=[Section(blocks=[Paragraph(content=[TextRun("Own EPUB")])])]), book)
         assert book_report.success and book_report.metrics["output_verified"], book_report.to_dict()
-        assert read_epub_package(book).spine == (("chapter", "yes"),)
-        assert read_epub_package(book).dc_values["creator"] == ("Own author",)
-        assert read_epub_package(book).metadata["identifier"] == "urn:example:installed"
+        package = read_epub_package(book)
+        assert package.spine == (("chapter", "yes"),)
+        metadata = read_epub_metadata(book)
+        assert metadata == package.dc_values and metadata["creator"] == ("Own author",)
+        assert metadata["identifier"] == ("urn:example:installed",)
+        if not (args.epub or args.all_formats):
+            extracted = read_epub(book)
+            assert extracted.engine == "native-epub-xhtml" and extracted.plain == "Own EPUB"
+            imported_book = read_document(book)
+            assert imported_book.success, imported_book.issues
+            assert imported_book.document.sections[0].blocks[0].plain_text == "Own EPUB"
+            assert "bs4" not in sys.modules
         for cancel_model, cancel_target in ((native_tex, native_target), (native_math, target), (native_tex, book)):
             previous = cancel_target.read_bytes()
             export_polls = 0

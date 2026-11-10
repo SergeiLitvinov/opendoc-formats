@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import posixpath
+from collections import Counter
 from collections.abc import Callable
 from itertools import chain
 from pathlib import Path
@@ -22,11 +23,14 @@ from opendoc_model import (
     Provenance,
     Resource,
     ResourceKind,
+    get_anchor,
     set_integration,
+    walk_model,
 )
 
 from opendoc_formats.readers.epub_anchors import EpubAnchors
 from opendoc_formats.support.cancellation import check_cancelled
+from opendoc_formats.support.mathml import MATHML_ELEMENTS, MATHML_NAMESPACE
 
 
 class EpubDiagnostics:
@@ -49,6 +53,10 @@ class EpubDiagnostics:
         self.max_records = min(10_000, self.limits.max_nodes)
         self.table_cells = 0
         self.anchors = EpubAnchors(self.limits.max_nodes, cancelled, root_directory=root_directory)
+        self.internal_links: list[tuple[str, str, Provenance]] = []
+        self.ambiguous_targets: set[str] = set()
+        self.embedded_targets: Counter[str] = Counter()
+        self.decoded_fonts: dict[str, str] = {}
 
     def claim_table_cell(self, part: str) -> None:
         """Bound native cell construction across tables/chapters, before SDK validation."""
@@ -107,11 +115,11 @@ class EpubDiagnostics:
         measurement: dict[str, Any] | None = None,
         attribute: str | None = None,
     ) -> None:
-        self.checkpoint()
-        if len(self.records) >= self.max_records:
-            raise ArtifactLimitError('EPUB diagnostic objects exceed staging limit at '+part,
-                                     path=f'epub.diagnostics[{len(self.records)}]',
-                                     quota='diagnostic objects', maximum=self.max_records)
+        location, provenance = self._source_location(part, node, attribute)
+        self._append(DiagnosticIssue(feature, IssueSeverity.LOSS, message, location, measurement, reason=reason),
+                     provenance, state, resource_id)
+
+    def _source_location(self, part: str, node: Any, attribute: str | None) -> tuple[str, Provenance]:
         part = posixpath.normpath(posixpath.join(self.root_directory, part))
         object_id = str(node.get("id")) if node is not None and node.get("id") else None
         line = getattr(node, "sourceline", None)
@@ -120,17 +128,91 @@ class EpubDiagnostics:
         if attribute is not None:
             fragment += '/@'+attribute
         location = f"{self.source}!/{part}" + (f"#{fragment}" if fragment else "")
+        return location, Provenance("epub", str(self.source), object_id=object_id, package_part="/" + part.lstrip("/"))
+
+    def _append(self, issue: DiagnosticIssue, provenance: Provenance, state: PreservationState,
+                resource_id: str | None = None) -> None:
+        self.checkpoint()
+        if len(self.records) >= self.max_records:
+            raise ArtifactLimitError('EPUB diagnostic objects exceed staging limit at '+str(provenance.package_part),
+                                     path=f'epub.diagnostics[{len(self.records)}]',
+                                     quota='diagnostic objects', maximum=self.max_records)
         self.records.append(
             PreservationRecord(
-                issue=DiagnosticIssue(feature, IssueSeverity.LOSS, message, location, measurement, reason=reason),
+                issue=issue,
                 state=state,
-                provenance=Provenance("epub", str(self.source), object_id=object_id, package_part="/" + part.lstrip("/")),
+                provenance=provenance,
                 extra={"resource_id": resource_id} if resource_id else {},
             )
         )
 
+    def internal_link(self, target: str, part: str, node: Any) -> None:
+        self.checkpoint()
+        if len(self.internal_links) >= self.limits.max_nodes:
+            raise ArtifactLimitError('EPUB internal link staging exceeds node limit', path='epub.internal_links',
+                                     quota='nodes', maximum=self.limits.max_nodes)
+        location, provenance = self._source_location(part, node, 'href')
+        self.internal_links.append((target, location, provenance))
+
+    def bind_mathml_anchors(self, root: Any, part: str) -> bool:
+        for element in root.iter():
+            self.checkpoint()
+            tag = element.tag
+            namespace, _, name = tag[1:].partition("}") if tag.startswith("{") else (None, "", tag)
+            if namespace not in {None, MATHML_NAMESPACE} or name not in MATHML_ELEMENTS:
+                return False
+        return bool(self.bind_embedded_anchors(root, part))
+
+    def bind_embedded_anchors(self, root: Any, part: str) -> dict[str, str]:
+        identifiers = {}
+        for element in root.iter():
+            self.checkpoint()
+            identifier = element.get('id')
+            if element is root or not identifier:
+                continue
+            target = self.anchors.get(part, identifier)
+            identifiers[identifier] = target
+            element.set('id', target)
+            self.embedded_targets[target] += 1
+        if not identifiers:
+            return {}
+        for element in root.iter():
+            self.checkpoint()
+            for attribute in ('href', '{http://www.w3.org/1999/xlink}href'):
+                href = element.get(attribute, '')
+                if href.startswith('#') and href[1:] in identifiers:
+                    element.set(attribute, '#' + identifiers[href[1:]])
+        return identifiers
+
+    def _check_internal_links(self, document: DocumentModel) -> None:
+        if not self.internal_links:
+            return
+        targets = self.embedded_targets.copy()
+        for reference in walk_model(document, limits=self.limits):
+            self.checkpoint()
+            properties = getattr(reference.node, 'properties', {})
+            identifier = properties.get('anchor_id')
+            if isinstance(identifier, str):
+                targets[identifier] += 1
+            if 'opendoc.anchor' in properties and (anchor := get_anchor(reference.node, limits=self.limits)) is not None:
+                if anchor.id != identifier:
+                    targets[anchor.id] += 1
+        for target, location, provenance in self.internal_links:
+            self.checkpoint()
+            if target in self.ambiguous_targets or targets[target] > 1:
+                reason = 'ambiguous-link-target'
+                message = 'Internal EPUB link target has more than one source or imported occurrence'
+            elif not targets[target]:
+                reason = 'missing-link-target'
+                message = 'Internal EPUB link target is absent from the imported document'
+            else:
+                continue
+            self._append(DiagnosticIssue('epub.hyperlink', IssueSeverity.LOSS, message, location,
+                                         {'target': '#' + target}, reason=reason), provenance, PreservationState.LOST)
+
     def attach(self, document: DocumentModel, *, limits: DocumentLimits | None = None) -> None:
         self.checkpoint()
+        self._check_internal_links(document)
         # Detected losses do not constitute an exhaustive assessment of EPUB/CSS.
         set_integration(
             document,
@@ -154,8 +236,14 @@ class EpubDiagnostics:
         controls = {"input", "button", "select", "textarea", "option", "optgroup", "output", "datalist", "progress", "meter"}
         attributes = ("src", "data", "type", "name", "value", "label", "action", "method", "checked", "selected",
                       "multiple", "disabled", "readonly", "min", "max")
+        seen_ids: set[str] = set()
         for node in chain((body,), body.find_all(True)):
             self.checkpoint()
+            identifier = node.get('id')
+            if isinstance(identifier, str) and identifier:
+                if identifier in seen_ids:
+                    self.ambiguous_targets.add(self.anchors.get(part, identifier))
+                seen_ids.add(identifier)
             for name, value in node.attrs.items():
                 self.checkpoint()
                 # The same finite prefix policy is used when embedded SVG and

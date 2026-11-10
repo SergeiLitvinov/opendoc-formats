@@ -345,10 +345,7 @@ def read_pdf_model(
                 blocks=blocks,
                 headers=headers,
                 footers=footers,
-                page=_pdf_page_settings(
-                    page.height if page.rotation % 180 else page.width,
-                    page.width if page.rotation % 180 else page.height,
-                ),
+                page=_pdf_page_settings(*page.content_size),
                 properties={"pdf": {"source_rotation": page.rotation, "coordinate_space": "pymupdf-unrotated",
                                     "page_id": f"pdf-page-{page.number}"}},
                 provenance=origin(f"page-{page.number}", detail="created document section from PDF page"),

@@ -157,7 +157,7 @@ class PyMuPdfConverter(BaseConverter):
         from opendoc_formats.support.io import atomic_copy
 
         try:
-            import fitz
+            import pymupdf as fitz
             from docx import Document as DocxDocument
             from docx.shared import Inches, Pt
 

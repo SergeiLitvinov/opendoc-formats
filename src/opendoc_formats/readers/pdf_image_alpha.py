@@ -9,7 +9,7 @@ from opendoc_formats.errors import ResourceLimitError
 
 
 def straight_alpha_png(image: bytes, mask: bytes) -> bytes:
-    import fitz
+    import pymupdf as fitz
 
     base, alpha = fitz.Pixmap(image), fitz.Pixmap(mask)
     if base.colorspace != fitz.csRGB:

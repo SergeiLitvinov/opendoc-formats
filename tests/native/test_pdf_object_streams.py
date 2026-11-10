@@ -14,6 +14,17 @@ from opendoc_formats.errors import InvalidDocumentError, OperationCancelledError
 from tests.native.test_pdf_xref_streams import own_stream_pdf
 
 
+def test_declared_object_stream_with_nonzero_generation_is_invalid():
+    def generation_one(records):
+        end = (4 + 1) * 7
+        return records[:end-2] + b'\x00\x01' + records[end:]
+
+    data, _, _ = own_stream_pdf(transform=generation_one)
+    data = data.replace(b'4 0 obj\n', b'4 1 obj\n', 1)
+    with pytest.raises(InvalidDocumentError, match='container generation must be zero'):
+        inspect_binary(data, pdf_source=True, pdf_decode_xrefs=True, pdf_object_streams=True)
+
+
 def inspect(data, **kwargs):
     return inspect_binary(data, pdf_source=True, pdf_decode_xrefs=True, pdf_object_streams=True, **kwargs)
 

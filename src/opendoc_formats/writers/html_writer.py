@@ -10,7 +10,14 @@ from pathlib import Path
 from typing import Any, Callable
 from urllib.parse import quote, urlsplit
 
-from opendoc_model import get_anchor, get_table_cell_semantics, get_table_row_semantics, get_table_semantics, walk_model
+from opendoc_model import (
+    get_anchor,
+    get_line_spacing,
+    get_table_cell_semantics,
+    get_table_row_semantics,
+    get_table_semantics,
+    walk_model,
+)
 from opendoc_model.color import ColorValue, color_to_css
 from opendoc_model.diagnostics import ConversionReport, IssueSeverity
 from opendoc_model.document_model import (
@@ -33,6 +40,8 @@ from opendoc_formats.fonts.html_embedding import embedded_font_stylesheet
 from opendoc_formats.fonts.resource_fonts import ResourceFontResolver, check_resource_font_usages, document_font_resolver
 from opendoc_formats.html_tables import IMPORTED, SCOPE_TO_HTML
 from opendoc_formats.support.cancellation import cancellation_scope, checkpoint
+from opendoc_formats.support.inline_svg import inline_svg_tree, serialize_inline_svg
+from opendoc_formats.support.mathml import MATHML_ELEMENTS, MATHML_NAMESPACE
 from opendoc_formats.writers.color_preflight import preflight_colors
 from opendoc_formats.writers.font_preflight import prepare_fonts
 from opendoc_formats.writers.html_borders import table_border_styles
@@ -55,41 +64,6 @@ def _preset_geometry() -> dict[str, tuple[str, bool]]:
     return _PRESET_GEOMETRY_CACHE
 
 
-_MATHML_NAMESPACE = "http://www.w3.org/1998/Math/MathML"
-_MATHML_ELEMENTS = {
-    "annotation",
-    "maction",
-    "math",
-    "menclose",
-    "merror",
-    "mfenced",
-    "mfrac",
-    "mi",
-    "mmultiscripts",
-    "mn",
-    "mo",
-    "mover",
-    "mpadded",
-    "mphantom",
-    "mprescripts",
-    "mroot",
-    "mrow",
-    "ms",
-    "mspace",
-    "msqrt",
-    "mstyle",
-    "msub",
-    "msubsup",
-    "msup",
-    "mtable",
-    "mtd",
-    "mtext",
-    "mtr",
-    "munder",
-    "munderover",
-    "none",
-    "semantics",
-}
 _COLOR_RE = re.compile(r"^(?:#[0-9a-fA-F]{3,8}|[a-zA-Z]{1,24})$")
 _HEADING_RE = re.compile(r"^(?:heading|заголовок)\s*([1-6])$", re.IGNORECASE)
 
@@ -358,6 +332,9 @@ class _HtmlRenderer:
                 self._report_missing_shape(shape, location)
         if paragraph.alignment in {"left", "right", "center", "justify"}:
             styles.append(f"text-align:{paragraph.alignment}")
+        whitespace = paragraph.properties.get("epub_white_space")
+        if isinstance(whitespace, str) and whitespace in {"normal", "pre", "pre-wrap"}:
+            styles.append(f"white-space:{whitespace}")
         property_map = {
             "left_indent_pt": "margin-left",
             "right_indent_pt": "margin-right",
@@ -370,7 +347,11 @@ class _HtmlRenderer:
             if isinstance(value, (int, float)):
                 styles.append(f"{target}:{value:g}pt")
         line_spacing = paragraph.properties.get("line_spacing")
-        if isinstance(line_spacing, (int, float)):
+        spacing = get_line_spacing(paragraph) if self.document.source_format == "epub" else None
+        if spacing is not None and spacing.value is not None:
+            unit = "" if spacing.rule == "relative" else "pt"
+            styles.append(f"line-height:{spacing.value:g}{unit}")
+        elif spacing is None and isinstance(line_spacing, (int, float)):
             styles.append(f"line-height:{line_spacing:g}")
         chart_svg = _chart_svg(chart) if isinstance(chart, dict) else None
         if isinstance(chart, dict):
@@ -415,6 +396,9 @@ class _HtmlRenderer:
     def _run(self, run: TextRun, location: str) -> str:
         content = escape(run.text)
         styles = self._text_style(run.style)
+        whitespace = run.properties.get("epub_white_space")
+        if isinstance(whitespace, str) and whitespace in {"normal", "pre", "pre-wrap"}:
+            styles.append(f"white-space:{whitespace}")
         attributes = _style_attribute(styles)
         normalized = run.properties.get("html_normalize", {}) if self.html_prepared else {}
         anchor = normalized.get("anchor_id")
@@ -463,14 +447,29 @@ class _HtmlRenderer:
         if resource is None:
             self.report.add(IssueSeverity.ERROR, "image", f"resource {image.resource_id!r} not found", location)
             return escape(image.alt_text or f"[{image.resource_id}]")
+        styles = self._geometry_style(image.box, image.properties, positioned=block_level)
+        anchor = get_anchor(image)
+        if image.properties.get('epub_inline_svg') is True and resource.media_type == 'image/svg+xml' and resource.data:
+            try:
+                svg = inline_svg_tree(resource.data.decode('utf-8'))
+            except ValueError:
+                self.report.add(IssueSeverity.LOSS, 'svg-anchors', 'SVG is outside the inline anchor profile', location)
+            else:
+                if anchor:
+                    svg.set('id', anchor.id)
+                if image.alt_text:
+                    svg.set('aria-label', image.alt_text)
+                if styles:
+                    svg.set('style', ';'.join(styles))
+                self.embedded_resources.add(resource.id)
+                tag = serialize_inline_svg(svg)
+                return f'<div class="ta-image">{tag}</div>' if block_level else tag
         try:
             uri = image_data_uri(resource)
         except (OSError, ValueError) as error:
             self.report.add(IssueSeverity.ERROR, "image", str(error), location)
             return escape(image.alt_text or f"[{resource.filename or resource.id}]")
         self.embedded_resources.add(resource.id)
-        styles = self._geometry_style(image.box, image.properties, positioned=block_level)
-        anchor = get_anchor(image)
         attributes = f' id="{escape(anchor.id, quote=True)}"' if anchor else ''
         tag = (f'<img src="{uri}" alt="{escape(image.alt_text, quote=True)}"'
                f'{attributes}{_style_attribute(styles)} loading="eager">')
@@ -536,7 +535,9 @@ class _HtmlRenderer:
                 content = self._blocks(cell.blocks, f"{location}.rows[{row_index}].cells[{cell_index}].blocks")
                 cell_styles = [*cell_border_styles.get(id(cell), []), *self._table_cell_styles(table, row_index, cell_index)]
                 cells.append(f"<{tag}{attributes}{_style_attribute(cell_styles)}>{content}</{tag}>")
-            rows.append("<tr>" + "".join(cells) + "</tr>")
+            row_anchor = row.properties.get("anchor_id")
+            row_attribute = f' id="{escape(str(row_anchor), quote=True)}"' if row_anchor else ""
+            rows.append(f"<tr{row_attribute}>" + "".join(cells) + "</tr>")
         styles = self._geometry_style(table.box, table.properties, positioned=True)
         styles.extend(border_styles)
         anchor = table.properties.get("anchor_id")
@@ -2029,9 +2030,9 @@ def _safe_mathml(value: str, *, root_anchor: str | None = None) -> str:
     for element in root.iter():
         checkpoint()
         namespace, _, name = element.tag[1:].partition("}") if element.tag.startswith("{") else (None, "", element.tag)
-        if namespace not in {None, _MATHML_NAMESPACE}:
+        if namespace not in {None, MATHML_NAMESPACE}:
             raise ValueError(f"foreign element {name!r} is not allowed")
-        if name not in _MATHML_ELEMENTS:
+        if name not in MATHML_ELEMENTS:
             raise ValueError(f"MathML element {name!r} is not allowed")
         if element is root and name != "math":
             raise ValueError("root element must be math")
@@ -2042,7 +2043,7 @@ def _safe_mathml(value: str, *, root_anchor: str | None = None) -> str:
         # Unprefixed math enters the browser's MathML parsing mode. Avoid global
         # namespace registration, which can affect concurrent serializers.
         element.tag = name
-    root.set("xmlns", _MATHML_NAMESPACE)
+    root.set("xmlns", MATHML_NAMESPACE)
     if root_anchor is not None:
         root.set('id', root_anchor)
     return ET.tostring(root, encoding="unicode", short_empty_elements=False)

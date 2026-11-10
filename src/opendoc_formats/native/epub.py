@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import posixpath
 import re
 from collections.abc import Callable
@@ -17,6 +18,22 @@ if TYPE_CHECKING:
 CONTAINER = '{urn:oasis:names:tc:opendocument:xmlns:container}'
 OPF = '{http://www.idpf.org/2007/opf}'
 PACKAGE_TYPE = 'application/oebps-package+xml'
+XML_ENCRYPTION = '{http://www.w3.org/2001/04/xmlenc#}'
+ENCRYPTION_PATH = 'META-INF/encryption.xml'
+IDPF_EMBEDDING = 'http://www.idpf.org/2008/embedding'
+FONT_OBFUSCATION_PROPERTY = 'epub_font_obfuscation'
+
+
+def idpf_font_key(identifier: str) -> bytes:
+    value = identifier.translate(str.maketrans('', '', ' \t\r\n'))
+    if not value:
+        raise ValueError('EPUB font obfuscation requires a unique package identifier')
+    return hashlib.sha1(value.encode('utf-8'), usedforsecurity=False).digest()
+
+
+def xor_idpf_font(data: bytes, key: bytes) -> bytes:
+    prefix = bytes(byte ^ key[index % len(key)] for index, byte in enumerate(data[:1040]))
+    return prefix + data[1040:]
 
 
 def local_path(base: str, href: str) -> str:

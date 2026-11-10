@@ -4,9 +4,13 @@ import base64
 import importlib.util
 import zlib
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import opendoc_formats
 from opendoc_formats.anatomy import inspect_binary
+from opendoc_formats.readers.pdf import get_pdf_info
+from opendoc_formats.support.io import validate_pdf
+from opendoc_formats.support.pdf_probe import probe_pdf
 
 
 def main():
@@ -71,6 +75,15 @@ def main():
     source += (b'9 0 obj\n<< /Type /XRef /Size 10 /Root 1 0 R /Info 7 0 R /W [1 4 2] /Index [6 4] '
                +f'/Prev {offset} /Length {len(raw)} >>\nstream\n'.encode()+raw
                +b'\nendstream\nendobj\nstartxref\n'+str(xref).encode()+b'\n%%EOF\n')
+    with TemporaryDirectory() as directory:
+        path = Path(directory)/'info.pdf'
+        for data, expected in ((original, 'Own standalone source'), (source, 'Own base ObjStm')):
+            path.write_bytes(data)
+            assert get_pdf_info(str(path)) == {'title': expected, 'author': '', 'subject': ''}
+            assert validate_pdf(path) and probe_pdf(path)[0] == 1
+            assert path.read_bytes() == data
+        path.write_bytes(original.replace(b'/Count 1', b'/Count 2'))
+        assert not validate_pdf(path)
     inventory = inspect_binary(source, pdf_source=True, pdf_decode_xrefs=True, pdf_object_streams=True,
                                pdf_resolve_xrefs=True, capture=True)
     assert dict(inventory.details)['xref_sections'] == 4

@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import io
+import re
 import xml.etree.ElementTree as ET
 from collections.abc import Callable
 from copy import deepcopy
@@ -27,7 +28,17 @@ from opendoc_model import (
 )
 
 from opendoc_formats.epub_metadata import export_dc_values
+from opendoc_formats.native.epub import (
+    CONTAINER,
+    ENCRYPTION_PATH,
+    FONT_OBFUSCATION_PROPERTY,
+    IDPF_EMBEDDING,
+    XML_ENCRYPTION,
+    idpf_font_key,
+    xor_idpf_font,
+)
 from opendoc_formats.support.cancellation import cancellable_items, cancellation_scope, checkpoint
+from opendoc_formats.support.inline_svg import SVG_TAG_CASE
 from opendoc_formats.support.io import atomic_write_bytes
 from opendoc_formats.writers.html_resources import document_images
 from opendoc_formats.writers.html_writer import write_html_model
@@ -41,12 +52,57 @@ _EPUB = "http://www.idpf.org/2007/ops"
 _VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"}
 _IMAGES = {"image/png": "png", "image/jpeg": "jpg", "image/gif": "gif", "image/svg+xml": "svg"}
 _MAX_BYTES = 64 * 1024 * 1024
-_SVG_CASE = {name.lower(): name for name in ("viewBox", "preserveAspectRatio", "gradientUnits", "gradientTransform")}
+_FONT_URL = re.compile(r'url\("data:(font/(ttf|otf));base64,([A-Za-z0-9+/=]+)"\)')
+_SVG_CASE = {
+    name.lower(): name for name in ("viewBox", "preserveAspectRatio", "gradientUnits", "gradientTransform", "spreadMethod")
+}
 
 
 def _xml(root: ET.Element) -> bytes:
     checkpoint()
     return ET.tostring(root, encoding="utf-8", xml_declaration=True)
+
+
+def _package_idpf_fonts(chapter: ET.Element, document: DocumentModel, assets: dict[str, tuple[str, bytes]]) -> set[str]:
+    """Move the marked fonts that passed HTML embedding checks into local assets."""
+    sources: dict[bytes, set[str]] = {}
+    for resource_id, resource in document.resources.items():
+        checkpoint()
+        if resource.properties.get(FONT_OBFUSCATION_PROPERTY) == IDPF_EMBEDDING and resource.data is not None:
+            sources.setdefault(hashlib.sha256(resource.data).digest(), set()).add(resource_id)
+    packaged: set[str] = set()
+    if not sources:
+        return packaged
+
+    def replace_url(match: re.Match[str]) -> str:
+        checkpoint()
+        media, suffix, encoded = match.groups()
+        raw = base64.b64decode(encoded, validate=True)
+        digest = hashlib.sha256(raw).digest()
+        if digest not in sources:
+            return match.group()
+        name = f"fonts/{digest.hex()}.{suffix}"
+        assets.setdefault(name, (media, raw))
+        packaged.update(sources[digest])
+        return f'url("{name}")'
+
+    for style in chapter.findall("./head/style"):
+        if style.text:
+            style.text = _FONT_URL.sub(replace_url, style.text)
+    return packaged
+
+
+def _font_encryption(fonts: dict[str, tuple[str, bytes]], identifier: str) -> bytes:
+    root = ET.Element(CONTAINER + "encryption")
+    key = idpf_font_key(identifier)
+    for name, (media, raw) in fonts.items():
+        checkpoint()
+        entry = ET.SubElement(root, XML_ENCRYPTION + "EncryptedData")
+        ET.SubElement(entry, XML_ENCRYPTION + "EncryptionMethod", {"Algorithm": IDPF_EMBEDDING})
+        cipher = ET.SubElement(entry, XML_ENCRYPTION + "CipherData")
+        ET.SubElement(cipher, XML_ENCRYPTION + "CipherReference", {"URI": "OPS/" + name})
+        fonts[name] = media, xor_idpf_font(raw, key)
+    return _xml(root)
 
 
 class _Xhtml(HTMLParser):
@@ -80,7 +136,7 @@ class _Xhtml(HTMLParser):
             attributes["src"] = self._image(attributes.get("src", ""))
         if not self.stack or namespace != self.stack[-1][2]:
             attributes["xmlns"] = namespace
-        element = ET.Element(tag, attributes)
+        element = ET.Element(SVG_TAG_CASE.get(tag, tag) if namespace == _SVG else tag, attributes)
         if self.stack:
             self.stack[-1][1].append(element)
         elif self.root is None:
@@ -260,6 +316,8 @@ def _write_epub_model(
         chapter = parser.root
         if chapter is None or parser.stack:
             raise ValueError("Incomplete EPUB XHTML")
+        font_assets: dict[str, tuple[str, bytes]] = {}
+        font_ids = _package_idpf_fonts(chapter, document, font_assets)
         chapters = _chapters(chapter, report)
         nav = _navigation(chapters, title, language)
         chapter_bytes = {}
@@ -275,6 +333,8 @@ def _write_epub_model(
         metadata = ET.SubElement(package, f"{{{_OPF}}}metadata")
         identifier = "urn:sha256:" + hashlib.sha256(b"".join(chapter_bytes.values())).hexdigest()
         dc.setdefault("identifier", (identifier,))
+        encryption = _font_encryption(font_assets, dc["identifier"][0]) if font_assets else None
+        parser.assets.update(font_assets)
         for name, values in dc.items():
             checkpoint()
             for index, value in enumerate(values):
@@ -314,6 +374,8 @@ def _write_epub_model(
         with ZipFile(buffer, "w", compression=ZIP_STORED) as archive:
             archive.writestr("mimetype", b"application/epub+zip")
             archive.writestr("META-INF/container.xml", _xml(container))
+            if encryption is not None:
+                archive.writestr(ENCRYPTION_PATH, encryption)
             archive.writestr("OPS/book.opf", _xml(package))
             for name, data in chapter_bytes.items():
                 checkpoint()
@@ -334,7 +396,7 @@ def _write_epub_model(
                 ):
                     report.add(IssueSeverity.LOSS, "epub.source-feature", record.issue.message, record.issue.location)
         image_ids = {image.resource_id for image, _ in document_images(document)}
-        for resource_id in document.resources.keys() - image_ids:
+        for resource_id in document.resources.keys() - image_ids - font_ids:
             checkpoint()
             report.add(
                 IssueSeverity.LOSS, "epub.unreferenced-resource",

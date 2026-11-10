@@ -7,17 +7,18 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
 from opendoc_formats.errors import InvalidDocumentError, ResourceLimitError, UnsupportedDocumentError
+from opendoc_formats.native.pdf_current_parameters import Parameters
 from opendoc_formats.native.pdf_object_links import declared_object_links
 from opendoc_formats.native.pdf_source_integers import SourceIntegers
 from opendoc_formats.native.pdf_stream_decode import decode
-from opendoc_formats.native.pdf_syntax import Name, Parser, Reference, SyntaxBudget
+from opendoc_formats.native.pdf_syntax import Name, Parser, Reference, SyntaxBudget, finish_stream
 from opendoc_formats.support.cancellation import checkpoint
 
 if TYPE_CHECKING:
     from opendoc_formats.anatomy import AnatomyLimits, BinaryItem
 
 
-def _candidate_end(data: bytes, parser: Parser, value: Any, location: str,
+def _candidate_end(parser: Parser, value: Any, location: str,
                     stream_length: Callable[[], int]) -> tuple[int, dict[str, int]]:
     """Bound an ordinary candidate without decoding or searching its stream bytes."""
     token = parser.take()
@@ -26,23 +27,19 @@ def _candidate_end(data: bytes, parser: Parser, value: Any, location: str,
     if token.value != b'stream' or not isinstance(value, dict):
         raise InvalidDocumentError(location+'expected endobj or dictionary stream')
     length = stream_length()
-    if data[parser.pos:parser.pos+1] not in (b'\r', b'\n'):
-        raise InvalidDocumentError(location+'missing stream line ending')
-    start = parser.pos+(2 if data[parser.pos:parser.pos+2] == b'\r\n' else 1)
-    end = start+length
-    if end > len(data):
-        raise InvalidDocumentError(location+'candidate Length outside source')
-    if end > parser.end:
-        raise ResourceLimitError(location+'max_part_bytes exceeded by ordinary candidate')
-    closing = Parser(data, end, parser.end-end, parser.budget)
-    if closing.take().value != b'endstream' or closing.take().value != b'endobj':
-        raise InvalidDocumentError(location+'candidate Length does not end before endstream/endobj')
-    return closing.pos, {'encoded_start': start, 'encoded_end': end}
+    try:
+        extent = finish_stream(parser, length)
+    except InvalidDocumentError as error:
+        raise InvalidDocumentError(location+str(error)) from error
+    return parser.pos, extent
 
 
 def inspect_object_streams(data: bytes, sections: list[dict[str, Any]], limits: AnatomyLimits, capture: bool,
                            budget: SyntaxBudget, remaining_items: int,
-                           remaining_bytes: int) -> tuple[tuple[BinaryItem, ...], dict[str, Any]]:
+                           remaining_bytes: int, *, info_member: tuple[int, int, int] | None = None,
+                           capture_scalar_members: bool = False,
+                           page_members: dict[str, Any] | None = None,
+                           ) -> tuple[tuple[BinaryItem, ...], dict[str, Any]]:
     from opendoc_formats.anatomy import BinaryItem
 
     references: list[dict[str, int]] = []
@@ -80,7 +77,7 @@ def inspect_object_streams(data: bytes, sections: list[dict[str, Any]], limits: 
     member_reference_items = 0
     decoded_numbers: set[int] = set()
     integers = SourceIntegers(data, sections, limits.max_part_bytes, budget)
-    parameter_references: dict[tuple[int, int, int], dict[str, tuple[Reference, int]]] = {}
+    parameter_references: dict[tuple[int, int, int], Parameters] = {}
     for (number, generation, offset), source_sections in sorted(candidates.items()):
         checkpoint()
         # Current Extends discovery may revisit a historical physical container.
@@ -100,20 +97,25 @@ def inspect_object_streams(data: bytes, sections: list[dict[str, Any]], limits: 
         syntax_kind = parser.peek().kind
         dictionary = parser.value()
         integer_sources: dict[str, list[dict[str, Any]]] = {}
+        decoded_parameters: Parameters = {}
+
+        def resolve_integer(key: str, reference: Reference) -> int:
+            resolved, evidence = integers.read(reference, parameter_contexts, item_limit=remaining_items-used_items,
+                                               byte_limit=remaining_bytes-used_bytes, location=location+key+': ')
+            integer_sources[key] = evidence
+            decoded_parameters[key] = reference, resolved
+            return resolved
 
         def integer(key: str) -> int:
             value = dictionary.get(key) if isinstance(dictionary, dict) else None
             if isinstance(value, Reference):
-                resolved, evidence = integers.read(value, parameter_contexts, item_limit=remaining_items-used_items,
-                                                   byte_limit=remaining_bytes-used_bytes, location=location+key+': ')
-                integer_sources[key] = evidence
-                return resolved
+                return resolve_integer(key, value)
             if type(value) is not int or value < 0:
                 raise UnsupportedDocumentError(location+key+' must be a nonnegative integer or supported source reference')
             return value
 
         if not isinstance(dictionary, dict) or dictionary.get('Type') != Name('ObjStm'):
-            end, stream_range = _candidate_end(data, parser, dictionary, location, lambda: integer('Length'))
+            end, stream_range = _candidate_end(parser, dictionary, location, lambda: integer('Length'))
             physical = end-offset
             if used_items+integers.items+1 > remaining_items:
                 raise ResourceLimitError(location+'max_items exceeded by ordinary candidate')
@@ -137,11 +139,11 @@ def inspect_object_streams(data: bytes, sections: list[dict[str, Any]], limits: 
             non_containers += 1
             continue
         if generation != 0:
-            raise UnsupportedDocumentError(location+'nonzero container generation outside supported profile')
+            raise InvalidDocumentError(location+'object stream container generation must be zero')
         count, start, length = (integer(key) for key in ('N', 'First', 'Length'))
         if used_items+integers.items+count+1 > remaining_items:
             raise ResourceLimitError(location+'max_items exceeded by container/members')
-        if 'F' in dictionary:
+        if dictionary.get('F') is not None:
             raise UnsupportedDocumentError(location+'external object streams are not opened')
         extends = dictionary.get('Extends')
         if extends is not None and not isinstance(extends, Reference):
@@ -159,11 +161,52 @@ def inspect_object_streams(data: bytes, sections: list[dict[str, Any]], limits: 
             raise InvalidDocumentError(location+'Length does not end before endstream/endobj')
         end = closing.pos
         physical = end-offset
+        filters = dictionary.get('Filter')
+        options = dictionary.get('DecodeParms')
+
+        def filter_name(value: Any, path: str) -> Any:
+            checkpoint()
+            if not isinstance(value, Reference):
+                return value
+            resolved, evidence = integers.read_name(value, parameter_contexts, item_limit=remaining_items-used_items,
+                                                    byte_limit=remaining_bytes-used_bytes, location=location+path+': ')
+            integer_sources[path] = evidence
+            decoded_parameters[path] = value, resolved
+            return Name(resolved)
+
+        def filter_parameters(values: Any, path: str) -> Any:
+            checkpoint()
+            if isinstance(values, Reference):
+                resolved, evidence = integers.read_parameters(
+                    values, parameter_contexts, item_limit=remaining_items-used_items,
+                    byte_limit=remaining_bytes-used_bytes, location=location+path+': ',
+                )
+                integer_sources[path] = evidence
+                decoded_parameters[path] = values, resolved
+                return resolved
+            if not isinstance(values, dict):
+                return values
+            result = values.copy()
+            for key in ('Predictor', 'Colors', 'BitsPerComponent', 'Columns', 'EarlyChange'):
+                if isinstance(reference := values.get(key), Reference):
+                    result[key] = resolve_integer(path+'/'+key, reference)
+            return result
+
+        if isinstance(filters, list):
+            filters = [filter_name(value, f'Filter[{index}]') for index, value in enumerate(filters)]
+        else:
+            filters = filter_name(filters, 'Filter')
+        if isinstance(options, list):
+            options = [filter_parameters(stage, f'DecodeParms[{index}]') for index, stage in enumerate(options)]
+        else:
+            options = filter_parameters(options, 'DecodeParms')
+        if used_items+integers.items+count+1 > remaining_items:
+            raise ResourceLimitError(location+'max_items exceeded by container/members/filter parameters')
         available = remaining_bytes-used_bytes-integers.bytes-physical
         if physical > limits.max_part_bytes or available < 0 or start > available:
             raise ResourceLimitError(location+'max_part_bytes/max_total_bytes exceeded')
-        decoded, decode_info = decode(memoryview(data)[encoded_start:encoded_end], dictionary.get('Filter'),
-                                      dictionary.get('DecodeParms'), source_start=encoded_start,
+        decoded, decode_info = decode(memoryview(data)[encoded_start:encoded_end], filters,
+                                      options, source_start=encoded_start,
                                       part_limit=limits.max_part_bytes, byte_limit=available, location=location, budget=budget)
         if start > len(decoded):
             raise InvalidDocumentError(location+'First outside decoded container')
@@ -207,18 +250,32 @@ def inspect_object_streams(data: bytes, sections: list[dict[str, Any]], limits: 
 
                 body = Parser(decoded, begin, limits.max_part_bytes, budget, stop=stop, reference_observer=observe)
                 kind = body.peek().kind
-                body.value()  # Syntax validation only; bytes are the authoritative payload.
+                is_info = (offset, index, member) == info_member
+                # The metadata reader compares repeated top-level entries from raw bytes.
+                value = body.value(allow_duplicate_keys=is_info)
                 if body.take().kind != 'eof':
                     raise InvalidDocumentError('extra tokens/stream in compressed object')
                 payload = memoryview(decoded)[begin:stop]
                 details: dict[str, Any] = {'object': member, 'generation': 0, 'index': index, 'object_stream': number,
                            'container_offset': offset, 'decoded_start': begin, 'decoded_end': stop,
                            'source_byte_range': None, 'syntax_kind': kind, 'active_resolution': False}
+                if type(value) is int and value >= 0:
+                    details['nonnegative_integer'] = value
                 if member_references:
                     details['indirect_references'] = member_references
-                member_items.append(BinaryItem(f'pdf:source-objstm={offset}/index={index}/object={member}',
+                keep_payload = capture or is_info or (
+                    capture_scalar_members and (kind == 'string' or isinstance(value, Reference)))
+                locator = f'pdf:source-objstm={offset}/index={index}/object={member}'
+                if page_members is not None and (
+                    type(value) is int
+                    or (isinstance(value, list) and all(isinstance(child, Reference) for child in value))
+                    or (isinstance(value, dict) and value.get('Type') in (Name('Catalog'), Name('Pages'), Name('Page')))
+                ):
+                    page_members[locator] = value
+                member_items.append(BinaryItem(locator,
                                                'pdf-compressed-object', len(payload), hashlib.sha256(payload).hexdigest(),
-                                               details=tuple(details.items()), payload=bytes(payload) if capture else None))
+                                               details=tuple(details.items()),
+                                               payload=bytes(payload) if keep_payload else None))
         except (InvalidDocumentError, ResourceLimitError) as error:
             raise type(error)(location+'decoded syntax: '+str(error)) from error
         container = memoryview(data)[offset:end]
@@ -232,10 +289,7 @@ def inspect_object_streams(data: bytes, sections: list[dict[str, Any]], limits: 
         if integer_sources:
             details['source_integer_observations'] = integer_sources
             details['parameter_xref_contexts'] = sorted(parameter_contexts)
-            parameter_references[(number, generation, offset)] = {
-                key: (dictionary[key], resolved) for key, resolved in (('N', count), ('First', start), ('Length', length))
-                if isinstance(dictionary[key], Reference)
-            }
+            parameter_references[(number, generation, offset)] = decoded_parameters
         items.append(BinaryItem(f'pdf:source-objstm={offset}', 'pdf-object-stream', len(container),
                                 hashlib.sha256(container).hexdigest(), details=tuple(details.items()),
                                 payload=bytes(container) if capture else None))
@@ -250,10 +304,12 @@ def inspect_object_streams(data: bytes, sections: list[dict[str, Any]], limits: 
     current_parameters = assess(parameter_references, integers, item_limit=remaining_items-used_items,
                                 byte_limit=remaining_bytes-used_bytes)
     links = declared_object_links(sections, references, items, budget, remaining_items-used_items-integers.items,
-                                  current_parameters=current_parameters)
+                                  current_parameters=current_parameters, parameters=parameter_references,
+                                  integers=integers, byte_limit=remaining_bytes-used_bytes)
     return tuple(items), {'object_streams_requested': True, 'object_streams_decoded': bool(decoded_count),
                           'decoded_object_streams': decoded_count, 'non_object_stream_candidates': non_containers,
-                          'object_stream_work_bytes': used_bytes+integers.bytes,
+                          'object_stream_work_bytes': (used_bytes+integers.bytes+links['object_stream_target_header_work_bytes']
+                                                       +links['object_stream_target_body_work_bytes']),
                           'source_integer_work_bytes': integers.bytes, 'source_integer_work_items': integers.items,
                           'object_stream_member_reference_items': member_reference_items,
                           'compressed_object_references': references,

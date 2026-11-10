@@ -229,7 +229,7 @@ def prepare_rasters(
 def draw_rasters(
     page: Any, rasters: list[PdfRaster], cancelled: Callable[[], bool], *, mapping: Any = None, page_index: int = 0,
 ) -> None:
-    import fitz
+    import pymupdf as fitz
 
     before = len(page.get_image_info()) if mapping is not None and mapping.sources else 0
     for raster in rasters:
@@ -257,7 +257,7 @@ def draw_rasters(
 
 def _draw_affine(page: Any, raster: PdfRaster) -> None:
     """Replace only the backend's newly generated image placement stream."""
-    import fitz
+    import pymupdf as fitz
 
     box = raster.image.box
     assert box is not None

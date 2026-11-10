@@ -26,7 +26,6 @@ from opendoc_formats.ooxml.package import (
     RELATIONSHIP_TYPE,
     load_package_graph,
 )
-from opendoc_formats.readers.docx_diagnostics import attach_docx_diagnostics
 from opendoc_formats.readers.docx_features import inspect_docx_features
 from opendoc_formats.readers.docx_section import read_section
 from opendoc_formats.readers.docx_style import (
@@ -35,7 +34,7 @@ from opendoc_formats.readers.docx_style import (
 )
 from opendoc_formats.readers.docx_table import read_table
 from opendoc_formats.readers.docx_text import read_block_ooxml, read_paragraph
-from opendoc_formats.support.cancellation import cancellable_items, cancellation_scope, checkpoint
+from opendoc_formats.support.cancellation import cancellable_items, cancellation_requested, cancellation_scope, checkpoint
 from opendoc_formats.support.io import check_archive_safety
 from opendoc_formats.types import Block, BlockType, DocFormat, Table, Text
 
@@ -47,7 +46,12 @@ def read_docx(path: Union[str, Path], *, include_tables: bool = True, cancelled:
 
 
 def _read_docx(path: Union[str, Path], *, include_tables: bool) -> Text:
-    from docx import Document  # type: ignore[import-not-found]
+    try:
+        from docx import Document  # type: ignore[import-not-found]
+    except ModuleNotFoundError as error:
+        if error.name not in {"docx", "lxml", "lxml.etree"}:
+            raise
+        return _read_native_docx_text(path, include_tables=include_tables)
 
     from opendoc_formats.ooxml.docx_whitespace import paragraph_text
 
@@ -86,6 +90,26 @@ def _read_docx(path: Union[str, Path], *, include_tables: bool) -> Text:
         source_format=DocFormat.DOCX,
         engine="python-docx",
     )
+
+
+def _read_native_docx_text(path: Union[str, Path], *, include_tables: bool) -> Text:
+    from opendoc_formats.docx import DocxLimits
+    from opendoc_formats.native.docx_package import NativePackage
+
+    source = Path(path)
+    if not source.is_file():
+        raise FileNotFoundError(source)
+    package = NativePackage(source, DocxLimits(), False, cancellation_requested, build_snapshot=False)
+    try:
+        paragraphs, tables = package.flat_text(include_tables=include_tables)
+    finally:
+        package.close()
+    plain = [text for text in paragraphs if text]
+    for rows in tables:
+        plain.extend(" | ".join(row) for row in cancellable_items(rows))
+    return Text(blocks=[Block(type=BlockType.PARAGRAPH, text=text) for text in paragraphs],
+                tables=[Table(rows=rows) for rows in tables], plain="\n".join(plain),
+                source_format=DocFormat.DOCX, engine="native-docx")
 
 
 def read_docx_model(
@@ -202,6 +226,8 @@ def _read_docx_model(
 
     capture_orphans(document, model, data, source, loaded_parts=native_loaded_parts, limits=limits)
     checkpoint()
+    from opendoc_formats.readers.docx_diagnostics import attach_docx_diagnostics
+
     attach_docx_diagnostics(document, model, source, limits=limits)
     return model
 

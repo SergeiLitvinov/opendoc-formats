@@ -70,7 +70,7 @@ class PdfResourceStage:
 
 
 def _rasterize_svg(raw: bytes) -> bytes:
-    import fitz
+    import pymupdf as fitz
 
     with fitz.open(stream=raw, filetype="svg") as vector:
         page = vector[0]

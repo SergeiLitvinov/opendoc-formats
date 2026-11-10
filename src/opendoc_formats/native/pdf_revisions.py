@@ -6,8 +6,8 @@ import hashlib
 import re
 from typing import TYPE_CHECKING, Any
 
-from opendoc_formats.errors import InvalidDocumentError, ResourceLimitError
-from opendoc_formats.native.pdf_syntax import SPACE, Name, Parser, SyntaxBudget
+from opendoc_formats.errors import InvalidDocumentError, ResourceLimitError, UnsupportedDocumentError
+from opendoc_formats.native.pdf_syntax import SPACE, Name, Parser, Reference, SyntaxBudget
 from opendoc_formats.support.cancellation import checkpoint
 
 if TYPE_CHECKING:
@@ -15,7 +15,8 @@ if TYPE_CHECKING:
 
 
 def inspect_pdf_source(data: bytes, limits: AnatomyLimits, capture: bool, *,
-                       decode_streams: bool = False, object_streams: bool = False, resolve_records: bool = False
+                       decode_streams: bool = False, object_streams: bool = False, resolve_records: bool = False,
+                       budget: SyntaxBudget | None = None,
                        ) -> tuple[tuple[BinaryItem, ...], dict[str, Any]]:
     from opendoc_formats.anatomy import BinaryItem
 
@@ -28,7 +29,8 @@ def inspect_pdf_source(data: bytes, limits: AnatomyLimits, capture: bool, *,
     tail = data.rfind(b'startxref', max(0, eof-limits.max_part_bytes), eof)
     if tail < 0:
         raise InvalidDocumentError('pdf:source: terminal startxref not found in bounded tail')
-    budget = SyntaxBudget(limits.max_pdf_tokens, limits.max_pdf_depth)
+    if budget is None:
+        budget = SyntaxBudget(limits.max_pdf_tokens, limits.max_pdf_depth)
     parser = Parser(data, tail, limits.max_part_bytes, budget)
     if parser.take().value != b'startxref':
         raise InvalidDocumentError('pdf:source: invalid startxref')
@@ -46,7 +48,7 @@ def inspect_pdf_source(data: bytes, limits: AnatomyLimits, capture: bool, *,
 
     def integer(dictionary: dict[str, Any], key: str, optional: bool = False) -> int | None:
         value = dictionary.get(key)
-        if optional and key not in dictionary:
+        if optional and value is None:
             return None
         if type(value) is not int or value < 0:
             raise InvalidDocumentError(f'pdf:byte={offset}: /{key} must be a direct nonnegative integer')
@@ -62,6 +64,9 @@ def inspect_pdf_source(data: bytes, limits: AnatomyLimits, capture: bool, *,
         if not 0 <= offset < len(data):
             raise InvalidDocumentError(f'pdf:byte={offset}: xref link outside source')
         if offset in seen:
+            length_source = seen[offset].get('length_source')
+            if length_source is not None and (not hybrid or length_source['table'] != ancestors[-1]):
+                raise UnsupportedDocumentError(f'pdf:byte={offset}: indirect xref Length has multiple declaration contexts')
             if hybrid and seen[offset]['kind'] != 'stream':
                 raise InvalidDocumentError(f'pdf:byte={offset}: XRefStm does not target a stream')
             if not hybrid and offset not in expanded_primary:
@@ -93,13 +98,25 @@ def inspect_pdf_source(data: bytes, limits: AnatomyLimits, capture: bool, *,
             end = dictionary_end
             kind = 'pdf-xref-stream-dictionary'
             if decode_streams:
-                from opendoc_formats.native.pdf_xref_streams import decode_xref
+                from opendoc_formats.native.pdf_xref_streams import decode_xref, hybrid_length
 
                 stream_start = parser.pos+(2 if data[parser.pos:parser.pos+2] == b'\r\n' else 1)
+                length_source = None
+                length = dictionary.get('Length')
+                if (hybrid and isinstance(length, Reference) and header[0].startswith(b'%PDF-1.')
+                        and seen[ancestors[-1]]['kind'] == 'table'):
+                    length_source = hybrid_length(data, length, seen[ancestors[-1]],
+                                                  part_limit=limits.max_part_bytes, budget=budget)
+                    total += length_source['end']-length_source['offset']
+                    count += 1
                 entries, end, stream_details = decode_xref(
                     data, stream_start, dictionary, part_limit=limits.max_part_bytes,
                     byte_limit=limits.max_total_bytes-total-decode_work_total-(stream_start-offset),
-                    item_limit=limits.max_items-count-1, budget=budget)
+                    item_limit=limits.max_items-count-1, budget=budget, length_source=length_source)
+                if length_source is not None:
+                    if length_source['offset'] < end and length_source['end'] > offset:
+                        raise InvalidDocumentError(f'pdf:byte={offset}: indirect xref Length overlaps its stream')
+                    stream_details['length_source'] = length_source
                 if end-offset > limits.max_part_bytes:
                     raise ResourceLimitError(f'pdf:byte={offset}: max_part_bytes exceeded by xref stream')
                 count += len(entries)
@@ -156,7 +173,7 @@ def inspect_pdf_source(data: bytes, limits: AnatomyLimits, capture: bool, *,
                    'prev': previous, 'xref_stream': supplement, 'hybrid_supplement': hybrid,
                    'dictionary_start': dictionary_start, 'dictionary_end': dictionary_end,
                    'stream_entries_decoded': decode_streams if stream else None, 'entries': entries,
-                   'encrypted_declared': 'Encrypt' in dictionary, **stream_details}
+                   'encrypted_declared': dictionary.get('Encrypt') is not None, **stream_details}
         raw = memoryview(data)[offset:end]
         items.append(BinaryItem(f'pdf:source-xref={offset}', kind, len(raw), hashlib.sha256(raw).hexdigest(),
                                 details=tuple(section.items()), payload=bytes(raw) if capture else None))

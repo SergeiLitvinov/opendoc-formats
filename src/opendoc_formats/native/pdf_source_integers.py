@@ -6,9 +6,25 @@ import hashlib
 from typing import Any
 
 from opendoc_formats.errors import InvalidDocumentError, ResourceLimitError, UnsupportedDocumentError
-from opendoc_formats.native.pdf_syntax import Parser, Reference, SyntaxBudget
+from opendoc_formats.native.pdf_syntax import Name, Parser, Reference, SyntaxBudget
 from opendoc_formats.native.pdf_xref_state import resolve_xrefs
 from opendoc_formats.support.cancellation import checkpoint
+
+FilterOptions = dict[str, int | None]
+FilterParameters = FilterOptions | list[FilterOptions | None]
+
+
+def _check_filter_parameters(value: FilterParameters, location: str) -> None:
+    for options in value if isinstance(value, list) else [value]:
+        checkpoint()
+        if options is None:
+            continue
+        if not isinstance(options, dict):
+            raise UnsupportedDocumentError(location+'indirect DecodeParms array requires direct dictionaries/null')
+        for option in options.values():
+            checkpoint()
+            if option is not None and (type(option) is not int or option < 0):
+                raise UnsupportedDocumentError(location+'indirect DecodeParms entries require direct nonnegative integers/null')
 
 
 class SourceIntegers:
@@ -48,7 +64,26 @@ class SourceIntegers:
 
     def read(self, reference: Reference, contexts: set[int], *, item_limit: int,
              byte_limit: int, location: str, explicit_primary: bool = False) -> tuple[int, list[dict[str, Any]]]:
+        return self._read(reference, contexts, item_limit=item_limit, byte_limit=byte_limit, location=location,
+                          explicit_primary=explicit_primary, kind='integer')
+
+    def read_name(self, reference: Reference, contexts: set[int], *, item_limit: int,
+                  byte_limit: int, location: str, explicit_primary: bool = False) -> tuple[str, list[dict[str, Any]]]:
+        return self._read(reference, contexts, item_limit=item_limit, byte_limit=byte_limit, location=location,
+                          explicit_primary=explicit_primary, kind='name')
+
+    def read_parameters(self, reference: Reference, contexts: set[int], *, item_limit: int,
+                        byte_limit: int, location: str,
+                        explicit_primary: bool = False) -> tuple[FilterParameters, list[dict[str, Any]]]:
+        return self._read(reference, contexts, item_limit=item_limit, byte_limit=byte_limit, location=location,
+                          explicit_primary=explicit_primary, kind='DecodeParms')
+
+    def _read(self, reference: Reference, contexts: set[int], *, item_limit: int, byte_limit: int,
+              location: str, explicit_primary: bool, kind: str) -> tuple[Any, list[dict[str, Any]]]:
         observations = []
+        expected = {'name': (str,), 'integer': (int,), 'DecodeParms': (dict, list)}[kind]
+        description = {'name': 'a direct name', 'integer': 'a nonnegative direct integer',
+                       'DecodeParms': 'a direct dictionary or array'}[kind]
         for context in sorted(contexts):
             checkpoint()
             if self.items >= item_limit or self.bytes > byte_limit:
@@ -58,11 +93,11 @@ class SourceIntegers:
                                              explicit_primary=explicit_primary)
             entry = index.get(reference.object)
             if entry is None or entry['state'] in {'free', 'unknown-null'}:
-                raise InvalidDocumentError(location+'indirect integer has no in-use xref record')
+                raise InvalidDocumentError(location+f'indirect {kind} has no in-use xref record')
             if entry['generation'] != reference.generation:
-                raise InvalidDocumentError(location+'indirect integer generation does not match selected xref record')
+                raise InvalidDocumentError(location+f'indirect {kind} generation does not match selected xref record')
             if entry['state'] != 'uncompressed':
-                raise UnsupportedDocumentError(location+'compressed indirect integer outside source scalar profile')
+                raise UnsupportedDocumentError(location+f'compressed indirect {kind} outside source scalar profile')
             offset = entry['offset']
             key = reference.object, reference.generation, offset
             if key not in self.scalars:
@@ -80,12 +115,16 @@ class SourceIntegers:
                     first = parser.take('integer')
                     if (first.start != offset or first.value != reference.object
                             or parser.take('integer').value != reference.generation or parser.take().value != b'obj'):
-                        raise InvalidDocumentError(location+'indirect integer header does not match xref record')
+                        raise InvalidDocumentError(location+f'indirect {kind} header does not match xref record')
                     value = parser.value()
-                    if type(value) is not int or value < 0:
-                        raise UnsupportedDocumentError(location+'indirect integer body must be a nonnegative direct integer')
+                    if isinstance(value, Name):
+                        value = value.value
+                    if type(value) not in expected or (type(value) is int and value < 0):
+                        raise UnsupportedDocumentError(location+f'indirect {kind} body must be {description}')
+                    if kind == 'DecodeParms':
+                        _check_filter_parameters(value, location)
                     if parser.take().value != b'endobj':
-                        raise InvalidDocumentError(location+'indirect integer body must end before endobj')
+                        raise InvalidDocumentError(location+f'indirect {kind} body must end before endobj')
                     raw = memoryview(self.data)[offset:parser.pos]
                     self.scalars[key] = {'object': reference.object, 'generation': reference.generation,
                                          'offset': offset, 'end': parser.pos, 'value': value,
@@ -96,11 +135,13 @@ class SourceIntegers:
                     # still count as work even though the witness is outside
                     # the scalar's hashed object range.
                     self.bytes += parser.pos-offset+int(parser.pos < len(self.data))
+            if type(self.scalars[key]['value']) not in expected:
+                raise UnsupportedDocumentError(location+f'indirect {kind} body must be {description}')
             if self.items >= item_limit:
                 raise ResourceLimitError(location+'max_items exceeded by scalar observation')
             self.items += 1
             observations.append({**self.scalars[key], 'context_xref': context, 'primary_xref': primary,
                                  'selected_xref': entry['xref_offset'], 'record_range': entry['record_range']})
-        if not observations or len({row['value'] for row in observations}) != 1:
-            raise UnsupportedDocumentError(location+'indirect integer differs across candidate xref contexts')
+        if not observations or any(row['value'] != observations[0]['value'] for row in observations[1:]):
+            raise UnsupportedDocumentError(location+f'indirect {kind} differs across candidate xref contexts')
         return observations[0]['value'], observations

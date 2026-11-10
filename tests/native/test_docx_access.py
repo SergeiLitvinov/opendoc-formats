@@ -2,10 +2,12 @@
 
 import copy
 import io
+import sys
 import zipfile
 from dataclasses import FrozenInstanceError, replace
 from hashlib import sha256
 from pathlib import Path
+from random import Random
 
 import pytest
 from docx import Document
@@ -87,6 +89,58 @@ def transform(data, part, transform_bytes):
             value = archive.read(info.filename)
             target.writestr(info, transform_bytes(value) if info.filename == part else value)
     return out.getvalue()
+
+
+@pytest.mark.parametrize("inspection_only", [False, True])
+def test_snapshots_match_without_lxml(source, monkeypatch, inspection_only):
+    from lxml import etree
+
+    from opendoc_formats.native import docx_package
+
+    def snapshot(package):
+        return package.info, package.body, package.paragraphs, package.tables, package.relationships
+
+    source = transform(source, "_rels/.rels",
+                       lambda xml: xml.replace(b"><Relationship ", b"><!--comment--><?own pi?><Relationship ", 1))
+    with monkeypatch.context() as old:
+        old.setattr(docx_package, '_parse_inspection_xml', lambda data, cancelled: docx_package.parse_xml(data, etree))
+        with DocxPackage(source, inspection_only=inspection_only) as package:
+            expected = snapshot(package)
+            assert package.relationships[0].index == 2
+
+    def forbidden(*args):
+        pytest.fail('Read-only DOCX access tried to load the XML editing backend')
+
+    monkeypatch.setattr(docx_package, 'backend', forbidden)
+    monkeypatch.setitem(sys.modules, "lxml.etree", None)
+    with DocxPackage(source, inspection_only=inspection_only) as package:
+        assert snapshot(package) == expected
+        assert package.to_bytes() == source
+    dtd = transform(source, "word/document.xml",
+                    lambda xml: xml.replace(b"?>", b"?><!DOCTYPE document [<!ENTITY e 'unsafe'>]>", 1))
+    with pytest.raises(UnsupportedDocumentError, match="DTD"):
+        DocxPackage(dtd, inspection_only=inspection_only)
+
+
+def test_cancel_inside_compressed_docx_member(source, monkeypatch):
+    buffer = io.BytesIO(source)
+    name = 'word/media/large.png'
+    with zipfile.ZipFile(buffer, 'a', compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr(name, Random(42).randbytes(800_000))
+    original = buffer.getvalue()
+    reads = []
+    read = zipfile.ZipExtFile.read
+
+    def stop_after_chunk(stream, *args, **kwargs):
+        result = read(stream, *args, **kwargs)
+        if stream.name == name:
+            reads.append(len(result))
+        return result
+
+    monkeypatch.setattr(zipfile.ZipExtFile, 'read', stop_after_chunk)
+    with pytest.raises(OperationCancelledError):
+        DocxPackage(original, cancelled=lambda: bool(reads))
+    assert len(reads) == 1 and 0 < reads[0] < 800_000
 
 
 def test_snapshot_ids_roles_body_tables_flags_and_immutability(source):
@@ -317,7 +371,7 @@ def test_input_budgets(source, limits):
         DocxPackage(source, limits=limits)
 
 
-def test_missing_optional_engine(source, monkeypatch):
+def test_missing_optional_engine_rejects_patch_before_publishing(source, monkeypatch, tmp_path):
     import opendoc_formats.native.common as common
 
     original = common.importlib.import_module
@@ -328,8 +382,13 @@ def test_missing_optional_engine(source, monkeypatch):
         return original(name)
 
     monkeypatch.setattr(common.importlib, "import_module", unavailable)
-    with pytest.raises(BackendUnavailableError, match='docx-native'):
-        DocxPackage(source)
+    output = tmp_path / "existing.docx"
+    output.write_bytes(b"previous")
+    with DocxPackage(source) as package:
+        patch = ReplaceTextSpan(package.paragraphs[0].id, 0, 6, "Changed")
+        with pytest.raises(BackendUnavailableError, match='docx-native'):
+            package.write(output, [patch])
+    assert output.read_bytes() == b"previous"
 
 
 def test_cancel_after_staging_preserves_existing_destination(source, tmp_path, monkeypatch):

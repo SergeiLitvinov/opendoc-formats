@@ -14,6 +14,7 @@ SPACE = b'\x00\t\n\x0c\r '
 DELIMITERS = SPACE+b'()<>[]{}/%'
 SKIP = re.compile(rb'[\x00\t\n\x0c\r ]+|%[^\r\n]*')
 NUMBER = re.compile(rb'[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)\Z')
+_OPAQUE_STRING = object()
 
 
 @dataclass(frozen=True)
@@ -162,7 +163,7 @@ class Parser:
             self.error('expected '+kind)
         return token
 
-    def value(self, depth: int = 0) -> Any:
+    def value(self, depth: int = 0, *, allow_duplicate_keys: bool = False) -> Any:
         if depth > self.budget.depth:
             raise ResourceLimitError(f'pdf:byte={self.pos}: max_pdf_depth exceeded')
         token = self.take()
@@ -170,7 +171,7 @@ class Parser:
             result = {}
             while self.peek().kind != '>>':
                 key = self.take('name').value.value
-                if key in result:
+                if key in result and not allow_duplicate_keys:
                     self.error('duplicate dictionary key /'+key)
                 result[key] = self.value(depth+1)
             self.take('>>')
@@ -192,8 +193,27 @@ class Parser:
                     self.reference_observer(reference, token.start, end)
                 return reference
             return token.value
-        if token.kind in {'real', 'name', 'string'}:
+        if token.kind == 'string':
+            return _OPAQUE_STRING
+        if token.kind in {'real', 'name'}:
             return token.value
         if token.kind == 'keyword' and token.value in {b'true', b'false', b'null'}:
             return {b'true': True, b'false': False, b'null': None}[token.value]
         self.error('unsupported object syntax in source dictionary')
+
+
+def finish_stream(parser: Parser, length: int) -> dict[str, int]:
+    """Advance from the stream keyword to endobj using the declared byte length."""
+    data = parser.data
+    if data[parser.pos:parser.pos+1] not in (b'\r', b'\n'):
+        parser.error('missing stream line ending')
+    start = parser.pos+(2 if data[parser.pos:parser.pos+2] == b'\r\n' else 1)
+    end = start+length
+    if end > len(data):
+        parser.error('stream Length outside source')
+    if end > parser.end:
+        raise ResourceLimitError(f'pdf:byte={parser.pos}: {parser.window_quota} exceeded by stream Length')
+    parser.pos = end
+    if parser.take().value != b'endstream' or parser.take().value != b'endobj':
+        parser.error('stream Length does not end before endstream/endobj')
+    return {'encoded_start': start, 'encoded_end': end}

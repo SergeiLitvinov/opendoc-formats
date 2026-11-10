@@ -43,6 +43,7 @@ def clean_xml(value: str, kind: str, warn: Callable[..., None], *,
         "radialgradient": "radialGradient",
         "gradientunits": "gradientUnits",
         "gradienttransform": "gradientTransform",
+        "spreadmethod": "spreadMethod",
         "clippath": "clipPath",
         "clippathunits": "clipPathUnits",
     }

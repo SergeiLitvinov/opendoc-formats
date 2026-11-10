@@ -1,6 +1,8 @@
 """Regressions for pre-publication validation, options and resource boundaries."""
 
 from pathlib import Path
+from random import Random
+from zipfile import ZIP_DEFLATED, ZipExtFile, ZipFile
 
 import pytest
 from opendoc_model import ConversionReport, DocumentModel
@@ -55,6 +57,32 @@ def test_cancellation_during_validation_preserves_previous_result(tmp_path):
     report = registry.write(DocumentModel(), target, options=ExportOptions(cancelled=lambda: cancelled))
     assert not report.success and report.issues[-1].feature == "export.cancelled"
     assert target.read_text(encoding="utf-8") == "previous"
+
+
+def test_cancellation_during_zip_crc_stops_before_next_chunk(tmp_path, monkeypatch):
+    target = tmp_path / "result.custom"
+    target.write_bytes(b"previous")
+    reads = []
+    read = ZipExtFile.read
+
+    def observe(stream, size):
+        data = read(stream, size)
+        reads.append(len(data))
+        return data
+
+    def writer(document, path):
+        with ZipFile(path, "w", compression=ZIP_DEFLATED) as archive:
+            archive.writestr("word/media/large.bin", Random(42).randbytes(800_000))
+        return ConversionReport(path)
+
+    monkeypatch.setattr(ZipExtFile, "read", observe)
+    registry = ExporterRegistry()
+    registry.register(ExporterSpec("custom", (".custom",), writer, validator=lambda path: validate_output(path, "docx")))
+    report = registry.write(DocumentModel(), target, options=ExportOptions(cancelled=lambda: bool(reads)))
+    assert not report.success and report.issues[-1].feature == "export.cancelled"
+    assert len(reads) == 1 and 0 < reads[0] < 800_000
+    assert target.read_bytes() == b"previous"
+    assert not list(tmp_path.glob(".opendoc-formats-export-*"))
 
 
 def test_verification_can_be_disabled_explicitly(tmp_path):

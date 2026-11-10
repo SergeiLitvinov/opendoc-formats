@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "lock_sha256": "83891de834357a25e006283983a9c694bc76cd889a15eed764fda26b22afeadd",
-  "configuration_sha256": "25b407c3d1bd70f558d51fe28457ed76e6425ea940385def9dafd0e1b820e06e",
+  "lock_sha256": "603b0dcd29e40b8bb2f88711fd4c5c75360dccc344d4633f77ef11c1fbf3908a",
+  "configuration_sha256": "13b70858030121056f1465eabbeb27a05c33fab9afb8012810292eadf03ea689",
   "packages": [
     {
       "name": "ast-serialize",
@@ -49,7 +49,7 @@
       "name": "backports-tarfile",
       "version": "1.2.0",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "Совместимость архивов tooling",
       "license": "MIT",
@@ -73,7 +73,8 @@
       "version": "4.15.0",
       "scopes": [
         "epub",
-        "html"
+        "html",
+        "html-dom"
       ],
       "description": "HTML/XHTML parser",
       "license": "MIT License",
@@ -100,7 +101,7 @@
       "name": "certifi",
       "version": "2026.7.22",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "Набор корневых TLS-сертификатов",
       "license": "MPL-2.0",
@@ -123,7 +124,7 @@
       "name": "cffi",
       "version": "2.1.1",
       "scopes": [
-        "dev",
+        "release",
         "pdf-layout"
       ],
       "description": "Вызов native кода",
@@ -158,7 +159,7 @@
       "name": "charset-normalizer",
       "version": "3.5.2",
       "scopes": [
-        "dev",
+        "release",
         "pdf-layout"
       ],
       "description": "Определение кодировки HTTP",
@@ -229,7 +230,7 @@
       "name": "cryptography",
       "version": "50.0.2",
       "scopes": [
-        "dev",
+        "release",
         "pdf-layout"
       ],
       "description": "Криптография PDF и системного credential storage",
@@ -280,7 +281,7 @@
       "name": "docutils",
       "version": "0.23",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "Разбор описаний reStructuredText для twine",
       "license": "Public domain + BSD-2-Clause/BSD-3-Clause; GPL-3.0-or-later для отдельных tooling files",
@@ -389,7 +390,7 @@
       "name": "id",
       "version": "1.6.1",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "Идентификация публикации tooling",
       "license": "Apache-2.0",
@@ -412,7 +413,7 @@
       "name": "idna",
       "version": "3.20",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "Международные доменные имена HTTP",
       "license": "BSD-3-Clause",
@@ -435,7 +436,7 @@
       "name": "importlib-metadata",
       "version": "9.0.1",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "Метаданные установленных пакетов",
       "license": "Apache-2.0",
@@ -481,7 +482,7 @@
       "name": "jaraco-classes",
       "version": "3.4.0",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "Вспомогательные классы credential storage",
       "license": "MIT",
@@ -504,7 +505,7 @@
       "name": "jaraco-context",
       "version": "6.1.2",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "Контекстные менеджеры tooling",
       "license": "MIT",
@@ -527,7 +528,7 @@
       "name": "jaraco-functools",
       "version": "4.6.0",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "Вспомогательные функции tooling",
       "license": "MIT",
@@ -550,7 +551,7 @@
       "name": "jeepney",
       "version": "0.9.0",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "D-Bus transport credential storage",
       "license": "MIT",
@@ -596,7 +597,7 @@
       "name": "keyring",
       "version": "25.7.0",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "Хранилище credentials twine",
       "license": "MIT",
@@ -726,7 +727,7 @@
       "name": "markdown-it-py",
       "version": "4.2.0",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "Разбор Markdown для CLI",
       "license": "MIT",
@@ -787,7 +788,7 @@
       "name": "mdurl",
       "version": "0.1.2",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "URL parser Markdown",
       "license": "MIT",
@@ -1007,7 +1008,7 @@
       "name": "more-itertools",
       "version": "11.1.0",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "Итераторы tooling",
       "license": "MIT",
@@ -1084,7 +1085,7 @@
       "name": "nh3",
       "version": "0.3.7",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "Очистка HTML описания пакета",
       "license": "MIT",
@@ -1572,6 +1573,7 @@
       "version": "26.3",
       "scopes": [
         "dev",
+        "release",
         "docs"
       ],
       "description": "Версии, требования и platform tags",
@@ -1785,7 +1787,7 @@
       "name": "pycparser",
       "version": "3.0",
       "scopes": [
-        "dev",
+        "release",
         "pdf-layout"
       ],
       "description": "C declarations для cffi",
@@ -1809,7 +1811,8 @@
       "name": "pygments",
       "version": "2.21.0",
       "scopes": [
-        "dev"
+        "dev",
+        "release"
       ],
       "description": "Подсветка кода CLI/описаний",
       "license": "BSD-2-Clause",
@@ -2166,7 +2169,7 @@
       "name": "pywin32-ctypes",
       "version": "0.2.3",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "Windows credential API tooling",
       "license": "BSD-3-Clause",
@@ -2246,7 +2249,7 @@
       "name": "readme-renderer",
       "version": "46.0",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "Проверка описания пакета",
       "license": "Apache-2.0",
@@ -2269,7 +2272,7 @@
       "name": "requests",
       "version": "2.34.2",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "HTTP tooling",
       "license": "Apache-2.0",
@@ -2296,7 +2299,7 @@
       "name": "requests-toolbelt",
       "version": "1.0.0",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "HTTP multipart публикации",
       "license": "Apache 2.0",
@@ -2319,7 +2322,7 @@
       "name": "rfc3986",
       "version": "2.0.0",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "Проверка URL tooling",
       "license": "Apache 2.0",
@@ -2342,7 +2345,7 @@
       "name": "rich",
       "version": "15.0.0",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "Форматирование CLI",
       "license": "MIT",
@@ -2399,7 +2402,7 @@
       "name": "secretstorage",
       "version": "3.5.0",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "Linux credential storage",
       "license": "BSD-3-Clause",
@@ -2446,7 +2449,8 @@
       "version": "2.10",
       "scopes": [
         "epub",
-        "html"
+        "html",
+        "html-dom"
       ],
       "description": "CSS selectors BeautifulSoup",
       "license": "MIT",
@@ -2515,7 +2519,7 @@
       "name": "twine",
       "version": "7.0.0",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "Проверка/публикация метаданных Python",
       "license": "Apache-2.0",
@@ -2542,6 +2546,7 @@
         "docx",
         "epub",
         "html",
+        "html-dom",
         "pdf-docx",
         "pptx"
       ],
@@ -2566,7 +2571,7 @@
       "name": "urllib3",
       "version": "2.8.0",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "HTTP transport tooling",
       "license": "MIT",
@@ -2677,7 +2682,7 @@
       "name": "zipp",
       "version": "4.1.1",
       "scopes": [
-        "dev"
+        "release"
       ],
       "description": "Совместимость ZIP metadata",
       "license": "MIT",

@@ -48,7 +48,7 @@ CRLF/LF, чтобы CI Windows/Linux сравнивал одинаковое с�
 | pypdfium2 | Apache-2.0 OR BSD-3-Clause у bindings, PDFium и многочисленные BUILD_LICENSES; CC-BY-4.0 для документации. Все эти условия не заменяются лицензией bindings |
 | cryptography | Apache-2.0 OR BSD-3-Clause; условия bundled криптографического runtime проверяются для фактического дистрибутива |
 | certifi, pathspec | MPL-2.0; certifi используется tooling HTTP, pathspec — mypy, не базовой моделью документа |
-| docutils | Public domain с BSD-исключениями и GPL-3.0-or-later у отдельных редакторских/tooling-файлов; транзитивный dev-пакет, не parser runtime библиотеки |
+| docutils | Public domain с BSD-исключениями и GPL-3.0-or-later у отдельных редакторских файлов. Транзитивная зависимость профиля `release` |
 
 Первичные источники: [PyMuPDF](https://pymupdf.io/licensing),
 [pdf2docx 0.5.13](https://pypi.org/pypi/pdf2docx/0.5.13/json),

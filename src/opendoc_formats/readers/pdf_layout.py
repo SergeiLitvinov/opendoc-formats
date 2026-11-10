@@ -26,7 +26,7 @@ class PdfPageReadingOrder:
 def analyze_page_reading_order(page: PdfPageGeometry) -> PdfPageReadingOrder:
     """Упорядочить блоки страницы, распознав распространённую двухколоночную схему."""
 
-    return analyze_reading_order([block for block in page.text_blocks if block.text.strip()], page.width)
+    return analyze_reading_order([block for block in page.text_blocks if block.text.strip()], page.content_size[0])
 
 
 def analyze_reading_order(blocks: list[PdfPositionedBlock], page_width: float) -> PdfPageReadingOrder:

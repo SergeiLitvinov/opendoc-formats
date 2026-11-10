@@ -3,6 +3,7 @@
 import builtins
 import hashlib
 import json
+import zlib
 from dataclasses import replace
 from io import BytesIO
 from threading import Event
@@ -13,8 +14,11 @@ from opendoc_formats.anatomy import AnatomyLimits, inspect_binary
 from opendoc_formats.errors import InvalidDocumentError, OperationCancelledError, ResourceLimitError, UnsupportedDocumentError
 
 
-def own_pdf(*, indirect=('N', 'First', 'Length'), generation=0, bodies=None, entry_kind=1, header_generation=None):
+def own_pdf(*, indirect=('N', 'First', 'Length'), generation=0, bodies=None, entry_kind=1, header_generation=None,
+            filter_parameters=b''):
     payload = b'8 0 << /Title (Own indirect parameters) >>'
+    if filter_parameters:
+        payload = zlib.compress(payload)
     values = {'N': 1, 'First': 4, 'Length': len(payload)}
     identifiers = {'N': 5, 'First': 6, 'Length': 7}
     parameters = b' '.join(b'/'+key.encode()+b' '+(
@@ -25,7 +29,7 @@ def own_pdf(*, indirect=('N', 'First', 'Length'), generation=0, bodies=None, ent
     objects = [(1, b'<< /Type /Catalog /Pages 2 0 R >>'),
                (2, b'<< /Type /Pages /Kids [3 0 R] /Count 1 >>'),
                (3, b'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 400] >>'),
-               (4, b'<< /Type /ObjStm '+parameters+b' >>\nstream\n'+payload+b'\nendstream')]
+               (4, b'<< /Type /ObjStm '+parameters+filter_parameters+b' >>\nstream\n'+payload+b'\nendstream')]
     objects += [(identifiers[key], (bodies or {}).get(key, str(value).encode())) for key, value in values.items()]
     for number, body in objects:
         locations[number] = len(data)
@@ -50,6 +54,109 @@ def own_pdf(*, indirect=('N', 'First', 'Length'), generation=0, bodies=None, ent
 
 def inspect(data, **kwargs):
     return inspect_binary(data, pdf_source=True, pdf_decode_xrefs=True, pdf_object_streams=True, **kwargs)
+
+
+@pytest.mark.parametrize('array', [False, True])
+def test_indirect_filter_name_is_observed_and_rechecked_after_revision(array):
+    value = b'[5 2 R]' if array else b'5 2 R'
+    source, locations, _ = own_pdf(indirect=(), generation=2, bodies={'N': b'/Flate#44ecode'},
+                                   filter_parameters=b' /Filter ' + value)
+    snapshot = inspect(source, capture=True)
+    container = next(item for item in snapshot.items if item.kind == 'pdf-object-stream')
+    field = 'Filter[0]' if array else 'Filter'
+    observation, = dict(container.details)['source_integer_observations'][field]
+    assert observation['offset'] == locations[5] and observation['value'] == 'FlateDecode'
+    member = next(item for item in snapshot.items if item.kind == 'pdf-compressed-object')
+    assert member.payload == b'<< /Title (Own indirect parameters) >>'
+
+    previous = int(source.rsplit(b'startxref', 1)[1].split()[0])
+    scalar = b'5 2 obj\n/LZWDecode\nendobj\n'
+    table = len(source) + len(scalar)
+    revised = source + scalar + (
+        f'xref\n5 1\n{len(source):010} 00002 n \ntrailer\n'
+        f'<< /Size 10 /Root 1 0 R /Prev {previous} >>\nstartxref\n{table}\n%%EOF\n'
+    ).encode()
+    link, = dict(inspect(revised).details)['compressed_object_current_links']
+    assert link['status'] == 'container-changed-from-decoded-parameters'
+    assert link['current_parameters']['current_parameter_values'] == {field: 'LZWDecode'}
+    assert 'member_locator' not in link
+
+
+def test_indirect_filter_name_does_not_accept_a_string_body():
+    source, _, _ = own_pdf(indirect=(), bodies={'N': b'(FlateDecode)'}, filter_parameters=b' /Filter 5 0 R')
+    with pytest.raises(UnsupportedDocumentError, match='direct name'):
+        inspect(source)
+
+
+@pytest.mark.parametrize('syntax, body, field, value', [
+    (b'5 2 R', b'<< /Predictor 1 >>', 'DecodeParms', {'Predictor': 1}),
+    (b'5 2 R', b'[<< /Predictor 1 >>]', 'DecodeParms', [{'Predictor': 1}]),
+    (b'[5 2 R]', b'<< /Predictor 1 >>', 'DecodeParms[0]', {'Predictor': 1}),
+])
+def test_indirect_decodeparms_structures_are_observed_and_rechecked(syntax, body, field, value):
+    source, locations, _ = own_pdf(indirect=(), generation=2, bodies={'N': body},
+                                   filter_parameters=b' /Filter /FlateDecode /DecodeParms ' + syntax)
+    snapshot = inspect(source, capture=True)
+    container = next(item for item in snapshot.items if item.kind == 'pdf-object-stream')
+    observation, = dict(container.details)['source_integer_observations'][field]
+    assert observation['offset'] == locations[5] and observation['value'] == value
+    assert next(item for item in snapshot.items if item.kind == 'pdf-compressed-object').payload == (
+        b'<< /Title (Own indirect parameters) >>'
+    )
+    json.dumps(snapshot.to_dict())
+
+    previous = int(source.rsplit(b'startxref', 1)[1].split()[0])
+    scalar = b'5 2 obj\n' + body.replace(b'1', b'2') + b'\nendobj\n'
+    table = len(source) + len(scalar)
+    revised = source + scalar + (
+        f'xref\n5 1\n{len(source):010} 00002 n \ntrailer\n'
+        f'<< /Size 10 /Root 1 0 R /Prev {previous} >>\nstartxref\n{table}\n%%EOF\n'
+    ).encode()
+    link, = dict(inspect(revised).details)['compressed_object_current_links']
+    assert link['status'] == 'container-changed-from-decoded-parameters'
+    assert link['current_parameters']['decoded_parameter_values'] == {field: value}
+    assert 'member_locator' not in link
+
+
+def test_indirect_decodeparms_does_not_follow_recursive_references():
+    source, _, _ = own_pdf(indirect=(), bodies={'N': b'<< /Predictor 5 0 R >>'},
+                           filter_parameters=b' /Filter /FlateDecode /DecodeParms 5 0 R')
+    with pytest.raises(UnsupportedDocumentError, match='direct nonnegative integers/null'):
+        inspect(source)
+
+
+@pytest.mark.parametrize('array', [False, True])
+def test_indirect_filter_integer_has_source_and_current_context_evidence(array):
+    options = b'<< /Predictor 5 2 R >>'
+    if array:
+        options = b'[' + options + b']'
+    source, locations, _ = own_pdf(indirect=(), generation=2,
+                                   filter_parameters=b' /Filter /FlateDecode /DecodeParms ' + options)
+    snapshot = inspect(source, capture=True)
+    container = next(item for item in snapshot.items if item.kind == 'pdf-object-stream')
+    details = dict(container.details)
+    assert details['predictor'] == 1
+    field = 'DecodeParms[0]/Predictor' if array else 'DecodeParms/Predictor'
+    observation, = details['source_integer_observations'][field]
+    assert (observation['offset'], observation['generation'], observation['value']) == (locations[5], 2, 1)
+    member = next(item for item in snapshot.items if item.kind == 'pdf-compressed-object')
+    assert member.payload == b'<< /Title (Own indirect parameters) >>'
+    link, = dict(snapshot.details)['compressed_object_current_links']
+    current = link['current_parameters']
+    assert current['decoded_parameter_values'] == {field: 1}
+    assert current['status'] == 'matched-decoded-parameters'
+
+    previous = int(source.rsplit(b'startxref', 1)[1].split()[0])
+    scalar = b'5 2 obj\n2\nendobj\n'
+    table = len(source) + len(scalar)
+    revised = source + scalar + (
+        f'xref\n5 1\n{len(source):010} 00002 n \ntrailer\n'
+        f'<< /Size 10 /Root 1 0 R /Prev {previous} >>\nstartxref\n{table}\n%%EOF\n'
+    ).encode()
+    link, = dict(inspect(revised).details)['compressed_object_current_links']
+    assert link['status'] == 'container-changed-from-decoded-parameters'
+    assert link['current_parameters']['current_parameter_values'] == {field: 2}
+    assert 'member_locator' not in link
 
 
 @pytest.mark.parametrize('fields', [('N',), ('First',), ('Length',), ('N', 'First', 'Length')])

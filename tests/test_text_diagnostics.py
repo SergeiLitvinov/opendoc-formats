@@ -199,28 +199,33 @@ def test_fallback_rebases_prior_and_page_diagnostics_without_message_deduplicati
 
 
 @pytest.mark.parametrize('format_name', ['html', 'epub'])
-def test_missing_text_backend_has_typed_source_diagnostics(tmp_path, monkeypatch, format_name):
+def test_missing_beautifulsoup_preserves_format_specific_errors(tmp_path, monkeypatch, format_name):
     import builtins
 
     from opendoc_formats.readers.epub import read_epub
     from opendoc_formats.readers.html_text import read_html
+    from opendoc_formats.support.io import ArchiveSafetyError
 
     original_import = builtins.__import__
 
     def unavailable(name, *args, **kwargs):
         if name == 'bs4':
-            raise ImportError('Own absent backend')
+            raise ModuleNotFoundError('Own absent backend', name='bs4')
         return original_import(name, *args, **kwargs)
 
     source = tmp_path/f'own.{format_name}'
     source.write_text('<p>Own text</p>', encoding='utf-8')
     original = source.read_bytes()
     monkeypatch.setattr(builtins, '__import__', unavailable)
-    result = (read_html if format_name == 'html' else read_epub)(source)
-    assert not result
-    record = result.diagnostics.preservation[0]
-    assert record.issue.code == f'{format_name}.text-backend-unavailable'
-    assert record.provenance.source_path == str(source)
+    if format_name == 'epub':
+        with pytest.raises(ArchiveSafetyError):
+            read_epub(source)
+    else:
+        result = read_html(source)
+        assert not result
+        record = result.diagnostics.preservation[0]
+        assert record.issue.code == 'html.text-backend-unavailable'
+        assert record.provenance.source_path == str(source)
     assert source.read_bytes() == original
 
 

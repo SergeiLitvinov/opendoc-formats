@@ -5,7 +5,7 @@ from collections.abc import Callable
 from opendoc_model import ArtifactLimitError, DocumentLimits, Formula, Paragraph, Table
 
 from opendoc_formats.support.cancellation import checkpoint
-from opendoc_formats.tex_tables import KEY, MULTICOLUMN_KEY, TableProfileError, layout, multicolumn_layout
+from opendoc_formats.tex_tables import KEY, MULTICOLUMN_KEY, TableProfileError, column_tokens, layout, multicolumn_layout
 
 
 def table_tex(table: Table, render: Callable[[Paragraph], str | None], *, limits: DocumentLimits | None = None) -> str | None:
@@ -35,13 +35,13 @@ def table_tex(table: Table, render: Callable[[Paragraph], str | None], *, limits
     boundaries = []
     alignments = []
     boundary = ''
-    for char in spec:
+    for token in column_tokens(spec) or ():
         checkpoint()
-        if char == '|':
-            boundary += char
+        if token == '|':
+            boundary += token
         else:
             boundaries.append(boundary)
-            alignments.append(char)
+            alignments.append(token)
             boundary = ''
     boundaries.append(boundary)
     lines = [r'\begin{tabular}{'+spec+'}']
@@ -60,21 +60,29 @@ def table_tex(table: Table, render: Callable[[Paragraph], str | None], *, limits
         position = 0
         for cell in row.cells:
             checkpoint()
-            if cell.row_span != 1 or set(cell.properties)-{MULTICOLUMN_KEY, 'source_span'} or len(cell.blocks) > 1:
+            if cell.row_span != 1 or set(cell.properties)-{MULTICOLUMN_KEY, 'source_span'}:
                 return None
-            text: str | None = ''
-            if cell.blocks:
-                paragraph = cell.blocks[0]
+            override = None
+            if MULTICOLUMN_KEY in cell.properties or cell.column_span != 1:
+                override = (multicolumn_layout(cell.properties[MULTICOLUMN_KEY]) if MULTICOLUMN_KEY in cell.properties else
+                            boundaries[position]+alignments[position]+boundaries[position+cell.column_span])
+            alignment = override.strip('|') if override is not None else alignments[position]
+            multiple = len(cell.blocks) > 1
+            if multiple and not alignment.startswith('p{'):
+                return None
+            paragraphs = []
+            for paragraph in cell.blocks:
+                checkpoint()
                 if (not isinstance(paragraph, Paragraph) or paragraph.style_id or paragraph.alignment
                         or paragraph.box or paragraph.visual_surrogate or set(paragraph.properties)-{'source_span'}
                         or any(isinstance(run, Formula) and run.display for run in paragraph.content)):
                     return None
                 text = render(paragraph) if paragraph.content else ''
-            if text is None:
-                return None
-            if MULTICOLUMN_KEY in cell.properties or cell.column_span != 1:
-                override = (multicolumn_layout(cell.properties[MULTICOLUMN_KEY]) if MULTICOLUMN_KEY in cell.properties else
-                            boundaries[position]+alignments[position]+boundaries[position+cell.column_span])
+                if text is None or (multiple and not text.strip()):
+                    return None
+                paragraphs.append(text)
+            text = r'\par '.join(paragraphs)
+            if override is not None:
                 text = '\\multicolumn{'+str(cell.column_span)+'}{'+override+'}{'+text+'}'
             values.append(text)
             position += cell.column_span

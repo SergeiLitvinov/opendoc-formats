@@ -179,6 +179,7 @@ def merge_pdf_with_ocr(
 
     for page_index, page in enumerate(geometry.pages):
         check_cancelled(cancelled, 'PDF OCR merge page')
+        width, height = page.content_size
         page_number = page_index + 1
         ocr_page = ocr_pages[page_index] if ocr_pages and page_index < len(ocr_pages) else None
 
@@ -197,8 +198,8 @@ def merge_pdf_with_ocr(
                 tables,
                 ocr_page,
                 page_number,
-                page.width,
-                page.height,
+                width,
+                height,
             )
             merged_geometry = [_merged_geometry(block, index) for index, block in enumerate(merged_blocks)]
             merged_by_id = {id(block): merged for block, merged in zip(merged_geometry, merged_blocks, strict=True)}
@@ -206,7 +207,7 @@ def merge_pdf_with_ocr(
             merged_geometry = text_blocks
             merged_by_id = {}
 
-        layout = analyze_reading_order([*merged_geometry, *tables], page.width)
+        layout = analyze_reading_order([*merged_geometry, *tables], width)
         for reading_index, ordered_block in enumerate(layout.blocks):
             check_cancelled(cancelled, 'PDF OCR merge block')
             source = ordered_block.block
@@ -221,8 +222,8 @@ def merge_pdf_with_ocr(
                 "column_count": layout.column_count,
                 "spanning": ordered_block.spanning,
                 "gutter": list(layout.gutter) if layout.gutter is not None else None,
-                "page_width": page.width,
-                "page_height": page.height,
+                "page_width": width,
+                "page_height": height,
                 "confidence": 1.0,
                 "source": "text_layer",
             }

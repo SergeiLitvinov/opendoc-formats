@@ -1,14 +1,16 @@
 """Visible text from independent DOCX originals, accepted against native Word."""
 
 import hashlib
+import sys
 from threading import Event
+from zipfile import ZipFile
 
 import opendoc_model as od
 import pytest
 
 from opendoc_formats import read_document, write_document
 from opendoc_formats.docx import DocxPackage
-from opendoc_formats.errors import OperationCancelledError
+from opendoc_formats.errors import InvalidDocumentError, OperationCancelledError
 from opendoc_formats.readers.docx import read_docx, read_docx_model
 from tools.docx_whitespace_acceptance import cases, original
 
@@ -59,12 +61,16 @@ def model_text(model):
 
 
 @pytest.mark.parametrize('name,attributes,text', cases(), ids=[item[0] for item in cases()])
-def test_native_word_text_flat_projection_two_json_docx_cycles_and_plain_export(tmp_path, name, attributes, text):
+def test_native_word_text_flat_projection_two_json_docx_cycles_and_plain_export(tmp_path, name, attributes, text, monkeypatch):
     source = tmp_path/'source.docx'
     data = original(name, attributes, text)
     source.write_bytes(data)
     expected = EXPECTED[name]
     assert read_docx(source).plain == expected
+    with monkeypatch.context() as blocked:
+        blocked.setitem(sys.modules, 'docx', None)
+        native = read_docx(source)
+        assert native.engine == 'native-docx' and native.plain == expected
     model = read_docx_model(source)
     assert model_text(model) == expected
     for cycle in range(2):
@@ -85,6 +91,66 @@ def test_native_word_text_flat_projection_two_json_docx_cycles_and_plain_export(
     assert report.success, report.issues
     assert plain.read_text(encoding='utf-8').rstrip('\n') == expected
     assert hashlib.sha256(source.read_bytes()).digest() == hashlib.sha256(data).digest()
+
+
+@pytest.mark.parametrize('shape', [(0, 0), (0, 1), (2, 0), (2, 1)])
+def test_native_flat_reader_matches_table_grid(tmp_path, monkeypatch, shape):
+    from docx import Document
+
+    from opendoc_formats.native.docx_package import NativePackage
+
+    path = tmp_path/'tables.docx'
+    document = Document()
+    document.add_paragraph('Before')
+    table = document.add_table(rows=3, cols=3)
+    table.cell(0, 0).text = 'First\tcell'
+    table.cell(0, 0).add_paragraph('Second paragraph')
+    table.cell(0, 1).text = 'Last'
+    if shape != (0, 0):
+        table.cell(0, 0).merge(table.cell(*shape))
+    document.save(path)
+    expected = read_docx(path)
+    monkeypatch.setitem(sys.modules, 'docx', None)
+    monkeypatch.setattr(NativePackage, '_snapshot', lambda self: pytest.fail('Flat text tried to build a full snapshot'))
+    native = read_docx(path)
+    assert native.plain == expected.plain and native.tables == expected.tables and native.blocks == expected.blocks
+    assert read_docx(path, include_tables=False).plain == 'Before'
+
+
+def test_native_flat_reader_preserves_physical_hmerge_cells(tmp_path, monkeypatch):
+    from docx import Document
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+
+    path = tmp_path / 'legacy.docx'
+    document = Document()
+    row = document.add_table(rows=1, cols=2).rows[0]
+    for cell, text, mode in zip(row.cells, ('Origin', 'Continuation'), ('restart', 'continue'), strict=True):
+        cell.text = text
+        merge = OxmlElement('w:hMerge')
+        merge.set(qn('w:val'), mode)
+        cell._tc.get_or_add_tcPr().append(merge)
+    document.save(path)
+    expected = read_docx(path)
+    monkeypatch.setitem(sys.modules, 'docx', None)
+    native = read_docx(path)
+    assert native.plain == expected.plain == 'Origin | Continuation'
+    assert native.tables == expected.tables
+
+
+def test_native_flat_reader_checks_crc_of_unretained_attachment(tmp_path, monkeypatch):
+    source = tmp_path / 'attachment.docx'
+    source.write_bytes(original('absent', {}, 'Text'))
+    payload = b'Unique attachment marker'
+    with ZipFile(source, 'a') as archive:
+        archive.writestr('word/media/attachment.bin', payload)
+    monkeypatch.setitem(sys.modules, 'docx', None)
+    assert 'Text' in read_docx(source).plain
+    data = source.read_bytes()
+    assert data.count(payload) == 1
+    source.write_bytes(data.replace(payload, b'X' + payload[1:]))
+    with pytest.raises(InvalidDocumentError, match='Bad CRC-32'):
+        read_docx(source)
 
 
 def test_raw_native_snapshot_preserves_source_offsets_and_untrimmed_w_t(tmp_path):

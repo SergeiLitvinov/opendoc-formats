@@ -47,21 +47,25 @@ def epub_source(tmp_path):
 
 
 @pytest.mark.parametrize('fixture', ['html_source', 'epub_source'])
-def test_stop_after_native_soup_parse_does_not_build_or_parse_next_chapter(request, fixture, monkeypatch):
+def test_stop_after_parse_does_not_build_or_parse_next_chapter(request, fixture, monkeypatch):
     from bs4 import BeautifulSoup
+
+    from opendoc_formats.readers import epub_model
 
     path = request.getfixturevalue(fixture)
     original = path.read_bytes()
     stop, parsed = Event(), []
-    initialize = BeautifulSoup.__init__
+    owner, name = (epub_model, 'parse_chapter') if fixture == 'epub_source' else (BeautifulSoup, '__init__')
+    original_parse = getattr(owner, name)
 
-    def parse(soup, *args, **kwargs):
-        initialize(soup, *args, **kwargs)
+    def parse(*args, **kwargs):
+        tree = original_parse(*args, **kwargs)
         parsed.append(True)
         stop.set()
+        return tree
 
     with monkeypatch.context() as context:
-        context.setattr(BeautifulSoup, '__init__', parse)
+        context.setattr(owner, name, parse)
         result = read_document(path, options=ImportOptions(cancelled=stop.is_set))
     assert not result.success and result.document is None and result.issues[0].code == 'import.cancelled'
     assert parsed == [True] and path.read_bytes() == original
@@ -71,16 +75,16 @@ def test_stop_after_native_soup_parse_does_not_build_or_parse_next_chapter(reque
 def test_epub_zip_stops_after_one_chapter_member_and_releases_archive(epub_source, monkeypatch):
     stop, visited = Event(), []
     original = epub_source.read_bytes()
-    read = zipfile.ZipFile.read
+    read = zipfile.ZipExtFile.read
 
-    def member(archive, name, *args, **kwargs):
-        visited.append(name)
-        payload = read(archive, name, *args, **kwargs)
-        if name == 'OPS/0.xhtml':
+    def member(stream, *args, **kwargs):
+        visited.append(stream.name)
+        payload = read(stream, *args, **kwargs)
+        if stream.name == 'OPS/0.xhtml':
             stop.set()
         return payload
 
-    monkeypatch.setattr(zipfile.ZipFile, 'read', member)
+    monkeypatch.setattr(zipfile.ZipExtFile, 'read', member)
     result = read_document(epub_source, options=ImportOptions(cancelled=stop.is_set))
     assert not result.success and result.document is None and result.issues[0].code == 'import.cancelled'
     assert 'OPS/1.xhtml' not in visited and epub_source.read_bytes() == original
@@ -192,6 +196,7 @@ def test_html_css_parser_cancel_stops_before_processing_declarations(html_source
         raise AssertionError('Cancelled CSS proceeded to declarations')
 
     monkeypatch.setattr(tinycss2, 'parse_stylesheet', stylesheet)
+    monkeypatch.setattr('opendoc_formats.readers.html_css.Cascade._simple_stylesheet', lambda self, raw: None)
     monkeypatch.setattr('opendoc_formats.readers.html_css.Cascade.declarations', forbidden)
     result = read_document(html_source, options=ImportOptions(cancelled=stop.is_set))
     assert parsed == [True] and not result.success and result.document is None

@@ -22,8 +22,9 @@ def analyze_pdf_geometry(document: PdfGeometryDocument, *, cancelled: Callable[[
     margin_roles = repeated_margin_roles(document)
     for page in document.pages:
         check_cancelled(cancelled, 'PDF semantic page')
+        width, height = page.content_size
         text_blocks = [block for block in page.text_blocks if not _covered_by_table(block, page.tables, cancelled=cancelled)]
-        layout = analyze_reading_order([*text_blocks, *page.tables], page.width)
+        layout = analyze_reading_order([*text_blocks, *page.tables], width)
         for reading_index, ordered_block in enumerate(layout.blocks):
             check_cancelled(cancelled, 'PDF semantic block')
             source = ordered_block.block
@@ -37,8 +38,8 @@ def analyze_pdf_geometry(document: PdfGeometryDocument, *, cancelled: Callable[[
                 "column_count": layout.column_count,
                 "spanning": ordered_block.spanning,
                 "gutter": list(layout.gutter) if layout.gutter is not None else None,
-                "page_width": page.width,
-                "page_height": page.height,
+                "page_width": width,
+                "page_height": height,
             }
             if isinstance(source, PdfTableGeometry):
                 rows = [list(row) for row in source.rows]

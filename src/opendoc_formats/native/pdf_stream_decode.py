@@ -14,7 +14,14 @@ from opendoc_formats.native.pdf_syntax import Name, SyntaxBudget
 from opendoc_formats.support.cancellation import checkpoint
 
 
+def _omit_null_parameters(parameters: Any) -> Any:
+    if isinstance(parameters, dict):
+        return {key: value for key, value in parameters.items() if value is not None}
+    return parameters
+
+
 def _plan(encoding: Any, parameters: Any, location: str, budget: SyntaxBudget) -> list[tuple[str, dict[str, Any]]]:
+    parameters = _omit_null_parameters(parameters)
     if encoding is None or encoding == []:
         if parameters not in (None, {}, []):
             if (not isinstance(parameters, dict) or set(parameters)-{'Predictor'}
@@ -35,7 +42,7 @@ def _plan(encoding: Any, parameters: Any, location: str, budget: SyntaxBudget) -
             raise ResourceLimitError(location+'max_pdf_tokens exceeded by filter stages')
         if not isinstance(name, Name) or name.value not in ('FlateDecode', 'LZWDecode', *BYTE_DECODERS):
             raise UnsupportedDocumentError(location+f'filter[{index}] outside Flate/LZW/RunLength/ASCII profile')
-        options = parameters[index] if isinstance(parameters, list) else parameters
+        options = _omit_null_parameters(parameters[index]) if isinstance(parameters, list) else parameters
         if options is None:
             options = {}
         if not isinstance(options, dict):

@@ -20,7 +20,7 @@ uv run python -m tools.docs generate
 uv run python -m tools.docs check
 uv build --out-dir .opendoc-formats/dist
 uv run python -m tools.release check
-uv run twine check .opendoc-formats/dist/*.whl .opendoc-formats/dist/*.tar.gz
+uv run --extra release twine check .opendoc-formats/dist/*.whl .opendoc-formats/dist/*.tar.gz
 ```
 
 `tools.release check` проверяет версии, состав обоих архивов, необходимые ресурсы,

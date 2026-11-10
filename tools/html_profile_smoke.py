@@ -1,6 +1,8 @@
 """Exercise the installed HTML extra without unrelated format engines."""
 
+import base64
 import importlib.util
+import sys
 import tempfile
 from pathlib import Path
 
@@ -43,6 +45,62 @@ def main():
         assert importlib.util.find_spec(engine) is None, f"Unexpected engine: {engine}"
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
+        if '--dom-only' in sys.argv:
+            assert importlib.util.find_spec('tinycss2') is None
+            source = root/'semantic.html'
+            source.write_text('<style>/* } ; */ body h1 + p > .marked:first-child '
+                              '{ /* ; */ color:rgba(18,52,86,0.5) !important; font-size:inherit; '
+                              'background-color:currentColor }</style>'
+                              '<body>'
+                              '<h1>Title</h1><p style="font-size:16px;font-family: \'Own Sans\', serif">Own '
+                              '<span class="marked" style="font-weight:bold;color:#000000">'
+                              'bold</span> text</p></body>', encoding='utf-8')
+            result = read_document(source)
+            assert result.success, result.issues
+            heading, paragraph = result.document.sections[0].blocks
+            assert heading.plain_text == 'Title' and paragraph.plain_text == 'Own bold text'
+            styled, = [run for run in paragraph.content if run.text == 'bold']
+            assert styled.style.bold and styled.style.color.to_hex() == '#123456'
+            assert styled.style.color.alpha == 0.5
+            assert styled.style.background == styled.style.color
+            assert styled.style.font_size == od.Length(12)
+            assert styled.style.font_family == 'Own Sans'
+            fixtures = Path(__file__).resolve().parents[1]/'tests/native/data'
+            for filename, media in [('ligature-post3.ttf', 'ttf'), ('own-cff.otf', 'otf')]:
+                data = (fixtures/filename).read_bytes()
+                payload = base64.b64encode(data).decode('ascii')
+                uri = f'data:font/{media};base64,{payload}'
+                family = 'Шрифт 文' if media == 'ttf' else 'Épreuve'
+                descriptors = (
+                    f"SRC: url({uri}); font-family: '{family}'"
+                    if media == 'ttf'
+                    else f"font-style: ITALIC; font-weight: BOLD; src: url( '{uri}' ) FORMAT(opentype); font-family: '{family}'"
+                )
+                variant = '' if media == 'ttf' else ';font-weight:700;font-style:italic'
+                source.write_text(
+                    f'<style>@FONT-FACE {{ {descriptors} }}'
+                    f'.own {{font-family:"{family}"{variant}}}</style><p class="own">AB</p>',
+                    encoding='utf-8',
+                )
+                result = read_document(source)
+                assert result.success, result.issues
+                run, = result.document.sections[0].blocks[0].content
+                ref = od.get_font_reference(run.style)
+                assert run.text == 'AB' and ref is not None and ref.face_index == 0
+                assert run.style.font_family == family
+                assert result.document.resources[ref.resource_id].data == data
+            font_roundtrip(root)
+            source.write_text('<p style="color:hsla(-240,100%,50%,.25)">'
+                              '<span style="color:currentColor">Green</span></p>', encoding='utf-8')
+            result = read_document(source)
+            assert result.success, result.issues
+            green = result.document.sections[0].blocks[0].content[0].style.color
+            assert green.to_hex().upper() == '#00FF00' and green.alpha == 0.25
+            source.write_text('<p style="color:var(--custom)">Needs CSS</p>', encoding='utf-8')
+            result = read_document(source)
+            assert not result.success and result.issues[0].code == 'import.backend-unavailable'
+            print('Installed HTML DOM profile preserves static TTF/OTF across HTML and JSON cycles without tinycss2')
+            return
         source = root / "source.html"
         source.write_text('<html lang="en"><body><table id="measurements"><caption>'
                           '<b>Own measurements</b></caption><thead><tr>'

@@ -5,7 +5,20 @@ from __future__ import annotations
 import xml.etree.ElementTree as ET
 from html.parser import HTMLParser
 from pathlib import Path
-from zipfile import ZipFile
+from zipfile import BadZipFile, ZipFile
+
+from opendoc_formats.support.cancellation import cancellation_requested, checkpoint
+from opendoc_formats.support.io import iter_archive_member
+
+
+def _check_zip_crc(archive: ZipFile) -> None:
+    for member in archive.infolist():
+        checkpoint()
+        try:
+            for _ in iter_archive_member(archive, member):
+                pass
+        except BadZipFile as error:
+            raise ValueError(f"ZIP checksum failed: {member.filename}") from error
 
 
 class _HTMLStructure(HTMLParser):
@@ -40,23 +53,21 @@ def validate_output(path: Path, format_id: str) -> None:
     elif format_id == "epub":
         from opendoc_formats.readers.epub_package import read_epub_package
 
-        package = read_epub_package(path)
+        package = read_epub_package(path, cancelled=cancellation_requested)
         with ZipFile(path) as archive:
             first = archive.infolist()[0]
             if first.filename != "mimetype" or first.compress_type != 0 or first.extra:
                 raise ValueError("EPUB mimetype must be first, stored and without extra fields")
-            if archive.testzip():
-                raise ValueError("EPUB ZIP checksum failed")
+            _check_zip_crc(archive)
         if not package.spine:
             raise ValueError("EPUB export has no spine")
         for item in package.items.values():
+            checkpoint()
             if item.media_type in {"application/xhtml+xml", "image/svg+xml"}:
                 ET.fromstring(item.content)
     elif format_id in {"docx", "pptx"}:
         with ZipFile(path) as archive:
-            bad = archive.testzip()
-            if bad:
-                raise ValueError(f"ZIP checksum failed: {bad}")
+            _check_zip_crc(archive)
             ET.fromstring(archive.read("[Content_Types].xml"))
             if format_id == "docx":
                 from docx import Document
@@ -66,14 +77,16 @@ def validate_output(path: Path, format_id: str) -> None:
                 from pptx import Presentation
 
                 part = str(Presentation(str(path)).part.partname).lstrip('/')
+            checkpoint()
             ET.fromstring(archive.read(part))
     elif format_id == "pdf":
-        import fitz
+        import pymupdf as fitz
 
         with fitz.open(path) as document:
             if document.needs_pass or document.page_count < 1:
                 raise ValueError("PDF export is encrypted or has no pages")
             for page in document:
+                checkpoint()
                 page.get_text()
     elif format_id == "latex":
         source = path.read_text(encoding="utf-8")

@@ -111,7 +111,7 @@ def test_inactive_callback_preserves_complete_json(request, kind):
     ('docx', 'docx_style', None, '_resolved_font_style'),
     ('docx', 'ooxml.package', None, '_add_part'),
     ('docx', 'docx', None, '_container_blocks'),
-    ('docx', 'docx', None, 'attach_docx_diagnostics'),
+    ('docx', 'docx_diagnostics', None, 'attach_docx_diagnostics'),
     ('pptx', 'pptx', None, '_parse_run'),
     ('pptx', 'pptx', None, '_handle_text_shape'),
     ('pptx', 'pptx_table', None, 'paragraph_metadata'),

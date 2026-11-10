@@ -72,7 +72,7 @@ def read_html_model(path: str | Path, *, resource_root: str | Path | None = None
         metadata={
             "title": soup.title.get_text() if soup.title else "",
             "source_name": source.name,
-            "engine": "bs4+tinycss2",
+            "engine": "bs4+tinycss2" if reader.css.used_backend else "bs4",
             "html": reader.diagnostics.finish(),
         },
     )

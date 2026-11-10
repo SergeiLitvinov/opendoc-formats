@@ -8,7 +8,7 @@ from threading import Event
 import opendoc_model as od
 import pytest
 
-from opendoc_formats import ExportOptions, write_document
+from opendoc_formats import ExportOptions, read_document, write_document
 from opendoc_formats.support.latex import PREAMBLE
 
 
@@ -174,3 +174,49 @@ After
         assert reference is None or image == reference
         reference = image
     assert original.read_bytes() == source_bytes
+
+
+def test_literal_paragraph_columns_roundtrip_with_multicolumn_and_wrapping(tmp_path):
+    target = tmp_path/'paragraph-columns.tex'
+    target.write_text(PREAMBLE+r'''\begin{document}
+\begin{tabular}{|p{ 2 cm }|r|p{.5in}|}
+\hline
+Paragraph column wraps several words
+
+Second paragraph with \textbf{bold} text & 7 & right cell \\
+\cline{1-2}
+\multicolumn{2}{|p{80bp}|}{Merged paragraph column also wraps\par Another paragraph} & tail \\
+\hline
+\end{tabular}
+\end{document}
+''', encoding='utf-8')
+    engine, rasterizer = shutil.which('pdflatex'), shutil.which('pdftoppm')
+    reference = None
+    for cycle in range(3):
+        result = read_document(target)
+        assert result.success, result.issues
+        table, = result.document.sections[0].blocks
+        assert isinstance(table, od.Table)
+        assert table.properties['opendoc_formats.latex_tabular']['columns'] == '|p{2cm}|r|p{.5in}|'
+        assert [block.plain_text for block in table.rows[0].cells[0].blocks] == [
+            'Paragraph column wraps several words', 'Second paragraph with bold text',
+        ]
+        assert [cell.column_span for cell in table.rows[1].cells] == [2, 1]
+        assert table.rows[1].cells[0].properties['opendoc_formats.latex_multicolumn']['columns'] == '|p{80bp}|'
+        assert [block.plain_text for block in table.rows[1].cells[0].blocks] == [
+            'Merged paragraph column also wraps', 'Another paragraph',
+        ]
+        if engine and rasterizer:
+            compiled = subprocess.run([engine, '-no-shell-escape', '-halt-on-error', '-interaction=nonstopmode',
+                                       target.name], cwd=tmp_path, capture_output=True, timeout=60)
+            assert compiled.returncode == 0, compiled.stdout.decode(errors='replace')[-2000:]
+            pixels = subprocess.run([rasterizer, '-r', '108', target.with_suffix('.pdf').name],
+                                    cwd=tmp_path, capture_output=True, check=True, timeout=60).stdout
+            assert pixels.startswith(b'P6')
+            assert reference is None or pixels == reference
+            reference = pixels
+        if cycle < 2:
+            target = tmp_path/f'paragraph-columns-{cycle}.tex'
+            document = od.document_from_json(od.document_to_json(result.document))
+            written = write_document(document, target)
+            assert written.success and written.metrics['latex_route'] == 'native-table-v1', written.issues

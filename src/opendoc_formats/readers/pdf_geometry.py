@@ -15,6 +15,7 @@ from opendoc_formats.errors import OperationCancelledError, ResourceLimitError
 from opendoc_formats.support.cancellation import check_cancelled
 
 PdfBox: TypeAlias = tuple[float, float, float, float]
+_FILL_TEXT_TOLERANCE = .01
 
 
 @dataclass(frozen=True)
@@ -104,6 +105,11 @@ class PdfPageGeometry:
     text_blocks: tuple[PdfTextBlockGeometry, ...] = ()
     image_blocks: tuple[PdfImageGeometry, ...] = ()
     tables: tuple[PdfTableGeometry, ...] = ()
+
+    @property
+    def content_size(self) -> tuple[float, float]:
+        """Dimensions in the unrotated coordinate space of extracted blocks."""
+        return (self.height, self.width) if self.rotation % 180 else (self.width, self.height)
     extracted_images: tuple[Any, ...] = ()
     vector_drawings: tuple[Any, ...] = ()
 
@@ -121,7 +127,7 @@ def extract_pdf_geometry(path: str | Path, *, exclude_interactions: bool = False
                          cancelled: Callable[[], bool] | None = None) -> PdfGeometryDocument:
     """Извлечь координатную структуру PDF через PyMuPDF."""
 
-    import fitz  # type: ignore[import-not-found]
+    import pymupdf as fitz  # type: ignore[import-not-found]
 
     check_cancelled(cancelled, 'PDF geometry')
     source = Path(path)
@@ -160,8 +166,16 @@ def extract_pdf_geometry(path: str | Path, *, exclude_interactions: bool = False
                             colorspace=str(block.get("cs-name", "")),
                         )
                     )
-            tables = _find_tables(page, warnings, page_index + 1, cancelled=cancelled,
-                                  diagnostics=diagnostics, source_path=str(source))
+            # find_tables uses the displayed orientation. Match the coordinate
+            # space of get_text and keep the original rotation in page geometry.
+            if rotation:
+                page.set_rotation(0)
+            try:
+                tables = _find_tables(page, warnings, page_index + 1, cancelled=cancelled,
+                                      diagnostics=diagnostics, source_path=str(source))
+            finally:
+                if rotation:
+                    page.set_rotation(rotation)
             check_cancelled(cancelled, 'PDF table analysis')
             pages.append(
                 PdfPageGeometry(
@@ -181,22 +195,64 @@ def extract_pdf_geometry(path: str | Path, *, exclude_interactions: bool = False
 def _find_tables(page: Any, warnings: list[str], page_number: int, *,
                  cancelled: Callable[[], bool] | None = None,
                  diagnostics: list[PreservationRecord] | None = None, source_path: str = '') -> list[PdfTableGeometry]:
-    for strategy in ("lines_strict", "text"):
+    tables: list[PdfTableGeometry] = []
+    for strategy in ("lines_strict", "text", "lines"):
         check_cancelled(cancelled, 'PDF table strategy')
         try:
-            kwargs = {"strategy": strategy}
-            if strategy == "text":
-                kwargs.update({"min_words_vertical": 2, "min_words_horizontal": 2})
-            finder = page.find_tables(**kwargs)
-            check_cancelled(cancelled, 'PDF native table analysis')
-            words = page.get_text('words') if strategy == 'text' else ()
-            tables = [
-                _table_geometry(table, index, strategy)
-                for index, table in enumerate(finder.tables)
-                if _valid_table(table, strategy) and (strategy != 'text' or _text_table_keeps_words(table, words))
-            ]
-            if tables:
-                return tables
+            fills: list[PdfBox] = []
+            if strategy == 'lines':
+                if tables:
+                    break
+                fills = _filled_rectangles(page, cancelled)
+                if len(fills) < 2:
+                    break
+            clips = _unruled_regions(page, tables) if strategy == 'text' and tables else [None]
+            for clip in clips:
+                check_cancelled(cancelled, 'PDF table region')
+                kwargs: dict[str, Any] = {"strategy": strategy}
+                words = ()
+                if strategy == 'text':
+                    kwargs.update(min_words_vertical=2, min_words_horizontal=2)
+                    if clip is not None:
+                        kwargs['clip'] = clip
+                        words = page.get_text('words', clip=clip)
+                        if len(words) < 4:
+                            continue
+                finder = page.find_tables(**kwargs)
+                check_cancelled(cancelled, 'PDF native table analysis')
+                if strategy != 'lines_strict' and clip is None:
+                    words = page.get_text('words')
+                first = tables[-1].number + 1 if tables else 0
+                tables.extend([
+                    _table_geometry(table, first+index, strategy)
+                    for index, table in enumerate(finder.tables)
+                    if _valid_table(table, strategy) and (strategy != 'text' or _text_table_keeps_words(table, words))
+                    and (clip is None or _independent_table(table.bbox, clip, tables))
+                    and (strategy != 'lines' or (_has_filled_cells(table.bbox, fills) and _text_table_keeps_words(table, words)))
+                ])
+                if strategy == 'lines':
+                    for column in _isolated_fill_columns(fills, cancelled):
+                        box = (column[0][0], column[0][1], column[-1][2], column[-1][3])
+                        if not _independent_table(box, tuple(page.rect), tables):
+                            continue
+                        if not _column_keeps_words(box, column, words, cancelled):
+                            continue
+                        rows = []
+                        for cell in column:
+                            check_cancelled(cancelled, 'PDF filled table cell')
+                            left, top, right, bottom = cell
+                            margin = _FILL_TEXT_TOLERANCE
+                            clip = (left-margin, top-margin, right+margin, bottom+margin)
+                            rows.append((page.get_text('text', clip=clip).strip(),))
+                        if not all(row[0] for row in rows):
+                            continue
+                        number = tables[-1].number + 1 if tables else 0
+                        cells = tuple(PdfTableCellGeometry(row, 0, values[0], column[row])
+                                      for row, values in enumerate(rows))
+                        tables.append(PdfTableGeometry(
+                            rows=tuple(rows), cells=cells, bbox=box, number=number, strategy='lines',
+                            column_edges=(box[0], box[2]), row_edges=tuple(cell[1] for cell in column)+(box[3],),
+                        ))
         except (OperationCancelledError, ArtifactLimitError, ResourceLimitError):
             raise
         except Exception as error:  # noqa: BLE001 - layout analysis is best-effort
@@ -211,11 +267,111 @@ def _find_tables(page: Any, warnings: list[str], page_number: int, *,
                     provenance=Provenance('pdf', source_path or None, page=page_number,
                                           object_id=f'table-analysis-{strategy}'),
                 ))
-    return []
+    return tables
+
+
+def _filled_rectangles(page: Any, cancelled: Callable[[], bool] | None) -> list[PdfBox]:
+    rectangles = set()
+    for drawing in page.get_drawings():
+        check_cancelled(cancelled, 'PDF table fill')
+        if drawing['type'] == 'f' and drawing.get('fill_opacity', 1) > 0:
+            rectangles.update(_box(tuple(item[1])) for item in drawing['items'] if item[0] == 're')
+    return list(rectangles)
+
+
+def _isolated_fill_columns(fills: list[PdfBox], cancelled: Callable[[], bool] | None) -> list[list[PdfBox]]:
+    """Find touching stacks with identical x bounds and no neighboring fill."""
+    groups: dict[tuple[float, float], list[PdfBox]] = {}
+    for fill in fills:
+        if fill[0] < fill[2] and fill[1] < fill[3]:
+            groups.setdefault((fill[0], fill[2]), []).append(fill)
+
+    def isolated(stack: list[PdfBox]) -> bool:
+        left, top, right, _ = stack[0]
+        bottom = stack[-1][3]
+        # A nearby parallel fill may be another column of the same grid.
+        gutter = min(cell[3]-cell[1] for cell in stack) * 1.5
+        own = set(stack)
+        for fill in fills:
+            check_cancelled(cancelled, 'PDF filled table neighbors')
+            if (fill not in own and fill[0] < right+gutter and fill[2] > left-gutter
+                    and fill[1] < bottom-.1 and fill[3] > top+.1):
+                return False
+        return True
+
+    result = []
+    for group in groups.values():
+        stack: list[PdfBox] = []
+        for fill in sorted(group, key=lambda box: box[1]):
+            check_cancelled(cancelled, 'PDF filled table column')
+            if stack and abs(fill[1]-stack[-1][3]) > .1:
+                if len(stack) >= 2 and isolated(stack):
+                    result.append(stack)
+                stack = []
+            stack.append(fill)
+        if len(stack) >= 2 and isolated(stack):
+            result.append(stack)
+    return sorted(result, key=lambda column: (column[0][1], column[0][0]))
+
+
+def _column_keeps_words(box: PdfBox, column: list[PdfBox], words: Any, cancelled: Callable[[], bool] | None) -> bool:
+    left, top, right, bottom = box
+    margin = _FILL_TEXT_TOLERANCE
+    starts = [cell[1] for cell in column]
+    for word in words:
+        check_cancelled(cancelled, 'PDF filled table word')
+        x0, y0, x1, y1 = word[:4]
+        if x0 < right and x1 > left and y0 < bottom and y1 > top:
+            index = bisect_right(starts, y0+margin) - 1
+            if index < 0 or x0 < left-margin or x1 > right+margin or y1 > column[index][3]+margin:
+                return False
+    return True
+
+
+def _has_filled_cells(box: PdfBox, fills: list[PdfBox]) -> bool:
+    x0, y0, x1, y1 = box
+    # A fill may overhang the snapped grid edge slightly.
+    overhang = 2.0
+    matches = 0
+    for left, top, right, bottom in fills:
+        if x0-overhang <= left < right <= x1+overhang and y0-overhang <= top < bottom <= y1+overhang:
+            matches += 1
+            if matches == 2:
+                return True
+    return False
+
+
+def _unruled_regions(page: Any, ruled: list[PdfTableGeometry]) -> list[tuple[float, float, float, float]]:
+    """Search full-width and full-height strips that avoid all ruled tables."""
+    x0, top, x1, bottom = page.rect
+
+    def gaps(start: float, end: float, axis: int) -> list[tuple[float, float]]:
+        result = []
+        for left, right in sorted((table.bbox[axis], table.bbox[axis+2]) for table in ruled):
+            left = min(left, end)
+            if start < left:
+                result.append((start, left))
+            start = max(start, right)
+        if start < end:
+            result.append((start, end))
+        return result
+
+    return ([(x0, start, x1, end) for start, end in gaps(top, bottom, 1)]
+            + [(start, top, end, bottom) for start, end in gaps(x0, x1, 0)])
+
+
+def _independent_table(box: PdfBox, clip: PdfBox, tables: list[PdfTableGeometry]) -> bool:
+    x0, y0, x1, y1 = box
+    if not (clip[0] <= x0 < x1 <= clip[2] and clip[1] <= y0 < y1 <= clip[3]):
+        return False
+    return all(
+        x1 <= left or right <= x0 or y1 <= top or bottom <= y0
+        for left, top, right, bottom in (table.bbox for table in tables)
+    )
 
 
 def _text_table_keeps_words(table: Any, words: Any) -> bool:
-    """Virtual text-table edges must not cut native words into different cells."""
+    """Reject virtual edges that split words or ordinary same-line word spacing."""
     bands = []
     for row in table.rows:
         cells = [cell for cell in row.cells if cell is not None]
@@ -224,14 +380,21 @@ def _text_table_keeps_words(table: Any, words: Any) -> bool:
                           sorted({coordinate for cell in cells for coordinate in (cell[0], cell[2])})))
     bands.sort(key=lambda band: band[0])
     starts = [band[0] for band in bands]
+    previous = None
     for word in words:
         x0, y0, x1, y1 = word[:4]
+        start = x0
+        if previous is not None and previous[5:7] == word[5:7]:
+            gap = x0 - previous[2]
+            if 0 <= gap < min(y1-y0, previous[3]-previous[1]) / 3:
+                start = previous[2]
+        previous = word
         center = (y0 + y1) / 2
         index = bisect_right(starts, center) - 1
         if index < 0 or center > bands[index][1]:
             continue
         edges = bands[index][2][1:-1]
-        edge = bisect_right(edges, x0 + .5)
+        edge = bisect_right(edges, start + .5)
         if edge < len(edges) and edges[edge] < x1 - .5:
             return False
     return True
@@ -239,6 +402,9 @@ def _text_table_keeps_words(table: Any, words: Any) -> bool:
 
 def _valid_table(table: Any, strategy: str) -> bool:
     rows, row_indices, column_indices = _table_axes(table)
+    if strategy == 'lines' and table.row_count == 1:
+        # A one-row grid needs fill evidence and text in every cell.
+        return len(row_indices) == 1 and len(column_indices) == table.col_count >= 2
     if len(row_indices) < 2 or len(column_indices) < 2:
         return False
     cells = [rows[row][column].strip() for row in row_indices for column in column_indices]
@@ -288,7 +454,7 @@ def _text_table_has_regular_row_spacing(
 
 def _table_geometry(table: Any, number: int, strategy: str) -> PdfTableGeometry:
     rows, row_indices, column_indices = _table_axes(table)
-    if strategy == 'lines_strict':
+    if strategy != 'text':
         row_indices = list(range(len(rows)))
         column_indices = list(range(max(map(len, rows), default=0)))
     extracted = tuple(tuple(rows[row][column] for column in column_indices) for row in row_indices)
@@ -367,7 +533,7 @@ def _text_block(block: dict[str, Any], number: int) -> PdfTextBlockGeometry:
 def _line_quad(line: dict[str, Any]) -> tuple[tuple[float, float], ...]:
     if not line.get('spans') or _point(line.get('dir'), default=(1.0, 0.0)) == (1.0, 0.0):
         return ()
-    import fitz
+    import pymupdf as fitz
 
     quad = fitz.recover_line_quad(line)
     return tuple((float(point.x), float(point.y)) for point in (quad.ul, quad.ur, quad.ll, quad.lr))

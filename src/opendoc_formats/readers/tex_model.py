@@ -44,12 +44,12 @@ from opendoc_model import (
 
 from opendoc_formats.errors import InvalidDocumentError, OperationCancelledError, ResourceLimitError
 from opendoc_formats.readers.tex_source import TexToken, load_tex_source
-from opendoc_formats.support.cancellation import cancellation_requested, cancellation_scope
+from opendoc_formats.support.cancellation import cancellable_items, cancellation_requested, cancellation_scope
 from opendoc_formats.tex_headings import CLASS_OPTIONS_KEY, PreambleProfileError, class_options, heading_commands
 from opendoc_formats.tex_lists import paragraph_markers
 from opendoc_formats.tex_math import formula_markers
 from opendoc_formats.tex_tables import KEY as TABLE_KEY
-from opendoc_formats.tex_tables import MULTICOLUMN_KEY, column_spec, multicolumn, split_tabular
+from opendoc_formats.tex_tables import MULTICOLUMN_KEY, column_tokens, multicolumn, split_tabular
 
 _HEADINGS = {"section": 1, "subsection": 2, "subsubsection": 3, "paragraph": 4, "subparagraph": 5, "chapter": 1}
 _STYLES = {"textbf": "bold", "textit": "italic", "emph": "italic", "underline": "underline", "texttt": "monospace",
@@ -178,12 +178,14 @@ class _Parser:
             self.index = saved
             return False
         declaration, group = self.group()
-        columns = column_spec(declaration)
-        if columns is None:
+        spec = column_tokens(declaration)
+        if spec is None:
             self.index = saved
             return False
+        columns = ''.join(spec)
+        alignments = [item for item in spec if item != '|']
         maximum = (self.limits or DocumentLimits()).max_nodes-self.table_cells
-        count = sum(char in 'lcr' for char in columns)
+        count = len(alignments)
         if count > maximum:
             raise ResourceLimitError('LaTeX tabular columns exceed max_nodes work budget')
         source = split_tabular(self.tokens, self.index, group.end, count, maximum)
@@ -205,9 +207,16 @@ class _Parser:
                 if content is None or logical_width+content.column_span > count:
                     self.index = saved
                     return False
+                alignment = (content.columns.strip('|') if content.columns is not None else alignments[logical_width])
                 logical_width += content.column_span
                 span = content.span
-                child = _Parser(self.path, self.text, self.tokens[span.first:span.stop], self.cancelled, self.limits,
+                tokens = self.tokens[span.first:span.stop]
+                paragraph_column = alignment.startswith('p{')
+                if not paragraph_column and any(item.kind == 'command' and item.value == 'par'
+                                                for item in cancellable_items(tokens)):
+                    self.index = saved
+                    return False
+                child = _Parser(self.path, self.text, tokens, self.cancelled, self.limits,
                                 parent=self, source_range=(span.start, span.end))
                 child.walk(style)
                 child.flush()
@@ -215,7 +224,8 @@ class _Parser:
                 if child.math_marker_index != len(child.math_markers):
                     raise InvalidDocumentError('Unattached native formula metadata in tabular cell')
                 consumed_math += child.math_marker_index
-                if (child.records or child.metadata or child.labels or len(child.blocks) > 1
+                if (child.records or child.metadata or child.labels
+                        or (len(child.blocks) > 1 and not paragraph_column)
                         or any(not isinstance(block, Paragraph) or set(block.properties)-{'source_span'}
                                or any(isinstance(run, Formula) and run.display
                                       or isinstance(run, TextRun) and ('latex_reference' in run.properties or '\n' in run.text)

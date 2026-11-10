@@ -98,11 +98,63 @@ def test_stream_records_remain_physical_across_hybrid_and_incremental_links(hybr
     assert len(reader.pages) == 1 and reader.metadata.title == 'Own appended metadata'
 
 
+@pytest.mark.parametrize('state', ['n', 'f'])
+def test_hybrid_indirect_length_uses_only_declaring_table(state):
+    data, offsets, _ = own_stream_pdf()
+    prefix, marker, suffix = data[offsets[6]:].partition(b'/Length ')
+    length, _, suffix = suffix.partition(b' ')
+    stream = prefix + marker + b'7 0 R ' + suffix.split(b'\nstartxref\n')[0] + b'\n'
+    data = data[:offsets[6]] + stream
+    witness = len(data)
+    body = b'7 0 obj\n' + length + b'\nendobj'
+    data += body + b'\n'
+    table = len(data)
+    data += (f'xref\n7 1\n{witness:010} 00000 {state} \ntrailer\n'
+             f'<< /Size 8 /Root 1 0 R /XRefStm {offsets[6]} >>\nstartxref\n{table}\n%%EOF\n').encode()
+    if state == 'f':
+        with pytest.raises(UnsupportedDocumentError, match='in-use entry'):
+            inspect_binary(data, pdf_source=True, pdf_decode_xrefs=True)
+        return
+    result = inspect_binary(data, pdf_source=True, pdf_decode_xrefs=True, capture=True)
+    details = dict(result.items[1].details)
+    assert details['length_source'] == {
+        'object': 7, 'generation': 0, 'offset': witness, 'end': witness+len(body),
+        'value': int(length), 'table': table,
+    }
+    assert details['encoded_end']-details['encoded_start'] == int(length)
+    assert result.items[1].payload == stream.rstrip()
+    with pytest.raises(UnsupportedDocumentError, match='direct nonnegative Length'):
+        inspect_binary(data.replace(b'%PDF-1.7', b'%PDF-2.0', 1), pdf_source=True, pdf_decode_xrefs=True)
+
+
 def test_single_filter_array_and_explicit_no_prediction():
     data, _, _ = own_stream_pdf(extra=b'/DecodeParms [<< /Predictor 1 >>]')
     data = data.replace(b'/Filter /FlateDecode', b'/Filter [/FlateDecode]')
     result = inspect_binary(data, pdf_source=True, pdf_decode_xrefs=True)
     assert dict(result.items[0].details)['decoded_bytes'] == 49
+
+
+@pytest.mark.parametrize('flate, params', [
+    (False, b'<< /Predictor null /Unknown null >>'),
+    (True, b'<< /Predictor null /Colors null /Unknown null >>'),
+    (True, b'[<< /Predictor null /Unknown null >>]'),
+])
+def test_null_filter_dictionary_values_are_equivalent_to_omission(flate, params):
+    data, _, raw = own_stream_pdf(
+        flate=flate, extra=b'/Index null /F null /Prev null /XRefStm null /Encrypt null /DecodeParms ' + params,
+    )
+    item, = inspect_binary(data, pdf_source=True, pdf_decode_xrefs=True, capture=True).items
+    assert dict(item.details)['decoded_bytes'] == len(raw)
+    assert dict(item.details)['predictor'] == 1
+    assert dict(item.details)['index'] == [0, 7]
+    assert not dict(item.details)['encrypted_declared']
+    assert b'/Unknown null' in item.payload
+
+
+def test_opaque_filter_parameter_string_is_not_treated_as_null():
+    data, _, _ = own_stream_pdf(extra=b'/DecodeParms << /Predictor (not null) >>')
+    with pytest.raises(UnsupportedDocumentError, match='predictor'):
+        inspect_binary(data, pdf_source=True, pdf_decode_xrefs=True)
 
 
 @pytest.mark.parametrize('extra,widths,index,payload,exception', [

@@ -12,9 +12,16 @@ from dataclasses import dataclass, fields
 from hashlib import sha256
 from pathlib import Path
 
-from opendoc_formats.errors import BackendUnavailableError, InvalidDocumentError, OfficeTimeoutError, UnsupportedDocumentError
-from opendoc_formats.native.common import Cancellation, backend, check_cancel, positive_int, positive_number, publish, read_source
+from opendoc_formats.errors import (
+    BackendUnavailableError,
+    InvalidDocumentError,
+    OfficeTimeoutError,
+    ResourceLimitError,
+    UnsupportedDocumentError,
+)
+from opendoc_formats.native.common import Cancellation, check_cancel, positive_int, positive_number, publish, read_source
 from opendoc_formats.pdf import PdfDocument, PdfLimits
+from opendoc_formats.support.cancellation import cancellation_scope
 
 _CANDIDATES = (
     Path(r"C:\Program Files\LibreOffice\program\soffice.com"),
@@ -111,7 +118,6 @@ def convert_office_to_pdf(
     program = Path(executable) if executable is not None else find_libreoffice()
     if program is None or not program.is_file():
         raise BackendUnavailableError("LibreOffice executable is unavailable")
-    backend("pymupdf", "pdf")  # Fail before launching when staged PDF validation cannot be performed.
     with tempfile.TemporaryDirectory(prefix="opendoc-formats-office-") as directory:
         work = Path(directory)
         profile = work / "profile"
@@ -161,12 +167,22 @@ def convert_office_to_pdf(
             _kill_process_tree(process)
         produced = work / "input.pdf"
         result_data = read_source(produced, limits.max_output_bytes, cancelled)
-        with PdfDocument(
-            result_data,
-            limits=PdfLimits(max_input_bytes=limits.max_output_bytes, max_pages=limits.max_pages),
-            cancelled=cancelled,
-        ) as pdf:
-            page_count = pdf.page_count
+        try:
+            with PdfDocument(
+                result_data,
+                limits=PdfLimits(max_input_bytes=limits.max_output_bytes, max_pages=limits.max_pages),
+                cancelled=cancelled,
+            ) as pdf:
+                page_count = pdf.page_count
+        except BackendUnavailableError:
+            from opendoc_formats.native.pdf_metadata import read_page_count
+
+            with cancellation_scope(cancelled, "LibreOffice output PDF validation", inherit=True):
+                page_count = read_page_count(result_data)
+            if page_count > limits.max_pages:
+                raise ResourceLimitError(f"PDF exceeds {limits.max_pages} pages")
+            if not page_count:
+                raise InvalidDocumentError("PDF contains no pages")
         target = publish(result_data, output, limits.max_output_bytes, cancelled)
         return OfficeConversionResult(target, page_count, len(result_data), sha256(result_data).hexdigest())
 

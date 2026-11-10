@@ -7,12 +7,14 @@ import hashlib
 import io
 import re
 import stat
+import xml.etree.ElementTree as ET
 import zipfile
 import zlib
 from collections import defaultdict
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
 from pathlib import PurePosixPath
-from typing import Any
+from typing import Any, cast
+from weakref import ReferenceType, ref
 
 from opendoc_model import ConversionIssue, IssueSeverity
 
@@ -46,6 +48,7 @@ from opendoc_formats.errors import (
 )
 from opendoc_formats.native.common import Cancellation, Source, backend, check_cancel, read_source
 from opendoc_formats.native.docx_uri import bind, candidates
+from opendoc_formats.support.io import iter_archive_member, read_archive_member
 
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 M = "{http://schemas.openxmlformats.org/officeDocument/2006/math}"
@@ -71,6 +74,60 @@ def parse_xml(data: bytes, engine: Any) -> Any:
             raise UnsupportedDocumentError("DTD and entities are not accepted in document XML")
         return root
     except engine.XMLSyntaxError as error:
+        raise InvalidDocumentError(f"Invalid document XML: {error}") from error
+
+
+class _InspectionElement(ET.Element):
+    parent: ReferenceType[_InspectionElement] | None = None
+
+    def getparent(self) -> _InspectionElement | None:
+        return self.parent() if self.parent is not None else None
+
+    def iterancestors(self, tag: str | None = None) -> Iterator[_InspectionElement]:
+        parent = self.getparent()
+        while parent is not None:
+            if tag is None or parent.tag == tag:
+                yield parent
+            parent = parent.getparent()
+
+    def iterdescendants(self, tag: str) -> Iterator[ET.Element]:
+        for child in self:
+            yield from child.iter(tag)
+
+
+class _InspectionBuilder(ET.TreeBuilder):
+    def __init__(self, cancelled: Cancellation | None) -> None:
+        super().__init__(element_factory=_InspectionElement, insert_comments=True, insert_pis=True)
+        self._stack: list[_InspectionElement] = []
+        self._cancelled = cancelled
+
+    def start(self, tag: str, attrs: dict[str, str]) -> _InspectionElement:
+        check_cancel(self._cancelled)
+        if len(self._stack) >= 256:
+            raise ResourceLimitError("DOCX XML nesting exceeds inspection limit")
+        element = cast(_InspectionElement, super().start(tag, attrs))
+        if self._stack:
+            element.parent = ref(self._stack[-1])
+        self._stack.append(element)
+        return element
+
+    def end(self, tag: str) -> _InspectionElement:
+        check_cancel(self._cancelled)
+        self._stack.pop()
+        return cast(_InspectionElement, super().end(tag))
+
+    def doctype(self, name: str, pubid: str | None, system: str | None) -> None:
+        raise UnsupportedDocumentError("DTD and entities are not accepted in document XML")
+
+
+def _parse_inspection_xml(data: bytes, cancelled: Cancellation | None) -> ET.Element:
+    parser = ET.XMLParser(target=_InspectionBuilder(cancelled))
+    try:
+        for start in range(0, len(data), 65536):
+            check_cancel(cancelled)
+            parser.feed(data[start:start+65536])
+        return parser.close()
+    except ET.ParseError as error:
         raise InvalidDocumentError(f"Invalid document XML: {error}") from error
 
 
@@ -160,25 +217,93 @@ def _safe_rewrite(paragraph: Any) -> bool:
 
 class NativePackage:
     def __init__(self, source: Source, limits: DocxLimits, allow_macros: bool, cancelled: Cancellation | None, *,
-                 inspection_only: bool = False) -> None:
+                 inspection_only: bool = False, build_snapshot: bool = True) -> None:
         self.limits = limits
         self.allow_macros = allow_macros
         self.cancelled = cancelled
         self.inspection_only = inspection_only
         self.closed = False
         self._data = read_source(source, limits.max_input_bytes, cancelled)
-        self._engine = backend("lxml.etree", "docx-native")
         self._roots: dict[str, Any] = {}
         self._entries: list[tuple[zipfile.ZipInfo, bytes]] = []
+        self._paragraph_nodes: dict[str, Any] = {}
+        self._row_nodes: dict[str, Any] = {}
         self._comment = b""
-        self._load()
-        self._snapshot()
+        self._load(retain_payloads=build_snapshot)
+        if build_snapshot:
+            self._snapshot()
         check_cancel(cancelled)
 
     def check_open(self) -> None:
         if self.closed:
             raise DocumentClosedError("DOCX context is closed")
         check_cancel(self.cancelled)
+
+    def flat_text(self, *, include_tables: bool) -> tuple[list[str], list[list[list[str]]]]:
+        from opendoc_formats.ooxml.docx_whitespace import paragraph_element_text
+
+        self.check_open()
+        root = self._roots[self._main]
+        body = root.find(W + "body")
+        paragraph_count = 0
+        projected_chars = 0
+
+        def project(node: ET.Element) -> str:
+            nonlocal paragraph_count
+            check_cancel(self.cancelled)
+            paragraph_count += 1
+            if paragraph_count > self.limits.max_paragraphs:
+                raise ResourceLimitError("DOCX flat text paragraph count exceeds limit")
+            return paragraph_element_text(node, root)
+
+        paragraphs = []
+        for node in body.iterfind(W + "p"):
+            text = project(node)
+            projected_chars += len(text) + 1
+            if projected_chars > self.limits.max_text_chars:
+                raise ResourceLimitError("DOCX flat text exceeds character limit")
+            paragraphs.append(text)
+        tables = []
+        slots = 0
+        if include_tables:
+            for table in body.findall(W + "tbl"):
+                rows = []
+                previous: dict[int, tuple[int, str]] = {}
+                for row in table.findall(W + "tr"):
+                    check_cancel(self.cancelled)
+                    column = _flat_grid_value(row.find(W + "trPr"), "gridBefore", default=0, minimum=0)
+                    active: dict[int, tuple[int, str]] = {}
+                    cells = []
+                    for cell in row.findall(W + "tc"):
+                        check_cancel(self.cancelled)
+                        properties = cell.find(W + "tcPr")
+                        # Legacy hMerge keeps separate physical cells in the flat projection.
+                        span = _flat_grid_value(properties, "gridSpan", default=1, minimum=1)
+                        slots += span
+                        if slots > self.limits.max_paragraphs:
+                            raise ResourceLimitError("DOCX flat text table grid exceeds slot limit")
+                        merge = properties.find(W + "vMerge") if properties is not None else None
+                        mode = merge.get(W + "val", "continue") if merge is not None else None
+                        if mode == "continue":
+                            origin = previous.get(column)
+                            if origin is None or origin[0] != span:
+                                raise InvalidDocumentError("DOCX vertical merge has no matching cell above")
+                            text = origin[1]
+                        elif mode in (None, "restart"):
+                            text = "\n".join(project(node) for node in cell.iterfind(W + "p"))
+                        else:
+                            raise InvalidDocumentError("Invalid DOCX vertical merge value")
+                        if mode is not None:
+                            active[column] = span, text
+                        projected_chars += span * (len(text) + 3)
+                        if projected_chars > self.limits.max_text_chars:
+                            raise ResourceLimitError("DOCX flat text table projection exceeds text limit")
+                        cells.extend([text] * span)
+                        column += span
+                    rows.append(cells)
+                    previous = active
+                tables.append(rows)
+        return paragraphs, tables
 
     def close(self) -> None:
         self.closed = True
@@ -192,7 +317,10 @@ class NativePackage:
         self.tables = ()
         self.body = ()
 
-    def _load(self) -> None:
+    def _load(self, *, retain_payloads: bool = True) -> None:
+        def check() -> None:
+            check_cancel(self.cancelled)
+
         try:
             with zipfile.ZipFile(io.BytesIO(self._data)) as archive:
                 infos = archive.infolist()
@@ -226,18 +354,25 @@ class NativePackage:
                         raise ResourceLimitError("DOCX compression ratio exceeds limit")
                 self._comment = archive.comment
                 for info in infos:
-                    check_cancel(self.cancelled)
-                    data = archive.read(info)
+                    check()
+                    is_xml = info.filename.endswith((".xml", ".rels"))
+                    if not retain_payloads and not is_xml:
+                        size = sum(len(chunk) for chunk in iter_archive_member(archive, info, check=check))
+                        if size != info.file_size:
+                            raise InvalidDocumentError("DOCX ZIP size mismatch")
+                        continue
+                    data = read_archive_member(archive, info, check=check)
                     if len(data) != info.file_size:
                         raise InvalidDocumentError("DOCX ZIP size mismatch")
-                    self._entries.append((copy.copy(info), data))
-                    if info.filename.endswith((".xml", ".rels")):
-                        self._roots[info.filename] = parse_xml(data, self._engine)
+                    if retain_payloads:
+                        self._entries.append((copy.copy(info), data))
+                    if is_xml:
+                        self._roots[info.filename] = _parse_inspection_xml(data, self.cancelled)
         except (zipfile.BadZipFile, OSError, RuntimeError, NotImplementedError, zlib.error, EOFError, UnicodeError) as error:
             raise InvalidDocumentError(f"Cannot read DOCX ZIP: {error}") from error
-        self._check_package()
+        self._check_package(seen, retain_payloads=retain_payloads)
 
-    def _check_package(self) -> None:
+    def _check_package(self, names: set[str], *, retain_payloads: bool) -> None:
         content_types = self._roots.get("[Content_Types].xml")
         root_rels = self._roots.get("_rels/.rels")
         if (
@@ -250,7 +385,6 @@ class NativePackage:
         main_rels = [item for item in root_rels if item.get("Type") == OFFICE_DOCUMENT]
         if len(main_rels) != 1 or main_rels[0].get("TargetMode") == "External":
             raise InvalidDocumentError("DOCX must have one internal main document relationship")
-        names = {info.filename for info, _ in self._entries}
         target = bind(None, main_rels[0].get('Target', ''), names, '_rels/.rels#officeDocument/@Target', self.cancelled)
         root = self._roots.get(target)
         if root is None or root.tag != W + "document" or root.find(W + "body") is None:
@@ -275,14 +409,16 @@ class NativePackage:
             "application/vnd.ms-word.template.macroEnabledTemplate.main+xml",
         }:
             raise InvalidDocumentError("Main part does not declare a DOCX/DOTX content type")
-        relationship_issues = self._validate_relationships()
+        relationship_issues = self._validate_relationships(names)
         content = " ".join(item.get("ContentType", "") for item in content_types)
-        has_macros = "macroenabled" in content.lower() or any("vbaproject" in info.filename.lower() for info, _ in self._entries)
-        has_signatures = "digital-signature" in content.lower() or any(
-            info.filename.lower().startswith("_xmlsignatures/") for info, _ in self._entries
-        )
+        has_macros = "macroenabled" in content.lower() or any("vbaproject" in name.lower() for name in names)
         if has_macros and not self.allow_macros:
             raise UnsupportedDocumentError("Macros require allow_macros=True; they are never executed")
+        if not retain_payloads:
+            return
+        has_signatures = "digital-signature" in content.lower() or any(
+            name.lower().startswith("_xmlsignatures/") for name in names
+        )
         self.info = DocxPackageInfo(
             hashlib.sha256(self._data).hexdigest(),
             tuple(
@@ -295,8 +431,7 @@ class NativePackage:
             issues=relationship_issues,
         )
 
-    def _validate_relationships(self) -> tuple[ConversionIssue, ...]:
-        names = {info.filename for info, _ in self._entries}
+    def _validate_relationships(self, names: set[str]) -> tuple[ConversionIssue, ...]:
         issues = []
         snapshots = []
         for name, root in self._roots.items():
@@ -610,7 +745,14 @@ class NativePackage:
             if len(self._data) > self.limits.max_output_bytes:
                 raise ResourceLimitError("DOCX output exceeds limit")
             return self._data, ()
-        roots = {name: copy.deepcopy(self._roots[name]) for name in changed}
+        engine = backend("lxml.etree", "docx-native")
+        # Reopen the original bytes for editing so namespace prefixes, comments
+        # and untouched parts do not go through ElementTree serialization.
+        roots = {}
+        for info, original in self._entries:
+            if info.filename in changed:
+                check_cancel(self.cancelled)
+                roots[info.filename] = parse_xml(original, engine)
         paragraphs: dict[str, Any] = {}
         rows: dict[str, Any] = {}
         for part, root in roots.items():
@@ -622,32 +764,32 @@ class NativePackage:
         for key, group in spans.items():
             for patch in sorted(group, key=lambda p: (p.start, p.end), reverse=True):
                 check_cancel(self.cancelled)
-                _replace_span(paragraphs[key], patch.start, patch.end, patch.text, self._engine)
+                _replace_span(paragraphs[key], patch.start, patch.end, patch.text, engine)
         for patch in patches:
             check_cancel(self.cancelled)
             if isinstance(patch, SetParagraphText):
-                _set_paragraph(paragraphs[patch.paragraph_id], patch.text, patch.append, self._engine)
+                _set_paragraph(paragraphs[patch.paragraph_id], patch.text, patch.append, engine)
             elif isinstance(patch, InsertParagraph):
-                _insert(paragraphs[patch.anchor_id], _new_paragraph(patch.text, self._engine), patch.position)
+                _insert(paragraphs[patch.anchor_id], _new_paragraph(patch.text, engine), patch.position)
             elif isinstance(patch, InsertTableRow):
                 row = rows[patch.anchor_row_id]
                 columns = len(row.getparent().findall("./" + W + "tblGrid/" + W + "gridCol"))
-                new_row = self._engine.Element(W + "tr")
-                cell = self._engine.SubElement(new_row, W + "tc")
-                props = self._engine.SubElement(cell, W + "tcPr")
-                self._engine.SubElement(props, W + "gridSpan").set(W + "val", str(columns))
-                cell.append(_new_paragraph(patch.text, self._engine))
+                new_row = engine.Element(W + "tr")
+                cell = engine.SubElement(new_row, W + "tc")
+                props = engine.SubElement(cell, W + "tcPr")
+                engine.SubElement(props, W + "gridSpan").set(W + "val", str(columns))
+                cell.append(_new_paragraph(patch.text, engine))
                 _insert(row, new_row, patch.position)
             elif isinstance(patch, SetTableRowText):
-                _set_paragraph(next(rows[patch.row_id].iter(W + "p")), patch.text, False, self._engine)
+                _set_paragraph(next(rows[patch.row_id].iter(W + "p")), patch.text, False, engine)
         updated = {
-            name: self._engine.tostring(root, xml_declaration=True, encoding="UTF-8", standalone=True)
+            name: engine.tostring(root, xml_declaration=True, encoding="UTF-8", standalone=True)
             for name, root in roots.items()
         }
         for data in updated.values():
             if len(data) > self.limits.max_part_bytes:
                 raise ResourceLimitError("Edited DOCX part exceeds limit")
-            parse_xml(data, self._engine)
+            parse_xml(data, engine)
         buffer = io.BytesIO()
         actual_changes = []
         with zipfile.ZipFile(buffer, "w") as target:
@@ -671,7 +813,6 @@ class NativePackage:
         staged.cancelled = self.cancelled
         staged.closed = False
         staged._data = data
-        staged._engine = self._engine
         staged._roots = {}
         staged._entries = []
         staged._comment = b""
@@ -680,6 +821,16 @@ class NativePackage:
         staged.close()
         check_cancel(self.cancelled)
         return data, tuple(sorted(actual_changes))
+
+
+def _flat_grid_value(properties: ET.Element | None, name: str, *, default: int, minimum: int) -> int:
+    node = properties.find(W + name) if properties is not None else None
+    if node is None:
+        return default
+    value = node.get(W + "val", "")
+    if not re.fullmatch(r"[0-9]{1,9}", value) or int(value) < minimum:
+        raise InvalidDocumentError(f"Invalid DOCX {name} value")
+    return int(value)
 
 
 def _position(position: str) -> None:

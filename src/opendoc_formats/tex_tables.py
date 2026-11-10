@@ -10,15 +10,46 @@ from opendoc_formats.support.cancellation import checkpoint
 
 KEY = 'opendoc_formats.latex_tabular'
 MULTICOLUMN_KEY = 'opendoc_formats.latex_multicolumn'
+_COLUMN = re.compile(r'[lcr|]|p[ \t\r\n]*\{[ \t\r\n]*(\d{1,5}(?:\.\d{1,8})?|\.\d{1,8})'
+                     r'[ \t\r\n]*(pt|mm|cm|in|bp)[ \t\r\n]*\}', re.ASCII)
+_UNIT_PT = {'pt': 1, 'mm': 72.27/25.4, 'cm': 72.27/2.54, 'in': 72.27, 'bp': 72.27/72}
 
 
 class TableProfileError(ValueError):
     """An explicit tabular declaration must not disappear through a fallback."""
 
 
+def column_tokens(value: str) -> list[str] | None:
+    """Finite literal columns and vertical rules, without interpreting TeX macros."""
+    tokens = []
+    index = 0
+    while index < len(value):
+        checkpoint()
+        if value[index] in ' \t\r\n':
+            index += 1
+            continue
+        match = _COLUMN.match(value, index)
+        if match is None:
+            return None
+        width, unit = match.groups()
+        if width is not None:
+            points = float(width)*_UNIT_PT[unit]
+            if not 1/65536 <= points < 16383:
+                return None
+            tokens.append('p{'+width+unit+'}')
+        else:
+            tokens.append(match[0])
+        index = match.end()
+    return tokens if any(token != '|' for token in tokens) else None
+
+
 def column_spec(value: str) -> str | None:
-    compact = re.sub(r'[ \t\r\n]', '', value)
-    return compact if re.fullmatch(r'\|*[lcr](?:\|*[lcr])*\|*', compact) else None
+    tokens = column_tokens(value)
+    return ''.join(tokens) if tokens is not None else None
+
+
+def column_count(value: str) -> int:
+    return sum(token != '|' for token in column_tokens(value) or ())
 
 
 def layout(value: Any, rows: int, columns: int) -> tuple[str, list[list[list[int] | None]], bool]:
@@ -27,7 +58,7 @@ def layout(value: Any, rows: int, columns: int) -> tuple[str, list[list[list[int
     if (not isinstance(value, dict) or set(value) != {'version', 'columns', 'rules', 'trailing_break'}
             or type(value['version']) is not int or value['version'] not in (1, 2)
             or not isinstance(value['columns'], str) or column_spec(value['columns']) != value['columns']
-            or sum(char in 'lcr' for char in value['columns']) != columns
+            or column_count(value['columns']) != columns
             or not isinstance(value['rules'], list) or len(value['rules']) != rows+1
             or type(value['trailing_break']) is not bool):
         raise TableProfileError('Invalid or unsupported '+KEY+' source layout')
@@ -55,7 +86,7 @@ def multicolumn_layout(value: Any) -> str:
     if (not isinstance(value, dict) or set(value) != {'version', 'columns'}
             or type(value['version']) is not int or value['version'] != 1
             or not isinstance(value['columns'], str) or column_spec(value['columns']) != value['columns']
-            or sum(char in 'lcr' for char in value['columns']) != 1):
+            or column_count(value['columns']) != 1):
         raise TableProfileError('Invalid or unsupported '+MULTICOLUMN_KEY+' source layout')
     return value['columns']
 
@@ -118,7 +149,7 @@ def multicolumn(text: str, tokens: list[TexToken], span: CellSpan) -> CellConten
     if not re.fullmatch(r'[0-9]{1,9}', count) or int(count) < 1:
         return None
     columns = column_spec(text[arguments[1].start:arguments[1].end])
-    if columns is None or sum(char in 'lcr' for char in columns) != 1:
+    if columns is None or column_count(columns) != 1:
         return None
     return CellContent(arguments[2], columns, int(count))
 
@@ -234,8 +265,6 @@ def split_tabular(tokens: list[TexToken], index: int, start: int, columns: int, 
             if rule_count > 10_000:
                 raise ResourceLimitError('LaTeX tabular exceeds horizontal rule work limit')
             first, boundary = index+1, tokens[index].end
-        elif depth == 0 and token.kind == 'command' and token.value == 'par':
-            return None
         elif depth == 0 and token.kind == 'command' and token.value in {'begin', 'end'}:
             target, stop, end = _argument(tokens, index+1)
             if token.value != 'end' or target != 'tabular':

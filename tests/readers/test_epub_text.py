@@ -1,6 +1,7 @@
 """Independent EPUB source order, text structure and located projection losses."""
 
 import builtins
+import sys
 from threading import Event
 from zipfile import ZipFile
 
@@ -104,12 +105,83 @@ def test_text_profile_does_not_import_other_format_or_font_engines(tmp_path, mon
     native_import = builtins.__import__
 
     def minimal(name, *args, **kwargs):
-        if name.split('.')[0] in {'ebooklib', 'lxml', 'PIL', 'fontTools', 'fitz', 'pymupdf', 'docx', 'tinycss2'}:
+        if name.split('.')[0] in {'bs4', 'ebooklib', 'lxml', 'PIL', 'fontTools', 'fitz', 'pymupdf', 'docx', 'tinycss2'}:
             raise AssertionError('Unexpected optional engine: '+name)
         return native_import(name, *args, **kwargs)
 
     monkeypatch.setattr(builtins, '__import__', minimal)
     assert read_epub(source).tables[0].rows == [['Cell A', 'Cell B']]
+
+
+def test_well_formed_epub_text_without_beautifulsoup(tmp_path, monkeypatch):
+    source = tmp_path / 'own.epub'
+    original = own_epub(source)
+    expected = read_epub(source)
+    monkeypatch.setitem(sys.modules, 'bs4', None)
+    native = read_epub(source)
+    assert native.engine == 'native-epub-xhtml'
+    assert (native.plain, native.blocks, native.tables, native.language) == (
+        expected.plain, expected.blocks, expected.tables, expected.language,
+    )
+    assert source.read_bytes() == original
+
+
+@pytest.mark.parametrize('encoding, label', [
+    ('utf-8', 'UTF-8'), ('utf-8-sig', 'UTF-8'), ('utf-16', 'UTF-16'),
+    ('utf-32', 'UTF-32'), ('cp1251', 'windows-1251'), ('iso8859-5', 'ISO-8859-5'),
+])
+def test_native_epub_recovers_entities_void_elements_and_unclosed_inline_markup(tmp_path, monkeypatch, encoding, label):
+    source = tmp_path / 'own.epub'
+    own_epub(source)
+    with ZipFile(source) as archive:
+        parts = {name: archive.read(name) for name in archive.namelist()}
+    parts['OPS/second.xhtml'] = (
+        f'<?xml version="1.0" encoding="{label}"?><html><body>\r\n'
+        '<p onclick="one()">Свой&nbsp;<br><b>текст</p></body></html>'
+    ).encode(encoding)
+    with ZipFile(source, 'w') as archive:
+        for name, data in parts.items():
+            archive.writestr(name, data)
+    monkeypatch.setitem(sys.modules, 'bs4', None)
+    result = read_epub(source)
+    assert result.engine == 'native-epub-xhtml'
+    assert result.blocks[0].text.split() == ['Свой', 'текст']
+    handler, = [record for record in result.diagnostics.preservation if record.issue.code == 'epub.event-handler']
+    assert '#line=2,column=0/@onclick' in handler.issue.location
+    recovery, = [record for record in result.diagnostics.preservation if record.issue.code == 'epub.xhtml']
+    assert recovery.issue.reason == 'recovered-markup'
+    assert recovery.provenance.package_part == '/OPS/second.xhtml'
+
+
+def test_malformed_foreign_epub_markup_retains_optional_recovery(monkeypatch):
+    from opendoc_formats.errors import InvalidDocumentError
+    from opendoc_formats.readers.epub_xhtml import parse_chapter
+
+    pytest.importorskip('bs4')
+    payload = b'<html><body><svg><text>Own&nbsp;text</svg></body></html>'
+    assert parse_chapter(payload).get_text() == 'Own\xa0text'
+    monkeypatch.setitem(sys.modules, 'bs4', None)
+    with pytest.raises(InvalidDocumentError, match='well-formed XHTML'):
+        parse_chapter(payload)
+
+
+def test_native_xhtml_cancels_between_parser_feeds_inside_large_comment(monkeypatch):
+    from opendoc_formats.readers import epub_package
+    from opendoc_formats.readers.epub_xhtml import parse_xhtml
+
+    check = epub_package.check_cancelled
+    feeds = []
+
+    def observe(cancelled, operation):
+        if operation == 'EPUB XML feed':
+            feeds.append(operation)
+        check(cancelled, operation)
+
+    monkeypatch.setattr(epub_package, 'check_cancelled', observe)
+    payload = b'<html><body><!--' + b'a' * 200_000 + b'--><p>Text</p></body></html>'
+    with pytest.raises(OperationCancelledError, match='XML feed'):
+        parse_xhtml(payload, cancelled=lambda: len(feeds) == 2)
+    assert len(feeds) == 2
 
 
 def test_selected_model_budget_refuses_without_modifying_source(tmp_path):

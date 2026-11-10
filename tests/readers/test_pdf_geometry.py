@@ -3,6 +3,7 @@
 import io
 
 import fitz
+import pytest
 from PIL import Image
 
 from opendoc_formats.readers.pdf import read_pdf_geometry
@@ -13,6 +14,8 @@ from opendoc_formats.readers.pdf_geometry import (
     PdfSpanGeometry,
     PdfTextBlockGeometry,
 )
+from opendoc_formats.readers.pdf_ocr_merge import merge_pdf_with_ocr
+from opendoc_formats.readers.pdf_ocr_types import OcrBlockGeometry, OcrPageResult
 from opendoc_formats.readers.pdf_semantic import analyze_pdf_geometry
 from opendoc_formats.types import BlockType
 from tests.corpus.multiformat import build_multiformat_corpus
@@ -147,6 +150,91 @@ def test_pdf_geometry_restores_borderless_table_by_text_alignment(tmp_path):
     table = geometry.pages[0].tables[0]
     assert table.strategy == "text"
     assert table.rows == (("Name", "Value"), ("Alpha", "10"), ("Beta", "20"))
+
+
+@pytest.mark.parametrize("rotation", [0, 90, 180, 270])
+def test_pdf_semantics_keeps_aligned_prose_columns_out_of_text_table(tmp_path, rotation):
+    path = tmp_path / "aligned-prose.pdf"
+    columns = [[f"{side} paragraph {index} has several words." for index in range(1, 4)] for side in ("Left", "Right")]
+    with fitz.open() as document:
+        page = document.new_page(width=500, height=260)
+        for x, paragraphs in zip((40, 280), columns, strict=True):
+            for index, paragraph in enumerate(paragraphs):
+                page.insert_text((x, 70 + 30 * index), paragraph)
+        page.set_rotation(rotation)
+        document.save(path, no_new_id=True)
+
+    geometry = read_pdf_geometry(path)
+    assert not geometry.pages[0].tables
+    text = analyze_pdf_geometry(geometry)
+    assert text.plain.splitlines() == columns[0] + columns[1]
+    assert [block.meta["column"] for block in text.blocks] == [0, 0, 0, 1, 1, 1]
+    assert {(block.meta["page_width"], block.meta["page_height"]) for block in text.blocks} == {(500, 260)}
+    first = geometry.pages[0].text_blocks[0]
+    ocr = OcrPageResult(blocks=[OcrBlockGeometry(first.text, first.bbox, 0.99)])
+    merged = merge_pdf_with_ocr(geometry, [ocr])
+    assert merged.plain == text.plain
+    assert [block.meta["column"] for block in merged.blocks] == [0, 0, 0, 1, 1, 1]
+
+
+@pytest.mark.parametrize("rows", [
+    (("Item", "Value"), ("Alpha", "10"), ("Beta", "20")),
+    (("Item", "Value"),),
+    (("Item",), ("Alpha",)),
+])
+def test_pdf_geometry_restores_table_with_filled_rectangles_instead_of_strokes(tmp_path, rows):
+    path = tmp_path / "filled-table.pdf"
+    with fitz.open() as document:
+        page = document.new_page(width=350, height=360)
+        for row, values in enumerate(rows):
+            for column, label in enumerate(values):
+                x, y = 35 + 100 * column, 40 + 70 * row
+                fill = (0.85, 0.85, 0.85) if (row + column) % 2 else (0.8, 0.85, 1)
+                page.draw_rect((x, y, x + 100, y + 70), color=None, fill=fill)
+                page.insert_text((x + 10, y + 26), label)
+        document.save(path, no_new_id=True)
+
+    geometry = read_pdf_geometry(path)
+    table, = geometry.pages[0].tables
+    assert table.strategy == "lines"
+    assert table.rows == rows
+    assert table.column_edges == tuple(35 + 100 * index for index in range(len(rows[0]) + 1))
+    assert table.row_edges == tuple(40 + 70 * index for index in range(len(rows) + 1))
+    assert analyze_pdf_geometry(geometry).tables[0].rows == [list(row) for row in rows]
+
+
+@pytest.mark.parametrize("rotation", [0, 90, 180, 270])
+@pytest.mark.parametrize("placement", ["below", "beside", "diagonal"])
+def test_pdf_geometry_keeps_ruled_and_borderless_tables_on_one_page(tmp_path, rotation, placement):
+    path = tmp_path / "mixed-tables.pdf"
+    ruled = (("Feature", "Value"), ("Alpha", "10"), ("Beta", "20"))
+    borderless = (("Item", "Count"), ("Gamma", "30"), ("Delta", "40"))
+    with fitz.open() as document:
+        page = document.new_page(width=550, height=450)
+        for x in (35, 140, 245):
+            page.draw_line((x, 40), (x, 130))
+        for y in (40, 70, 100, 130):
+            page.draw_line((35, y), (245, y))
+        x = 45 if placement == "below" else 300
+        first_y = 60 if placement == "beside" else 245
+        for left, top, rows in ((45, 60, ruled), (x, first_y, borderless)):
+            for index, (label, value) in enumerate(rows):
+                y = top + 30 * index
+                page.insert_text((left, y), label)
+                page.insert_text((left + 110, y), value)
+        page.set_rotation(rotation)
+        document.save(path, no_new_id=True)
+
+    original = path.read_bytes()
+    geometry = read_pdf_geometry(path)
+    assert geometry.pages[0].rotation == rotation
+    assert path.read_bytes() == original
+    assert [(table.strategy, table.rows) for table in geometry.pages[0].tables] == [
+        ("lines_strict", ruled), ("text", borderless),
+    ]
+    text = analyze_pdf_geometry(geometry)
+    assert [block.type for block in text.blocks] == [BlockType.TABLE, BlockType.TABLE]
+    assert [table.rows for table in text.tables] == [[list(row) for row in values] for values in (ruled, borderless)]
 
 
 def test_pdf_semantics_classifies_captions_formulas_and_repeated_running_content(tmp_path):

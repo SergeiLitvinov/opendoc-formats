@@ -139,7 +139,7 @@ def extract_pdf_images(path: str | Path, *, cancelled: Callable[[], bool] | None
     addresses the returned warning list, before rich-import metadata binding.
     """
     check_cancelled(cancelled, 'PDF images')
-    import fitz
+    import pymupdf as fitz
 
     source = Path(path)
     if not source.is_file():
@@ -335,7 +335,7 @@ def _neutral_page_group(page: Any, draw: dict) -> bool:
 
 def _drawing_value(value: Any) -> Any:
     """Keep path operators and coordinates independent of PyMuPDF objects."""
-    import fitz
+    import pymupdf as fitz
 
     if isinstance(value, (list, tuple, fitz.Point, fitz.Rect, fitz.Quad)):
         return tuple(_drawing_value(part) for part in value)

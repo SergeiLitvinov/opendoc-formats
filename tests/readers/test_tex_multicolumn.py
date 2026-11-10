@@ -115,7 +115,7 @@ def test_removing_explicit_one_column_override_does_not_restore_source_layout(tm
     r'\begin{tabular}{lr}\multicolumn{3}{c}{A}\\\end{tabular}',
     r'\begin{tabular}{lr}\multicolumn{\count}{c}{A}\\\end{tabular}',
     r'\begin{tabular}{lr}\multicolumn{2}{cc}{A}\\\end{tabular}',
-    r'\begin{tabular}{lr}\multicolumn{2}{p{2cm}}{A}\\\end{tabular}',
+    r'\begin{tabular}{lr}\multicolumn{2}{p{\linewidth}}{A}\\\end{tabular}',
     r'\begin{tabular}{lr}\multicolumn{2}{c}{A} extra\\\end{tabular}',
     r'\begin{tabular}{lr}\multicolumn{2}{c}{A\par B}\\\end{tabular}',
 ])

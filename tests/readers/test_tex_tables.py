@@ -77,8 +77,8 @@ def test_independent_tabular_structure_source_spans_and_two_native_tex_cycles(tm
 
 
 @pytest.mark.parametrize('body', [
-    r'\begin{tabular}{p{2cm}r}A&B\\\end{tabular}',
-    r'\begin{tabular}{lr}\multicolumn{2}{p{2cm}}{A}\\\end{tabular}',
+    r'\begin{tabular}{p{\linewidth}r}A&B\\\end{tabular}',
+    r'\begin{tabular}{lr}\multicolumn{2}{p{0pt}}{A}\\\end{tabular}',
     r'\begin{tabular}{l}A\\[2pt]B\\\end{tabular}',
     r'\begin{tabular}{l}\begin{tabular}{l}A\\\end{tabular}\\\end{tabular}',
     r'\begin{tabular}{l}A\par B\\\end{tabular}',

@@ -135,7 +135,7 @@ def test_retry_cancellation_keeps_destination_and_input(tmp_path, monkeypatch):
 
 
 def test_repagination_has_finite_work_and_closes_discarded_documents(tmp_path, monkeypatch):
-    import fitz
+    import pymupdf as fitz
     from opendoc_model import DocumentModel, Section, TextRun
 
     from opendoc_formats.writers import pdf_flow

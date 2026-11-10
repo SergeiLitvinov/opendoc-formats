@@ -106,7 +106,7 @@ read(self, path: str | Path, *, format_id: str | None=None, options: ImportOptio
 
 ### default_registry
 
-[Исходник, строка 238](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L238)
+[Исходник, строка 240](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L240)
 
 ```python
 default_registry() -> AdapterRegistry
@@ -114,7 +114,7 @@ default_registry() -> AdapterRegistry
 
 ### read_document
 
-[Исходник, строка 252](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L252)
+[Исходник, строка 254](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/api.py#L254)
 
 ```python
 read_document(path: str | Path, *, format_id: str | None=None, options: ImportOptions | None=None) -> ImportResult
@@ -124,7 +124,7 @@ read_document(path: str | Path, *, format_id: str | None=None, options: ImportOp
 
 ### ExportOptions
 
-[Исходник, строка 24](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L24)
+[Исходник, строка 25](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L25)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -138,7 +138,7 @@ read_document(path: str | Path, *, format_id: str | None=None, options: ImportOp
 
 ### ExporterSpec
 
-[Исходник, строка 78](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L78)
+[Исходник, строка 79](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L79)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -152,11 +152,11 @@ read_document(path: str | Path, *, format_id: str | None=None, options: ImportOp
 
 ### ExporterRegistry
 
-[Исходник, строка 107](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L107)
+[Исходник, строка 108](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L108)
 
 ### ExporterRegistry.__init__
 
-[Исходник, строка 108](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L108)
+[Исходник, строка 109](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L109)
 
 ```python
 __init__(self) -> None
@@ -164,7 +164,7 @@ __init__(self) -> None
 
 ### ExporterRegistry.register
 
-[Исходник, строка 112](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L112)
+[Исходник, строка 113](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L113)
 
 ```python
 register(self, exporter: ExporterSpec) -> None
@@ -172,7 +172,7 @@ register(self, exporter: ExporterSpec) -> None
 
 ### ExporterRegistry.exporters
 
-[Исходник, строка 120](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L120)
+[Исходник, строка 121](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L121)
 
 ```python
 exporters(self) -> tuple[ExporterSpec, ...]
@@ -180,7 +180,7 @@ exporters(self) -> tuple[ExporterSpec, ...]
 
 ### ExporterRegistry.write
 
-[Исходник, строка 123](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L123)
+[Исходник, строка 124](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L124)
 
 ```python
 write(self, document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport
@@ -188,7 +188,7 @@ write(self, document: DocumentModel, path: str | Path, *, format_id: str | None=
 
 ### default_exporter_registry
 
-[Исходник, строка 405](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L405)
+[Исходник, строка 409](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L409)
 
 ```python
 default_exporter_registry() -> ExporterRegistry
@@ -196,7 +196,7 @@ default_exporter_registry() -> ExporterRegistry
 
 ### write_document
 
-[Исходник, строка 430](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L430)
+[Исходник, строка 434](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/export.py#L434)
 
 ```python
 write_document(document: DocumentModel, path: str | Path, *, format_id: str | None=None, options: ExportOptions | None=None) -> ConversionReport
@@ -961,7 +961,7 @@ compare_snapshots(before: BinarySnapshot, after: BinarySnapshot) -> dict[str, An
 
 ### inspect_binary
 
-[Исходник, строка 454](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L454)
+[Исходник, строка 451](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/anatomy.py#L451)
 
 ```python
 inspect_binary(source: Source, *, container: str | None=None, limits: AnatomyLimits=AnatomyLimits(), parse_xml: bool=True, capture: bool=False, sfnt_checksums: bool=False, sfnt_structure: bool=False, pdf_source: bool=False, pdf_decode_xrefs: bool=False, pdf_object_streams: bool=False, pdf_resolve_xrefs: bool=False, sfnt_face_index: int | None=None, cancelled: Callable[[], bool] | None=None) -> BinarySnapshot
@@ -971,7 +971,7 @@ inspect_binary(source: Source, *, container: str | None=None, limits: AnatomyLim
 
 ### OfficeLimits
 
-[Исходник, строка 41](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L41)
+[Исходник, строка 48](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L48)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -981,7 +981,7 @@ inspect_binary(source: Source, *, container: str | None=None, limits: AnatomyLim
 
 ### OfficeConversionResult
 
-[Исходник, строка 52](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L52)
+[Исходник, строка 59](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L59)
 
 | Поле | Тип | Значение по умолчанию |
 | --- | --- | --- |
@@ -992,7 +992,7 @@ inspect_binary(source: Source, *, container: str | None=None, limits: AnatomyLim
 
 ### find_libreoffice
 
-[Исходник, строка 59](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L59)
+[Исходник, строка 66](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L66)
 
 ```python
 find_libreoffice() -> Path | None
@@ -1000,7 +1000,7 @@ find_libreoffice() -> Path | None
 
 ### convert_office_to_pdf
 
-[Исходник, строка 88](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L88)
+[Исходник, строка 95](https://github.com/SergeiLitvinov/opendoc-formats/blob/main/src/opendoc_formats/office.py#L95)
 
 ```python
 convert_office_to_pdf(source: str | Path, output: str | Path, *, executable: str | Path | None=None, timeout: float=180, limits: OfficeLimits=OfficeLimits(), cancelled: Cancellation | None=None) -> OfficeConversionResult

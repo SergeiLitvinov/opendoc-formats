@@ -12,6 +12,8 @@ from typing import Any
 
 @dataclass(frozen=True)
 class OcrBlockGeometry:
+    """OCR text and bounding box in unrotated PDF page coordinates, in points."""
+
     text: str
     bbox: tuple[float, float, float, float]
     confidence: float = 0.0

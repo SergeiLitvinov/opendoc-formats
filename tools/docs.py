@@ -5,6 +5,7 @@ import ast
 import subprocess
 import sys
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from tools.dependency_licenses import render as dependency_inventory
 
@@ -112,8 +113,14 @@ def main() -> None:
             path.write_text(content, encoding="utf-8")
         elif not path.exists() or path.read_text(encoding="utf-8") != content:
             raise SystemExit(f"Stale documentation: {path.relative_to(ROOT)}; run tools.docs generate")
-    if args.command in ("check", "build"):
-        subprocess.run([sys.executable, "-m", "mkdocs", "build", "--strict"], cwd=ROOT, check=True)
+    build = [sys.executable, "-m", "mkdocs", "build", "--strict"]
+    if args.command == "check":
+        workspace = ROOT / ".opendoc-formats"
+        workspace.mkdir(exist_ok=True)
+        with TemporaryDirectory(prefix="docs-check-", dir=workspace) as output:
+            subprocess.run([*build, "--site-dir", output], cwd=ROOT, check=True)
+    elif args.command == "build":
+        subprocess.run(build, cwd=ROOT, check=True)
     elif args.command == "serve":
         subprocess.run([sys.executable, "-m", "mkdocs", "serve", "-a", "127.0.0.1:8004"], cwd=ROOT, check=True)
 

@@ -13,7 +13,7 @@ from opendoc_formats.support.cancellation import check_cancelled
 def extract_pdf_fonts(path: str | Path, *, limits: DocumentLimits | None = None,
                       cancelled: Callable[[], bool] | None = None) -> dict[str, Resource]:
     check_cancelled(cancelled, 'PDF fonts')
-    import fitz
+    import pymupdf as fitz
 
     budget = limits or DocumentLimits()
     resources: dict[str, Resource] = {}

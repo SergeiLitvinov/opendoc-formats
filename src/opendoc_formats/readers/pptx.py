@@ -360,11 +360,18 @@ def _read_pptx(path: Union[str, Path], *, include_tables: bool) -> Text:
 
     Возвращает ``Text`` с блоками-параграфами и (опционально) таблицами.
     """
-    from pptx import Presentation  # type: ignore[import-not-found]
-
     source = Path(path)
     if not source.is_file():
         raise FileNotFoundError(source)
+    try:
+        from pptx import Presentation  # type: ignore[import-not-found]
+    except ModuleNotFoundError as error:
+        if error.name not in {"pptx", "lxml", "lxml.etree", "PIL"}:
+            raise
+        from opendoc_formats.readers.pptx_flat import read_pptx_flat
+
+        return read_pptx_flat(source, include_tables=include_tables)
+
     check_archive_safety(source)
     checkpoint()
     presentation = Presentation(str(source))

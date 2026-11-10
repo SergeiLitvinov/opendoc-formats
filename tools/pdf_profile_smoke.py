@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import sys
 import unicodedata
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -24,7 +25,7 @@ def main() -> None:
     absent = {
         "pdf": ("pypdf", "pdfplumber", "pdf2docx", "cv2", "numpy", "docx", "lxml", "PIL"),
         "pdf-rich": ("pypdf", "pdfplumber", "pdf2docx", "cv2", "numpy", "docx", "lxml", "PIL"),
-        "pdf-layout": ("pypdf", "fitz", "pdf2docx", "cv2", "numpy", "docx", "lxml"),
+        "pdf-layout": ("pypdf", "pymupdf", "fitz", "pdf2docx", "cv2", "numpy", "docx", "lxml"),
         "pdf-docx": ("pypdf", "pdfplumber"),
     }[args.profile]
     assert all(importlib.util.find_spec(name) is None for name in absent), absent
@@ -37,7 +38,7 @@ def main() -> None:
     with TemporaryDirectory(prefix="opendoc-formats-pdf-profile-") as directory:
         output = Path(directory)
         if args.profile in {"pdf", "pdf-rich"}:
-            import fitz
+            import pymupdf as fitz
             from opendoc_model import Rect2D, get_integration, get_outline, get_page_geometry
             from opendoc_model.diagnostics import ConversionReport
             from opendoc_model.inspection import compare_inspections
@@ -47,6 +48,7 @@ def main() -> None:
             from opendoc_formats.readers.pdf import read_pdf
             from opendoc_formats.support.inspection import inspect_path
 
+            sys.modules["fitz"] = None
             text = read_pdf(str(source))
             assert text.engine.startswith('pymupdf') and text.pages == 2 and 'Native PDF' in text.plain
             assert not any('ModuleNotFoundError' in warning for warning in text.warnings)

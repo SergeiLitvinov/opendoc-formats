@@ -83,6 +83,31 @@ def test_exact_variants_and_inheritance_are_bound(tmp_path, weight, slant, marku
     assert ref is not None and document.resources[ref.resource_id].data == FIXTURE.read_bytes()
 
 
+@pytest.mark.parametrize('family', ['Own face', 'A&B + Symbols: Edition #2'])
+def test_font_face_with_comments_uses_native_cascade_and_keeps_program(tmp_path, monkeypatch, family):
+    from opendoc_formats.readers.html_css import Cascade
+
+    path = tmp_path / 'comments.html'
+    program = FIXTURE.read_bytes()
+    uri = 'data:font/ttf;base64,' + base64.b64encode(program).decode('ascii')
+    path.write_text(
+        f'<style>@font-face/**/ {{ /* }} */ font-family/* : */:/**/"{family}" /**/;'
+        f'src:/**/url("{uri}")/**/format(/* ; */truetype/**/);'
+        'font-weight:/**/400; font-style:normal /**/}</style>'
+        f'<p style="font-family:\'{family}\'">Text</p>', encoding='utf-8',
+    )
+    native = read_html_model(path)
+    assert native.metadata.pop('engine') == 'bs4'
+    run = native.sections[0].blocks[0].content[0]
+    assert run.style.font_family == family
+    assert native.resources[get_font_reference(run.style).resource_id].data == program
+
+    monkeypatch.setattr(Cascade, '_simple_stylesheet', lambda self, raw: None)
+    reference = read_html_model(path)
+    assert reference.metadata.pop('engine') == 'bs4+tinycss2'
+    assert document_to_json(native) == document_to_json(reference)
+
+
 def test_same_named_distinct_programs_keep_text_associations_across_real_cycles(tmp_path, monkeypatch):
     document = model(text='fi')
     second = altered_font(wider=True)

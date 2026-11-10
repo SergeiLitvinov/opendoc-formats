@@ -1406,7 +1406,6 @@ dev = [
     { name = "mypy" },
     { name = "pytest" },
     { name = "ruff" },
-    { name = "twine" },
 ]
 docs = [
     { name = "mkdocs" },
@@ -1427,6 +1426,9 @@ fonts = [
 html = [
     { name = "beautifulsoup4" },
     { name = "tinycss2" },
+]
+html-dom = [
+    { name = "beautifulsoup4" },
 ]
 pdf = [
     { name = "pymupdf" },
@@ -1449,11 +1451,15 @@ pptx = [
     { name = "pillow" },
     { name = "python-pptx" },
 ]
+release = [
+    { name = "twine" },
+]
 
 [package.metadata]
 requires-dist = [
     { name = "beautifulsoup4", marker = "extra == 'epub'", specifier = ">=4.12" },
     { name = "beautifulsoup4", marker = "extra == 'html'", specifier = ">=4.12" },
+    { name = "beautifulsoup4", marker = "extra == 'html-dom'", specifier = ">=4.12" },
     { name = "fonttools", marker = "extra == 'fonts'", specifier = ">=4.50" },
     { name = "lxml", marker = "extra == 'docx'", specifier = ">=5" },
     { name = "lxml", marker = "extra == 'docx-native'", specifier = ">=5" },
@@ -1464,18 +1470,18 @@ requires-dist = [
     { name = "pdf2docx", marker = "extra == 'pdf-docx'", specifier = ">=0.2" },
     { name = "pdfplumber", marker = "extra == 'pdf-layout'", specifier = ">=0.11" },
     { name = "pillow", marker = "extra == 'pptx'", specifier = ">=10" },
-    { name = "pymupdf", marker = "extra == 'pdf'", specifier = ">=1.24,<2" },
-    { name = "pymupdf", marker = "extra == 'pdf-docx'", specifier = ">=1.24,<2" },
-    { name = "pymupdf", marker = "extra == 'pdf-rich'", specifier = ">=1.24,<2" },
+    { name = "pymupdf", marker = "extra == 'pdf'", specifier = ">=1.28.2,<2" },
+    { name = "pymupdf", marker = "extra == 'pdf-docx'", specifier = ">=1.28.2,<2" },
+    { name = "pymupdf", marker = "extra == 'pdf-rich'", specifier = ">=1.28.2,<2" },
     { name = "pypdf", marker = "extra == 'pdf-text'", specifier = ">=4" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8" },
     { name = "python-docx", marker = "extra == 'docx'", specifier = ">=1.1" },
     { name = "python-pptx", marker = "extra == 'pptx'", specifier = ">=1.0.2" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.9" },
     { name = "tinycss2", marker = "extra == 'html'", specifier = ">=1.5" },
-    { name = "twine", marker = "extra == 'dev'", specifier = ">=6" },
+    { name = "twine", marker = "extra == 'release'", specifier = ">=6" },
 ]
-provides-extras = ["pdf-text", "pdf", "pdf-rich", "pdf-docx", "pdf-layout", "docx", "docx-native", "pptx", "epub", "fonts", "html", "dev", "docs"]
+provides-extras = ["pdf-text", "pdf", "pdf-rich", "pdf-docx", "pdf-layout", "docx", "docx-native", "pptx", "epub", "fonts", "html", "html-dom", "dev", "release", "docs"]
 
 [[package]]
 name = "opendoc-model"

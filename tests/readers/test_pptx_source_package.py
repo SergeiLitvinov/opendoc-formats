@@ -1,6 +1,7 @@
 """Physical source bytes and unproved edges survive PPTX import and JSON transport."""
 
 import io
+import sys
 import zipfile
 from copy import deepcopy
 from dataclasses import replace
@@ -20,12 +21,37 @@ from pptx.util import Inches
 from opendoc_formats import read_document, write_document
 from opendoc_formats.anatomy import inspect_binary
 from opendoc_formats.errors import InvalidDocumentError, OperationCancelledError, ResourceLimitError, UnsupportedDocumentError
-from opendoc_formats.readers.pptx import read_pptx_model
+from opendoc_formats.readers.pptx import read_pptx, read_pptx_model
 from opendoc_formats.readers.pptx_package import capture_pptx_package
 from tests.support.test_ooxml_pptx_package import source as source_with_dependencies
 
 REL = 'http://schemas.openxmlformats.org/package/2006/relationships'
 CT = 'http://schemas.openxmlformats.org/package/2006/content-types'
+
+
+def test_flat_text_without_pptx_follows_presentation_order(tmp_path, monkeypatch):
+    path = tmp_path / 'flat.pptx'
+    presentation = Presentation()
+    first = presentation.slides.add_slide(presentation.slide_layouts[6])
+    second = presentation.slides.add_slide(presentation.slide_layouts[6])
+    first.shapes.add_textbox(0, 0, Inches(1), Inches(1)).text_frame.text = 'First\vline\nNew paragraph'
+    table = second.shapes.add_table(1, 2, 0, 0, Inches(2), Inches(1)).table
+    table.cell(0, 0).text = 'Left'
+    table.cell(0, 1).text = 'Right\vline'
+    slide_order = presentation.slides._sldIdLst
+    slide_order.insert(0, slide_order[-1])
+    presentation.save(path)
+    expected = read_pptx(path)
+    monkeypatch.setitem(sys.modules, 'pptx', None)
+    native = read_pptx(path)
+    assert native.engine == 'native-pptx' and native.pages == expected.pages == 2
+    assert native.plain == expected.plain == 'Left | Right\vline\nFirst\vline\nNew paragraph'
+    assert native.blocks == expected.blocks and native.tables == expected.tables
+    assert not read_pptx(path, include_tables=False).tables
+    slide_order.append(deepcopy(slide_order[0]))
+    presentation.save(path)
+    with pytest.raises(InvalidDocumentError, match='repeats a slide part'):
+        read_pptx(path)
 
 
 def rewrite(path, updates):

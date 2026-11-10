@@ -26,7 +26,7 @@ from opendoc_formats.native.opc import content_types, declared_content_type, xml
 from opendoc_formats.native.opc_audit import audit_package
 from opendoc_formats.native.png import SIGNATURE as PNG_SIGNATURE
 from opendoc_formats.support.cancellation import cancellation_requested, cancellation_scope, checkpoint
-from opendoc_formats.support.io import ArchiveSafetyError, check_archive_safety
+from opendoc_formats.support.io import ArchiveSafetyError, open_checked_archive, read_archive_member
 
 
 @dataclass(frozen=True)
@@ -278,9 +278,7 @@ def _member_payload(archive: zipfile.ZipFile, info: zipfile.ZipInfo, limits: Ana
         raise EncryptedDocumentError(f'{location}: encrypted ZIP member')
     if info.file_size > limits.max_part_bytes:
         raise ResourceLimitError(f'{location}: max_part_bytes exceeded')
-    with archive.open(info) as member:
-        payload = member.read(limits.max_part_bytes+1)
-    checkpoint()
+    payload = read_archive_member(archive, info)
     if len(payload) != info.file_size or len(payload) > limits.max_part_bytes:
         raise InvalidDocumentError(f'{location}: inconsistent ZIP member size')
     return payload
@@ -289,10 +287,9 @@ def _member_payload(archive: zipfile.ZipFile, info: zipfile.ZipInfo, limits: Ana
 def _zip_items(
     data: bytes, limits: AnatomyLimits, parse_xml: bool, capture: bool,
 ) -> tuple[tuple[BinaryItem, ...], dict[str, Any], OpcAudit | None, EpubAudit | None]:
-    check_archive_safety(io.BytesIO(data), max_entries=limits.max_items,
-                         max_total_size=limits.max_total_bytes, max_ratio=limits.max_ratio)
     items, budget = [], _Budget(limits)
-    with zipfile.ZipFile(io.BytesIO(data)) as archive:
+    with open_checked_archive(io.BytesIO(data), max_entries=limits.max_items,
+                              max_total_size=limits.max_total_bytes, max_ratio=limits.max_ratio) as archive:
         archive_names = set(archive.namelist())
         manifest: bytes | None = None
         mime: bytes | None = None

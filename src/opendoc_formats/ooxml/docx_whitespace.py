@@ -12,13 +12,14 @@ TEXT_KEY = 'opendoc_formats.docx_text'
 _TEXT_CHILDREN = {W+name for name in ('t', 'tab', 'ptab', 'br', 'cr', 'noBreakHyphen')}
 
 
-def visible_text(node: Any) -> str:
+def visible_text(node: Any, root: Any = None) -> str:
     """Main-story root/direct modes follow native Word, not generic ancestor inheritance."""
     checkpoint()
     value = str(node.text or '')
     mode = node.get(SPACE)
     if mode is None:
-        root = node.getroottree().getroot()
+        if root is None:
+            root = node.getroottree().getroot()
         if root.tag == W+'document':
             mode = root.get(SPACE)
         elif root.get(SPACE) is not None:
@@ -81,26 +82,39 @@ def write_text_profile(run: Any, text: str, properties: Any, report: Any, locati
     return True
 
 
-def run_text(element: Any) -> str:
+def run_text(element: Any, root: Any = None) -> str:
     """Project w:t; delegate other accepted control elements to their native text API."""
     parts = []
     for child in element:
         checkpoint()
-        if child.tag in _TEXT_CHILDREN:
-            parts.append(visible_text(child) if child.tag == W+'t' else str(child))
+        if child.tag == W+'t':
+            parts.append(visible_text(child, root))
+        elif child.tag in _TEXT_CHILDREN:
+            if root is None:
+                parts.append(str(child))
+            elif child.tag in {W+'tab', W+'ptab'}:
+                parts.append('\t')
+            elif child.tag == W+'noBreakHyphen':
+                parts.append('-')
+            elif child.tag == W+'cr' or child.get(W+'type', 'textWrapping') == 'textWrapping':
+                parts.append('\n')
     return ''.join(parts)
 
 
 def paragraph_text(paragraph: Any) -> str:
     """Same direct run/hyperlink scope as the legacy python-docx paragraph API."""
+    return paragraph_element_text(paragraph._p)
+
+
+def paragraph_element_text(paragraph: Any, root: Any = None) -> str:
     parts = []
-    for child in paragraph._p:
+    for child in paragraph:
         checkpoint()
         if child.tag == W+'r':
-            parts.append(run_text(child))
+            parts.append(run_text(child, root))
         elif child.tag == W+'hyperlink':
             for run in child:
                 checkpoint()
                 if run.tag == W+'r':
-                    parts.append(run_text(run))
+                    parts.append(run_text(run, root))
     return ''.join(parts)

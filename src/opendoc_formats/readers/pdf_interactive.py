@@ -68,7 +68,7 @@ def _actions(pdf: Any, xref: int) -> dict[str, Any]:
 
 def attach_pdf_interactions(model: DocumentModel, source: str | Path, *, limits: DocumentLimits | None = None,
                             cancelled: Callable[[], bool] | None = None) -> None:
-    import fitz
+    import pymupdf as fitz
 
     from opendoc_formats.support.cancellation import check_cancelled
 

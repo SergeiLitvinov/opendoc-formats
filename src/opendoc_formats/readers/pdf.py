@@ -167,7 +167,7 @@ def _read_pdf(path: str) -> Text:
 
 
 def get_pdf_info(path: str) -> dict[str, str]:
-    """Извлечь title/author/subject уже установленным PDF-движком."""
+    """Извлечь title/author/subject через установленный движок или нативный Info."""
     info = {"title": "", "author": "", "subject": ""}
     try:
         from opendoc_formats.support.pdf_probe import probe_pdf

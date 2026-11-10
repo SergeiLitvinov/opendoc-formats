@@ -73,9 +73,10 @@ def classify_text_block(
 
 
 def _margin_role(block: PdfTextBlockGeometry, page: PdfPageGeometry) -> str | None:
-    if block.bbox[3] <= page.height * 0.12:
+    _, height = page.content_size
+    if block.bbox[3] <= height * 0.12:
         return "header"
-    if block.bbox[1] >= page.height * 0.88:
+    if block.bbox[1] >= height * 0.88:
         return "footer"
     return None
 

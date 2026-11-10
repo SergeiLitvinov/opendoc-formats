@@ -6,19 +6,50 @@ from typing import Any
 
 from opendoc_formats.errors import InvalidDocumentError, ResourceLimitError, UnsupportedDocumentError
 from opendoc_formats.native.pdf_stream_decode import decode
-from opendoc_formats.native.pdf_syntax import Parser, SyntaxBudget
+from opendoc_formats.native.pdf_syntax import Parser, Reference, SyntaxBudget
 from opendoc_formats.support.cancellation import checkpoint
 
 
+def hybrid_length(data: bytes, reference: Reference, table: dict[str, Any], *, part_limit: int,
+                  budget: SyntaxBudget) -> dict[str, int]:
+    """Read an indirect length from the declaring classic table without scanning."""
+    location = f"pdf:xref={table['offset']}: "
+    for entry in table['entries']:
+        checkpoint()
+        if entry['object'] != reference.object:
+            continue
+        if not entry['in_use'] or entry['generation'] != reference.generation:
+            break
+        offset = entry['offset_or_next_free']
+        if not 0 <= offset < len(data):
+            raise InvalidDocumentError(location+'indirect xref Length header mismatch')
+        parser = Parser(data, offset, part_limit, budget)
+        first = parser.take('integer')
+        if (first.start != offset or first.value != reference.object or parser.take('integer').value != reference.generation
+                or parser.take().value != b'obj'):
+            raise InvalidDocumentError(location+'indirect xref Length header mismatch')
+        length = parser.take('integer').value
+        if length < 0 or parser.take().value != b'endobj':
+            raise InvalidDocumentError(location+'indirect xref Length must contain one nonnegative integer')
+        if offset < table['end'] and parser.pos > table['offset']:
+            raise InvalidDocumentError(location+'indirect xref Length overlaps its declaring table')
+        return {'object': reference.object, 'generation': reference.generation, 'offset': offset,
+                'end': parser.pos, 'value': length, 'table': table['offset']}
+    raise UnsupportedDocumentError(location+'indirect xref Length requires an in-use entry in the declaring table')
+
+
 def decode_xref(data: bytes, start: int, dictionary: dict[str, Any], *, part_limit: int,
-                byte_limit: int, item_limit: int, budget: SyntaxBudget) -> tuple[list[dict[str, Any]], int, dict[str, Any]]:
-    """Return records, physical endobj end and stream evidence. All fields are direct."""
+                byte_limit: int, item_limit: int, budget: SyntaxBudget,
+                length_source: dict[str, int] | None = None) -> tuple[list[dict[str, Any]], int, dict[str, Any]]:
+    """Return records, physical endobj end and stream evidence."""
     location = f'pdf:byte={start}: '
 
     def invalid(message: str) -> InvalidDocumentError:
         return InvalidDocumentError(location+message)
 
     size, widths, index, length = (dictionary.get(key) for key in ('Size', 'W', 'Index', 'Length'))
+    if length_source is not None:
+        length = length_source['value']
     if type(size) is not int or size <= 0:
         raise invalid('xref Size must be a positive direct integer')
     if (not isinstance(widths, list) or len(widths) != 3
@@ -26,7 +57,7 @@ def decode_xref(data: bytes, start: int, dictionary: dict[str, Any], *, part_lim
         raise invalid('xref W must contain three nonnegative direct integers')
     if max(widths) > 8 or sum(widths) == 0:
         raise UnsupportedDocumentError(location+'xref field widths outside the 1..24-byte record profile')
-    if index is None and 'Index' not in dictionary:
+    if index is None:
         index = [0, size]
     if (not isinstance(index, list) or not index or len(index) % 2
             or any(type(value) is not int or value < 0 for value in index)):
@@ -55,7 +86,7 @@ def decode_xref(data: bytes, start: int, dictionary: dict[str, Any], *, part_lim
     end = start+length
     if end > len(data):
         raise invalid('xref stream Length outside source')
-    if 'F' in dictionary:
+    if dictionary.get('F') is not None:
         raise UnsupportedDocumentError(location+'external xref streams are not opened')
     parser = Parser(data, end, part_limit, budget)
     if parser.take().value != b'endstream' or parser.take().value != b'endobj':

@@ -1343,6 +1343,11 @@ PPTX and EMF fixtures remain generated during tests and require no office suite.
   paint, геометрию и пиксели без растровых изображений.
 - `unsupported-vector.json`: собственная модель с неизвестной командой. Приёмка:
   явное отклонение и сохранение прежнего выходного файла; surrogate проверяется отдельно.
+- `skia-info.pdf`: одна страница Microsoft Edge Headless, созданная Skia/PDF из
+  собственного HTML. В HTML задан заголовок `OpenDoc Metadata — Café Ω` и пустой
+  прямоугольник с рамкой. Печать выполнена с `--headless --no-pdf-header-footer`.
+  В PDF нет шрифтов. Тест сравнивает Unicode-заголовок и число страниц с pypdf,
+  затем повторяет чтение без PDF-движков.
 - `text-pages.pdf`: собственные две страницы PyMuPDF с текстом Native PDF и второй
   страницей с поворотом 90°. Проверяет установленный extra pdf-text без PyMuPDF.
 

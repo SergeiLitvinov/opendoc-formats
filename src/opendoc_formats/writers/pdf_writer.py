@@ -41,7 +41,7 @@ def write_pdf_model(
 def _write_pdf_model(document: DocumentModel, output: Path, report: ConversionReport, resolver: ResourceFontResolver, *,
                      cancelled: Callable[[], bool] | None, limits: DocumentLimits | None) -> ConversionReport:
 
-    import fitz
+    import pymupdf as fitz
     from opendoc_model import PreservationState, get_integration, get_page_geometry
 
     from opendoc_formats.support.object_mapping import PdfFallbackMapping, mapping_publication
@@ -307,7 +307,7 @@ def _render_section(
     *, limits: DocumentLimits | None = None, cancelled: Callable[[], bool] | None = None,
     full_program_paths: frozenset[str] = frozenset(),
 ) -> tuple[Any, _HtmlRenderer]:
-    import fitz
+    import pymupdf as fitz
 
     section_model = DocumentModel(
         sections=[section],
@@ -475,7 +475,7 @@ def _draw_fixed_story(
     flow_positions: dict[tuple[str, int], tuple[float, ...]] | None = None,
     page_number: int = 0,
 ) -> None:
-    import fitz
+    import pymupdf as fitz
 
     story = fitz.Story(html=html, user_css=css, archive=archive)
     more, _filled = story.place(rectangle)

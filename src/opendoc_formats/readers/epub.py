@@ -1,6 +1,6 @@
 """EPUB → Text.
 
-Использует собственный EPUB-контейнер и BeautifulSoup для XHTML.
+Использует собственный EPUB-контейнер и нативный XHTML либо BeautifulSoup.
 """
 
 from __future__ import annotations
@@ -11,10 +11,10 @@ from typing import Union
 
 import opendoc_model as od
 
+from opendoc_formats.readers.epub_package import read_epub_metadata
 from opendoc_formats.support.cancellation import cancellation_scope, check_cancelled
 from opendoc_formats.support.document_adapters import document_to_text
-from opendoc_formats.support.text_diagnostics import append_text_warning
-from opendoc_formats.types import DocFormat, Text
+from opendoc_formats.types import Text
 
 
 def read_epub(path: Union[str, Path], *, backend: str = "native", include_nonlinear: bool = False,
@@ -30,19 +30,6 @@ def _read_epub(path: Union[str, Path], *, backend: str, include_nonlinear: bool,
     p = Path(path)
     if not p.is_file():
         raise FileNotFoundError(p)
-    try:
-        __import__('bs4')
-    except ImportError:
-        result = Text(
-            source_format=DocFormat.EPUB,
-            engine="native-epub",
-        )
-        append_text_warning(result, od.DiagnosticIssue(
-            'epub.text-backend-unavailable', od.IssueSeverity.LOSS, 'beautifulsoup4 not installed',
-            str(p), reason='epub-text-backend-unavailable',
-        ), od.Provenance('epub', str(p), object_id='text-extraction'))
-        return result
-
     model = read_epub_model(p, backend=backend, include_nonlinear=include_nonlinear, limits=limits, cancelled=cancelled)
     return document_to_text(model, limits=limits)
 
@@ -55,4 +42,4 @@ def read_epub_model(path: Union[str, Path], *, backend: str = "native", include_
     return read_model(path, backend=backend, include_nonlinear=include_nonlinear, limits=limits, cancelled=cancelled)
 
 
-__all__ = ["read_epub", "read_epub_model"]
+__all__ = ["read_epub", "read_epub_metadata", "read_epub_model"]

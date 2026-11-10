@@ -10,7 +10,7 @@ from typing import cast
 
 from opendoc_model import ArtifactLimitError, DiagnosticIssue, DocumentLimits, DocumentModel, IssueSeverity, get_integration
 
-from opendoc_formats.errors import OperationCancelledError
+from opendoc_formats.errors import BackendUnavailableError, OperationCancelledError
 from opendoc_formats.support.backends import missing_backends
 from opendoc_formats.text_profile import TextEncodingError, TextProfile
 
@@ -157,6 +157,8 @@ class AdapterRegistry:
             return limit_failure(error)
         except OperationCancelledError as error:
             return failure('import.cancelled', str(error))
+        except BackendUnavailableError as error:
+            return failure('import.backend-unavailable', str(error))
         except TextEncodingError as error:
             return ImportResult(None, identifier, (DiagnosticIssue(
                 "import.txt-encoding", IssueSeverity.ERROR, str(error), str(source), reason=error.reason,
@@ -239,11 +241,11 @@ def default_registry() -> AdapterRegistry:
     registry = AdapterRegistry()
     registry.register(AdapterSpec("txt", (".txt",), _txt))
     registry.register(AdapterSpec("latex", (".tex",), _tex))
-    registry.register(AdapterSpec("html", (".html", ".htm"), _html, ("bs4", "tinycss2")))
+    registry.register(AdapterSpec("html", (".html", ".htm"), _html, ("bs4",)))
     registry.register(AdapterSpec("docx", (".docx",), _docx, ("docx",)))
     registry.register(AdapterSpec("pptx", (".pptx",), _pptx, ("pptx",)))
-    registry.register(AdapterSpec("epub", (".epub",), _epub, ("bs4",)))
-    registry.register(AdapterSpec("pdf", (".pdf",), _pdf, ("fitz",)))
+    registry.register(AdapterSpec("epub", (".epub",), _epub))
+    registry.register(AdapterSpec("pdf", (".pdf",), _pdf, ("pymupdf",)))
     registry.register(AdapterSpec("json", (".json",), _json))
     registry.register(AdapterSpec("djvu", (".djvu",), _djvu))
     return registry

@@ -144,7 +144,7 @@ def test_corruption_and_full_table_without_clear_refuse(raw):
         unpack(memoryview(raw), 100000, 'pdf:byte=7: ')
 
 
-@pytest.mark.parametrize('early', [-1, 2, True, '1', None])
+@pytest.mark.parametrize('early', [-1, 2, True, '1'])
 def test_invalid_earlychange_refuses_before_decoder(monkeypatch, early):
     from opendoc_formats.native import pdf_stream_decode
     def forbidden(*args, **kwargs):
@@ -153,6 +153,13 @@ def test_invalid_earlychange_refuses_before_decoder(monkeypatch, early):
     with pytest.raises(InvalidDocumentError, match='EarlyChange'):
         decode(memoryview(b''), Name('LZWDecode'), {'EarlyChange': early}, source_start=0,
                part_limit=100, byte_limit=100, location='pdf:byte=0: ', budget=SyntaxBudget(100, 10))
+
+
+def test_null_earlychange_uses_pdf_default():
+    source = memoryview(pack([256, 65, 257]))
+    output, _ = decode(source, Name('LZWDecode'), {'EarlyChange': None}, source_start=0,
+                       part_limit=100, byte_limit=100, location='pdf:byte=0: ', budget=SyntaxBudget(100, 10))
+    assert output == b'A'
 
 
 @pytest.mark.parametrize('container', [False, True])
